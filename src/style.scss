@@ -1,0 +1,105 @@
+// Import global styles
+@import './styles/variables.scss';
+@import './styles/global.scss';
+
+// App specific styles
+#app {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: $font-family-base;
+  background-color: $background-light;
+}
+
+// Reset body styles for admin layout
+body {
+  margin: 0;
+  padding: 0;
+  background-color: $background-light;
+}
+
+// Utility classes for admin interface
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.gap-sm {
+  gap: $spacing-sm;
+}
+
+.gap-md {
+  gap: $spacing-md;
+}
+
+.gap-lg {
+  gap: $spacing-lg;
+}
+
+// Admin-specific button styles
+.btn-admin {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-sm;
+  background-color: $background-color;
+  color: $text-color;
+  text-decoration: none;
+  cursor: pointer;
+  transition: $transition-base;
+  font-size: $font-size-small;
+  
+  &:hover {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+  
+  &.primary {
+    background-color: $primary-color;
+    color: $text-white;
+    border-color: $primary-color;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+// Loading states
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

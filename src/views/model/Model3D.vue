@@ -15,39 +15,25 @@
     </div>
 
     <!-- Data Table -->
-    <div class="data-table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>순번</th>
-            <th>항목</th>
-            <th>정보분류</th>
-            <th>입력일시</th>
-            <th>등록다운 활용 일시</th>
-            <th>반수여부</th>
-            <th>수정</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="modelList.length === 0">
-            <td colspan="7" class="empty-message">
-              등록된 데이터가 없습니다
-            </td>
-          </tr>
-          <tr v-for="(item, index) in modelList" :key="item.id">
-            <td>{{ index + 1 }}</td>
-            <td>{{ item.title }}</td>
-            <td>{{ item.category }}</td>
-            <td>{{ formatDate(item.createdAt) }}</td>
-            <td>{{ formatDate(item.lastUsed) }}</td>
-            <td>{{ item.isReturned ? '반납' : '미반납' }}</td>
-            <td>
-              <button class="btn-edit" @click="editItem(item)">수정</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <DataTable 
+      :columns="tableColumns"
+      :data="modelList"
+      :loading="loading"
+      @sort-change="handleSortChange"
+      @row-click="handleRowClick"
+    >
+      <!-- 수정 버튼 슬롯 -->
+      <template #cell-actions="{ item }">
+        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+      </template>
+      
+      <!-- 반납여부 슬롯 -->
+      <template #cell-isReturned="{ value }">
+        <span class="status-badge" :class="{ returned: value, pending: !value }">
+          {{ value ? '반납' : '미반납' }}
+        </span>
+      </template>
+    </DataTable>
 
     <!-- Pagination -->
     <div class="pagination-container">
@@ -64,6 +50,7 @@
 import { ref, onMounted } from 'vue'
 import Pagination from '@/components/common/Pagination.vue'
 import TabNavigation, { type TabItem } from '@/components/common/TabNavigation.vue'
+import DataTable, { type TableColumn } from '@/components/common/DataTable.vue'
 
 interface ModelItem {
   id: string
@@ -96,9 +83,52 @@ const tabItems: TabItem[] = [
   }
 ]
 
+// 테이블 컬럼 설정
+const tableColumns: TableColumn[] = [
+  {
+    key: 'index',
+    title: '순번',
+    sortable: false,
+    formatter: (value, item, index) => String((index || 0) + 1)
+  },
+  {
+    key: 'title',
+    title: '항목',
+    sortable: true
+  },
+  {
+    key: 'category',
+    title: '정보분류',
+    sortable: true
+  },
+  {
+    key: 'createdAt',
+    title: '입력일시',
+    sortable: true,
+    formatter: (value) => formatDate(value)
+  },
+  {
+    key: 'lastUsed',
+    title: '등록다운 활용 일시',
+    sortable: true,
+    formatter: (value) => formatDate(value)
+  },
+  {
+    key: 'isReturned',
+    title: '반납여부',
+    sortable: true
+  },
+  {
+    key: 'actions',
+    title: '수정',
+    sortable: false
+  }
+]
+
 const modelList = ref<ModelItem[]>([])
 const currentPage = ref(1)
 const totalPages = ref(999)
+const loading = ref(false)
 
 const formatDate = (date: string | null) => {
   if (!date) return '-'
@@ -116,16 +146,58 @@ const handlePageChange = (page: number) => {
 
 const handleTabClick = (tab: TabItem) => {
   console.log('Tab clicked:', tab.name)
-  // 추가 로직이 필요한 경우 여기에 구현
 }
 
-const loadModelList = async () => {
-  // API 호출로 데이터 로드
+const handleSortChange = (sortInfo: { key: string; direction: 'asc' | 'desc' }) => {
+  console.log('Sort changed:', sortInfo)
+  // 여기서 API 재호출하거나 로컬 정렬 처리
+  loadModelList(sortInfo)
+}
+
+const handleRowClick = (item: ModelItem, index: number) => {
+  console.log('Row clicked:', item, index)
+  // 행 클릭 시 상세 페이지로 이동하거나 모달 열기 등
+}
+
+const loadModelList = async (sortInfo?: { key: string; direction: 'asc' | 'desc' }) => {
+  loading.value = true
   try {
-    // 임시 데이터 (실제로는 API 호출)
-    modelList.value = []
+    // API 호출로 데이터 로드
+    // 임시 샘플 데이터
+    await new Promise(resolve => setTimeout(resolve, 1000)) // 로딩 시뮬레이션
+    
+    modelList.value = [
+      {
+        id: '1',
+        title: '건물 외벽 모델',
+        category: '건축',
+        createdAt: '2024-01-15',
+        lastUsed: '2024-07-01',
+        isReturned: true
+      },
+      {
+        id: '2',
+        title: '기계실 장비',
+        category: '기계',
+        createdAt: '2024-02-20',
+        lastUsed: null,
+        isReturned: false
+      },
+      {
+        id: '3',
+        title: '전기 배선도',
+        category: '전기',
+        createdAt: '2024-03-10',
+        lastUsed: '2024-06-15',
+        isReturned: true
+      }
+    ]
+    
+    console.log('Sort info:', sortInfo)
   } catch (error) {
     console.error('데이터 로드 실패:', error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -169,62 +241,37 @@ onMounted(() => {
   }
 }
 
-.data-table-container {
-  background: $background-color;
-  border-radius: $border-radius-lg;
-  overflow: hidden;
-  box-shadow: $shadow-sm;
+// DataTable 내부 커스텀 스타일
+.btn-edit {
+  padding: $spacing-xs $spacing-sm;
+  background: transparent;
   border: 1px solid $border-color;
+  border-radius: $border-radius-sm;
+  color: $text-light;
+  font-size: $font-size-small;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
 }
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th, td {
-    padding: $spacing-md $spacing-lg;
-    text-align: left;
-    border-bottom: 1px solid $border-color;
+.status-badge {
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: 11px;
+  font-weight: $font-weight-medium;
+  
+  &.returned {
+    background-color: rgba($success-color, 0.1);
+    color: $success-color;
   }
-
-  thead {
-    background-color: $background-light;
-
-    th {
-      font-weight: $font-weight-medium;
-      color: $text-color;
-      font-size: $font-size-small;
-    }
-  }
-
-  tbody {
-    td {
-      color: $text-color;
-      font-size: $font-size-small;
-    }
-
-    .empty-message {
-      text-align: center;
-      color: $text-light;
-      padding: $spacing-xxl;
-      font-style: italic;
-    }
-
-    .btn-edit {
-      padding: $spacing-xs $spacing-sm;
-      background: transparent;
-      border: 1px solid $border-color;
-      border-radius: $border-radius-sm;
-      color: $text-light;
-      font-size: $font-size-small;
-      cursor: pointer;
-      transition: $transition-base;
-
-      &:hover {
-        border-color: $primary-color;
-        color: $primary-color;
-      }
-    }
+  
+  &.pending {
+    background-color: rgba($warning-color, 0.1);
+    color: $warning-color;
   }
 }
 

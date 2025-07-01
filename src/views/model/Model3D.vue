@@ -1,29 +1,10 @@
 <template>
   <div class="model-3d-page">
     <!-- Tab Navigation -->
-    <div class="tab-navigation">
-      <router-link 
-        to="/model/3d" 
-        class="tab-item"
-        :class="{ active: $route.name === 'Model3D' }"
-      >
-        3D 모델 관리
-      </router-link>
-      <router-link 
-        to="/model/revit" 
-        class="tab-item"
-        :class="{ active: $route.name === 'RevitManagement' }"
-      >
-        Revit 관리
-      </router-link>
-      <router-link 
-        to="/model/standard" 
-        class="tab-item"
-        :class="{ active: $route.name === 'StandardManagement' }"
-      >
-        표준배치 관리
-      </router-link>
-    </div>
+    <TabNavigation 
+      :tabs="tabItems" 
+      @tab-click="handleTabClick" 
+    />
 
     <!-- Add Button -->
     <div class="action-bar">
@@ -82,6 +63,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Pagination from '@/components/common/Pagination.vue'
+import TabNavigation, { type TabItem } from '@/components/common/TabNavigation.vue'
 
 interface ModelItem {
   id: string
@@ -91,6 +73,28 @@ interface ModelItem {
   lastUsed: string | null
   isReturned: boolean
 }
+
+// 탭 설정
+const tabItems: TabItem[] = [
+  {
+    name: 'Model3D',
+    label: '3D 모델 관리',
+    to: '/model/3d',
+    icon: '📦'
+  },
+  {
+    name: 'RevitManagement',
+    label: 'Revit 관리',
+    to: '/model/revit',
+    icon: '🏗️'
+  },
+  {
+    name: 'StandardManagement',
+    label: '표준배치 관리',
+    to: '/model/standard',
+    icon: '📐'
+  }
+]
 
 const modelList = ref<ModelItem[]>([])
 const currentPage = ref(1)
@@ -108,6 +112,11 @@ const editItem = (item: ModelItem) => {
 const handlePageChange = (page: number) => {
   currentPage.value = page
   loadModelList()
+}
+
+const handleTabClick = (tab: TabItem) => {
+  console.log('Tab clicked:', tab.name)
+  // 추가 로직이 필요한 경우 여기에 구현
 }
 
 const loadModelList = async () => {
@@ -128,30 +137,6 @@ onMounted(() => {
 <style scoped lang="scss">
 .model-3d-page {
   padding: $spacing-lg;
-}
-
-.tab-navigation {
-  display: flex;
-  border-bottom: 1px solid $border-color;
-  margin-bottom: $spacing-xl;
-
-  .tab-item {
-    padding: $spacing-md $spacing-lg;
-    text-decoration: none;
-    color: $text-light;
-    border-bottom: 2px solid transparent;
-    transition: $transition-base;
-    font-weight: $font-weight-medium;
-
-    &:hover {
-      color: $primary-color;
-    }
-
-    &.active {
-      color: $primary-color;
-      border-bottom-color: $primary-color;
-    }
-  }
 }
 
 .action-bar {

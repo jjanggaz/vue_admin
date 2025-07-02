@@ -108,6 +108,7 @@ const handleLogin = async () => {
   .subtitle {
     margin: 0;
     font-size: $font-size-lg;
+    font-weight: $font-weight-md;
     letter-spacing: -1px;
     color: $text-blue;
   }

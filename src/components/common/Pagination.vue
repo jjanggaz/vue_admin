@@ -131,7 +131,7 @@ const visiblePages = computed(() => {
   border-radius: $border-radius-sm;
   cursor: pointer;
   transition: $transition-base;
-  font-size: $font-size-small;
+  font-size: $font-size-sm;
   
   &:hover:not(:disabled) {
     border-color: $primary-color;
@@ -158,6 +158,6 @@ const visiblePages = computed(() => {
 .pagination-ellipsis {
   padding: $spacing-xs;
   color: $text-light;
-  font-size: $font-size-small;
+  font-size: $font-size-sm;
 }
 </style>

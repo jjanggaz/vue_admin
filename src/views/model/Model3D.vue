@@ -225,7 +225,7 @@ onMounted(() => {
     border-radius: $border-radius-md;
     background: linear-gradient(135deg, #4f46e5, #3b82f6);
     color: white;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-md;
     cursor: pointer;
     transition: $transition-base;
 
@@ -248,7 +248,7 @@ onMounted(() => {
   border: 1px solid $border-color;
   border-radius: $border-radius-sm;
   color: $text-light;
-  font-size: $font-size-small;
+  font-size: $font-size-sm;
   cursor: pointer;
   transition: $transition-base;
 
@@ -262,7 +262,7 @@ onMounted(() => {
   padding: 2px 8px;
   border-radius: $border-radius-sm;
   font-size: 11px;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-md;
   
   &.returned {
     background-color: rgba($success-color, 0.1);

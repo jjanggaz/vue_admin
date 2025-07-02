@@ -100,7 +100,7 @@
       
       .nav-text {
         font-size: $font-size-base;
-        font-weight: $font-weight-medium;
+        font-weight: $font-weight-md;
       }
     }
   }

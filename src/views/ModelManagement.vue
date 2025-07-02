@@ -46,7 +46,7 @@
     color: $text-white;
     border: none;
     border-radius: $border-radius-md;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-md;
     cursor: pointer;
     transition: $transition-base;
     

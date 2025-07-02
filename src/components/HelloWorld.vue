@@ -89,7 +89,7 @@ const count = ref(0)
 
       .description {
         color: $text-light;
-        font-size: $font-size-small;
+        font-size: $font-size-sm;
         
         .code-highlight {
           background-color: rgba($primary-color, 0.1);
@@ -113,7 +113,7 @@ const count = ref(0)
 
     .external-link {
       color: $primary-color;
-      font-weight: $font-weight-medium;
+      font-weight: $font-weight-md;
       text-decoration: none;
       border-bottom: 1px solid transparent;
       transition: $transition-base;
@@ -127,7 +127,7 @@ const count = ref(0)
 
   .read-the-docs {
     color: $text-light;
-    font-size: $font-size-small;
+    font-size: $font-size-sm;
     margin-top: $spacing-lg;
     opacity: 0.8;
     transition: $transition-base;

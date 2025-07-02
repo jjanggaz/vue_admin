@@ -84,7 +84,7 @@ const handleTabClick = (tab: TabItem) => {
     color: $text-light;
     border-bottom: 2px solid transparent;
     transition: $transition-base;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-md;
     white-space: nowrap;
     position: relative;
     
@@ -115,7 +115,7 @@ const handleTabClick = (tab: TabItem) => {
     }
 
     .tab-text {
-      font-size: $font-size-small;
+      font-size: $font-size-sm;
     }
 
     .tab-badge {

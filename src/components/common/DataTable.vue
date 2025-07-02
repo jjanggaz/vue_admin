@@ -238,9 +238,9 @@ watch(sortConfig, (newSort) => {
     background-color: $background-light;
 
     th {
-      font-weight: $font-weight-medium;
+      font-weight: $font-weight-md;
       color: $text-color;
-      font-size: $font-size-small;
+      font-size: $font-size-sm;
       position: relative;
       
       &.sortable {
@@ -308,7 +308,7 @@ watch(sortConfig, (newSort) => {
     
     td {
       color: $text-color;
-      font-size: $font-size-small;
+      font-size: $font-size-sm;
     }
 
     .loading-message,

@@ -39,7 +39,7 @@ body {
 }
 
 .font-medium {
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-md;
 }
 
 .text-primary {
@@ -107,10 +107,10 @@ body {
   justify-content: center;
   padding: $spacing-sm $spacing-md;
   font-size: $font-size-base;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-md;
   text-decoration: none;
   border: none;
-  border-radius: $border-radius-md;
+  border-radius: $border-radius-sm;
   cursor: pointer;
   transition: $transition-base;
   user-select: none;
@@ -181,7 +181,7 @@ body {
   label {
     display: block;
     margin-bottom: $spacing-xs;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-md;
     color: $text-color;
   }
 
@@ -190,8 +190,8 @@ body {
   select {
     width: 100%;
     padding: $spacing-sm $spacing-md;
-    border: 2px solid $border-color;
-    border-radius: $border-radius-md;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
     font-size: $font-size-base;
     transition: $transition-base;
 

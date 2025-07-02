@@ -66,7 +66,7 @@ const handleLogout = () => {
     
     .user-id {
       color: $text-light;
-      font-size: $font-size-small;
+      font-size: $font-size-sm;
     }
     
     .logout-btn {
@@ -75,7 +75,7 @@ const handleLogout = () => {
       border: 1px solid $border-color;
       border-radius: $border-radius-sm;
       color: $text-light;
-      font-size: $font-size-small;
+      font-size: $font-size-sm;
       cursor: pointer;
       transition: $transition-base;
       

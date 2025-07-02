@@ -128,8 +128,20 @@ const handleLogin = async () => {
     margin-bottom: $spacing-lg;
 
     label {
+      display: flex;
+      align-items: center;
       font-size: $font-size-sm;
       color: $text-color;
+      cursor: pointer;
+      input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        border-radius: $border-radius-sm;
+        &:checked {
+          background: $background-blue url(/public/images/icons/ico_check.svg) no-repeat center center;
+          border-color: $primary-color;
+        }
+      }
     }
 
     .forgot-password {

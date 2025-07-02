@@ -74,7 +74,7 @@ const count = ref(0)
 
     .card-body {
       .counter-btn {
-        font-size: $font-size-large;
+        font-size: $font-size-lg;
         padding: $spacing-md $spacing-xl;
         margin-bottom: $spacing-lg;
         

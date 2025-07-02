@@ -102,7 +102,7 @@ const defaultIcon = computed(() => {
 }
 
 .placeholder-title {
-  font-size: $font-size-large;
+  font-size: $font-size-lg;
   font-weight: $font-weight-md;
   color: $text-color;
   margin: 0 0 $spacing-sm 0;

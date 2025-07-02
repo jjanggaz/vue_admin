@@ -55,7 +55,7 @@
     }
     
     .add-icon {
-      font-size: $font-size-large;
+      font-size: $font-size-lg;
       font-weight: $font-weight-bold;
     }
   }

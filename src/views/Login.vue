@@ -136,10 +136,14 @@ const handleLogin = async () => {
       input[type="checkbox"] {
         width: 20px;
         height: 20px;
+        border: 1px solid $border-color;
         border-radius: $border-radius-sm;
+        appearance: none;
+        cursor: pointer;
         &:checked {
           background: $background-blue url(/public/images/icons/ico_check.svg) no-repeat center center;
           border-color: $primary-color;
+          accent-color: $background-blue;
         }
       }
     }

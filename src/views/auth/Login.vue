@@ -73,7 +73,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url(../assets/images/pages/login/bg_login.jpg) no-repeat center center /cover;
+  background: url(../../assets/images/pages/login/bg_login.jpg) no-repeat center center /cover;
 }
 
 .login-container {

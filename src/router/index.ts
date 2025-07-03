@@ -1,14 +1,14 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 // 페이지 컴포넌트들을 lazy loading으로 import
-const Dashboard = () => import('@/views/Dashboard.vue')
-const ProjectManagement = () => import('@/views/ProjectManagement.vue')
-const AssetManagement = () => import('@/views/AssetManagement.vue')
-const PublicManagement = () => import('@/views/PublicManagement.vue')
-const ModelManagement = () => import('@/views/ModelManagement.vue')
-const MachineList = () => import('@/views/MachineList.vue')
-const UserManagement = () => import('@/views/UserManagement.vue')
-const Login = () => import('@/views/Login.vue')
+const Dashboard = () => import('@/views/dashboard/Dashboard.vue')
+const ProjectManagement = () => import('@/views/project/ProjectManagement.vue')
+const AssetManagement = () => import('@/views/asset/AssetManagement.vue')
+const PublicManagement = () => import('@/views/public/PublicManagement.vue')
+const ModelManagement = () => import('@/views/model/ModelManagement.vue')
+const MachineList = () => import('@/views/machine/MachineList.vue')
+const UserManagement = () => import('@/views/user/UserManagement.vue')
+const Login = () => import('@/views/auth/Login.vue')
 
 // 3D 모델 관리 하위 페이지들
 const Model3D = () => import('@/views/model/Model3D.vue')
@@ -132,7 +132,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/NotFound.vue')
+    component: () => import('@/views/error/NotFound.vue')
   }
 ]
 

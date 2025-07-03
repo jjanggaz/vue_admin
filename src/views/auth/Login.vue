@@ -49,20 +49,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
-const loginForm = ref({
-  username: '',
-  password: ''
-})
+// prettier-ignore
+const loginForm = ref({username: '', password: ''})
 
 const handleLogin = async () => {
-  // 로그인 로직 (임시)
-  if (loginForm.value.username && loginForm.value.password) {
-    localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('username', loginForm.value.username)
+  try {
+    await authStore.login(loginForm.value.username, loginForm.value.password)
     router.push('/dashboard')
+  } catch (error) {
+    console.error('로그인 실패:', error)
+    alert('아이디 또는 비밀번호가 올바르지 않습니다.')
   }
 }
 </script>

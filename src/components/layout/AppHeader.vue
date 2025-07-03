@@ -13,7 +13,8 @@
       
       <!-- User Section -->
       <div class="user-section">
-        <span class="user-id">idAdmin250222</span>
+        <span class="user-id">{{ userName }} ({{ userRole }}) &nbsp;</span>
+        <Date />
         <button class="logout-btn" @click="handleLogout">LOGOUT</button>
       </div>
     </div>
@@ -21,13 +22,29 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
 import { computed } from 'vue'
 import TabNavigation from '@/components/common/TabNavigation.vue'
 import type { TabItem } from '@/components/common/TabNavigation.vue'
+import Date from '../../utils/headerDate.vue'
 
 const router = useRouter()
 const route = useRoute()
+
+const authStore = useAuthStore()
+const userName = authStore.user?.name;
+const userRole = authStore.user?.role;
+
+console.log('[AppHeader.vue] store/authStore.ts > authStore.user : ', userName, ', userRole : ', userRole)
+
+
+const handleLogout = () => {
+  console.log('[AppHeader.vue] handleLogout()');
+  authStore.logout()
+  router.push('/login')
+}
 
 // 각 섹션별 탭들 정의
 const sectionTabs = {
@@ -91,12 +108,6 @@ const currentPageTitle = computed<string>(() => {
   
   return 'WAI DESIGN'
 })
-
-const handleLogout = () => {
-  localStorage.removeItem('isAuthenticated')
-  localStorage.removeItem('username')
-  router.push('/login')
-}
 </script>
 
 <style scoped lang="scss">

@@ -1,15 +1,8 @@
 <template>
   <div class="standard-management">
-    <!-- Tab Navigation -->
-    <TabNavigation 
-      :tabs="tabItems" 
-      @tab-click="handleTabClick" 
-    />
-    
+
     <div class="content">
-      <h2>표준배치 관리</h2>
-      <p>표준배치 파일 관리 페이지입니다.</p>
-      
+
       <!-- 여기에 표준배치 관련 컨텐츠 추가 -->
       <div class="placeholder-content">
         <div class="empty-state">

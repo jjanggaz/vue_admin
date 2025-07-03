@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
     component: PublicManagement,
     meta: {
       requiresAuth: true,
-      title: '공장 관리',
+      title: '공정 관리',
       icon: 'public'
     }
   },

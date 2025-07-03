@@ -20,7 +20,7 @@
         
         <router-link to="/public" class="nav-item">
           <span class="nav-icon">🏗️</span>
-          <span class="nav-text">공장 관리</span>
+          <span class="nav-text">공정 관리</span>
         </router-link>
         
         <router-link to="/model" class="nav-item">

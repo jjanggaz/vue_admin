@@ -1,7 +1,7 @@
 <template>
   <div class="public-management">
-    <h1>공장 관리</h1>
-    <p>공장 관리 페이지입니다.</p>
+    <h1>공정 관리</h1>
+    <p>공정 관리 페이지입니다.</p>
   </div>
 </template>
 

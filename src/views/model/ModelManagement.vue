@@ -1,8 +1,7 @@
 <template>
   <div class="model-management-layout">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">3D 모델 관리</h1>
+    <!-- Action Header -->
+    <div class="action-header">
       <button class="add-btn">
         <span class="add-icon">+</span>
         새모델 업로드
@@ -24,18 +23,11 @@
   padding: $spacing-lg;
 }
 
-.page-header {
+.action-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: $spacing-xl;
-  
-  .page-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $text-color;
-    margin: 0;
-  }
   
   .add-btn {
     display: flex;

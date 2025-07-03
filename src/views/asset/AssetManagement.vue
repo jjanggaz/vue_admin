@@ -1,7 +1,6 @@
 <template>
   <div class="asset-management">
-    <h1>유일충류 관리</h1>
-    <p>유일충류 관리 페이지입니다.</p>
+    <p>유입종류 관리 페이지입니다.</p>
   </div>
 </template>
 

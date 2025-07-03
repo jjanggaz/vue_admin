@@ -1,11 +1,5 @@
 <template>
   <div class="model-3d-page">
-    <!-- Tab Navigation -->
-    <TabNavigation 
-      :tabs="tabItems" 
-      @tab-click="handleTabClick" 
-    />
-
     <!-- Add Button -->
     <div class="action-bar">
       <button class="btn btn-primary add-button">
@@ -49,7 +43,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Pagination from '@/components/common/Pagination.vue'
-import TabNavigation, { type TabItem } from '@/components/common/TabNavigation.vue'
 import DataTable, { type TableColumn } from '@/components/common/DataTable.vue'
 
 interface ModelItem {
@@ -60,28 +53,6 @@ interface ModelItem {
   lastUsed: string | null
   isReturned: boolean
 }
-
-// 탭 설정
-const tabItems: TabItem[] = [
-  {
-    name: 'Model3D',
-    label: '3D 모델 관리',
-    to: '/model/3d',
-    icon: '📦'
-  },
-  {
-    name: 'RevitManagement',
-    label: 'Revit 관리',
-    to: '/model/revit',
-    icon: '🏗️'
-  },
-  {
-    name: 'StandardManagement',
-    label: '표준배치 관리',
-    to: '/model/standard',
-    icon: '📐'
-  }
-]
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
@@ -142,10 +113,6 @@ const editItem = (item: ModelItem) => {
 const handlePageChange = (page: number) => {
   currentPage.value = page
   loadModelList()
-}
-
-const handleTabClick = (tab: TabItem) => {
-  console.log('Tab clicked:', tab.name)
 }
 
 const handleSortChange = (sortInfo: { key: string; direction: 'asc' | 'desc' }) => {

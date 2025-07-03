@@ -1,9 +1,14 @@
 <template>
   <header class="app-header">
     <div class="header-content">
-      <!-- Logo -->
-      <div class="logo-section">
-        <h1 class="logo">WAI<span class="logo-sub">DESIGN</span></h1>
+      <!-- Page Title -->
+      <div class="page-title-section">
+        <h1 class="page-title">{{ currentPageTitle }}</h1>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="navigation-section">
+        <TabNavigation v-if="currentTabs.length > 0" :tabs="currentTabs" />
       </div>
       
       <!-- User Section -->
@@ -16,9 +21,76 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
+import TabNavigation from '@/components/common/TabNavigation.vue'
+import type { TabItem } from '@/components/common/TabNavigation.vue'
 
 const router = useRouter()
+const route = useRoute()
+
+// 각 섹션별 탭들 정의
+const sectionTabs = {
+  model: [
+    {
+      name: 'Model3D',
+      label: '3D 모델 관리',
+      to: '/model/3d'
+    },
+    {
+      name: 'RevitManagement',
+      label: 'Revit 관리',
+      to: '/model/revit'
+    },
+    {
+      name: 'StandardManagement',
+      label: '표준배치 관리',
+      to: '/model/standard'
+    }
+  ],
+  // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
+  // project: [
+  //   {
+  //     name: 'ProjectList',
+  //     label: '프로젝트 목록',
+  //     to: '/project/list'
+  //   },
+  //   {
+  //     name: 'ProjectCreate',
+  //     label: '프로젝트 생성',
+  //     to: '/project/create'
+  //   }
+  // ]
+}
+
+// 현재 라우트에 따라 표시할 탭들을 계산
+const currentTabs = computed<TabItem[]>(() => {
+  const currentPath = route.path
+  
+  // 3D 모델 관리 섹션인 경우
+  if (currentPath.startsWith('/model')) {
+    return sectionTabs.model
+  }
+  
+  // 다른 섹션들은 탭이 없음 (단일 페이지)
+  return []
+})
+
+// 현재 페이지 제목을 계산
+const currentPageTitle = computed<string>(() => {
+  const currentPath = route.path
+  
+  // 1뎁스 경로별 제목 (탭을 포함하는 상위 섹션 제목)
+  if (currentPath.startsWith('/dashboard')) return '대시보드'
+  if (currentPath.startsWith('/project')) return '프로젝트 관리'
+  if (currentPath.startsWith('/asset')) return '유입종류 관리'
+  if (currentPath.startsWith('/public')) return '공정 관리'
+  if (currentPath.startsWith('/model')) return '3D모델 관리' // 하위 탭이 있는 경우에도 상위 제목 유지
+  if (currentPath.startsWith('/machine')) return '기기리스트 관리'
+  if (currentPath.startsWith('/user')) return '사용자 관리'
+  
+  return 'WAI DESIGN'
+})
 
 const handleLogout = () => {
   localStorage.removeItem('isAuthenticated')
@@ -44,17 +116,46 @@ const handleLogout = () => {
     align-items: center;
     justify-content: space-between;
     padding: 0 $spacing-xl;
+    gap: $spacing-xl;
   }
   
-  .logo-section {
-    .logo {
+  .page-title-section {
+    .page-title {
       font-size: $font-size-xl;
       font-weight: $font-weight-bold;
       color: $text-color;
       margin: 0;
+      white-space: nowrap;
+    }
+  }
+  
+  .navigation-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    
+    :deep(.tab-navigation) {
+      border-bottom: none;
+      background: transparent;
+      width: 100%;
       
-      .logo-sub {
-        font-weight: $font-weight-normal;
+      .tab-item {
+        height: 70px;
+        border-bottom: 3px solid transparent;
+        border-radius: 0;
+        padding: 0 $spacing-lg;
+        font-size: $font-size-sm;
+        
+        &.active {
+          border-bottom-color: $primary-color;
+          background: transparent;
+          color: $primary-color;
+          font-weight: $font-weight-md;
+        }
+        
+        &:hover {
+          background: $background-light;
+        }
       }
     }
   }

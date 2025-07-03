@@ -55,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     component: AssetManagement,
     meta: {
       requiresAuth: true,
-      title: '유일충류 관리',
+      title: '유입종류 관리',
       icon: 'asset'
     }
   },

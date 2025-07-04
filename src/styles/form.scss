@@ -1,0 +1,55 @@
+
+input,
+select,
+textarea {
+  outline: none;
+}
+
+
+.criteria {
+ display: flex;
+ gap: 10px;
+}
+
+.group-form {
+ display: flex;
+ gap: 10px;
+ .form-item {
+   flex: 1;
+   display: flex;
+   input[type="text"],
+   input[type="number"],
+   input[type="email"], 
+   input[type="password"],
+   textarea,
+   select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid $border-form;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+   }
+ }
+
+ [class*="btn-"] {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   height: 40px;
+   padding: 0 16px;
+   border-radius: $border-radius-sm;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background-color 0.3s, border-color 0.3s;
+
+   &:hover {
+     background-color: darken($background-light, 10%);
+     border-color: darken($border-form, 10%);
+   }
+ }
+}
+
+.form-item {
+ flex: 1;
+}

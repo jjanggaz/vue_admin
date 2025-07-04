@@ -1,0 +1,16 @@
+
+
+.btns {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+
+ [class*="btn-"] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: $border-radius-sm;
+ }
+}

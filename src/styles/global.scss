@@ -212,6 +212,48 @@ body {
   }
 }
 
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+
+  .add-button {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $border-radius-md;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: white;
+    font-weight: $font-weight-md;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+
+    .plus-icon {
+      font-size: $font-size-lg;
+      font-weight: bold;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 // Responsive utilities
 @media (max-width: $breakpoint-md) {
   .hidden-mobile {

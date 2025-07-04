@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from "../stores/authStore";
 
 // 페이지 컴포넌트들을 lazy loading으로 import
 const Dashboard = () => import('@/views/dashboard/Dashboard.vue')
@@ -13,8 +12,8 @@ const Login = () => import('@/views/auth/Login.vue')
 
 // 3D 모델 관리 하위 페이지들
 const Model3D = () => import('@/views/model/Model3D.vue')
-const RevitManagement = () => import('@/views/model/RevitManagement.vue')
-const StandardManagement = () => import('@/views/model/StandardManagement.vue')
+const Revit = () => import('@/views/model/Revit.vue')
+const Standard = () => import('@/views/model/Standard.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -56,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     component: AssetManagement,
     meta: {
       requiresAuth: true,
-      title: '유입종류 관리',
+      title: '유일충류 관리',
       icon: 'asset'
     }
   },
@@ -92,8 +91,8 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'revit',
-        name: 'RevitManagement',
-        component: RevitManagement,
+        name: 'Revit',
+        component: Revit,
         meta: {
           title: 'Revit 관리',
           breadcrumb: ['3D모델 관리', 'Revit 관리']
@@ -101,8 +100,8 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'standard',
-        name: 'StandardManagement',
-        component: StandardManagement,
+        name: 'Standard',
+        component: Standard,
         meta: {
           title: '표준배치 관리',
           breadcrumb: ['3D모델 관리', '표준배치 관리']
@@ -151,59 +150,15 @@ const router = createRouter({
 
 // 네비게이션 가드
 router.beforeEach((to, _from, next) => {
-  const authStore = useAuthStore();
-  const isLoggedIn = authStore.isLoggedIn;
-  const userId = authStore.user?.user_id;
-  const userName = authStore.user?.name;
-  const userRole = authStore.user?.role || null;
-
-  const requiresAuth = to.meta.requiresAuth ?? true;
-  const requiresAdmin = to.meta.roles || null;
-
-  console.log(
-    "[router/index.ts] isLoggedIn: ",
-    isLoggedIn,
-    ", userId: ",
-    userId,
-    ", userName: ",
-    userName,
-    ", userRole: ",
-    userRole,
-    ", requiresAuth: ",requiresAuth,", requiresAdmin: ",requiresAdmin);
-
-  // const authStore = useAuthStore();
-  // const isLoggedIn = authStore.isLoggedIn;
-  // const userRole = authStore.user?.role || null;
-
-  // const requiresAuth = to.meta.requiresAuth as boolean | undefined;
-  // const requiresAdmin = to.meta.requiresAdmin as boolean | undefined;
-
-  // ✅ 인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로
-  if (requiresAuth && !isLoggedIn) {
-    console.log("인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로 >> ");
-    return next("/login");
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login')
+  } else if (to.name === 'Login' && isAuthenticated) {
+    next('/dashboard')
+  } else {
+    next()
   }
-
-  // ✅ 관리자 권한 필요하지만 일반 사용자일 경우 → 홈으로 리디렉션
-  if (requiresAdmin && userRole !== "admin") {
-    console.log(
-      "관리자 권한 필요하지만 일반 사용자일 경우 → 홈으로 리디렉션 >> "
-    );
-    return next("/dashboard");
-  }
-
-  // ✅ 문제 없으면 통과
-  next();
-
-  // const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-
-  // if (to.meta.requiresAuth && !isAuthenticated) {
-  //   next("/login");
-  // } else if (to.name === "Login" && isAuthenticated) {
-  //   next("/dashboard");
-  // } else {
-  //   next();
-  // }
 })
 
 // 페이지 타이틀 설정

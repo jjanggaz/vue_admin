@@ -32,6 +32,7 @@ import AppHeader from './AppHeader.vue'
 .main-content {
   flex: 1;
   padding: $spacing-lg;
+  padding-top: 70px;
   background-color: $background-light;
   min-height: calc(100vh - 70px); // Header height
 }

@@ -45,6 +45,69 @@
         ="handlePageChange"
       />
       </div>
+    <!-- 등록 모달 -->
+    <div v-if="isRegistModalOpen" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>사용자 등록 및 수정</h3>
+          <button class="btn-close" @click="isRegistModalOpen = false">×</button>
+        </div>
+        <div class="modal-body">
+
+          <dl class="column-regist">
+            <dt>아이디</dt>
+            <dd>
+              <input id="user-id" v-model="newUser.name" type="text" placeholder="" />
+              <button class="btn-check-id">중복체크</button>
+            </dd>
+            <dt>비밀번호</dt>
+            <dd>
+              <input id="user-pw" v-model="newUser.name" type="password" placeholder="비밀번호를 입력하세요" />
+            </dd>
+            <dt>비밀번호 확인</dt>
+            <dd>
+              <input id="confirm-pw" v-model="newUser.name" type="password" placeholder="비밀번호를 확인하세요" />
+            </dd>
+            <dt>이름</dt>
+            <dd>
+              <input id="user-name" v-model="newUser.name" type="text" placeholder="이름을 입력하세요" />
+            </dd>
+            <dt>업체명</dt>
+            <dd>
+              <input id="user-corp" v-model="newUser.name" type="text" placeholder="업체명을 입력하세요" />
+            </dd>
+            <dt>전화번호</dt>
+            <dd>
+              <input id="user-phone" v-model="newUser.name" type="text" placeholder="전화번호를 입력하세요" />
+            </dd>
+            <dt>이메일</dt>
+            <dd>
+              <input id="user-email" v-model="newUser.email" type="email" placeholder="이메일을 입력하세요" />
+            </dd>
+            <dt>사내외</dt>
+            <dd>
+              <select id="user-corp" v-model="newUser.name">
+                <option value="">-- 선택 --</option>
+                <option value="">사내</option>
+                <option value=""></option>
+              </select>
+            </dd>
+            <dt>권한</dt>
+            <dd>
+              <select id="user-role" v-model="newUser.role">
+                <option value="">-- 선택 --</option>
+                <option value="관리자">관리자</option>
+                <option value="사용자"></option>
+              </select>
+            </dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">취소</button>
+          <button class="btn btn-primary" @click="saveUser">저장</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -81,7 +144,9 @@
   const sortColumn = ref<string | null>(null);
   const sortOrder = ref<'asc' | 'desc' | null>(null);
   const searchQuery = ref('');
-  const selectedItems = ref<UserItem[]>([]);
+  const selectedItems = ref<UserItem[]>([])
+  const isRegistModalOpen = ref(false)
+  const newUser = ref<UserItem>({ id: '', name: '', email: '', role: '', createdAt: '' });
 
   // 데이터 로드 함수
   const loadData = async () => {
@@ -89,7 +154,7 @@
     try {
       userList.value = [
         { id: '1', name: '홍길동', email: '..@example.com', role: '관리자', createdAt: '2023-01-01' },
-    ]
+      ]
       totalCount.value = userList.value.length;
       totalPages.value = Math.ceil(totalCount.value / pageSize.value);
     } catch (error) {
@@ -135,8 +200,20 @@
 
   // 등록 버튼 핸들러
   const handleRegist = () => {
-    console.log('등록 버튼 클릭');
-    alert('사용자 등록 기능을 구현해야 합니다.');
+    isRegistModalOpen.value = true
+  };
+
+  // 사용자 저장
+  const saveUser = () => {
+    if (!newUser.value.name || !newUser.value.email || !newUser.value.role) {
+      alert('모든 필드를 입력하세요.');
+      return;
+    }
+    const nextId = (userList.value.length + 1).toString();
+    userList.value.push({ ...newUser.value, id: nextId, createdAt: new Date().toISOString() });
+    alert('사용자가 등록되었습니다.');
+    isRegistModalOpen.value = false;
+    newUser.value = { id: '', name: '', email: '', role: '', createdAt: '' }; // 폼 초기화
   };
 
   // 선택된 항목 삭제
@@ -172,5 +249,41 @@
 <style scoped lang="scss">
 .user-management {
   padding: $spacing-lg;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-body {
+  margin-top: 1rem;
+}
+.modal-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 </style>

@@ -4,17 +4,35 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/",
+  build: {
+    outDir: "dist",
+  },
+
+  // build: {
+  //   outDir: "dist",
+  //   sourcemap: true,
+  //   minify: "terser",
+  //   rollupOptions: {
+  //     output: {
+  //       manualChunks: {
+  //         vendor: ["vue"],
+  //       },
+  //     },
+  //   },
+  // },
+
   plugins: [vue()],
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/styles/variables.scss";`
-      }
-    }
+        additionalData: `@import "@/styles/variables.scss";`,
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: {
@@ -22,19 +40,7 @@ export default defineConfig({
     open: true,
     cors: true,
     hmr: {
-      overlay: true
-    }
+      overlay: true,
+    },
   },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    minify: 'terser',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['vue']
-        }
-      }
-    }
-  }
-})
+});

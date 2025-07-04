@@ -13,7 +13,21 @@ textarea {
 
 .group-form {
  display: flex;
+ align-items: center;
  gap: 10px;
+ label {
+    flex: 0 0 auto;
+    font-size: 14px;
+    color: #333;
+    margin-right: 8px;
+    &.label-search {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      text-indent: -99999px;
+      background: transparent url('../assets/images/common/ico_search.svg') no-repeat center center;
+    }
+ }
  .form-item {
    flex: 1;
    display: flex;
@@ -40,6 +54,8 @@ textarea {
    padding: 0 16px;
    border-radius: $border-radius-sm;
    font-size: 14px;
+   color: #ffffff;
+   background: $background-blue;
    cursor: pointer;
    transition: background-color 0.3s, border-color 0.3s;
 

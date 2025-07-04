@@ -56,44 +56,14 @@ interface ModelItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  {
-    key: 'index',
-    title: '순번',
-    sortable: false,
-    formatter: (value, item, index) => String((index || 0) + 1)
-  },
-  {
-    key: 'title',
-    title: '항목',
-    sortable: true
-  },
-  {
-    key: 'category',
-    title: '정보분류',
-    sortable: true
-  },
-  {
-    key: 'createdAt',
-    title: '입력일시',
-    sortable: true,
-    formatter: (value) => formatDate(value)
-  },
-  {
-    key: 'lastUsed',
-    title: '등록다운 활용 일시',
-    sortable: true,
-    formatter: (value) => formatDate(value)
-  },
-  {
-    key: 'isReturned',
-    title: '반납여부',
-    sortable: true
-  },
-  {
-    key: 'actions',
-    title: '수정',
-    sortable: false
-  }
+  { key: 'index', title: '순번', sortable: false, formatter: (value, item, index) => String((index || 0) + 1) },
+  { key: 'title', title: '항목', sortable: true },
+  { key: 'category', title: '정보분류', sortable: true },
+  { key: 'createdAt', title: '입력일시', sortable: true, formatter: (value) => formatDate(value) },
+  {  key: 'lastUsed', title: '등록다운 활용 일시', sortable: true,
+    formatter: (value) => formatDate(value) },
+  { key: 'isReturned', title: '반납여부', sortable: true },
+  { key: 'actions', title: '수정', sortable: false }
 ]
 
 const modelList = ref<ModelItem[]>([])
@@ -134,30 +104,9 @@ const loadModelList = async (sortInfo?: { key: string; direction: 'asc' | 'desc'
     await new Promise(resolve => setTimeout(resolve, 1000)) // 로딩 시뮬레이션
     
     modelList.value = [
-      {
-        id: '1',
-        title: '건물 외벽 모델',
-        category: '건축',
-        createdAt: '2024-01-15',
-        lastUsed: '2024-07-01',
-        isReturned: true
-      },
-      {
-        id: '2',
-        title: '기계실 장비',
-        category: '기계',
-        createdAt: '2024-02-20',
-        lastUsed: null,
-        isReturned: false
-      },
-      {
-        id: '3',
-        title: '전기 배선도',
-        category: '전기',
-        createdAt: '2024-03-10',
-        lastUsed: '2024-06-15',
-        isReturned: true
-      }
+      { id: '1', title: '건물 외벽 모델', category: '건축', createdAt: '2024-01-15', lastUsed: '2024-07-01', isReturned: true },
+      { id: '2', title: '기계실 장비', category: '기계', createdAt: '2024-02-20', lastUsed: null, isReturned: false },
+      { id: '3', title: '전기 배선도', category: '전기', createdAt: '2024-03-10', lastUsed: '2024-06-15', isReturned: true }
     ]
     
     console.log('Sort info:', sortInfo)

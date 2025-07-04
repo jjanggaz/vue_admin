@@ -3,6 +3,14 @@
     <table class="data-table">
       <thead>
         <tr>
+          <th v-if="selectable" class="checkbox-cell">
+            <input 
+              type="checkbox"
+              :checked="allSelected"
+              :disabled="data.length === 0"
+              @change="toggleSelectAll" 
+            />
+          </th>
           <th 
             v-for="column in columns" 
             :key="column.key"
@@ -32,13 +40,13 @@
       </thead>
       <tbody>
         <tr v-if="loading" class="loading-row">
-          <td :colspan="columns.length" class="loading-message">
+          <td :colspan="selectable ? columns.length + 1 : columns.length" class="loading-message">
             <div class="loading-spinner"></div>
             <span>데이터를 불러오는 중...</span>
           </td>
         </tr>
         <tr v-else-if="sortedData.length === 0" class="empty-row">
-          <td :colspan="columns.length" class="empty-message">
+          <td :colspan="selectable ? columns.length + 1 : columns.length" class="empty-message">
             <slot name="empty">
               <div class="empty-state">
                 <span class="empty-icon">📂</span>
@@ -47,29 +55,37 @@
             </slot>
           </td>
         </tr>
-        <tr 
-          v-else
-          v-for="(item, index) in sortedData" 
-          :key="getRowKey(item, index)"
-          class="data-row"
-          @click="$emit('row-click', item, index)"
-        >
-          <td 
-            v-for="column in columns" 
-            :key="column.key"
-            :class="column.className"
+        <template v-else>
+          <tr 
+            v-for="(item, index) in sortedData" 
+            :key="getRowKey(item, index)"
+            :class="['data-row', { 'selected': isSelected(item) }]"
+            @click="handleRowClick(item, index)"
           >
-            <slot 
-              :name="`cell-${column.key}`" 
-              :item="item" 
-              :value="getColumnValue(item, column.key)"
-              :index="index"
-              :column="column"
+            <td v-if="selectable" class="checkbox-cell" @click.stop>
+              <input 
+                type="checkbox" 
+                :checked="isSelected(item)" 
+                @change="toggleSelectRow(item)"
+              />
+            </td>
+            <td 
+              v-for="column in columns" 
+              :key="column.key"
+              :class="column.className"
             >
-              {{ formatCellValue(item, column) }}
-            </slot>
-          </td>
-        </tr>
+              <slot 
+                :name="`cell-${column.key}`" 
+                :item="item" 
+                :value="getColumnValue(item, column.key)"
+                :index="index"
+                :column="column"
+              >
+                {{ formatCellValue(item, column) }}
+              </slot>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
   </div>
@@ -98,17 +114,70 @@ interface Props {
   loading?: boolean
   rowKey?: string
   defaultSort?: { key: string; direction: 'asc' | 'desc' }
+  selectable?: boolean
+  selectedItems?: any[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
-  rowKey: 'id'
+  rowKey: 'id',
+  selectable: false,
+  selectedItems: () => []
 })
 
 const emit = defineEmits<{
   'sort-change': [{ key: string; direction: 'asc' | 'desc' }]
   'row-click': [item: any, index: number]
+  'selection-change': [selectedItems: any[]]
 }>()
+
+// 선택 상태 관리
+const localSelected = ref<any[]>([...props.selectedItems])
+
+watch(() => props.selectedItems, (newValue) => {
+  if (JSON.stringify(newValue) !== JSON.stringify(localSelected.value)) {
+    localSelected.value = [...newValue]
+  }
+}, { deep: true })
+
+const allSelected = computed<boolean>({
+  get() {
+    return props.data.length > 0 && localSelected.value.length === props.data.length
+  },
+  set(value: boolean) {
+    const newSelected = value ? [...props.data] : []
+    localSelected.value = newSelected
+    emit('selection-change', newSelected)
+  }
+})
+
+const isSelected = (item: any): boolean => {
+  const itemKey = getRowKey(item, -1)
+  return localSelected.value.some(selected => getRowKey(selected, -1) === itemKey)
+}
+
+const toggleSelectAll = () => {
+  allSelected.value = !allSelected.value
+}
+
+const toggleSelectRow = (item: any) => {
+  const itemKey = getRowKey(item, -1)
+  const index = localSelected.value.findIndex(selected => getRowKey(selected, -1) === itemKey)
+
+  if (index > -1) {
+    localSelected.value.splice(index, 1)
+  } else {
+    localSelected.value.push(item)
+  }
+  emit('selection-change', [...localSelected.value])
+}
+
+const handleRowClick = (item: any, index: number) => {
+  if (props.selectable) {
+    toggleSelectRow(item)
+  }
+  emit('row-click', item, index)
+}
 
 // 정렬 상태 관리
 const sortConfig = ref<SortConfig>({
@@ -234,6 +303,12 @@ watch(sortConfig, (newSort) => {
     border-bottom: 1px solid $border-color;
   }
 
+  th.checkbox-cell,
+  td.checkbox-cell {
+    width: 40px;
+    text-align: center;
+  }
+
   thead {
     background-color: $background-light;
 
@@ -301,6 +376,10 @@ watch(sortConfig, (newSort) => {
     .data-row {
       transition: $transition-base;
       
+      &.selected {
+        background-color: rgba($primary-color, 0.1);
+      }
+
       &:hover {
         background-color: $background-light;
       }

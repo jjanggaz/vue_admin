@@ -147,8 +147,8 @@
             <dd>
               <select id="user-corpType" v-model="newUser.corpType">
                 <option value="">-- 선택 --</option>
-                <option value="">사내</option>
-                <option value="">사외</option>
+                <option value="사내">사내</option>
+                <option value="사외">사외</option>
               </select>
             </dd>
             <dt>권한</dt>
@@ -276,11 +276,11 @@ const loadData = async () => {
         pwd: "",
         name: "홍길동1",
         email: "..@example.com",
-        role: "관리자",
+        role: "사용자",
         createdAt: "2023-01-01",
         corpName: "업체1",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "2",
@@ -291,7 +291,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체2",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사외",
       },
       {
         id: "3",
@@ -302,7 +302,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체3",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "4",
@@ -313,7 +313,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체4",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "5",
@@ -324,7 +324,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체5",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사외",
       },
       {
         id: "6",
@@ -335,7 +335,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체6",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사외",
       },
       {
         id: "7",
@@ -346,7 +346,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체7",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사외외",
       },
       {
         id: "8",
@@ -357,7 +357,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체8",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "9",
@@ -368,7 +368,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체9",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "10",
@@ -379,7 +379,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체10",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
       {
         id: "11",
@@ -390,7 +390,7 @@ const loadData = async () => {
         createdAt: "2023-01-01",
         corpName: "업체11",
         phone: "010-1234-5678",
-        corpType: "",
+        corpType: "사내",
       },
     ];
     totalCount.value = userList.value.length;

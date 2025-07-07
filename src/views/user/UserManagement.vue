@@ -86,8 +86,15 @@
                 type="text"
                 placeholder=""
                 :disabled="isEditMode"
+                @input="resetIdChecked"
               />
-              <button class="btn-check-id" v-if="!isEditMode">중복체크</button>
+              <button
+                class="btn-check-id"
+                v-if="!isEditMode"
+                @click="handleCheckId"
+              >
+                중복체크
+              </button>
             </dd>
             <dt>비밀번호</dt>
             <dd>
@@ -102,7 +109,7 @@
             <dd>
               <input
                 id="confirm-pw"
-                v-model="newUser.pwd"
+                v-model="newUser.pwdChk"
                 type="password"
                 placeholder="비밀번호를 확인하세요"
               />
@@ -180,6 +187,7 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 interface UserItem {
   id: string;
   pwd?: string;
+  pwdChk?: string;
   name: string;
   email: string;
   role: string;
@@ -230,6 +238,7 @@ const isEditMode = ref(false);
 const newUser = ref<UserItem>({
   id: "",
   pwd: "",
+  pwdChk: "",
   name: "",
   email: "",
   role: "",
@@ -238,6 +247,10 @@ const newUser = ref<UserItem>({
   phone: "",
   corpType: "",
 });
+const isIdChecked = ref(false);
+const resetIdChecked = () => {
+  isIdChecked.value = false;
+};
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredUserList = computed(() => {
@@ -446,6 +459,7 @@ const handleRegist = () => {
   newUser.value = {
     id: "",
     pwd: "",
+    pwdChk: "",
     name: "",
     email: "",
     role: "",
@@ -454,12 +468,32 @@ const handleRegist = () => {
     phone: "",
     corpType: "",
   };
+  isIdChecked.value = false;
 };
 
 // 사용자 저장
 const saveUser = () => {
-  if (!newUser.value.name || !newUser.value.email || !newUser.value.role) {
-    alert("모든 필드를 입력하세요.");
+  if (
+    !newUser.value.id ||
+    !newUser.value.pwd ||
+    !newUser.value.pwdChk ||
+    !newUser.value.name ||
+    !newUser.value.corpName ||
+    !newUser.value.phone ||
+    !newUser.value.email ||
+    !newUser.value.corpType ||
+    !newUser.value.role
+  ) {
+    alert("모든 필드를 입력 혹은 선택 하세요.");
+    return;
+  }
+  if (!isEditMode.value && !isIdChecked.value) {
+    alert("아이디 중복체크를 해주세요.");
+    return;
+  }
+
+  if (newUser.value.pwd !== newUser.value.pwdChk) {
+    alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
     return;
   }
   if (isEditMode.value) {
@@ -483,6 +517,7 @@ const saveUser = () => {
   newUser.value = {
     id: "",
     pwd: "",
+    pwdChk: "",
     name: "",
     email: "",
     role: "",
@@ -492,6 +527,27 @@ const saveUser = () => {
     corpType: "",
   };
   isEditMode.value = false;
+  isIdChecked.value = false;
+};
+
+// 중복체크 핸들러
+const handleCheckId = () => {
+  // 실제로는 서버에 중복 체크 요청을 해야 함
+  if (!newUser.value.id) {
+    alert("아이디를 입력하세요.");
+    return;
+  }
+
+  //나중에 서버에 중복체크 요청을 해야 할 수 있음
+  const exists = userList.value.some((user) => user.id === newUser.value.id);
+
+  if (exists) {
+    alert("이미 존재하는 아이디입니다.");
+    isIdChecked.value = false;
+  } else {
+    alert("사용 가능한 아이디입니다.");
+    isIdChecked.value = true;
+  }
 };
 
 // 선택된 항목 삭제

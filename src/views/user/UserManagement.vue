@@ -71,7 +71,7 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>사용자 등록 및 수정</h3>
+          <h3>{{ isEditMode ? "사용자 수정" : "사용자 등록" }}</h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
           </button>
@@ -82,17 +82,18 @@
             <dd>
               <input
                 id="user-id"
-                v-model="newUser.name"
+                v-model="newUser.id"
                 type="text"
                 placeholder=""
+                :disabled="isEditMode"
               />
-              <button class="btn-check-id">중복체크</button>
+              <button class="btn-check-id" v-if="!isEditMode">중복체크</button>
             </dd>
             <dt>비밀번호</dt>
             <dd>
               <input
                 id="user-pw"
-                v-model="newUser.name"
+                v-model="newUser.pwd"
                 type="password"
                 placeholder="비밀번호를 입력하세요"
               />
@@ -101,7 +102,7 @@
             <dd>
               <input
                 id="confirm-pw"
-                v-model="newUser.name"
+                v-model="newUser.pwd"
                 type="password"
                 placeholder="비밀번호를 확인하세요"
               />
@@ -119,7 +120,7 @@
             <dd>
               <input
                 id="user-corp"
-                v-model="newUser.name"
+                v-model="newUser.corpName"
                 type="text"
                 placeholder="업체명을 입력하세요"
               />
@@ -128,7 +129,7 @@
             <dd>
               <input
                 id="user-phone"
-                v-model="newUser.name"
+                v-model="newUser.phone"
                 type="text"
                 placeholder="전화번호를 입력하세요"
               />
@@ -144,10 +145,10 @@
             </dd>
             <dt>사내외</dt>
             <dd>
-              <select id="user-corp" v-model="newUser.name">
+              <select id="user-corpType" v-model="newUser.corpType">
                 <option value="">-- 선택 --</option>
                 <option value="">사내</option>
-                <option value=""></option>
+                <option value="">사외</option>
               </select>
             </dd>
             <dt>권한</dt>
@@ -155,7 +156,7 @@
               <select id="user-role" v-model="newUser.role">
                 <option value="">-- 선택 --</option>
                 <option value="관리자">관리자</option>
-                <option value="사용자"></option>
+                <option value="사용자">사용자</option>
               </select>
             </dd>
           </dl>
@@ -178,12 +179,14 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
 interface UserItem {
   id: string;
+  pwd?: string;
   name: string;
   email: string;
   role: string;
   createdAt: string;
   corpName?: string;
   phone?: string;
+  corpType: string;
 }
 
 // 테이블 컬럼 설정
@@ -223,12 +226,17 @@ const searchOption = ref("");
 const searchQuery = ref("");
 const selectedItems = ref<UserItem[]>([]);
 const isRegistModalOpen = ref(false);
+const isEditMode = ref(false);
 const newUser = ref<UserItem>({
   id: "",
+  pwd: "",
   name: "",
   email: "",
   role: "",
   createdAt: "",
+  corpName: "",
+  phone: "",
+  corpType: "",
 });
 
 // --- computed로 페이징 및 필터 처리 ---
@@ -265,80 +273,124 @@ const loadData = async () => {
     userList.value = [
       {
         id: "1",
+        pwd: "",
         name: "홍길동1",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체1",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "2",
+        pwd: "",
         name: "홍길동2",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체2",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "3",
+        pwd: "",
         name: "홍길동3",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체3",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "4",
+        pwd: "",
         name: "홍길동4",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체4",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "5",
+        pwd: "",
         name: "홍길동5",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체5",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "6",
+        pwd: "",
         name: "홍길동6",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체6",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "7",
+        pwd: "",
         name: "홍길동7",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체7",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "8",
+        pwd: "",
         name: "홍길동8",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체8",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "9",
+        pwd: "",
         name: "홍길동9",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체9",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "10",
+        pwd: "",
         name: "홍길동10",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체10",
+        phone: "010-1234-5678",
+        corpType: "",
       },
       {
         id: "11",
+        pwd: "",
         name: "홍길동11",
         email: "..@example.com",
         role: "관리자",
         createdAt: "2023-01-01",
+        corpName: "업체11",
+        phone: "010-1234-5678",
+        corpType: "",
       },
     ];
     totalCount.value = userList.value.length;
@@ -390,6 +442,18 @@ const handleSearch = () => {
 // 등록 버튼 핸들러
 const handleRegist = () => {
   isRegistModalOpen.value = true;
+  isEditMode.value = false;
+  newUser.value = {
+    id: "",
+    pwd: "",
+    name: "",
+    email: "",
+    role: "",
+    createdAt: "",
+    corpName: "",
+    phone: "",
+    corpType: "",
+  };
 };
 
 // 사용자 저장
@@ -398,15 +462,36 @@ const saveUser = () => {
     alert("모든 필드를 입력하세요.");
     return;
   }
-  const nextId = (userList.value.length + 1).toString();
-  userList.value.push({
-    ...newUser.value,
-    id: nextId,
-    createdAt: new Date().toISOString(),
-  });
-  alert("사용자가 등록되었습니다.");
+  if (isEditMode.value) {
+    // 수정 모드: 기존 사용자 정보 업데이트
+    const idx = userList.value.findIndex((u) => u.id === newUser.value.id);
+    if (idx !== -1) {
+      userList.value[idx] = { ...newUser.value };
+      alert("사용자 정보가 수정되었습니다.");
+    }
+  } else {
+    // 등록 모드: 새 사용자 추가
+    const nextId = (userList.value.length + 1).toString();
+    userList.value.push({
+      ...newUser.value,
+      id: nextId,
+      createdAt: new Date().toISOString(),
+    });
+    alert("사용자가 등록되었습니다.");
+  }
   isRegistModalOpen.value = false;
-  newUser.value = { id: "", name: "", email: "", role: "", createdAt: "" }; // 폼 초기화
+  newUser.value = {
+    id: "",
+    pwd: "",
+    name: "",
+    email: "",
+    role: "",
+    createdAt: "",
+    corpName: "",
+    phone: "",
+    corpType: "",
+  };
+  isEditMode.value = false;
 };
 
 // 선택된 항목 삭제
@@ -435,8 +520,9 @@ const handleEdit = () => {
     return;
   }
   const itemToEdit = selectedItems.value[0];
-  console.log("수정할 항목:", itemToEdit);
-  alert(`'${itemToEdit.name}' 사용자를 수정합니다.`);
+  isRegistModalOpen.value = true;
+  isEditMode.value = true;
+  newUser.value = { ...itemToEdit };
 };
 </script>
 

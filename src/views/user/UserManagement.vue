@@ -6,18 +6,27 @@
         <div class="group-form">
           <label for="role" class="label-search">검색</label>
           <div class="form-item">
-            <select id="role">
-              <option value="">항목을 선택하세요.</option>
-              <option value=""></option>
-              <option value=""></option>
+            <select id="role" v-model="searchOptionInput">
+              <option value="">전체 조회</option>
+              <option value="id">아이디</option>
+              <option value="name">이름</option>
+              <option value="corpName">업체</option>
+              <option value="phone">전화번호</option>
+              <option value="email">이메일</option>
+              <option value="role">권한</option>
             </select>
           </div>
         </div>
         <div class="group-form">
           <div class="form-item">
-            <input type="text" id="search" placeholder="검색어를 입력하세요." />
+            <input
+              type="text"
+              id="search"
+              placeholder="검색어를 입력하세요."
+              v-model="searchQueryInput"
+            />
           </div>
-          <button class="btn-search">검색</button>
+          <button class="btn-search" @click="handleSearch">검색</button>
         </div>
       </div>
       <div class="btns">
@@ -54,7 +63,7 @@
     <div class="pagination-container">
       <Pagination
         :current-page="currentPage"
-        :total-pages="totalPages"
+        :total-pages="totalPagesComputed"
         @page-change="handlePageChange"
       />
     </div>
@@ -173,6 +182,8 @@ interface UserItem {
   email: string;
   role: string;
   createdAt: string;
+  corpName?: string;
+  phone?: string;
 }
 
 // 테이블 컬럼 설정
@@ -206,6 +217,9 @@ const pageSize = ref(10);
 const totalCount = ref(0);
 const sortColumn = ref<string | null>(null);
 const sortOrder = ref<"asc" | "desc" | null>(null);
+const searchOptionInput = ref("");
+const searchQueryInput = ref("");
+const searchOption = ref("");
 const searchQuery = ref("");
 const selectedItems = ref<UserItem[]>([]);
 const isRegistModalOpen = ref(false);
@@ -217,11 +231,31 @@ const newUser = ref<UserItem>({
   createdAt: "",
 });
 
+// --- computed로 페이징 및 필터 처리 ---
+const filteredUserList = computed(() => {
+  if (searchOption.value && searchQuery.value) {
+    return userList.value.filter((user) => {
+      const key = searchOption.value as keyof UserItem;
+      return (
+        user[key] &&
+        user[key]!.toString()
+          .toLowerCase()
+          .includes(searchQuery.value.toLowerCase())
+      );
+    });
+  }
+  return userList.value;
+});
+
+const totalCountComputed = computed(() => filteredUserList.value.length);
+const totalPagesComputed = computed(
+  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
+);
+
 const paginatedUserList = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
-  debugger;
-  return userList.value.slice(start, end);
+  return filteredUserList.value.slice(start, end);
 });
 
 // 데이터 로드 함수
@@ -348,8 +382,9 @@ onMounted(() => {
 
 // 검색 기능 구현
 const handleSearch = () => {
-  console.log("검색어:", searchQuery.value);
-  loadData();
+  searchOption.value = searchOptionInput.value;
+  searchQuery.value = searchQueryInput.value;
+  currentPage.value = 1;
 };
 
 // 등록 버튼 핸들러

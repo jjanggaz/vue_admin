@@ -415,7 +415,6 @@ const loadData = async () => {
 };
 
 const handleSelectionChange = (selected: UserItem[]) => {
-  console.log("selected", selected);
   selectedItems.value = selected;
 };
 

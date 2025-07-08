@@ -3,15 +3,15 @@
     <div class="login-container">
       <div class="login-header">
         <h1 class="logo">
-          <img src="/public/images/logo/logo_wai.svg" alt="">
+          <img src="/public/images/logo/logo_wai.svg" alt="" />
         </h1>
         <p class="subtitle">수처리플랜트 설계를 위한 전문시스템</p>
       </div>
-      
+
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <!-- <label for="username">사용자 ID</label> -->
-          <input 
+          <input
             id="username"
             v-model="loginForm.username"
             type="text"
@@ -19,10 +19,10 @@
             required
           />
         </div>
-        
+
         <div class="form-group">
           <!-- <label for="password">비밀번호</label> -->
-          <input 
+          <input
             id="password"
             v-model="loginForm.password"
             type="password"
@@ -32,40 +32,74 @@
         </div>
         <div class="form-options">
           <label>
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              v-model="rememberUsername"
+              @change="handleRememberUsername"
+            />
             아이디 기억하기
           </label>
           <a href="/forgot-password" class="forgot-password">비밀번호 찾기</a>
         </div>
 
-        <button type="submit" class="btn btn-primary login-btn">
-          로그인
-        </button>
+        <button type="submit" class="btn btn-primary login-btn">로그인</button>
       </form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../../stores/authStore'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../../stores/authStore";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
 // prettier-ignore
 const loginForm = ref({username: '', password: ''})
+const rememberUsername = ref(false);
+
+// 로컬 스토리지에서 저장된 아이디 불러오기
+const loadSavedUsername = () => {
+  const savedUsername = localStorage.getItem("authUserId");
+  if (savedUsername) {
+    loginForm.value.username = savedUsername;
+    rememberUsername.value = true;
+  }
+};
+
+// 아이디 기억하기 처리
+const handleRememberUsername = () => {
+  if (rememberUsername.value) {
+    localStorage.setItem("authUserId", loginForm.value.username);
+  } else {
+    localStorage.removeItem("authUserId");
+  }
+};
+
+// 컴포넌트 마운트 시 저장된 아이디 불러오기
+onMounted(() => {
+  loadSavedUsername();
+});
 
 const handleLogin = async () => {
   try {
-    await authStore.login(loginForm.value.username, loginForm.value.password)
-    router.push('/dashboard')
+    await authStore.login(loginForm.value.username, loginForm.value.password);
+
+    // 로그인 성공 시 아이디 기억하기 처리
+    if (rememberUsername.value) {
+      localStorage.setItem("rememberedUsername", loginForm.value.username);
+    } else {
+      localStorage.removeItem("rememberedUsername");
+    }
+
+    router.push("/dashboard");
   } catch (error) {
-    console.error('로그인 실패:', error)
-    alert('아이디 또는 비밀번호가 올바르지 않습니다.')
+    console.error("로그인 실패:", error);
+    alert("아이디 또는 비밀번호가 올바르지 않습니다.");
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -74,7 +108,8 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url(../../assets/images/pages/login/bg_login.jpg) no-repeat center center /cover;
+  background: url(../../assets/images/pages/login/bg_login.jpg) no-repeat center
+    center / cover;
 }
 
 .login-container {
@@ -90,7 +125,7 @@ const handleLogin = async () => {
 .login-header {
   text-align: center;
   margin: 80px 0;
-  
+
   .logo {
     font-size: $font-size-xxl;
     font-weight: $font-weight-bold;
@@ -100,12 +135,12 @@ const handleLogin = async () => {
       display: block;
       margin: 0 auto;
     }
-    
+
     .logo-sub {
       font-weight: $font-weight-normal;
     }
   }
-  
+
   .subtitle {
     margin: 0;
     font-size: $font-size-lg;
@@ -143,7 +178,8 @@ const handleLogin = async () => {
         appearance: none;
         cursor: pointer;
         &:checked {
-          background: $background-blue url(/public/images/icons/ico_check.svg) no-repeat center center;
+          background: $background-blue url(/public/images/icons/ico_check.svg)
+            no-repeat center center;
           border-color: $primary-color;
           accent-color: $background-blue;
         }
@@ -160,7 +196,7 @@ const handleLogin = async () => {
       }
     }
   }
-  
+
   .login-btn {
     width: 100%;
     height: 60px;

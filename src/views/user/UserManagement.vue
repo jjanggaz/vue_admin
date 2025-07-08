@@ -7,7 +7,7 @@
           <label for="role" class="label-search">검색</label>
           <div class="form-item">
             <select id="role" v-model="searchOptionInput">
-              <option value="">전체 조회</option>
+              <option value="">항목을 선택해주세요</option>
               <option value="id">아이디</option>
               <option value="name">이름</option>
               <option value="corpName">업체</option>
@@ -24,6 +24,7 @@
               id="search"
               placeholder="검색어를 입력하세요."
               v-model="searchQueryInput"
+              @keyup.enter="handleSearch"
             />
           </div>
           <button class="btn-search" @click="handleSearch">검색</button>
@@ -199,25 +200,23 @@ interface UserItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "아이디", label: "아이디", width: 100, sortable: true },
-  // { key: 'index', label: '번호', width: 50, sortable: true },
-  { key: "name", title: "이름", label: "이름", width: 150, sortable: true },
-  { key: "corpName", title: "업체", label: "업체", width: 150, sortable: true },
+  { key: "id", title: "아이디", width: "100px", sortable: true },
+  //{ key: 'index', label: '번호', width: "50px", sortable: true },
+  { key: "name", title: "이름", width: "150px", sortable: true },
+  { key: "corpName", title: "업체", width: "150px", sortable: true },
   {
     key: "phone",
     title: "전화번호",
-    label: "전화번호",
-    width: 150,
+    width: "150px",
     sortable: true,
   },
   {
     key: "email",
     title: "이메일",
-    label: "이메일",
-    width: 200,
+    width: "200px",
     sortable: true,
   },
-  { key: "role", title: "권한", label: "권한", width: 150, sortable: true },
+  { key: "role", title: "권한", width: "150px", sortable: true },
 ];
 
 const userList = ref<UserItem[]>([]);
@@ -416,13 +415,14 @@ const loadData = async () => {
 };
 
 const handleSelectionChange = (selected: UserItem[]) => {
+  console.log("selected", selected);
   selectedItems.value = selected;
 };
 
 // 페이지 변경 핸들러
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  loadData();
+  //loadData();
 };
 
 // 정렬 변경 핸들러
@@ -432,9 +432,8 @@ const handleSortChange = (sortInfo: {
 }) => {
   sortColumn.value = sortInfo.key;
   sortOrder.value = sortInfo.direction;
-  // 여기에 정렬 로직을 추가합니다.
-  loadData();
 };
+
 // 행 클릭 핸들러
 const handleRowClick = (item: UserItem) => {
   console.log("Row clicked:", item);
@@ -447,6 +446,8 @@ onMounted(() => {
 
 // 검색 기능 구현
 const handleSearch = () => {
+  //검색시 선택된 항목 초기화
+  selectedItems.value = [];
   searchOption.value = searchOptionInput.value;
   searchQuery.value = searchQueryInput.value;
   currentPage.value = 1;
@@ -484,7 +485,7 @@ const saveUser = () => {
     !newUser.value.corpType ||
     !newUser.value.role
   ) {
-    alert("모든 필드를 입력 혹은 선택 하세요.");
+    alert("모든 필드를 입력 혹은 선택 해주세요.");
     return;
   }
   if (!isEditMode.value && !isIdChecked.value) {

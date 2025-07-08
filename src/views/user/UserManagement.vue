@@ -586,6 +586,11 @@ const handleEdit = () => {
 .user-management {
   padding: $spacing-lg;
 }
+
+.pagination-container {
+  margin-top: 1rem;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

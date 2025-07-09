@@ -197,3 +197,47 @@ input[type="file"] {
     color: #999;
   }
 }
+
+.tabs-wrapper {
+  flex: 1;
+  position: relative;
+  padding: 0 30px;
+  overflow: hidden;
+}
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  white-space: nowrap;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.btn-scroll {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: rgba(255,255,255,0.8);
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+.btn-scroll.left {
+  left: 0;
+}
+.btn-scroll.right {
+  right: 0;
+}
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  &.active {
+    border-bottom: 2px solid #007bff;
+    color: #007bff;
+  }
+}
+.tab-content {
+  overflow: hidden;
+}

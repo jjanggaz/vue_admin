@@ -1,59 +1,97 @@
 <template>
   <div class="output-page">
-   <div class="action-bar">
-    <div class="slide-bar">
-     <div class="group-form">
+    <div class="action-bar">
+      <div class="swiper-bar">
+        <!-- 탭 리스트 -->
+        <div class="tabs-wrapper">
+          <button v-if="canScrollLeft" class="btn-scroll left" @click="scrollTabs(-1)">◀</button>
+          <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
+            <div
+              v-for="(tab, idx) in tabs"
+              :key="tab"
+              :class="['tab', { active: activeTab === idx }]"
+              @click="onTabClick(idx)"
+            >{{ tab }}</div>
+          </div>
+          <button v-if="canScrollRight" class="btn-scroll right" @click="scrollTabs(1)">▶</button>
+        </div>
+      </div>
+      <div class="group-form">
 
-      <button class="btn-regist" @click="handleRegist">신규등록</button>
-     </div>
+       <button class="btn-regist" @click="handleRegist">신규등록</button>
+      </div>
     </div>
-   </div>
 
-
-   <DataTable 
-    :columns="tableColumns"
-    :data="outputList"
-    :loading="loading"
-    @sort-change="handleSortChange"
-    @row-click="handleRowClick">
-   </DataTable>
-
-   <div class="pagination-container">
-    <Pagination 
-     :current-page="currentPage"
-     :total-pages="totalPagesComputed"
-     @page-change="handlePageChange"
-    />
-   </div>
-
-   <div v-if="isRegistModalOpen" class="modal-overlay">
-    <div class="modal-container">
-     <div class="modal-header">
-      <h3>등록</h3>
-      <button class="btn-close" @click="isRegistModalOpen = false">X</button>
-     </div>
-     <div class="modal-body">
-      <dl class="column-regist">
-       <dt class="essential">유입종류명</dt>
-       <dd>
-        <input type="text" class="form-input" placeholder="" />
-       </dd>
-       <dt>파일 업로드</dt>
-       <dd>
-        <input type="file" class="form-input" placeholder="" />
-       </dd>
-       <dt>비고</dt>
-       <dd>
-        <input type="text" class="form-input" placeholder="" />
-       </dd>
-      </dl>
-     </div>
-     <div class="modal-footer">
-      <button class="btn btn-primary" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="isRegistModalOpen = false">닫기</button>
-     </div>
+    <!-- 탭 컨텐츠: 스와이프 가능 -->
+    <div
+      class="tab-content"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+    >
+      <DataTable
+        v-if="activeTab === 0"
+        :columns="tableColumns"
+        :data="outputList"
+        :loading="loading"
+        @sort-change="handleSortChange"
+        @row-click="handleRowClick"
+      />
+      <DataTable
+        v-if="activeTab === 1"
+        :columns="tableColumns"
+        :data="outputList"
+        :loading="loading"
+        @sort-change="handleSortChange"
+        @row-click="handleRowClick"
+      />
+      <DataTable
+        v-if="activeTab === 2"
+        :columns="tableColumns"
+        :data="outputList"
+        :loading="loading"
+        @sort-change="handleSortChange"
+        @row-click="handleRowClick"
+      />
     </div>
-   </div>
+
+    <div class="pagination-container">
+     <Pagination 
+      :current-page="currentPage"
+      :total-pages="totalPagesComputed"
+      @page-change="handlePageChange"
+     />
+    </div>
+
+    <!-- 등록 모달 -->
+    <div v-if="isRegistModalOpen" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>등록</h3>
+          <button class="btn-close" @click="isRegistModalOpen = false">X</button>
+        </div>
+        <div class="modal-body">
+          <dl class="column-regist">
+            <dt class="essential">유입종류명</dt>
+            <dd>
+              <input v-model="newTypeName" type="text" class="form-input" placeholder="유입종류명을 입력하세요" />
+            </dd>
+            <dt>파일 업로드</dt>
+            <dd>
+              <input type="file" class="form-input" placeholder="" />
+            </dd>
+            <dt>비고</dt>
+            <dd>
+              <input type="text" class="form-input" placeholder="" />
+            </dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">닫기</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -95,15 +133,38 @@ const totalPages = ref(10)
 const pageSize = ref(10);
 const totalCount = ref(0);
 
-const isRegistModalOpen = ref(false);
+const isRegistModalOpen = ref(false)
+// 신규 탭 입력값
+const newTypeName = ref('')
+// 동적 탭 목록
+const tabs = ref<string[]>(['탭1', '탭2', '탭3'])
 
+const activeTab = ref(0)
+let touchStartX = 0
+let touchEndX = 0
 
 const handleSortChange = (column: string, direction: 'asc' | 'desc') => {
   console.log(`Sorting by ${column} in ${direction} order`);
   // 정렬 로직 구현
 }
 
-
+const onTabClick = (idx: number) => {
+  activeTab.value = idx
+}
+const onTouchStart = (e: TouchEvent) => {
+  touchStartX = e.changedTouches[0].clientX
+}
+const onTouchMove = (e: TouchEvent) => {
+  touchEndX = e.changedTouches[0].clientX
+}
+const onTouchEnd = () => {
+  const delta = touchEndX - touchStartX
+  if (delta > 50 && activeTab.value > 0) {
+    activeTab.value--
+  } else if (delta < -50 && activeTab.value < tabs.value.length - 1) {
+    activeTab.value++
+  }
+}
 
 const totalCountComputed = computed(() => filterOutoutList.value.length);
 const totalPagesComputed = computed(
@@ -128,12 +189,17 @@ const handleRowClick = (item: OutputItem) => {
 const handleRegist = () => {
   isRegistModalOpen.value = true;
   console.log('신규등록 버튼 클릭');
-  // 신규 등록 모달 열기
 }
 
+// 모달 저장 버튼: 새로운 탭 추가
 const handleSave = () => {
-  console.log('저장 버튼 클릭');
-  // 저장 로직 구현
+  const name = newTypeName.value.trim()
+  if (name) {
+    tabs.value.push(name)
+    newTypeName.value = ''
+    console.log('새 탭 추가:', name)
+  }
+  isRegistModalOpen.value = false
 }
 
 // 페이지 로드 시 데이터 가져오기
@@ -166,13 +232,26 @@ const pagination = {
   onPageChange: handlePageChange
 }
 
+// 탭 스크롤 참조 및 버튼 상태
+const tabsContainer = ref<HTMLElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
 
+const updateScrollButtons = () => {
+  const el = tabsContainer.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 0
+  canScrollRight.value = el.scrollWidth > el.clientWidth + el.scrollLeft
+}
 
-
-
+const scrollTabs = (dir: number) => {
+  const el = tabsContainer.value
+  if (!el) return
+  el.scrollBy({ left: dir * 120, behavior: 'smooth' })
+}
+onMounted(updateScrollButtons)
 </script>
 
 
 <style scoped lang="scss">
-
 </style>

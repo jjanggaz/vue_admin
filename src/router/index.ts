@@ -94,6 +94,15 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ['공정', 'Output']
         }
       },
+      {
+        path: 'detail/:id',
+        name: 'ProcessDetail',
+        component: () => import('@/views/process/ProcessDetail.vue'),
+        meta: {
+          title: '공정 상세',
+          breadcrumb: ['공정', '공정 상세']
+        }
+      }
     ]
   },
   {

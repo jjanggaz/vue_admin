@@ -133,6 +133,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import Pagination from '@/components/common/Pagination.vue'
 import DataTable, { type TableColumn } from '@/components/common/DataTable.vue'
 
@@ -190,8 +191,12 @@ const handleDelete = () => {
   selectedItems.value = []
 }
 
+// 상세 보기 이동
+const router = useRouter()
 const viewDetail = (item: ProcessItem) => {
-  console.log('Edit item:', item)
+  if (item.processNm) {
+    router.push({ name: 'ProcessDetail', params: { id: item.processNm } })
+  }
 }
 
 const handlePageChange = (page: number) => {
@@ -245,7 +250,7 @@ const loadProcessList = async (sortInfo?: { key: string; direction: 'asc' | 'des
     await new Promise(resolve => setTimeout(resolve, 1000)) // 로딩 시뮬레이션
     
     processList.value = [
-      { processType: '제작', processNm: '모델링', mode: '3D', processSymbol: '🔧', viewDetail: ''}
+      { processType: '제작', processNm: 'modeling1234', mode: '3D', processSymbol: '🔧', viewDetail: ''}
     ]
     
     console.log('Sort info:', sortInfo)

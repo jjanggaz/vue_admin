@@ -1,10 +1,63 @@
-
 input,
 select,
 textarea {
   outline: none;
 }
 
+dl.column-search {
+  display: grid;
+  grid-auto-rows: auto;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr) minmax(100px, 2fr));
+  gap: 10px 5px;
+  width: 100%;
+
+  >dt {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+  }
+  >dd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+
+    &.extend-all {
+      column-span: all;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="email"], 
+    input[type="password"],
+    textarea,
+    select {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid $border-form;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: $background-blue;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s, border-color 0.3s;
+
+      &:hover {
+        background-color: darken($background-light, 10%);
+        border-color: darken($border-form, 10%);
+      }
+    }
+  }
+}
 
 .criteria,
 .search-bar {

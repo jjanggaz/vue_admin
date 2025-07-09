@@ -247,7 +247,7 @@ const updateScrollButtons = () => {
 const scrollTabs = (dir: number) => {
   const el = tabsContainer.value
   if (!el) return
-  el.scrollBy({ left: dir * 120, behavior: 'smooth' })
+  el.scrollBy({ left: dir * 50, behavior: 'smooth' })
 }
 onMounted(updateScrollButtons)
 </script>

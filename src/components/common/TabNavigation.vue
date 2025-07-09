@@ -49,7 +49,15 @@ const route = useRoute()
 const isActiveTab = (tab: TabItem): boolean => {
   if (props.activeByRoute) {
     // 라우트 기반 활성 상태 체크
-    return route.name === tab.name || route.path === tab.to
+    if (route.name === tab.name || route.path === tab.to) {
+      return true
+    }
+    // 상세 페이지 같은 자식 경로일 경우, breadcrumb 첫 항목(label)과 탭 레이블 일치하면 활성
+    const breadcrumb = (route.meta as any).breadcrumb as string[] | undefined
+    if (breadcrumb && breadcrumb[0] === tab.label) {
+      return true
+    }
+    return false
   } else {
     // 수동 지정된 활성 탭 체크
     return props.activeTab === tab.name

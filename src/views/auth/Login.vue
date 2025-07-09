@@ -178,7 +178,7 @@ const handleLogin = async () => {
         appearance: none;
         cursor: pointer;
         &:checked {
-          background: $background-blue url(/public/images/icons/ico_check.svg)
+          background: $background-blue url(/process/images/icons/ico_check.svg)
             no-repeat center center;
           border-color: $primary-color;
           accent-color: $background-blue;

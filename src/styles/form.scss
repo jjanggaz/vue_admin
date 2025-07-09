@@ -6,7 +6,8 @@ textarea {
 }
 
 
-.criteria {
+.criteria,
+.search-bar {
  display: flex;
  gap: 10px;
 }
@@ -124,5 +125,75 @@ dl.column-regist {
         border-color: darken($border-form, 10%);
       }
     }
+  }
+}
+
+
+
+input[type="file"] {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  padding: 8px;
+  padding-left: 105px;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: url('../assets/images/common/ico_file.svg') no-repeat right center;
+  background-size: 16px;
+  cursor: pointer;
+  appearance: none;
+  &:hover {
+    background-color: lighten($background-light, 10%);
+  }
+  &::file-selector-button {
+    display: none;
+  }
+  &::before {
+    content: '파일 선택';
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 88px;
+    padding: 8px 16px;
+    background-color: $background-blue;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  &::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: calc(100% - 98px);
+    height: 100%;
+    border: 1px solid $border-form;
+    border-radius: $border-radius-sm;
+    margin-left: 10px;
+    color: #666;
+  }
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+  }
+  &::placeholder {
+    color: #999;
+  }
+  &::-webkit-file-upload-button {
+    display: none;
+  }
+  &::-webkit-input-placeholder {
+    color: #999;
+  }
+  &::-moz-placeholder {
+    color: #999;
+  }
+  &:-ms-input-placeholder {
+    color: #999;
   }
 }

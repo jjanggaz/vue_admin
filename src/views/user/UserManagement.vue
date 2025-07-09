@@ -2,7 +2,7 @@
   <div class="user-management">
     <!-- Add Button -->
     <div class="action-bar">
-      <div class="criteria">
+      <div class="search-bar">
         <div class="group-form">
           <label for="role" class="label-search">검색</label>
           <div class="form-item">
@@ -591,40 +591,4 @@ const handleEdit = () => {
   margin-top: 1rem;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-container {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.modal-body {
-  margin-top: 1rem;
-}
-.modal-footer {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
 </style>

@@ -18,7 +18,7 @@
           <span class="nav-text">유입종류 관리</span>
         </router-link>
         
-        <router-link to="/public" class="nav-item">
+        <router-link to="/process" class="nav-item">
           <span class="nav-icon">🏗️</span>
           <span class="nav-text">공정 관리</span>
         </router-link>

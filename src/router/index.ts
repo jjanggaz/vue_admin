@@ -4,13 +4,17 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const Dashboard = () => import('@/views/dashboard/Dashboard.vue')
 const ProjectManagement = () => import('@/views/project/ProjectManagement.vue')
 const AssetManagement = () => import('@/views/asset/AssetManagement.vue')
-const PublicManagement = () => import('@/views/public/PublicManagement.vue')
-const ModelManagement = () => import('@/views/model/ModelManagement.vue')
 const MachineList = () => import('@/views/machine/MachineList.vue')
 const UserManagement = () => import('@/views/user/UserManagement.vue')
 const Login = () => import('@/views/auth/Login.vue')
 
-// 3D 모델 관리 하위 페이지들
+
+// 공정 관리 페이지
+const ProcessManagement = () => import('@/views/process/ProcessManagement.vue')
+const Process = () => import('@/views/process/Process.vue')
+
+// 3D 모델 관리 페이지
+const ModelManagement = () => import('@/views/model/ModelManagement.vue')
 const Model3D = () => import('@/views/model/Model3D.vue')
 const Revit = () => import('@/views/model/Revit.vue')
 const Standard = () => import('@/views/model/Standard.vue')
@@ -62,14 +66,35 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/public',
-    name: 'PublicManagement',
-    component: PublicManagement,
+    path: '/process',
+    name: 'ProcessManagement',
+    component: ProcessManagement,
+    redirect: '/process/process',
     meta: {
       requiresAuth: true,
       title: '공정 관리',
-      icon: 'public'
-    }
+      icon: 'process'
+    },
+    children: [
+      {
+        path: 'process',
+        name: 'Process',
+        component: Process,
+        meta: {
+          title: '공정',
+          breadcrumb: ['공정', '공정 관리']
+        }
+      },
+      {
+        path: 'output',
+        name: 'Output',
+        component: () => import('@/views/process/Output.vue'),
+        meta: {
+          title: 'Output',
+          breadcrumb: ['공정', 'Output']
+        }
+      },
+    ]
   },
   {
     path: '/model',
@@ -88,7 +113,7 @@ const routes: RouteRecordRaw[] = [
         component: Model3D,
         meta: {
           title: '3D 모델 관리',
-          breadcrumb: ['3D모델 관리', '3D 모델 관리']
+          breadcrumb: ['3D모델 관리', '3D모델 관리']
         }
       },
       {

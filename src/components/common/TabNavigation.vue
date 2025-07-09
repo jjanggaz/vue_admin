@@ -153,7 +153,7 @@ const handleTabClick = (tab: TabItem) => {
     border-bottom-color: rgba(255, 255, 255, 0.1);
     
     .tab-item {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(56, 56, 56, 0.7);
       
       &:hover:not(.disabled) {
         color: $primary-color;

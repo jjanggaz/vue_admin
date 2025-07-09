@@ -65,6 +65,18 @@ const sectionTabs = {
       to: '/model/standard'
     }
   ],
+  process: [
+    {
+      name: 'Process',
+      label: '공정 관리',
+      to: '/process/Process'
+    },
+    {
+      name: 'Output',
+      label: '공정 출력',
+      to: '/process/output'
+    }
+  ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
   // project: [
   //   {
@@ -87,6 +99,9 @@ const currentTabs = computed<TabItem[]>(() => {
   // 3D 모델 관리 섹션인 경우
   if (currentPath.startsWith('/model')) {
     return sectionTabs.model
+  } else if (currentPath.startsWith('/process')) {
+    // 공정 관리 섹션인 경우
+    return sectionTabs.process
   }
   
   // 다른 섹션들은 탭이 없음 (단일 페이지)
@@ -101,7 +116,7 @@ const currentPageTitle = computed<string>(() => {
   if (currentPath.startsWith('/dashboard')) return '대시보드'
   if (currentPath.startsWith('/project')) return '프로젝트 관리'
   if (currentPath.startsWith('/asset')) return '유입종류 관리'
-  if (currentPath.startsWith('/public')) return '공정 관리'
+  if (currentPath.startsWith('/process')) return '공정 관리'
   if (currentPath.startsWith('/model')) return '3D모델 관리' // 하위 탭이 있는 경우에도 상위 제목 유지
   if (currentPath.startsWith('/machine')) return '기기리스트 관리'
   if (currentPath.startsWith('/user')) return '사용자 관리'

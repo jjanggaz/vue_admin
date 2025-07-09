@@ -1,6 +1,6 @@
 <template>
-  <div class="public-management">
-    <p>공정 관리 페이지입니다.</p>
+  <div class="process-page">
+
   </div>
 </template>
 
@@ -8,7 +8,8 @@
 </script>
 
 <style scoped lang="scss">
-.public-management {
+.public-management-layout {
+  height: 100%;
   padding: $spacing-lg;
 }
 </style>

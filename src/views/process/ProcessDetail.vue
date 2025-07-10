@@ -72,7 +72,7 @@
       
       <div class="action-bar" style="justify-content: flex-end;">
         <div class="btns">
-          <button class="btn btn-primary btn-regist">
+          <button class="btn btn-primary btn-regist" @click="openPidModal">
             P&ID 추가
           </button>
           <button class="btn btn-primary btn-delete">
@@ -157,7 +157,7 @@
       <!-- PDF 탭 -->
       <div class="action-bar" style="justify-content: flex-end;">
         <div class="btns">
-          <button class="btn btn-primary btn-add">
+          <button class="btn btn-primary btn-add" @click="openPdfModal">
             추가
           </button>
           <button class="btn btn-primary btn-delete">
@@ -187,7 +187,7 @@
       <!-- 전기도면 탭 -->
       <div class="action-bar" style="justify-content: flex-end;">
         <div class="btns">
-          <button class="btn btn-primary btn-add">
+          <button class="btn btn-primary btn-add" @click="openElectricModal">
             추가
           </button>
           <button class="btn btn-primary btn-delete">
@@ -217,7 +217,7 @@
       <!-- Mcc 구성도 탭 -->
       <div class="action-bar" style="justify-content: flex-end;">
         <div class="btns">
-          <button class="btn btn-primary btn-add">
+          <button class="btn btn-primary btn-add" @click="openMccModal">
             추가
           </button>
           <button class="btn btn-primary btn-delete">
@@ -241,6 +241,76 @@
           :total-pages="totalPagesMcc"
           @page-change="handlePageChangeMcc"
         />
+      </div>
+    </div>
+  </div>
+
+  <!-- P&ID 파일 첨부 모달 -->
+  <div v-if="showPidModal" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>P&ID 파일 첨부</h3>
+        <button class="btn-close" @click="closePidModal">X</button>
+      </div>
+      <div class="modal-body">
+        <dl class="column-regist">
+          <dt class="essential">P&ID 파일</dt>
+          <dd>
+            <input type="file" multiple @change="handlePidFilesSelected" />
+          </dd>
+        </dl>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" @click="uploadPidFiles">업로드</button>
+        <button class="btn" @click="closePidModal">취소</button>
+      </div>
+    </div>
+  </div>
+  <!-- PDF 파일 첨부 모달 -->
+  <div v-if="showPdfModal" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>PDF 파일 첨부</h3>
+        <button class="btn-close" @click="closePdfModal">X</button>
+      </div>
+      <div class="modal-body">
+        <input type="file" multiple @change="handlePdfFilesSelected" />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" @click="uploadPdfFiles">업로드</button>
+        <button class="btn" @click="closePdfModal">취소</button>
+      </div>
+    </div>
+  </div>
+  <!-- Electric 파일 첨부 모달 -->
+  <div v-if="showElectricModal" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>전기도면 파일 첨부</h3>
+        <button class="btn-close" @click="closeElectricModal">X</button>
+      </div>
+      <div class="modal-body">
+        <input type="file" multiple @change="handleElectricFilesSelected" />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" @click="uploadElectricFiles">업로드</button>
+        <button class="btn" @click="closeElectricModal">취소</button>
+      </div>
+    </div>
+  </div>
+  <!-- Mcc 구성도 파일 첨부 모달 -->
+  <div v-if="showMccModal" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Mcc 구성도 파일 첨부</h3>
+        <button class="btn-close" @click="closeMccModal">X</button>
+      </div>
+      <div class="modal-body">
+        <input type="file" multiple @change="handleMccFilesSelected" />
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" @click="uploadMccFiles">업로드</button>
+        <button class="btn" @click="closeMccModal">취소</button>
       </div>
     </div>
   </div>
@@ -463,6 +533,56 @@ const currentPageMcc = ref(1)
 const totalPagesMcc = computed(() => Math.ceil(mccList.value.length / pageSize.value) || 1)
 const pagedMccList = computed(() => mccList.value.slice((currentPageMcc.value - 1) * pageSize.value, currentPageMcc.value * pageSize.value))
 const handlePageChangeMcc = (page: number) => { currentPageMcc.value = page }
+
+// Modal state for P&ID file upload
+const showPidModal = ref(false)
+const selectedPidFiles = ref<File[]>([])
+const openPidModal = () => { showPidModal.value = true }
+const closePidModal = () => { showPidModal.value = false; selectedPidFiles.value = [] }
+const handlePidFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files
+  selectedPidFiles.value = files ? Array.from(files) : []
+  console.log('선택된 P&ID 파일:', selectedPidFiles.value)
+}
+const uploadPidFiles = () => {
+  // TODO: implement actual upload
+  console.log('업로드 실행:', selectedPidFiles.value)
+  closePidModal()
+}
+
+// Modal state for PDF, Electric, and Mcc file upload
+const showPdfModal = ref(false)
+const selectedPdfFiles = ref<File[]>([])
+const openPdfModal = () => { showPdfModal.value = true }
+const closePdfModal = () => { showPdfModal.value = false; selectedPdfFiles.value = [] }
+const handlePdfFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files
+  selectedPdfFiles.value = files ? Array.from(files) : []
+  console.log('선택된 PDF 파일:', selectedPdfFiles.value)
+}
+const uploadPdfFiles = () => { console.log('PDF 업로드 실행:', selectedPdfFiles.value); closePdfModal() }
+
+const showElectricModal = ref(false)
+const selectedElectricFiles = ref<File[]>([])
+const openElectricModal = () => { showElectricModal.value = true }
+const closeElectricModal = () => { showElectricModal.value = false; selectedElectricFiles.value = [] }
+const handleElectricFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files
+  selectedElectricFiles.value = files ? Array.from(files) : []
+  console.log('선택된 전기도면 파일:', selectedElectricFiles.value)
+}
+const uploadElectricFiles = () => { console.log('전기도면 업로드 실행:', selectedElectricFiles.value); closeElectricModal() }
+
+const showMccModal = ref(false)
+const selectedMccFiles = ref<File[]>([])
+const openMccModal = () => { showMccModal.value = true }
+const closeMccModal = () => { showMccModal.value = false; selectedMccFiles.value = [] }
+const handleMccFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files
+  selectedMccFiles.value = files ? Array.from(files) : []
+  console.log('선택된 Mcc 구성도 파일:', selectedMccFiles.value)
+}
+const uploadMccFiles = () => { console.log('Mcc 업로드 실행:', selectedMccFiles.value); closeMccModal() }
 </script>
 
 <style scoped lang="scss">
@@ -470,4 +590,13 @@ const handlePageChangeMcc = (page: number) => { currentPageMcc.value = page }
   height: 100%;
   padding: $spacing-lg;
 }
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+}
+.modal-window {
+  background: #fff; padding: 20px; border-radius: 4px; width: 400px;
+}
+.modal-buttons { margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; }
 </style>

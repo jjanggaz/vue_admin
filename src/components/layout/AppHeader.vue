@@ -55,7 +55,7 @@ const sectionTabs = {
   ],
   process: [
     { name: 'Process', label: '공정 관리', to: '/process/Process' },
-    { name: 'Output', label: '공정 출력', to: '/process/output' }
+    // { name: 'Output', label: '공정 출력', to: '/process/output' }
   ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
   // project: [

@@ -49,33 +49,13 @@ const handleLogout = () => {
 // 각 섹션별 탭들 정의
 const sectionTabs = {
   model: [
-    {
-      name: 'Model3D',
-      label: '3D 모델 관리',
-      to: '/model/3d'
-    },
-    {
-      name: 'RevitManagement',
-      label: 'Revit 관리',
-      to: '/model/revit'
-    },
-    {
-      name: 'StandardManagement',
-      label: '표준배치 관리',
-      to: '/model/standard'
-    }
+    { name: 'Model3D', label: '3D 모델 관리', to: '/model/3d' },
+    { name: 'RevitManagement', label: 'Revit 관리', to: '/model/revit' },
+    { name: 'StandardManagement', label: '표준배치 관리', to: '/model/standard' }
   ],
   process: [
-    {
-      name: 'Process',
-      label: '공정 관리',
-      to: '/process/Process'
-    },
-    {
-      name: 'Output',
-      label: '공정 출력',
-      to: '/process/output'
-    }
+    { name: 'Process', label: '공정 관리', to: '/process/Process' },
+    { name: 'Output', label: '공정 출력', to: '/process/output' }
   ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
   // project: [

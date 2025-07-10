@@ -7,23 +7,37 @@ textarea {
 dl.column-search {
   display: grid;
   grid-auto-rows: auto;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr) minmax(100px, 2fr));
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr) minmax(200px, 3fr));
   gap: 10px 5px;
   width: 100%;
+
+  /* flow items by row so dt and dd pair correctly */
+  grid-auto-flow: row;
 
   >dt {
     display: flex;
     align-items: center;
     font-weight: bold;
+
+    // &:nth-child(3n+1) {
+    //   grid-column: 1;
+    // }
+    // &:nth-child(3n+3) {
+    //   grid-column: 3;
+    // }
+    &:has(+ dd.extend-all) {
+      grid-column: 1;
+    }
   }
   >dd {
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 200px;
+    /* allow dd to shrink and respect grid cell */
+    width: auto;
 
     &.extend-all {
-      column-span: all;
+      grid-column: 2 / -1;
     }
 
     input[type="text"],
@@ -291,6 +305,6 @@ input[type="file"] {
     color: #007bff;
   }
 }
-.tab-content {
+.tab-contents {
   overflow: hidden;
 }

@@ -24,7 +24,7 @@
 
     <!-- 탭 컨텐츠: 스와이프 가능 -->
     <div
-      class="tab-content"
+      class="tab-contents"
       @touchstart="onTouchStart"
       @touchmove="onTouchMove"
       @touchend="onTouchEnd"

@@ -85,7 +85,7 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">공정구분 *</dt>
+            <dt class="essential">공정구분</dt>
             <dd>
               <select
                 v-model="registForm.processType"
@@ -100,7 +100,7 @@
                 <option value="검사">검사</option>
               </select>
             </dd>
-            <dt class="essential">공정명 *</dt>
+            <dt class="essential">공정명</dt>
             <dd>
               <select
                 v-model="registForm.processNm"
@@ -134,7 +134,7 @@
                 placeholder="모드를 입력하세요"
               />
             </dd>
-            <dt class="essential">공정심볼 *</dt>
+            <dt class="essential">공정심볼</dt>
             <dd>
               <input
                 type="file"
@@ -142,7 +142,7 @@
                 accept="image/*,.svg"
               />
             </dd>
-            <dt class="essential">계산식 *</dt>
+            <dt class="essential">계산식</dt>
             <dd>
               <input
                 type="file"
@@ -150,7 +150,31 @@
                 accept=".xlsx,.xls,.csv"
               />
             </dd>
-            <dt class="essential">P&ID *</dt>
+            <dt>PDF</dt>
+            <dd>
+              <input
+                type="file"
+                @change="handleFileChange('pdfFile', $event)"
+                accept=".pdf"
+              />
+            </dd>
+            <dt>전기도면</dt>
+            <dd>
+              <input
+                type="file"
+                @change="handleFileChange('electricFile', $event)"
+                accept=".dwg,.dxf"
+              />
+            </dd>
+            <dt>Mcc구성도</dt>
+            <dd>
+              <input
+                type="file"
+                @change="handleFileChange('mccFile', $event)"
+                accept=".dwg,.dxf"
+              />
+            </dd>
+            <dt class="essential">P&ID</dt>
             <dd>
               <input
                 type="file"
@@ -158,7 +182,7 @@
                 accept=".dwg,.dxf"
               />
             </dd>
-            <dt class="essential">Excel *</dt>
+            <dt class="essential">매핑테이블 Excel</dt>
             <dd>
               <input
                 type="file"
@@ -166,7 +190,7 @@
                 accept=".xlsx,.xls"
               />
             </dd>
-            <dt>P&ID 정보개요</dt>
+            <!-- <dt>P&ID 정보개요</dt>
             <dd>
               <input
                 type="text"
@@ -174,7 +198,7 @@
                 class="form-input"
                 placeholder="P&ID 정보개요를 입력하세요"
               />
-            </dd>
+            </dd> -->
             <dt>정합성 체크</dt>
             <dd>
               <label for="consistencyCheck">

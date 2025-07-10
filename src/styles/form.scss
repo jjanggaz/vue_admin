@@ -154,6 +154,13 @@ dl.column-regist {
   dt {
     font-weight: bold;
     margin-bottom: 8px;
+    &.essential {
+      &:after {
+        content: '*';
+        color: red;
+        margin-left: 4px;
+      }
+    }
   }
   
   dd {

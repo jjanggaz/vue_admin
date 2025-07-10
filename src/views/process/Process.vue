@@ -209,9 +209,25 @@ const handleSave = () => {
 };
 
 const handleDelete = () => {
-  console.log("선택 삭제 버튼 클릭", selectedItems.value);
-  // 선택된 항목 삭제 로직 구현
-  selectedItems.value = [];
+  if (selectedItems.value.length === 0) {
+    alert("삭제할 항목을 선택하세요.");
+    return;
+  }
+  if (
+    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+  ) {
+    console.log("삭제할 항목:", selectedItems.value);
+    const selectedProcessNms = selectedItems.value.map(
+      (item) => item.processNm
+    );
+    processList.value = processList.value.filter(
+      (item) => !selectedProcessNms.includes(item.processNm)
+    );
+    totalCount.value = processList.value.length;
+    totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+    selectedItems.value = [];
+    alert("삭제되었습니다.");
+  }
 };
 
 // 상세 보기 이동

@@ -56,7 +56,7 @@
       :loading="loading"
       :selectable="true"
       :selected-items="selectedItems"
-      row-key="processNm"
+      row-key="id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
@@ -81,52 +81,96 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>공정 등록</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-            ×
-          </button>
+          <button class="btn-close" @click="closeRegistModal">×</button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">공정구분</dt>
+            <dt class="essential">공정구분 *</dt>
             <dd>
-              <select name="" id="">
+              <select
+                v-model="registForm.processType"
+                class="form-select"
+                required
+              >
                 <option value="">선택</option>
+                <option value="제작">제작</option>
+                <option value="설계">설계</option>
+                <option value="검토">검토</option>
+                <option value="조립">조립</option>
+                <option value="검사">검사</option>
               </select>
             </dd>
-            <dt class="essential">공정명</dt>
+            <dt class="essential">공정명 *</dt>
             <dd>
-              <select name="" id="">
+              <select
+                v-model="registForm.processNm"
+                class="form-select"
+                required
+              >
                 <option value="">선택</option>
+                <option value="3D 모델링">3D 모델링</option>
+                <option value="CAD 도면">CAD 도면</option>
+                <option value="품질 검사">품질 검사</option>
+                <option value="용접 작업">용접 작업</option>
+                <option value="구조 분석">구조 분석</option>
+                <option value="안전 검토">안전 검토</option>
+                <option value="조립 작업">조립 작업</option>
+                <option value="배관 설계">배관 설계</option>
+                <option value="기술 검토">기술 검토</option>
+                <option value="도장 작업">도장 작업</option>
+                <option value="전기 설계">전기 설계</option>
+                <option value="시스템 통합">시스템 통합</option>
+                <option value="테스트 검증">테스트 검증</option>
+                <option value="설치 작업">설치 작업</option>
+                <option value="운영 매뉴얼">운영 매뉴얼</option>
               </select>
             </dd>
             <dt>모드</dt>
             <dd>
               <input
                 type="text"
+                v-model="registForm.mode"
                 class="form-input"
                 placeholder="모드를 입력하세요"
               />
             </dd>
-            <dt class="essential">공정심볼파일</dt>
+            <dt class="essential">공정심볼 *</dt>
             <dd>
-              <input type="file" name="" id="" />
+              <input
+                type="file"
+                @change="handleFileChange('processSymbolFile', $event)"
+                accept="image/*,.svg"
+              />
             </dd>
-            <dt class="essential">계산식 파일</dt>
+            <dt class="essential">계산식 *</dt>
             <dd>
-              <input type="file" name="" id="" />
+              <input
+                type="file"
+                @change="handleFileChange('calculationFile', $event)"
+                accept=".xlsx,.xls,.csv"
+              />
             </dd>
-            <dt class="essential">P&ID</dt>
+            <dt class="essential">P&ID *</dt>
             <dd>
-              <input type="file" name="" id="" accept=".dwg" />
+              <input
+                type="file"
+                @change="handleFileChange('pidFile', $event)"
+                accept=".dwg,.dxf"
+              />
             </dd>
-            <dt class="essential">Excel</dt>
+            <dt class="essential">Excel *</dt>
             <dd>
-              <input type="file" name="" id="" accept=".xlsx, .xls" />
+              <input
+                type="file"
+                @change="handleFileChange('excelFile', $event)"
+                accept=".xlsx,.xls"
+              />
             </dd>
             <dt>P&ID 정보개요</dt>
             <dd>
               <input
                 type="text"
+                v-model="registForm.pidInfo"
                 class="form-input"
                 placeholder="P&ID 정보개요를 입력하세요"
               />
@@ -134,17 +178,27 @@
             <dt>정합성 체크</dt>
             <dd>
               <label for="consistencyCheck">
-                <input type="checkbox" id="consistencyCheck" />
+                <input
+                  type="checkbox"
+                  id="consistencyCheck"
+                  v-model="registForm.consistencyCheck"
+                />
                 정합성 체크를 수행합니다.
               </label>
             </dd>
           </dl>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
+          <button class="btn btn-secondary" @click="closeRegistModal">
             취소
           </button>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
+          <button
+            class="btn btn-primary"
+            @click="handleSave"
+            :disabled="!isFormValid"
+          >
+            저장
+          </button>
         </div>
       </div>
     </div>
@@ -158,11 +212,25 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
 interface ProcessItem {
+  id: string;
   processType: string;
   processNm: string;
   mode: string;
   processSymbol: string;
   viewDetail: string | null;
+}
+
+interface RegistForm {
+  processType: string;
+  processNm: string;
+  mode: string;
+  processSymbol: string;
+  pidInfo: string;
+  consistencyCheck: boolean;
+  processSymbolFile: File | null;
+  calculationFile: File | null;
+  pidFile: File | null;
+  excelFile: File | null;
 }
 
 // 테이블 컬럼 설정
@@ -194,6 +262,28 @@ const searchOption = ref("");
 const searchQuery = ref("");
 const isRegistModalOpen = ref(false);
 
+// 등록 폼 데이터
+const registForm = ref<RegistForm>({
+  processType: "",
+  processNm: "",
+  mode: "",
+  processSymbol: "",
+  pidInfo: "",
+  consistencyCheck: false,
+  processSymbolFile: null,
+  calculationFile: null,
+  pidFile: null,
+  excelFile: null,
+});
+
+// 폼 유효성 검사
+const isFormValid = computed(() => {
+  return (
+    registForm.value.processType.trim() !== "" &&
+    registForm.value.processNm.trim() !== ""
+  );
+});
+
 const formatDate = (date: string | null) => {
   if (!date) return "-";
   return new Date(date).toLocaleDateString("ko-KR");
@@ -203,11 +293,76 @@ const handleRegist = () => {
   isRegistModalOpen.value = true;
 };
 
-const handleSave = () => {
-  console.log("저장 버튼 클릭");
-  // 저장 로직 구현
+const closeRegistModal = () => {
   isRegistModalOpen.value = false;
-  loadProcessList();
+  // 폼 초기화
+  registForm.value = {
+    processType: "",
+    processNm: "",
+    mode: "",
+    processSymbol: "",
+    pidInfo: "",
+    consistencyCheck: false,
+    processSymbolFile: null,
+    calculationFile: null,
+    pidFile: null,
+    excelFile: null,
+  };
+};
+
+const handleFileChange = (field: keyof RegistForm, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    (registForm.value as any)[field] = target.files[0];
+  }
+};
+
+const handleSave = async () => {
+  try {
+    // 정합성 체크
+    if (registForm.value.consistencyCheck) {
+      // 정합성 체크 로직
+      alert("정합성 체크 로직 구현해야함");
+      return;
+    }
+
+    // 새 공정 데이터 생성
+    const newProcess: ProcessItem = {
+      id: `process_${Date.now()}`, // 고유 ID 생성
+      processType: registForm.value.processType,
+      processNm: registForm.value.processNm,
+      mode: registForm.value.mode,
+      processSymbol: registForm.value.processSymbolFile
+        ? registForm.value.processSymbolFile.name
+        : "📄",
+      viewDetail: "",
+    };
+
+    // 실제 API 호출 대신 로컬 데이터에 추가
+    processList.value.unshift(newProcess); // 맨 앞에 추가
+    totalCount.value = processList.value.length;
+    totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+
+    // 파일 업로드 처리 (실제로는 서버에 업로드)
+    if (registForm.value.processSymbolFile) {
+      console.log("공정심볼 파일:", registForm.value.processSymbolFile.name);
+    }
+    if (registForm.value.calculationFile) {
+      console.log("계산식 파일:", registForm.value.calculationFile.name);
+    }
+    if (registForm.value.pidFile) {
+      console.log("P&ID 파일:", registForm.value.pidFile.name);
+    }
+    if (registForm.value.excelFile) {
+      console.log("Excel 파일:", registForm.value.excelFile.name);
+    }
+
+    alert("공정이 성공적으로 등록되었습니다.");
+    closeRegistModal();
+  } catch (error) {
+    console.error("등록 실패:", error);
+    alert("등록 중 오류가 발생했습니다.");
+  }
 };
 
 const handleDelete = () => {
@@ -297,6 +452,7 @@ const loadProcessList = async (sortInfo?: {
 
     processList.value = [
       {
+        id: "1",
         processType: "제작",
         processNm: "3D 모델링",
         mode: "3D",
@@ -304,6 +460,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "2",
         processType: "설계",
         processNm: "CAD 도면",
         mode: "2D",
@@ -311,6 +468,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "3",
         processType: "검토",
         processNm: "품질 검사",
         mode: "검사",
@@ -318,6 +476,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "4",
         processType: "제작",
         processNm: "용접 작업",
         mode: "용접",
@@ -325,6 +484,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "5",
         processType: "설계",
         processNm: "구조 분석",
         mode: "분석",
@@ -332,6 +492,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "6",
         processType: "검토",
         processNm: "안전 검토",
         mode: "검토",
@@ -339,6 +500,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "7",
         processType: "제작",
         processNm: "조립 작업",
         mode: "조립",
@@ -346,6 +508,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "8",
         processType: "설계",
         processNm: "배관 설계",
         mode: "2D",
@@ -353,6 +516,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "9",
         processType: "검토",
         processNm: "기술 검토",
         mode: "검토",
@@ -360,6 +524,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "10",
         processType: "제작",
         processNm: "도장 작업",
         mode: "도장",
@@ -367,6 +532,7 @@ const loadProcessList = async (sortInfo?: {
         viewDetail: "",
       },
       {
+        id: "11",
         processType: "설계",
         processNm: "전기 설계",
         mode: "2D",

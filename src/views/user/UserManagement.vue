@@ -421,6 +421,7 @@ const handleSelectionChange = (selected: UserItem[]) => {
 // 페이지 변경 핸들러
 const handlePageChange = (page: number) => {
   currentPage.value = page;
+  selectedItems.value = [];
   //loadData();
 };
 
@@ -590,5 +591,4 @@ const handleEdit = () => {
 .pagination-container {
   margin-top: 1rem;
 }
-
 </style>

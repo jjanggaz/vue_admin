@@ -335,7 +335,7 @@ const handleSelectionChange = (selected: CodeItem[]) => {
 // 페이지 변경 핸들러
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  //loadData();
+  selectedItems.value = [];
 };
 
 // 정렬 변경 핸들러

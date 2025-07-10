@@ -1,188 +1,202 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from "vue-router";
 
 // 페이지 컴포넌트들을 lazy loading으로 import
-const Dashboard = () => import('@/views/dashboard/Dashboard.vue')
-const ProjectManagement = () => import('@/views/project/ProjectManagement.vue')
-const AssetManagement = () => import('@/views/asset/AssetManagement.vue')
-const MachineList = () => import('@/views/machine/MachineList.vue')
-const UserManagement = () => import('@/views/user/UserManagement.vue')
-const Login = () => import('@/views/auth/Login.vue')
-
+const Dashboard = () => import("@/views/dashboard/Dashboard.vue");
+const ProjectManagement = () => import("@/views/project/ProjectManagement.vue");
+const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
+const MachineList = () => import("@/views/machine/MachineList.vue");
+const UserManagement = () => import("@/views/user/UserManagement.vue");
+const CodeManagement = () => import("@/views/code/CodeManagement.vue");
+const Login = () => import("@/views/auth/Login.vue");
 
 // 공정 관리 페이지
-const ProcessManagement = () => import('@/views/process/ProcessManagement.vue')
-const Process = () => import('@/views/process/Process.vue')
+const ProcessManagement = () => import("@/views/process/ProcessManagement.vue");
+const Process = () => import("@/views/process/Process.vue");
 
 // 3D 모델 관리 페이지
-const ModelManagement = () => import('@/views/model/ModelManagement.vue')
-const Model3D = () => import('@/views/model/Model3D.vue')
-const Revit = () => import('@/views/model/Revit.vue')
-const Standard = () => import('@/views/model/Standard.vue')
+const ModelManagement = () => import("@/views/model/ModelManagement.vue");
+const Model3D = () => import("@/views/model/Model3D.vue");
+const Revit = () => import("@/views/model/Revit.vue");
+const Standard = () => import("@/views/model/Standard.vue");
 
 import { useAuthStore } from "../stores/authStore";
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/login',
-    name: 'Login',
+    path: "/login",
+    name: "Login",
     component: Login,
     meta: {
       requiresAuth: false,
-      layout: 'blank'
-    }
+      layout: "blank",
+    },
   },
   {
-    path: '/',
-    redirect: '/dashboard'
+    path: "/",
+    redirect: "/dashboard",
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
+    path: "/dashboard",
+    name: "Dashboard",
     component: Dashboard,
     meta: {
       requiresAuth: true,
-      title: '대시보드',
-      icon: 'dashboard'
-    }
+      title: "대시보드",
+      icon: "dashboard",
+    },
   },
   {
-    path: '/project',
-    name: 'ProjectManagement',
+    path: "/project",
+    name: "ProjectManagement",
     component: ProjectManagement,
     meta: {
       requiresAuth: true,
-      title: '프로젝트 관리',
-      icon: 'project'
-    }
+      title: "프로젝트 관리",
+      icon: "project",
+    },
   },
   {
-    path: '/asset',
-    name: 'AssetManagement',
+    path: "/asset",
+    name: "AssetManagement",
     component: AssetManagement,
     meta: {
       requiresAuth: true,
-      title: '유일충류 관리',
-      icon: 'asset'
-    }
+      title: "유일충류 관리",
+      icon: "asset",
+    },
   },
   {
-    path: '/process',
-    name: 'ProcessManagement',
+    path: "/process",
+    name: "ProcessManagement",
     component: ProcessManagement,
-    redirect: '/process/process',
+    redirect: "/process/process",
     meta: {
       requiresAuth: true,
-      title: '공정 관리',
-      icon: 'process'
+      title: "공정 관리",
+      icon: "process",
     },
     children: [
       {
-        path: 'process',
-        name: 'Process',
+        path: "process",
+        name: "Process",
         component: Process,
         meta: {
-          title: '공정',
-          breadcrumb: ['공정', '공정 관리']
-        }
+          title: "공정",
+          breadcrumb: ["공정", "공정 관리"],
+        },
       },
       {
-        path: 'output',
-        name: 'Output',
-        component: () => import('@/views/process/Output.vue'),
+        path: "output",
+        name: "Output",
+        component: () => import("@/views/process/Output.vue"),
         meta: {
-          title: 'Output',
-          breadcrumb: ['공정', 'Output']
-        }
+          title: "Output",
+          breadcrumb: ["공정", "Output"],
+        },
       },
       {
-        path: 'detail/:id',
-        name: 'ProcessDetail',
-        component: () => import('@/views/process/ProcessDetail.vue'),
+        path: "detail/:id",
+        name: "ProcessDetail",
+        component: () => import("@/views/process/ProcessDetail.vue"),
         meta: {
-          title: '공정 상세',
-          breadcrumb: ['공정', '공정 상세']
-        }
-      }
-    ]
+          title: "공정 상세",
+          breadcrumb: ["공정", "공정 상세"],
+        },
+      },
+    ],
   },
   {
-    path: '/model',
-    name: 'ModelManagement',
+    path: "/model",
+    name: "ModelManagement",
     component: ModelManagement,
-    redirect: '/model/3d',
+    redirect: "/model/3d",
     meta: {
       requiresAuth: true,
-      title: '3D모델 관리',
-      icon: 'model'
+      title: "3D모델 관리",
+      icon: "model",
     },
     children: [
       {
-        path: '3d',
-        name: 'Model3D',
+        path: "3d",
+        name: "Model3D",
         component: Model3D,
         meta: {
-          title: '3D 모델 관리',
-          breadcrumb: ['3D모델 관리', '3D모델 관리']
-        }
+          title: "3D 모델 관리",
+          breadcrumb: ["3D모델 관리", "3D모델 관리"],
+        },
       },
       {
-        path: 'revit',
-        name: 'Revit',
+        path: "revit",
+        name: "Revit",
         component: Revit,
         meta: {
-          title: 'Revit 관리',
-          breadcrumb: ['3D모델 관리', 'Revit 관리']
-        }
+          title: "Revit 관리",
+          breadcrumb: ["3D모델 관리", "Revit 관리"],
+        },
       },
       {
-        path: 'standard',
-        name: 'Standard',
+        path: "standard",
+        name: "Standard",
         component: Standard,
         meta: {
-          title: '표준배치 관리',
-          breadcrumb: ['3D모델 관리', '표준배치 관리']
-        }
-      }
-    ]
+          title: "표준배치 관리",
+          breadcrumb: ["3D모델 관리", "표준배치 관리"],
+        },
+      },
+    ],
   },
   {
-    path: '/machine',
-    name: 'MachineList',
+    path: "/machine",
+    name: "MachineList",
     component: MachineList,
     meta: {
       requiresAuth: true,
-      title: '기기리스트 관리',
-      icon: 'machine'
-    }
+      title: "기기리스트 관리",
+      icon: "machine",
+    },
   },
   {
-    path: '/user',
-    name: 'UserManagement',
+    path: "/user",
+    name: "UserManagement",
     component: UserManagement,
     meta: {
       requiresAuth: true,
-      title: '사용자 관리',
-      icon: 'user'
-    }
+      title: "사용자 관리",
+      icon: "user",
+    },
   },
   {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('@/views/error/NotFound.vue')
-  }
-]
+    path: "/code",
+    name: "CodeManagement",
+    component: CodeManagement,
+    meta: {
+      requiresAuth: true,
+      title: "코드 관리",
+      icon: "code",
+    },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/error/NotFound.vue"),
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) {
-      return savedPosition
+      return savedPosition;
     } else {
-      return { top: 0 }
+      return { top: 0 };
     }
-  }
-})
+  },
+});
 
 // 네비게이션 가드
 router.beforeEach((to, _from, next) => {
@@ -234,7 +248,7 @@ router.beforeEach((to, _from, next) => {
   // ✅ 문제 없으면 통과
   next();
 
-  // const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'  
+  // const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
   // if (to.meta.requiresAuth && !isAuthenticated) {
   //   next('/login')
   // } else if (to.name === 'Login' && isAuthenticated) {
@@ -242,15 +256,15 @@ router.beforeEach((to, _from, next) => {
   // } else {
   //   next()
   // }
-})
+});
 
 // 페이지 타이틀 설정
 router.afterEach((to) => {
   if (to.meta.title) {
-    document.title = `${to.meta.title} - WAI DESIGN`
+    document.title = `${to.meta.title} - WAI DESIGN`;
   } else {
-    document.title = 'WAI DESIGN'
+    document.title = "WAI DESIGN";
   }
-})
+});
 
-export default router
+export default router;

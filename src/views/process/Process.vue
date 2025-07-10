@@ -49,12 +49,14 @@
     </div>
 
     <!-- Data Table -->
+    <!-- DataTable row-key가 default로 id로 설정돼있어서 추가 수정함함 -->
     <DataTable
       :columns="tableColumns"
       :data="paginatedProcessList"
       :loading="loading"
       :selectable="true"
       :selected-items="selectedItems"
+      row-key="processNm"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"

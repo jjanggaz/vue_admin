@@ -93,6 +93,15 @@ const routes: RouteRecordRaw[] = [
           breadcrumb: ["프로젝트 관리", "항목관리"],
         },
       },
+      {
+        path: "detail/:id",
+        name: "ProjectDetail",
+        component: () => import("@/views/project/ProjectDetail.vue"),
+        meta: {
+          title: "프로젝트 상세",
+          breadcrumb: ["프로젝트 관리", "프로젝트 상세"],
+        },
+      },
     ],
   },
   {

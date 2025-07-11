@@ -32,11 +32,7 @@
         </div>
         <div class="form-options">
           <label>
-            <input
-              type="checkbox"
-              v-model="rememberUsername"
-              @change="handleRememberUsername"
-            />
+            <input type="checkbox" v-model="rememberUsername" />
             아이디 기억하기
           </label>
           <a href="/forgot-password" class="forgot-password">비밀번호 찾기</a>
@@ -62,19 +58,10 @@ const rememberUsername = ref(false);
 
 // 로컬 스토리지에서 저장된 아이디 불러오기
 const loadSavedUsername = () => {
-  const savedUsername = localStorage.getItem("authUserId");
+  const savedUsername = localStorage.getItem("rememberedUsername");
   if (savedUsername) {
     loginForm.value.username = savedUsername;
     rememberUsername.value = true;
-  }
-};
-
-// 아이디 기억하기 처리
-const handleRememberUsername = () => {
-  if (rememberUsername.value) {
-    localStorage.setItem("authUserId", loginForm.value.username);
-  } else {
-    localStorage.removeItem("authUserId");
   }
 };
 

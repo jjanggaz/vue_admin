@@ -1,6 +1,8 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-content">
+      <img src="/public/images/logo/logo_wai_sd.svg" alt="" />
+
       <!-- Navigation Menu -->
       <nav class="nav-menu">
         <router-link to="/dashboard" class="nav-item">
@@ -65,6 +67,14 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+
+    img {
+      width: 220px;
+      height: auto;
+      margin: $spacing-lg auto;
+      padding: 0 $spacing-lg;
+      object-fit: contain;
+    }
   }
 
   .nav-menu {

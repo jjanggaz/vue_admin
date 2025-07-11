@@ -65,6 +65,15 @@ const sectionTabs = {
     { name: "Process", label: "공정 관리", to: "/process/Process" },
     // { name: 'Output', label: '공정 출력', to: '/process/output' }
   ],
+  project: [
+    { name: "Project", label: "프로젝트", to: "/project/Project" },
+    { name: "ProjectApp", label: "승인대기", to: "/project/ProjectApp" },
+    {
+      name: "ProjectItem",
+      label: "항목관리",
+      to: "/project/ProjectItem",
+    },
+  ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
   // project: [
   //   {
@@ -90,6 +99,8 @@ const currentTabs = computed<TabItem[]>(() => {
   } else if (currentPath.startsWith("/process")) {
     // 공정 관리 섹션인 경우
     return sectionTabs.process;
+  } else if (currentPath.startsWith("/project")) {
+    return sectionTabs.project;
   }
 
   // 다른 섹션들은 탭이 없음 (단일 페이지)

@@ -86,6 +86,7 @@
                 v-model="newCode.codeGroup"
                 type="text"
                 placeholder=" 입력하세요"
+                :disabled="isEditMode"
               />
             </dd>
             <dt>상위코드</dt>
@@ -95,6 +96,7 @@
                 v-model="newCode.highCode"
                 type="text"
                 placeholder=" 입력하세요"
+                :disabled="isEditMode"
               />
             </dd>
             <dt>코드</dt>

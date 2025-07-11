@@ -1,14 +1,15 @@
 <template>
-  <div class="project-management">
-    <p>프로젝트 관리 페이지입니다.</p>
+  <div class="process-management-layout">
+    <!-- Router View for Sub Pages -->
+    <router-view />
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss">
-.project-management {
+.public-management-layout {
+  height: 100%;
   padding: $spacing-lg;
 }
 </style>

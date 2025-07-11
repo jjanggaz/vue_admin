@@ -6,7 +6,13 @@ import {
 
 // 페이지 컴포넌트들을 lazy loading으로 import
 const Dashboard = () => import("@/views/dashboard/Dashboard.vue");
+
+// 프로젝트 관리 페이지
 const ProjectManagement = () => import("@/views/project/ProjectManagement.vue");
+const Project = () => import("@/views/project/Project.vue");
+const ProjectApp = () => import("@/views/project/ProjectApp.vue");
+const ProjectItem = () => import("@/views/project/ProjectItem.vue");
+
 const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
 const MachineList = () => import("@/views/machine/MachineList.vue");
 const UserManagement = () => import("@/views/user/UserManagement.vue");
@@ -53,11 +59,41 @@ const routes: RouteRecordRaw[] = [
     path: "/project",
     name: "ProjectManagement",
     component: ProjectManagement,
+    redirect: "/project/project",
     meta: {
       requiresAuth: true,
       title: "프로젝트 관리",
       icon: "project",
     },
+    children: [
+      {
+        path: "project",
+        name: "Project",
+        component: Project,
+        meta: {
+          title: "프로젝트",
+          breadcrumb: ["프로젝트 관리", "프로젝트"],
+        },
+      },
+      {
+        path: "projectApp",
+        name: "ProjectApp",
+        component: ProjectApp,
+        meta: {
+          title: "승인대기",
+          breadcrumb: ["프로젝트 관리", "승인대기"],
+        },
+      },
+      {
+        path: "projectItem",
+        name: "ProjectItem",
+        component: ProjectItem,
+        meta: {
+          title: "항목관리",
+          breadcrumb: ["프로젝트 관리", "항목관리"],
+        },
+      },
+    ],
   },
   {
     path: "/asset",

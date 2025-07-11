@@ -9,7 +9,7 @@
     </div>
 
     <!-- Data Table -->
-    <DataTable 
+    <DataTable
       :columns="tableColumns"
       :data="modelList"
       :loading="loading"
@@ -20,18 +20,21 @@
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="editItem(item)">수정</button>
       </template>
-      
+
       <!-- 반납여부 슬롯 -->
       <template #cell-isReturned="{ value }">
-        <span class="status-badge" :class="{ returned: value, pending: !value }">
-          {{ value ? '반납' : '미반납' }}
+        <span
+          class="status-badge"
+          :class="{ returned: value, pending: !value }"
+        >
+          {{ value ? "반납" : "미반납" }}
         </span>
       </template>
     </DataTable>
 
     <!-- Pagination -->
     <div class="pagination-container">
-      <Pagination 
+      <Pagination
         :current-page="currentPage"
         :total-pages="totalPages"
         @page-change="handlePageChange"
@@ -41,85 +44,126 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import Pagination from '@/components/common/Pagination.vue'
-import DataTable, { type TableColumn } from '@/components/common/DataTable.vue'
+import { ref, onMounted } from "vue";
+import Pagination from "@/components/common/Pagination.vue";
+import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
 interface ModelItem {
-  id: string
-  title: string
-  category: string
-  createdAt: string
-  lastUsed: string | null
-  isReturned: boolean
+  id: string;
+  title: string;
+  category: string;
+  createdAt: string;
+  lastUsed: string | null;
+  isReturned: boolean;
 }
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: 'index', title: '순번', sortable: false, formatter: (value, item, index) => String((index || 0) + 1) },
-  { key: 'title', title: '항목', sortable: true },
-  { key: 'category', title: '정보분류', sortable: true },
-  { key: 'createdAt', title: '입력일시', sortable: true, formatter: (value) => formatDate(value) },
-  {  key: 'lastUsed', title: '등록다운 활용 일시', sortable: true,
-    formatter: (value) => formatDate(value) },
-  { key: 'isReturned', title: '반납여부', sortable: true },
-  { key: 'actions', title: '수정', sortable: false }
-]
+  {
+    key: "index",
+    title: "순번",
+    sortable: false,
+    formatter: (value, item, index) => String((index || 0) + 1),
+  },
+  { key: "title", title: "항목", sortable: true },
+  { key: "category", title: "정보분류", sortable: true },
+  {
+    key: "createdAt",
+    title: "입력일시",
+    sortable: true,
+    formatter: (value) => formatDate(value),
+  },
+  {
+    key: "lastUsed",
+    title: "등록다운 활용 일시",
+    sortable: true,
+    formatter: (value) => formatDate(value),
+  },
+  { key: "isReturned", title: "반납여부", sortable: true },
+  { key: "actions", title: "수정", sortable: false },
+];
 
-const modelList = ref<ModelItem[]>([])
-const currentPage = ref(1)
-const totalPages = ref(999)
-const loading = ref(false)
+const modelList = ref<ModelItem[]>([]);
+const currentPage = ref(1);
+const totalPages = ref(999);
+const loading = ref(false);
 
 const formatDate = (date: string | null) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString('ko-KR')
-}
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("ko-KR");
+};
 
 const editItem = (item: ModelItem) => {
-  console.log('Edit item:', item)
-}
+  console.log("Edit item:", item);
+};
 
 const handlePageChange = (page: number) => {
-  currentPage.value = page
-  loadModelList()
-}
+  currentPage.value = page;
+  loadModelList();
+};
 
-const handleSortChange = (sortInfo: { key: string; direction: 'asc' | 'desc' }) => {
-  console.log('Sort changed:', sortInfo)
+const handleSortChange = (sortInfo: {
+  key: string;
+  direction: "asc" | "desc";
+}) => {
+  console.log("Sort changed:", sortInfo);
   // 여기서 API 재호출하거나 로컬 정렬 처리
-  loadModelList(sortInfo)
-}
+  loadModelList(sortInfo);
+};
 
 const handleRowClick = (item: ModelItem, index: number) => {
-  console.log('Row clicked:', item, index)
+  console.log("Row clicked:", item, index);
   // 행 클릭 시 상세 페이지로 이동하거나 모달 열기 등
-}
+};
 
-const loadModelList = async (sortInfo?: { key: string; direction: 'asc' | 'desc' }) => {
-  loading.value = true
+const loadModelList = async (sortInfo?: {
+  key: string;
+  direction: "asc" | "desc";
+}) => {
+  loading.value = true;
   try {
     // API 호출로 데이터 로드
     // 임시 샘플 데이터
-    await new Promise(resolve => setTimeout(resolve, 1000)) // 로딩 시뮬레이션
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
+
     modelList.value = [
-      { id: '1', title: '건물 외벽 모델', category: '건축', createdAt: '2024-01-15', lastUsed: '2024-07-01', isReturned: true },
-      { id: '2', title: '기계실 장비', category: '기계', createdAt: '2024-02-20', lastUsed: null, isReturned: false },
-      { id: '3', title: '전기 배선도', category: '전기', createdAt: '2024-03-10', lastUsed: '2024-06-15', isReturned: true }
-    ]
-    
-    console.log('Sort info:', sortInfo)
+      {
+        id: "1",
+        title: "건물 외벽 모델",
+        category: "건축",
+        createdAt: "2024-01-15",
+        lastUsed: "2024-07-01",
+        isReturned: true,
+      },
+      {
+        id: "2",
+        title: "기계실 장비",
+        category: "기계",
+        createdAt: "2024-02-20",
+        lastUsed: null,
+        isReturned: false,
+      },
+      {
+        id: "3",
+        title: "전기 배선도",
+        category: "전기",
+        createdAt: "2024-03-10",
+        lastUsed: "2024-06-15",
+        isReturned: true,
+      },
+    ];
+
+    console.log("Sort info:", sortInfo);
   } catch (error) {
-    console.error('데이터 로드 실패:', error)
+    console.error("데이터 로드 실패:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  loadModelList()
-})
+  loadModelList();
+});
 </script>
 
 <style scoped lang="scss">
@@ -179,12 +223,12 @@ onMounted(() => {
   border-radius: $border-radius-sm;
   font-size: 11px;
   font-weight: $font-weight-md;
-  
+
   &.returned {
     background-color: rgba($success-color, 0.1);
     color: $success-color;
   }
-  
+
   &.pending {
     background-color: rgba($warning-color, 0.1);
     color: $warning-color;
@@ -192,7 +236,6 @@ onMounted(() => {
 }
 
 .pagination-container {
-  margin-top: $spacing-xl;
   display: flex;
   justify-content: center;
 }

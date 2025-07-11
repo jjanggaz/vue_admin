@@ -203,7 +203,4 @@ onMounted(() => {
 .btn-search {
   margin-left: 0.5rem;
 }
-.pagination-container {
-  margin-top: 1rem;
-}
 </style>

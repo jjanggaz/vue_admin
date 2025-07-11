@@ -176,7 +176,4 @@ onMounted(() => {
   font-size: 1.1rem;
   cursor: pointer;
 }
-.pagination-container {
-  margin-top: 1rem;
-}
 </style>

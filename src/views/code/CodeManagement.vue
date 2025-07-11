@@ -459,8 +459,4 @@ const handleEdit = () => {
 .code-management {
   padding: $spacing-lg;
 }
-
-.pagination-container {
-  margin-top: 1rem;
-}
 </style>

@@ -212,7 +212,6 @@ body {
   }
 }
 
-
 .action-bar {
   display: flex;
   justify-content: space-between;
@@ -244,16 +243,9 @@ body {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
+.pagination-container {
+  margin-top: 1rem;
+}
 
 // Responsive utilities
 @media (max-width: $breakpoint-md) {

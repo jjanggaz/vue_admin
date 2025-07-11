@@ -420,7 +420,6 @@ onMounted(() => {
 }
 
 .pagination-container {
-  margin-top: 1rem;
   display: flex;
   justify-content: center;
 }

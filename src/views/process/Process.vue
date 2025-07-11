@@ -605,8 +605,4 @@ onMounted(() => {
   display: flex;
   margin-bottom: $spacing-lg;
 }
-
-.pagination-container {
-  margin-top: 1rem;
-}
 </style>

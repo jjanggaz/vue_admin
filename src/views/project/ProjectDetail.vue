@@ -9,19 +9,7 @@
       <button class="btn-export">내보내기</button>
     </div>
     <div class="project-info-table">
-      <div class="row">
-        <div class="cell label">프로젝트 기간</div>
-        <div class="cell">텍스트</div>
-        <div class="cell label">담당자</div>
-        <div class="cell">텍스트</div>
-        <div class="cell label">유입종류</div>
-        <div class="cell">텍스트</div>
-        <div class="cell label">시설용량 (m³/d)</div>
-        <div class="cell">텍스트</div>
-      </div>
-      <div class="row">
-        <div class="cell" colspan="8">텍스트</div>
-      </div>
+      <DataTable :columns="projectInfoColumns" :data="projectInfoRows" />
     </div>
     <!-- 탭 -->
     <div class="tabs-wrapper">
@@ -37,82 +25,19 @@
     <!-- 탭별 내용 -->
     <div class="tab-content">
       <div v-if="activeTab === 0">
-        <!-- 기본 정보 테이블 -->
-        <table class="basic-table">
-          <thead>
-            <tr>
-              <th>프로젝트명</th>
-              <th>제목</th>
-              <th>내용텍스트</th>
-              <th>제목</th>
-              <th>내용텍스트</th>
-              <th>제목</th>
-              <th>내용텍스트</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>###프로젝트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-            </tr>
-            <tr>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td>제목</td>
-              <td>내용텍스트</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
+        <DataTable :columns="basicColumns" :data="basicRows" />
       </div>
       <div v-else-if="activeTab === 1">
-        <!-- 프로세스 정보 탭 -->
         <div class="process-info-section">
           <div class="process-info-row">
             <div class="info-label">유입종류</div>
             <div class="info-value">음식물쓰레기</div>
             <div class="info-label">수질정보</div>
             <div class="info-table-wrap">
-              <table class="mini-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Influent</th>
-                    <th>Unit</th>
-                    <th>Remark</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>text</td>
-                    <td>text</td>
-                    <td>text</td>
-                    <td>text</td>
-                  </tr>
-                  <tr>
-                    <td>text</td>
-                    <td>text</td>
-                    <td>text</td>
-                    <td>text</td>
-                  </tr>
-                </tbody>
-              </table>
+              <DataTable
+                :columns="processWaterColumns"
+                :data="processWaterRows"
+              />
             </div>
           </div>
           <div class="process-info-row">
@@ -138,7 +63,6 @@
             </div>
           </div>
         </div>
-        <!-- 구조물 탭 -->
         <div class="structure-tabs">
           <button
             v-for="(tab, idx) in structureTabs"
@@ -149,100 +73,24 @@
             {{ tab }}
           </button>
         </div>
-        <!-- 구조물 테이블 -->
         <div class="structure-table-wrap">
           <div class="structure-title">Structure</div>
-          <table class="mini-table">
-            <tbody>
-              <tr>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-              </tr>
-              <tr>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-              </tr>
-            </tbody>
-          </table>
+          <DataTable :columns="structureColumns" :data="structureRows" />
         </div>
-        <!-- 기기 테이블 -->
         <div class="structure-title">기기</div>
-        <table class="mini-table">
-          <tbody>
-            <tr>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-            </tr>
-            <tr>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-              <td>text</td>
-            </tr>
-          </tbody>
-        </table>
-        <!-- 수질정보/설계조건 테이블 -->
+        <DataTable :columns="deviceColumns" :data="deviceRows" />
         <div class="row-tables">
           <div class="row-table-block">
             <div class="structure-title">수질정보</div>
-            <table class="mini-table">
-              <tbody>
-                <tr>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                </tr>
-                <tr>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                </tr>
-              </tbody>
-            </table>
+            <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
           </div>
           <div class="row-table-block">
             <div class="structure-title">설계조건</div>
-            <table class="mini-table">
-              <tbody>
-                <tr>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                </tr>
-                <tr>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                  <td>text</td>
-                </tr>
-              </tbody>
-            </table>
+            <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
           </div>
         </div>
       </div>
       <div v-else-if="activeTab === 2">
-        <!-- 3D 레이아웃 정보 탭 -->
         <div class="layout3d-info-section">
           <div class="layout3d-info-row">
             <div class="info-label">공정구분</div>
@@ -267,7 +115,6 @@
             </div>
           </div>
         </div>
-        <!-- 구조물/기기/배관/표준배치 탭 -->
         <div class="layout3d-structure-tabs">
           <button
             v-for="(tab, idx) in layout3dTabs"
@@ -276,35 +123,20 @@
               'layout3d-structure-tab',
               { active: layout3dActiveTab === idx },
             ]"
-            @click="layout3dActiveTab = idx"
+            @click="handleLayout3dTabChange(idx)"
           >
             {{ tab }}
           </button>
         </div>
-        <!-- 구조물 테이블 -->
         <div class="layout3d-table-wrap">
-          <table class="mini-table">
-            <thead>
-              <tr>
-                <th>순번</th>
-                <th>구조물</th>
-                <th>기기명</th>
-                <th>기기타입</th>
-                <th>3D모델</th>
-                <th>모델특성</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-              </tr>
-            </tbody>
-          </table>
+          <DataTable :columns="layout3dColumns" :data="paginatedLayout3dList" />
+        </div>
+        <div class="layout3d-pagination">
+          <Pagination
+            :totalPages="layout3dTotalPages"
+            :currentPage="layout3dCurrentPage"
+            @pageChange="handleLayout3dPageChange"
+          />
         </div>
       </div>
       <div v-else-if="activeTab === 3">
@@ -314,15 +146,21 @@
             v-for="(tab, idx) in outputTabs"
             :key="tab"
             :class="['output-subtab', { active: outputActiveTab === idx }]"
-            @click="outputActiveTab = idx"
+            @click="handleOutputTabChange(idx)"
           >
             {{ tab }}
           </button>
         </div>
         <div class="output-file-list">
-          <div v-for="n in 12" :key="n" class="output-file-card">
-            <div class="file-title">제목</div>
-            <div class="file-meta">PDF &nbsp; 8.5MB &nbsp; 2025.05.20</div>
+          <div
+            v-for="item in paginatedOutputList"
+            :key="item.id"
+            class="output-file-card"
+          >
+            <div class="file-title">{{ item.title }}</div>
+            <div class="file-meta">
+              {{ item.type }} &nbsp; {{ item.size }} &nbsp; {{ item.date }}
+            </div>
             <div class="file-actions">
               <button class="btn-icon" title="다운로드"><span>⬇️</span></button>
               <button class="btn-icon" title="더보기"><span>⋯</span></button>
@@ -330,13 +168,11 @@
           </div>
         </div>
         <div class="output-pagination">
-          <button class="btn-page" disabled>⏮</button>
-          <button class="btn-page" disabled>〈</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page">2</button>
-          <button class="btn-page">3</button>
-          <button class="btn-page">〉</button>
-          <button class="btn-page">⏭</button>
+          <Pagination
+            :totalPages="outputTotalPages"
+            :currentPage="outputCurrentPage"
+            @pageChange="handleOutputPageChange"
+          />
         </div>
       </div>
       <div v-else-if="activeTab === 4">
@@ -345,46 +181,38 @@
           <button
             class="btn-designcond"
             :class="{ active: designcondActiveTab === 0 }"
-            @click="designcondActiveTab = 0"
+            @click="handleDesigncondTabChange(0)"
           >
             수리 조건
           </button>
           <button
             class="btn-designcond"
             :class="{ active: designcondActiveTab === 1 }"
-            @click="designcondActiveTab = 1"
+            @click="handleDesigncondTabChange(1)"
           >
             콘크리트 구조물 설정
           </button>
         </div>
         <div class="designcond-table-wrap">
-          <table class="mini-table">
-            <tbody>
-              <tr>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-              </tr>
-              <tr>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-                <td>text</td>
-              </tr>
-            </tbody>
-          </table>
+          <DataTable
+            :columns="
+              designcondActiveTab === 0
+                ? designcondHydroColumns
+                : designcondConcreteColumns
+            "
+            :data="
+              designcondActiveTab === 0
+                ? paginatedDesigncondList
+                : paginatedDesigncondList
+            "
+          />
         </div>
         <div class="designcond-pagination">
-          <button class="btn-page" disabled>⏮</button>
-          <button class="btn-page" disabled>〈</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page">2</button>
-          <button class="btn-page">3</button>
-          <button class="btn-page">4</button>
-          <button class="btn-page">999</button>
-          <button class="btn-page">〉</button>
-          <button class="btn-page">⏭</button>
+          <Pagination
+            :totalPages="designcondTotalPages"
+            :currentPage="designcondCurrentPage"
+            @pageChange="handleDesigncondPageChange"
+          />
         </div>
       </div>
       <div v-else>
@@ -395,7 +223,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import Pagination from "@/components/common/Pagination.vue";
 const tabs = [
   "기본 정보",
   "프로세스 정보",
@@ -411,6 +241,346 @@ const layout3dActiveTab = ref(0);
 const outputTabs = ["계산서", "내역서", "도면"];
 const outputActiveTab = ref(0);
 const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조물 설정
+
+// 페이징 상태 관리
+const pageSize = ref(10);
+
+// 3D 레이아웃 정보 탭 - 하위 탭 페이징
+const layout3dCurrentPage = ref(1);
+const layout3dDataList = ref<
+  Record<
+    number,
+    Array<{
+      id: number;
+      no: number;
+      structure: string;
+      device: string;
+      type: string;
+      model: string;
+      feature: string;
+    }>
+  >
+>({
+  0: Array.from({ length: 18 }, (_, i) => ({
+    id: i + 1,
+    no: i + 1,
+    structure: `구조물${i + 1}`,
+    device: `기기${i + 1}`,
+    type: `타입${i + 1}`,
+    model: `모델${i + 1}`,
+    feature: `특성${i + 1}`,
+  })),
+  1: Array.from({ length: 12 }, (_, i) => ({
+    id: i + 1,
+    no: i + 1,
+    structure: `기기구조물${i + 1}`,
+    device: `기기명${i + 1}`,
+    type: `기기타입${i + 1}`,
+    model: `기기모델${i + 1}`,
+    feature: `기기특성${i + 1}`,
+  })),
+  2: Array.from({ length: 25 }, (_, i) => ({
+    id: i + 1,
+    no: i + 1,
+    structure: `배관구조물${i + 1}`,
+    device: `배관${i + 1}`,
+    type: `배관타입${i + 1}`,
+    model: `배관모델${i + 1}`,
+    feature: `배관특성${i + 1}`,
+  })),
+  3: Array.from({ length: 8 }, (_, i) => ({
+    id: i + 1,
+    no: i + 1,
+    structure: `표준구조물${i + 1}`,
+    device: `표준배치${i + 1}`,
+    type: `표준타입${i + 1}`,
+    model: `표준모델${i + 1}`,
+    feature: `표준특성${i + 1}`,
+  })),
+});
+
+const layout3dTotalPages = computed(() => {
+  const currentList = layout3dDataList.value[layout3dActiveTab.value];
+  return Math.ceil(currentList.length / pageSize.value) || 1;
+});
+
+const paginatedLayout3dList = computed(() => {
+  const currentList = layout3dDataList.value[layout3dActiveTab.value];
+  const start = (layout3dCurrentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return currentList.slice(start, end);
+});
+
+const handleLayout3dPageChange = (page: number) => {
+  layout3dCurrentPage.value = page;
+};
+
+const handleLayout3dTabChange = (tab: number) => {
+  layout3dActiveTab.value = tab;
+  layout3dCurrentPage.value = 1;
+};
+
+// 산출물 탭 - 하위 탭별 페이징
+const outputCurrentPage = ref(1);
+const outputDataList = ref<
+  Record<
+    number,
+    Array<{
+      id: number;
+      title: string;
+      type: string;
+      size: string;
+      date: string;
+    }>
+  >
+>({
+  0: Array.from({ length: 30 }, (_, i) => ({
+    id: i + 1,
+    title: `계산서 ${i + 1}`,
+    type: "PDF",
+    size: "8.5MB",
+    date: "2025.05.20",
+  })),
+  1: Array.from({ length: 22 }, (_, i) => ({
+    id: i + 1,
+    title: `내역서 ${i + 1}`,
+    type: "EXCEL",
+    size: "2.1MB",
+    date: "2025.05.19",
+  })),
+  2: Array.from({ length: 35 }, (_, i) => ({
+    id: i + 1,
+    title: `도면 ${i + 1}`,
+    type: "DWG",
+    size: "15.2MB",
+    date: "2025.05.18",
+  })),
+});
+
+const outputTotalPages = computed(() => {
+  const currentList = outputDataList.value[outputActiveTab.value];
+  return Math.ceil(currentList.length / pageSize.value) || 1;
+});
+
+const paginatedOutputList = computed(() => {
+  const currentList = outputDataList.value[outputActiveTab.value];
+  const start = (outputCurrentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return currentList.slice(start, end);
+});
+
+const handleOutputPageChange = (page: number) => {
+  outputCurrentPage.value = page;
+};
+
+const handleOutputTabChange = (tab: number) => {
+  outputActiveTab.value = tab;
+  outputCurrentPage.value = 1;
+};
+
+// 설계조건 탭 페이징
+const designcondCurrentPage = ref(1);
+const designcondHydroList = ref(
+  Array.from({ length: 15 }, (_, i) => ({
+    id: i + 1,
+    col1: `수리항목 ${i + 1}`,
+    col2: `${100 + i * 10}`,
+    col3: `${200 + i * 10}`,
+    col4: "m³/h",
+  }))
+);
+const designcondConcreteList = ref(
+  Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1,
+    col1: `구조물 ${i + 1}`,
+    col2: `${20 + i * 2}`,
+    col3: `${10 + i}`,
+    col4: `${5 + i}`,
+  }))
+);
+
+const designcondTotalPages = computed(() => {
+  const currentList =
+    designcondActiveTab.value === 0
+      ? designcondHydroList.value
+      : designcondConcreteList.value;
+  return Math.ceil(currentList.length / pageSize.value) || 1;
+});
+
+const paginatedDesigncondList = computed(() => {
+  const currentList =
+    designcondActiveTab.value === 0
+      ? designcondHydroList.value
+      : designcondConcreteList.value;
+  const start = (designcondCurrentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return currentList.slice(start, end);
+});
+
+const handleDesigncondPageChange = (page: number) => {
+  designcondCurrentPage.value = page;
+};
+
+// 설계조건 탭 변경 시 페이지 초기화
+const handleDesigncondTabChange = (tab: number) => {
+  designcondActiveTab.value = tab;
+  designcondCurrentPage.value = 1;
+};
+
+// 기본 정보
+const basicColumns: TableColumn[] = [
+  { key: "project", title: "프로젝트명" },
+  { key: "title1", title: "제목" },
+  { key: "content1", title: "내용텍스트" },
+  { key: "title2", title: "제목" },
+  { key: "content2", title: "내용텍스트" },
+  { key: "title3", title: "제목" },
+  { key: "content3", title: "내용텍스트" },
+];
+const basicRows = [
+  {
+    project: "###프로젝트",
+    title1: "제목",
+    content1: "내용텍스트",
+    title2: "제목",
+    content2: "내용텍스트",
+    title3: "제목",
+    content3: "내용텍스트",
+  },
+  {
+    project: "제목",
+    title1: "내용텍스트",
+    content1: "제목",
+    title2: "내용텍스트",
+    content2: "제목",
+    title3: "내용텍스트",
+    content3: "",
+  },
+  {
+    project: "제목",
+    title1: "내용텍스트",
+    content1: "제목",
+    title2: "내용텍스트",
+    content2: "제목",
+    title3: "내용텍스트",
+    content3: "",
+  },
+];
+// 프로세스 정보 - 수질정보
+const processWaterColumns: TableColumn[] = [
+  { key: "item", title: "Item" },
+  { key: "influent", title: "Influent" },
+  { key: "unit", title: "Unit" },
+  { key: "remark", title: "Remark" },
+];
+const processWaterRows = [
+  { item: "text", influent: "text", unit: "text", remark: "text" },
+  { item: "text", influent: "text", unit: "text", remark: "text" },
+];
+// 프로세스 정보 - 구조물
+const structureColumns: TableColumn[] = [
+  { key: "col1", title: "Structure" },
+  { key: "col2", title: "" },
+  { key: "col3", title: "" },
+  { key: "col4", title: "" },
+];
+const structureRows = [
+  { col1: "text", col2: "text", col3: "text", col4: "text" },
+  { col1: "text", col2: "text", col3: "text", col4: "text" },
+];
+// 프로세스 정보 - 기기
+const deviceColumns: TableColumn[] = [
+  { key: "col1", title: "" },
+  { key: "col2", title: "" },
+  { key: "col3", title: "" },
+  { key: "col4", title: "" },
+  { key: "col5", title: "" },
+  { key: "col6", title: "" },
+  { key: "col7", title: "" },
+  { key: "col8", title: "" },
+];
+const deviceRows = [
+  {
+    col1: "text",
+    col2: "text",
+    col3: "text",
+    col4: "text",
+    col5: "text",
+    col6: "text",
+    col7: "text",
+    col8: "text",
+  },
+  {
+    col1: "text",
+    col2: "text",
+    col3: "text",
+    col4: "text",
+    col5: "text",
+    col6: "text",
+    col7: "text",
+    col8: "text",
+  },
+];
+// 프로세스 정보 - 수질정보/설계조건
+const waterInfoColumns: TableColumn[] = [
+  { key: "col1", title: "" },
+  { key: "col2", title: "" },
+  { key: "col3", title: "" },
+  { key: "col4", title: "" },
+  { key: "col5", title: "" },
+];
+const waterInfoRows = [
+  { col1: "text", col2: "text", col3: "text", col4: "text", col5: "text" },
+  { col1: "text", col2: "text", col3: "text", col4: "text", col5: "text" },
+];
+// 3D 레이아웃 정보
+const layout3dColumns: TableColumn[] = [
+  { key: "no", title: "순번" },
+  { key: "structure", title: "구조물" },
+  { key: "device", title: "기기명" },
+  { key: "type", title: "기기타입" },
+  { key: "model", title: "3D모델" },
+  { key: "feature", title: "모델특성" },
+];
+const layout3dRows = [
+  {
+    no: "text",
+    structure: "text",
+    device: "text",
+    type: "text",
+    model: "text",
+    feature: "text",
+  },
+];
+// 산출물, 설계조건 등은 카드/커스텀 UI이므로 table 변환 제외
+
+const projectInfoColumns: TableColumn[] = [
+  { key: "projectPeriod", title: "프로젝트 기간" },
+  { key: "projectManager", title: "담당자" },
+  { key: "influentType", title: "유입종류" },
+  { key: "facilityCapacity", title: "시설용량 (m³/d)" },
+];
+const projectInfoRows = [
+  {
+    projectPeriod: "2025.01.01 - 2025.12.31",
+    projectManager: "김철수",
+    influentType: "음식물쓰레기",
+    facilityCapacity: "1000",
+  },
+];
+
+const designcondHydroColumns: TableColumn[] = [
+  { key: "col1", title: "항목" },
+  { key: "col2", title: "값1" },
+  { key: "col3", title: "값2" },
+  { key: "col4", title: "단위" },
+];
+const designcondConcreteColumns: TableColumn[] = [
+  { key: "col1", title: "구조물명" },
+  { key: "col2", title: "길이" },
+  { key: "col3", title: "너비" },
+  { key: "col4", title: "높이" },
+];
 </script>
 
 <style scoped lang="scss">
@@ -444,29 +614,7 @@ const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조�
   cursor: pointer;
 }
 .project-info-table {
-  border-top: 2px solid #222;
-  border-bottom: 2px solid #222;
   margin-bottom: 1.5rem;
-}
-.project-info-table .row {
-  display: flex;
-  border-bottom: 1px solid #ddd;
-}
-.project-info-table .row:last-child {
-  border-bottom: none;
-}
-.project-info-table .cell {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border-right: 1px solid #eee;
-}
-.project-info-table .cell.label {
-  font-weight: bold;
-  background: #f7f7f7;
-}
-.project-info-table .cell:last-child {
-  border-right: none;
 }
 .tabs-wrapper {
   display: flex;
@@ -614,6 +762,13 @@ const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조�
 .layout3d-table-wrap {
   margin-bottom: 1.5rem;
 }
+.layout3d-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
 .output-subtabs {
   display: flex;
   gap: 0.5rem;
@@ -682,32 +837,9 @@ const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조�
 }
 .output-pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 0.25rem;
-}
-.btn-page {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s, border 0.2s;
-}
-.btn-page.active {
-  background: #1a73e8;
-  color: #fff;
-  border: 1px solid #1a73e8;
-}
-.btn-page:disabled {
-  color: #bbb;
-  cursor: not-allowed;
-  background: #f7f7f7;
 }
 .designcond-btns {
   display: flex;
@@ -738,7 +870,7 @@ const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조�
 }
 .designcond-pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 0.25rem;
 }

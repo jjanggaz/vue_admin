@@ -1,14 +1,15 @@
 <template>
-  <div class="machine-list">
-    <p>기기리스트 관리 페이지입니다.</p>
+  <div class="process-management-layout">
+    <!-- Router View for Sub Pages -->
+    <router-view />
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss">
-.machine-list {
+.public-management-layout {
+  height: 100%;
   padding: $spacing-lg;
 }
 </style>

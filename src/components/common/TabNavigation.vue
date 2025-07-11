@@ -1,13 +1,13 @@
 <template>
   <div class="tab-navigation">
-    <router-link 
+    <router-link
       v-for="tab in tabs"
       :key="tab.name"
       :to="tab.to"
       class="tab-item"
-      :class="{ 
+      :class="{
         active: isActiveTab(tab),
-        disabled: tab.disabled 
+        disabled: tab.disabled,
       }"
       @click="handleTabClick(tab)"
     >
@@ -19,56 +19,48 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute } from "vue-router";
 
 export interface TabItem {
-  name: string
-  label: string
-  to: string
-  icon?: string
-  badge?: string | number
-  disabled?: boolean
+  name: string;
+  label: string;
+  to: string;
+  icon?: string;
+  badge?: string | number;
+  disabled?: boolean;
 }
 
 interface Props {
-  tabs: TabItem[]
-  activeByRoute?: boolean // 라우트 기반으로 활성 탭 결정
-  activeTab?: string // 수동으로 활성 탭 지정
+  tabs: TabItem[];
+  activeByRoute?: boolean; // 라우트 기반으로 활성 탭 결정
+  activeTab?: string; // 수동으로 활성 탭 지정
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  activeByRoute: true
-})
+  activeByRoute: true,
+});
 
 const emit = defineEmits<{
-  'tab-click': [tab: TabItem]
-}>()
+  "tab-click": [tab: TabItem];
+}>();
 
-const route = useRoute()
+const route = useRoute();
 
 const isActiveTab = (tab: TabItem): boolean => {
   if (props.activeByRoute) {
-    // 라우트 기반 활성 상태 체크
-    if (route.name === tab.name || route.path === tab.to) {
-      return true
-    }
-    // 상세 페이지 같은 자식 경로일 경우, breadcrumb 첫 항목(label)과 탭 레이블 일치하면 활성
-    const breadcrumb = (route.meta as any).breadcrumb as string[] | undefined
-    if (breadcrumb && breadcrumb[0] === tab.label) {
-      return true
-    }
-    return false
+    // 라우트 기반 활성 상태 체크 - 경로 정확히 일치하는지 확인
+    return route.path === tab.to;
   } else {
     // 수동 지정된 활성 탭 체크
-    return props.activeTab === tab.name
+    return props.activeTab === tab.name;
   }
-}
+};
 
 const handleTabClick = (tab: TabItem) => {
   if (!tab.disabled) {
-    emit('tab-click', tab)
+    emit("tab-click", tab);
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -78,8 +70,9 @@ const handleTabClick = (tab: TabItem) => {
   margin-bottom: $spacing-xl;
   overflow-x: auto;
   scrollbar-width: none; // Firefox
-  
-  &::-webkit-scrollbar { // Chrome, Safari
+
+  &::-webkit-scrollbar {
+    // Chrome, Safari
     display: none;
   }
 
@@ -95,7 +88,7 @@ const handleTabClick = (tab: TabItem) => {
     font-weight: $font-weight-md;
     white-space: nowrap;
     position: relative;
-    
+
     &:hover:not(.disabled) {
       color: $primary-color;
       background-color: rgba($primary-color, 0.05);
@@ -106,12 +99,12 @@ const handleTabClick = (tab: TabItem) => {
       border-bottom-color: $primary-color;
       background-color: rgba($primary-color, 0.08);
     }
-    
+
     &.disabled {
       color: $text-light;
       opacity: 0.5;
       cursor: not-allowed;
-      
+
       &:hover {
         color: $text-light;
         background-color: transparent;
@@ -147,7 +140,7 @@ const handleTabClick = (tab: TabItem) => {
   .tab-navigation {
     .tab-item {
       padding: $spacing-sm $spacing-md;
-      
+
       .tab-text {
         font-size: 12px;
       }
@@ -159,15 +152,15 @@ const handleTabClick = (tab: TabItem) => {
 @media (prefers-color-scheme: dark) {
   .tab-navigation {
     border-bottom-color: rgba(255, 255, 255, 0.1);
-    
+
     .tab-item {
       color: rgba(56, 56, 56, 0.7);
-      
+
       &:hover:not(.disabled) {
         color: $primary-color;
         background-color: rgba($primary-color, 0.1);
       }
-      
+
       &.active {
         color: $primary-color;
         background-color: rgba($primary-color, 0.15);

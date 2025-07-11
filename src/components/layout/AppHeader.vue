@@ -62,16 +62,29 @@ const sectionTabs = {
     },
   ],
   process: [
-    { name: "Process", label: "공정 관리", to: "/process/Process" },
+    { name: "Process", label: "공정 관리", to: "/process/process" },
     // { name: 'Output', label: '공정 출력', to: '/process/output' }
   ],
   project: [
-    { name: "Project", label: "프로젝트", to: "/project/Project" },
-    { name: "ProjectApp", label: "승인대기", to: "/project/ProjectApp" },
+    { name: "Project", label: "프로젝트", to: "/project/project" },
+    { name: "ProjectApp", label: "승인대기", to: "/project/projectApp" },
     {
       name: "ProjectItem",
       label: "항목관리",
-      to: "/project/ProjectItem",
+      to: "/project/projectItem",
+    },
+  ],
+  machine: [
+    { name: "Machine", label: "기계", to: "/machine/machine" },
+    {
+      name: "MachineCodeMng",
+      label: "코드관리",
+      to: "/machine/codeMng",
+    },
+    {
+      name: "CostTarget",
+      label: "단가표",
+      to: "/machine/costTarget",
     },
   ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
@@ -101,6 +114,8 @@ const currentTabs = computed<TabItem[]>(() => {
     return sectionTabs.process;
   } else if (currentPath.startsWith("/project")) {
     return sectionTabs.project;
+  } else if (currentPath.startsWith("/machine")) {
+    return sectionTabs.machine;
   }
 
   // 다른 섹션들은 탭이 없음 (단일 페이지)
@@ -171,6 +186,11 @@ const currentPageTitle = computed<string>(() => {
         border-radius: 0;
         padding: 0 $spacing-lg;
         font-size: $font-size-sm;
+        color: $text-light;
+
+        &:hover:not(.disabled) {
+          background: $background-light;
+        }
 
         &.active {
           border-bottom-color: $primary-color;
@@ -179,8 +199,9 @@ const currentPageTitle = computed<string>(() => {
           font-weight: $font-weight-md;
         }
 
-        &:hover {
-          background: $background-light;
+        &:not(.active) {
+          color: $text-light;
+          border-bottom-color: transparent;
         }
       }
     }

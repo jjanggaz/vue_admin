@@ -14,7 +14,13 @@ const ProjectApp = () => import("@/views/project/ProjectApp.vue");
 const ProjectItem = () => import("@/views/project/ProjectItem.vue");
 
 const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
+
+// 기계 관리 페이지
 const MachineList = () => import("@/views/machine/MachineList.vue");
+const Machine = () => import("@/views/machine/Machine.vue");
+const MachineCodeMng = () => import("@/views/machine/MachineCodeMng.vue");
+const CostTarget = () => import("@/views/machine/CostTarget.vue");
+
 const UserManagement = () => import("@/views/user/UserManagement.vue");
 const CodeManagement = () => import("@/views/code/CodeManagement.vue");
 const Login = () => import("@/views/auth/Login.vue");
@@ -198,11 +204,41 @@ const routes: RouteRecordRaw[] = [
     path: "/machine",
     name: "MachineList",
     component: MachineList,
+    redirect: "/machine/machine",
     meta: {
       requiresAuth: true,
       title: "기기리스트 관리",
       icon: "machine",
     },
+    children: [
+      {
+        path: "machine",
+        name: "Machine",
+        component: Machine,
+        meta: {
+          title: "기계",
+          breadcrumb: ["기계", "기계 관리"],
+        },
+      },
+      {
+        path: "codeMng",
+        name: "MachineCodeMng",
+        component: MachineCodeMng,
+        meta: {
+          title: "코드 관리",
+          breadcrumb: ["기계", "코드 관리"],
+        },
+      },
+      {
+        path: "costTarget",
+        name: "CostTarget",
+        component: CostTarget,
+        meta: {
+          title: "단가표",
+          breadcrumb: ["기계", "단가표"],
+        },
+      },
+    ],
   },
   {
     path: "/user",

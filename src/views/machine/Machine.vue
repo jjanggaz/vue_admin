@@ -41,7 +41,9 @@
       @selection-change="handleSelectionChange"
     >
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="openDetailModal(item)">
+          보기
+        </button>
       </template>
     </DataTable>
 
@@ -115,6 +117,83 @@
         </div>
       </div>
     </div>
+
+    <!-- 상세정보 모달 -->
+    <div v-if="isDetailModalOpen" class="modal-overlay">
+      <div class="modal-container" style="max-width: 1200px">
+        <div class="modal-header">
+          <h3>상세정보</h3>
+          <button class="btn-close" @click="closeDetailModal">X</button>
+        </div>
+        <div class="modal-body">
+          <div style="overflow-x: auto">
+            <DataTable
+              v-if="!isDetailEditMode"
+              :columns="detailTableColumns"
+              :data="detailTableData"
+              :loading="false"
+              :selectable="false"
+            />
+            <table
+              v-else
+              style="width: 100%; border-collapse: collapse; text-align: center"
+            >
+              <thead>
+                <tr>
+                  <th>기계명</th>
+                  <th>기계코드</th>
+                  <th>기계타입</th>
+                  <th>설명</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <input v-model="detailEditData.name" class="form-input" />
+                  </td>
+                  <td>
+                    <input v-model="detailEditData.code" class="form-input" />
+                  </td>
+                  <td>
+                    <select v-model="detailEditData.type" class="form-input">
+                      <option value="">-- 선택 --</option>
+                      <option value="펌프">펌프</option>
+                      <option value="모터">모터</option>
+                      <option value="컨베이어">컨베이어</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      v-model="detailEditData.description"
+                      class="form-input"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            v-if="!isDetailEditMode"
+            class="btn btn-primary"
+            @click="handleDetailEdit"
+          >
+            수정
+          </button>
+          <button
+            v-if="isDetailEditMode"
+            class="btn btn-primary"
+            @click="handleDetailSave"
+          >
+            저장
+          </button>
+          <button class="btn btn-secondary" @click="closeDetailModal">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -142,12 +221,14 @@ interface RegistForm {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "id", title: "순번", width: "60px", sortable: false },
+  { key: "mcId", title: "기계ID", width: "150px", sortable: true },
   { key: "name", title: "기계명", width: "150px", sortable: true },
-  { key: "code", title: "기계코드", width: "120px", sortable: true },
-  { key: "type", title: "기계타입", width: "100px", sortable: true },
-  { key: "description", title: "설명", width: "200px", sortable: true },
-  { key: "createdAt", title: "생성일", width: "120px", sortable: true },
-  { key: "actions", title: "수정", width: "80px", sortable: false },
+  { key: "code", title: "기계유형", width: "120px", sortable: true },
+  { key: "type", title: "용량", width: "100px", sortable: true },
+  { key: "description", title: "모델명", width: "200px", sortable: true },
+  { key: "createdAt", title: "계산식", width: "120px", sortable: true },
+  { key: "createdAt", title: "업체명", width: "120px", sortable: true },
+  { key: "actions", title: "상세정보", width: "80px", sortable: false },
 ];
 
 const machineList = ref<MachineItem[]>([]);
@@ -165,6 +246,26 @@ const newMachine = ref<RegistForm>({
   type: "",
   description: "",
 });
+const isDetailModalOpen = ref(false);
+const detailItemData = ref<MachineItem | null>(null);
+const isDetailEditMode = ref(false);
+const detailEditData = ref<RegistForm>({
+  name: "",
+  code: "",
+  type: "",
+  description: "",
+});
+
+// 상세정보 DataTable용 컬럼
+const detailTableColumns: TableColumn[] = [
+  { key: "name", title: "기계명", width: "150px" },
+  { key: "code", title: "기계코드", width: "150px" },
+  { key: "type", title: "기계타입", width: "120px" },
+  { key: "description", title: "설명", width: "200px" },
+];
+const detailTableData = computed(() =>
+  detailItemData.value ? [detailItemData.value] : []
+);
 
 const filteredMachineList = computed(() => {
   if (searchQuery.value) {
@@ -227,7 +328,7 @@ const closeRegistModal = () => {
   isEditMode.value = false;
 };
 
-const editItem = (item: MachineItem) => {
+const detailItem = (item: MachineItem) => {
   isEditMode.value = true;
   newMachine.value = {
     name: item.name,
@@ -279,6 +380,42 @@ const handleDelete = () => {
     selectedItems.value = [];
     alert("삭제되었습니다.");
   }
+};
+
+const openDetailModal = (item: MachineItem) => {
+  detailItemData.value = item;
+  detailEditData.value = {
+    name: item.name,
+    code: item.code,
+    type: item.type,
+    description: item.description,
+  };
+  isDetailModalOpen.value = true;
+  isDetailEditMode.value = false;
+};
+const closeDetailModal = () => {
+  isDetailModalOpen.value = false;
+  detailItemData.value = null;
+  isDetailEditMode.value = false;
+};
+
+const handleDetailEdit = () => {
+  isDetailEditMode.value = true;
+};
+const handleDetailSave = () => {
+  if (!detailItemData.value) return;
+  // machineList에서 해당 id 찾아서 수정
+  const idx = machineList.value.findIndex(
+    (m) => m.id === detailItemData.value?.id
+  );
+  if (idx !== -1) {
+    machineList.value[idx] = {
+      ...machineList.value[idx],
+      ...detailEditData.value,
+    };
+    detailItemData.value = machineList.value[idx];
+  }
+  isDetailEditMode.value = false;
 };
 
 onMounted(() => {

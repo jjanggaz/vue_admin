@@ -597,6 +597,10 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.process-page {
+  padding: $spacing-lg;
+}
+
 .process-3d-page {
   padding: $spacing-lg;
 }

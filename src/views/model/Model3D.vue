@@ -2,7 +2,7 @@
   <div class="model-3d-page">
     <!-- Add Button -->
     <div class="action-bar">
-      <button class="btn btn-primary add-button">
+      <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
         새모델 업로드
       </button>
@@ -11,7 +11,7 @@
     <!-- Data Table -->
     <DataTable
       :columns="tableColumns"
-      :data="modelList"
+      :data="paginatedData"
       :loading="loading"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
@@ -40,11 +40,110 @@
         @page-change="handlePageChange"
       />
     </div>
+
+    <!-- Upload Modal -->
+    <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>새모델 업로드</h3>
+          <button class="modal-close" @click="closeUploadModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>모델명</label>
+            <input
+              v-model="uploadForm.title"
+              type="text"
+              placeholder="모델명을 입력하세요"
+            />
+          </div>
+          <div class="form-group">
+            <label>정보분류</label>
+            <select v-model="uploadForm.category">
+              <option value="">분류를 선택하세요</option>
+              <option value="건축">건축</option>
+              <option value="기계">기계</option>
+              <option value="전기">전기</option>
+              <option value="토목">토목</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>파일 업로드</label>
+            <input
+              type="file"
+              @change="handleFileUpload"
+              accept=".3ds,.obj,.fbx,.dae"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeUploadModal">
+            취소
+          </button>
+          <button
+            class="btn btn-primary"
+            @click="submitUpload"
+            :disabled="!uploadForm.title || !uploadForm.category"
+          >
+            업로드
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>모델 수정</h3>
+          <button class="modal-close" @click="closeEditModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>모델명</label>
+            <input
+              v-model="editForm.title"
+              type="text"
+              placeholder="모델명을 입력하세요"
+            />
+          </div>
+          <div class="form-group">
+            <label>정보분류</label>
+            <select v-model="editForm.category">
+              <option value="">분류를 선택하세요</option>
+              <option value="건축">건축</option>
+              <option value="기계">기계</option>
+              <option value="전기">전기</option>
+              <option value="토목">토목</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>반납여부</label>
+            <select v-model="editForm.isReturned">
+              <option :value="false">미반납</option>
+              <option :value="true">반납</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeEditModal">
+            취소
+          </button>
+          <button
+            class="btn btn-primary"
+            @click="submitEdit"
+            :disabled="!editForm.title || !editForm.category"
+          >
+            수정
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
@@ -57,13 +156,29 @@ interface ModelItem {
   isReturned: boolean;
 }
 
+interface UploadForm {
+  title: string;
+  category: string;
+  file: File | null;
+}
+
+interface EditForm {
+  id: string;
+  title: string;
+  category: string;
+  isReturned: boolean;
+}
+
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   {
     key: "index",
     title: "순번",
     sortable: false,
-    formatter: (value, item, index) => String((index || 0) + 1),
+    formatter: (value: any, item: any) => {
+      const index = modelList.value.findIndex((m) => m.id === item.id);
+      return String(index + 1);
+    },
   },
   { key: "title", title: "항목", sortable: true },
   { key: "category", title: "정보분류", sortable: true },
@@ -71,13 +186,13 @@ const tableColumns: TableColumn[] = [
     key: "createdAt",
     title: "입력일시",
     sortable: true,
-    formatter: (value) => formatDate(value),
+    formatter: (value: any) => formatDate(value),
   },
   {
     key: "lastUsed",
     title: "등록다운 활용 일시",
     sortable: true,
-    formatter: (value) => formatDate(value),
+    formatter: (value: any) => formatDate(value),
   },
   { key: "isReturned", title: "반납여부", sortable: true },
   { key: "actions", title: "수정", sortable: false },
@@ -85,21 +200,110 @@ const tableColumns: TableColumn[] = [
 
 const modelList = ref<ModelItem[]>([]);
 const currentPage = ref(1);
-const totalPages = ref(999);
+const itemsPerPage = ref(10);
 const loading = ref(false);
+const showUploadModal = ref(false);
+const showEditModal = ref(false);
+const uploadForm = ref<UploadForm>({
+  title: "",
+  category: "",
+  file: null,
+});
+const editForm = ref<EditForm>({
+  id: "",
+  title: "",
+  category: "",
+  isReturned: false,
+});
+
+// 페이징된 데이터 계산
+const totalPages = computed(() =>
+  Math.ceil(modelList.value.length / itemsPerPage.value)
+);
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return modelList.value.slice(start, end);
+});
 
 const formatDate = (date: string | null) => {
   if (!date) return "-";
   return new Date(date).toLocaleDateString("ko-KR");
 };
 
+const openUploadModal = () => {
+  showUploadModal.value = true;
+  uploadForm.value = { title: "", category: "", file: null };
+};
+
+const closeUploadModal = () => {
+  showUploadModal.value = false;
+};
+
+const openEditModal = (item: ModelItem) => {
+  editForm.value = {
+    id: item.id,
+    title: item.title,
+    category: item.category,
+    isReturned: item.isReturned,
+  };
+  showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+};
+
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    uploadForm.value.file = target.files[0];
+  }
+};
+
+const submitUpload = () => {
+  if (!uploadForm.value.title || !uploadForm.value.category) return;
+
+  const newModel: ModelItem = {
+    id: String(Date.now()),
+    title: uploadForm.value.title,
+    category: uploadForm.value.category,
+    createdAt: new Date().toISOString().split("T")[0],
+    lastUsed: null,
+    isReturned: false,
+  };
+
+  modelList.value.unshift(newModel);
+  closeUploadModal();
+
+  // 첫 페이지로 이동
+  currentPage.value = 1;
+};
+
+const submitEdit = () => {
+  if (!editForm.value.title || !editForm.value.category) return;
+
+  const index = modelList.value.findIndex(
+    (item) => item.id === editForm.value.id
+  );
+  if (index !== -1) {
+    modelList.value[index] = {
+      ...modelList.value[index],
+      title: editForm.value.title,
+      category: editForm.value.category,
+      isReturned: editForm.value.isReturned,
+    };
+  }
+
+  closeEditModal();
+};
+
 const editItem = (item: ModelItem) => {
-  console.log("Edit item:", item);
+  openEditModal(item);
 };
 
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  loadModelList();
 };
 
 const handleSortChange = (sortInfo: {
@@ -149,6 +353,102 @@ const loadModelList = async (sortInfo?: {
         category: "전기",
         createdAt: "2024-03-10",
         lastUsed: "2024-06-15",
+        isReturned: true,
+      },
+      {
+        id: "4",
+        title: "지하주차장 구조",
+        category: "토목",
+        createdAt: "2024-03-25",
+        lastUsed: "2024-05-20",
+        isReturned: false,
+      },
+      {
+        id: "5",
+        title: "엘리베이터 샤프트",
+        category: "건축",
+        createdAt: "2024-04-05",
+        lastUsed: null,
+        isReturned: true,
+      },
+      {
+        id: "6",
+        title: "공조 시스템",
+        category: "기계",
+        createdAt: "2024-04-12",
+        lastUsed: "2024-06-30",
+        isReturned: false,
+      },
+      {
+        id: "7",
+        title: "조명 설비",
+        category: "전기",
+        createdAt: "2024-04-18",
+        lastUsed: "2024-07-10",
+        isReturned: true,
+      },
+      {
+        id: "8",
+        title: "기초 구조물",
+        category: "토목",
+        createdAt: "2024-04-25",
+        lastUsed: null,
+        isReturned: false,
+      },
+      {
+        id: "9",
+        title: "창문 및 문",
+        category: "건축",
+        createdAt: "2024-05-02",
+        lastUsed: "2024-06-25",
+        isReturned: true,
+      },
+      {
+        id: "10",
+        title: "급수 시스템",
+        category: "기계",
+        createdAt: "2024-05-08",
+        lastUsed: "2024-07-05",
+        isReturned: false,
+      },
+      {
+        id: "11",
+        title: "소방 설비",
+        category: "전기",
+        createdAt: "2024-05-15",
+        lastUsed: null,
+        isReturned: true,
+      },
+      {
+        id: "12",
+        title: "도로 및 주차장",
+        category: "토목",
+        createdAt: "2024-05-22",
+        lastUsed: "2024-06-18",
+        isReturned: false,
+      },
+      {
+        id: "13",
+        title: "내부 인테리어",
+        category: "건축",
+        createdAt: "2024-05-29",
+        lastUsed: "2024-07-12",
+        isReturned: true,
+      },
+      {
+        id: "14",
+        title: "배수 시스템",
+        category: "기계",
+        createdAt: "2024-06-05",
+        lastUsed: null,
+        isReturned: false,
+      },
+      {
+        id: "15",
+        title: "보안 시스템",
+        category: "전기",
+        createdAt: "2024-06-12",
+        lastUsed: "2024-07-08",
         isReturned: true,
       },
     ];
@@ -238,5 +538,125 @@ onMounted(() => {
 .pagination-container {
   display: flex;
   justify-content: center;
+  margin-top: $spacing-lg;
+}
+
+// Modal 스타일
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: $border-radius-lg;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: $shadow-lg;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1px solid $border-color;
+
+  h3 {
+    margin: 0;
+    color: $text-color;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: $font-size-xl;
+    cursor: pointer;
+    color: $text-light;
+
+    &:hover {
+      color: $text-color;
+    }
+  }
+}
+
+.modal-body {
+  padding: $spacing-lg;
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    label {
+      display: block;
+      margin-bottom: $spacing-xs;
+      color: $text-color;
+      font-weight: $font-weight-md;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: $spacing-sm;
+      border: 1px solid $border-color;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-sm;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+      }
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+  padding: $spacing-lg;
+  border-top: 1px solid $border-color;
+
+  .btn {
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &.btn-primary {
+      background-color: $primary-color;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: darken($primary-color, 10%);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &.btn-secondary {
+      background-color: $background-light;
+      color: $text-color;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background-color: darken($background-light, 5%);
+      }
+    }
+  }
 }
 </style>

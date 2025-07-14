@@ -80,7 +80,24 @@
           </div>
           <div class="form-group">
             <label>파일 업로드</label>
-            <input type="file" @change="handleFileUpload" accept=".rvt,.rfa" />
+            <div class="file-upload-row">
+              <input
+                type="text"
+                :value="uploadForm.file ? uploadForm.file.name : ''"
+                placeholder="파일을 선택하세요"
+                readonly
+                class="file-name-input"
+              />
+              <label class="file-select-btn">
+                파일 선택
+                <input
+                  type="file"
+                  @change="handleFileUpload"
+                  accept=".rvt,.rfa"
+                  style="display: none"
+                />
+              </label>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -671,6 +688,40 @@ onMounted(() => {
       &:focus {
         outline: none;
         border-color: $primary-color;
+      }
+    }
+
+    .file-upload-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .file-name-input {
+        flex: 1;
+        padding: $spacing-sm;
+        border: 1px solid $border-color;
+        border-radius: $border-radius-sm;
+        font-size: $font-size-sm;
+        background: $background-light;
+        color: $text-color;
+      }
+      .file-select-btn {
+        display: inline-block;
+        padding: $spacing-sm $spacing-lg;
+        background: $primary-color;
+        color: #fff;
+        border-radius: $border-radius-sm;
+        font-size: $font-size-sm;
+        cursor: pointer;
+        font-weight: $font-weight-md;
+        transition: $transition-base;
+        border: none;
+        &:hover {
+          background: darken($primary-color, 10%);
+        }
+        input[type="file"] {
+          display: none;
+        }
       }
     }
   }

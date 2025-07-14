@@ -361,22 +361,7 @@ const pidColumns: TableColumn[] = [
   { key: "info", title: "정보개요" },
   { key: "view", title: "Svg도면 미리보기" },
 ];
-const pidList = ref([
-  {
-    id: "1",
-    dwg: "pid1.dwg",
-    excel: "pid1.xlsx",
-    info: "P&ID 정보 1",
-    view: "pid1.svg",
-  },
-  {
-    id: "2",
-    dwg: "pid2.dwg",
-    excel: "pid2.xlsx",
-    info: "P&ID 정보 2",
-    view: "pid2.svg",
-  },
-]);
+const pidList = ref<any[]>([]);
 
 // P&ID 탭 페이징 상태
 const currentPagePid = ref(1);
@@ -404,26 +389,7 @@ const designColumns: TableColumn[] = [
   { key: "unit", title: "Unit" },
   { key: "remark", title: "Remark" },
 ];
-const designList = ref([
-  {
-    id: "1",
-    columnNm: "",
-    influent: "324",
-    effluent: "245",
-    sludge: "",
-    unit: "mg/L",
-    remark: "Remark A",
-  },
-  {
-    id: "2",
-    columnNm: "",
-    influent: "645",
-    effluent: "134",
-    sludge: "",
-    unit: "mg/L",
-    remark: "Remark B",
-  },
-]);
+const designList = ref<any[]>([]);
 
 const designCriteriaColumns: TableColumn[] = [
   { key: "columnNm", title: "항목" },
@@ -433,35 +399,13 @@ const designCriteriaColumns: TableColumn[] = [
   { key: "unit", title: "Unit" },
   { key: "remark", title: "Remark" },
 ];
-const designCriteriaList = ref([
-  {
-    id: "1",
-    columnNm: "",
-    value: "10",
-    min: "5",
-    max: "15",
-    unit: "hr",
-    remark: "기본",
-  },
-  {
-    id: "2",
-    vcolumnNm: "",
-    alue: "20",
-    min: "10",
-    max: "30",
-    unit: "℃",
-    remark: "고온",
-  },
-]);
+const designCriteriaList = ref<any[]>([]);
 
 const designParameterColumns: TableColumn[] = [
   { key: "columnNm", title: "항목" },
   { key: "view", title: "view" },
 ];
-const designParameterList = ref([
-  { id: "1", columnNm: "", column: "param1", view: "view1" },
-  { id: "2", columnNm: "", column: "param2", view: "view2" },
-]);
+const designParameterList = ref<any[]>([]);
 
 // 5: 설계조건 효율 테이블용 컬럼/데이터
 const designEfficiencyColumns: TableColumn[] = [
@@ -472,26 +416,7 @@ const designEfficiencyColumns: TableColumn[] = [
   { key: "unit", title: "Unit" },
   { key: "remark", title: "Remark" },
 ];
-const designEfficiencyList = ref([
-  {
-    id: "1",
-    columnNm: "",
-    value: "30",
-    min: "20",
-    max: "40",
-    unit: "%",
-    remark: "",
-  },
-  {
-    id: "2",
-    columnNm: "",
-    value: "50",
-    min: "45",
-    max: "55",
-    unit: "%",
-    remark: "",
-  },
-]);
+const designEfficiencyList = ref<any[]>([]);
 
 // 6: 계산식 관리 탭용 컬럼/데이터
 const calculationColumns: TableColumn[] = [
@@ -500,22 +425,7 @@ const calculationColumns: TableColumn[] = [
   { key: "appliedVersion", title: "적용 버전" },
   { key: "remark", title: "비고" },
 ];
-const calculationList = ref([
-  {
-    id: "1",
-    no: "1",
-    formulaVersion: "v1.0",
-    appliedVersion: "v1.1",
-    remark: "초기",
-  },
-  {
-    id: "2",
-    no: "2",
-    formulaVersion: "v2.0",
-    appliedVersion: "v2.1",
-    remark: "업데이트",
-  },
-]);
+const calculationList = ref<any[]>([]);
 
 // 7: PDF 탭용 컬럼/데이터
 const pdfColumns: TableColumn[] = [
@@ -524,22 +434,7 @@ const pdfColumns: TableColumn[] = [
   { key: "info", title: "정보개요", sortable: true },
   { key: "view", title: "Svg도면 미리보기", sortable: true },
 ];
-const pdfList = ref([
-  {
-    id: "1",
-    dwg: "file1.dwg",
-    excel: "file1.xlsx",
-    info: "개요1",
-    view: "file1.svg",
-  },
-  {
-    id: "2",
-    dwg: "file2.dwg",
-    excel: "file2.xlsx",
-    info: "개요2",
-    view: "file2.svg",
-  },
-]);
+const pdfList = ref<any[]>([]);
 const selectedPdfItems = ref<any[]>([]);
 const handlePdfSelectionChange = (items: any[]) => {
   selectedPdfItems.value = items;
@@ -553,22 +448,7 @@ const electricColumns: TableColumn[] = [
   { key: "info", title: "정보개요", sortable: true },
   { key: "view", title: "Svg도면 미리보기", sortable: true },
 ];
-const electricList = ref([
-  {
-    id: "1",
-    dwg: "elec1.dwg",
-    excel: "elec1.xlsx",
-    info: "전도개요1",
-    view: "elec1.svg",
-  },
-  {
-    id: "2",
-    dwg: "elec2.dwg",
-    excel: "elec2.xlsx",
-    info: "전도개요2",
-    view: "elec2.svg",
-  },
-]);
+const electricList = ref<any[]>([]);
 // 전기도면 탭 선택 상태
 const selectedElectricItems = ref<any[]>([]);
 const handleElectricSelectionChange = (items: any[]) => {
@@ -582,9 +462,7 @@ const structColumns: TableColumn[] = [
   { key: "equipmentType", title: "장비유형", sortable: true },
   { key: "item", title: "Item", sortable: true },
 ];
-const structList = ref([
-  { id: "1", type: "", components: "", equipmentType: "", item: "" },
-]);
+const structList = ref<any[]>([]);
 
 // PID 탭 선택 상태
 const selectedPidItems = ref<any[]>([]);
@@ -601,22 +479,7 @@ const mccColumns: TableColumn[] = [
   { key: "info", title: "정보개요", sortable: true },
   { key: "view", title: "Svg도면 미리보기", sortable: true },
 ];
-const mccList = ref([
-  {
-    id: "1",
-    dwg: "mcc1.dwg",
-    excel: "mcc1.xlsx",
-    info: "Mcc 정보 1",
-    view: "mcc1.svg",
-  },
-  {
-    id: "2",
-    dwg: "mcc2.dwg",
-    excel: "mcc2.xlsx",
-    info: "Mcc 정보 2",
-    view: "mcc2.svg",
-  },
-]);
+const mccList = ref<any[]>([]);
 // Mcc 구성도 탭 선택 상태
 const selectedMccItems = ref<any[]>([]);
 const handleMccSelectionChange = (items: any[]) => {
@@ -665,7 +528,159 @@ const scrollTabs = (direction: number) => {
   tabsContainer.value.scrollTo({ left: newScrollLeft, behavior: "smooth" });
 };
 
+// 데이터 로드 함수 (임시 데이터 할당)
+const loadData = () => {
+  pidList.value = [
+    {
+      id: "1",
+      dwg: "pid1.dwg",
+      excel: "pid1.xlsx",
+      info: "P&ID 정보 1",
+      view: "pid1.svg",
+    },
+    {
+      id: "2",
+      dwg: "pid2.dwg",
+      excel: "pid2.xlsx",
+      info: "P&ID 정보 2",
+      view: "pid2.svg",
+    },
+  ];
+  designList.value = [
+    {
+      id: "1",
+      columnNm: "",
+      influent: "324",
+      effluent: "245",
+      sludge: "",
+      unit: "mg/L",
+      remark: "Remark A",
+    },
+    {
+      id: "2",
+      columnNm: "",
+      influent: "645",
+      effluent: "134",
+      sludge: "",
+      unit: "mg/L",
+      remark: "Remark B",
+    },
+  ];
+  designCriteriaList.value = [
+    {
+      id: "1",
+      columnNm: "",
+      value: "10",
+      min: "5",
+      max: "15",
+      unit: "hr",
+      remark: "기본",
+    },
+    {
+      id: "2",
+      columnNm: "",
+      value: "20",
+      min: "10",
+      max: "30",
+      unit: "℃",
+      remark: "고온",
+    },
+  ];
+  designParameterList.value = [
+    { id: "1", columnNm: "", column: "param1", view: "view1" },
+    { id: "2", columnNm: "", column: "param2", view: "view2" },
+  ];
+  designEfficiencyList.value = [
+    {
+      id: "1",
+      columnNm: "",
+      value: "30",
+      min: "20",
+      max: "40",
+      unit: "%",
+      remark: "",
+    },
+    {
+      id: "2",
+      columnNm: "",
+      value: "50",
+      min: "45",
+      max: "55",
+      unit: "%",
+      remark: "",
+    },
+  ];
+  calculationList.value = [
+    {
+      id: "1",
+      no: "1",
+      formulaVersion: "v1.0",
+      appliedVersion: "v1.1",
+      remark: "초기",
+    },
+    {
+      id: "2",
+      no: "2",
+      formulaVersion: "v2.0",
+      appliedVersion: "v2.1",
+      remark: "업데이트",
+    },
+  ];
+  pdfList.value = [
+    {
+      id: "1",
+      dwg: "file1.dwg",
+      excel: "file1.xlsx",
+      info: "개요1",
+      view: "file1.svg",
+    },
+    {
+      id: "2",
+      dwg: "file2.dwg",
+      excel: "file2.xlsx",
+      info: "개요2",
+      view: "file2.svg",
+    },
+  ];
+  electricList.value = [
+    {
+      id: "1",
+      dwg: "elec1.dwg",
+      excel: "elec1.xlsx",
+      info: "전도개요1",
+      view: "elec1.svg",
+    },
+    {
+      id: "2",
+      dwg: "elec2.dwg",
+      excel: "elec2.xlsx",
+      info: "전도개요2",
+      view: "elec2.svg",
+    },
+  ];
+  structList.value = [
+    { id: "1", type: "", components: "", equipmentType: "", item: "" },
+  ];
+  mccList.value = [
+    {
+      id: "1",
+      dwg: "mcc1.dwg",
+      excel: "mcc1.xlsx",
+      info: "Mcc 정보 1",
+      view: "mcc1.svg",
+    },
+    {
+      id: "2",
+      dwg: "mcc2.dwg",
+      excel: "mcc2.xlsx",
+      info: "Mcc 정보 2",
+      view: "mcc2.svg",
+    },
+  ];
+};
+
 onMounted(() => {
+  loadData();
   nextTick(() => {
     updateScrollButtons();
   });

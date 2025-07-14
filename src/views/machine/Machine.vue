@@ -418,8 +418,8 @@ const handleDetailSave = () => {
   isDetailEditMode.value = false;
 };
 
-onMounted(() => {
-  // 샘플 데이터
+// 샘플 데이터 로드 함수
+const loadData = () => {
   machineList.value = Array.from({ length: 15 }, (_, i) => ({
     id: (i + 1).toString(),
     name: `기계${i + 1}`,
@@ -428,6 +428,10 @@ onMounted(() => {
     description: `기계 ${i + 1}에 대한 설명입니다.`,
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));
+};
+
+onMounted(() => {
+  loadData();
 });
 </script>
 

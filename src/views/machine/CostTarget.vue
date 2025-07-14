@@ -325,8 +325,8 @@ const handleDelete = () => {
   }
 };
 
-onMounted(() => {
-  // 샘플 데이터
+// 샘플 데이터 로드 함수
+const loadData = () => {
   costList.value = Array.from({ length: 18 }, (_, i) => ({
     id: (i + 1).toString(),
     name: `비용목표${i + 1}`,
@@ -341,6 +341,10 @@ onMounted(() => {
     status: ["진행중", "완료", "지연", "취소"][i % 4],
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));
+};
+
+onMounted(() => {
+  loadData();
 });
 </script>
 

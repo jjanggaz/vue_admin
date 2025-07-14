@@ -110,8 +110,8 @@ const handleDelete = () => {
   }
 };
 
-onMounted(() => {
-  // 샘플 데이터
+// 샘플 데이터 로드 함수
+const loadData = () => {
   approvalList.value = [
     {
       id: "1",
@@ -138,6 +138,10 @@ onMounted(() => {
       detail: "텍스트",
     },
   ];
+};
+
+onMounted(() => {
+  loadData();
 });
 </script>
 

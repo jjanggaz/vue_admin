@@ -154,8 +154,8 @@ const viewDetail = (item: ProjectItem) => {
   }
 };
 
-onMounted(() => {
-  // 샘플 데이터
+// 샘플 데이터 로드 함수
+const loadData = () => {
   projectList.value = Array.from({ length: 11 }, (_, i) => ({
     id: (i + 1).toString(),
     name: `프로젝트${i + 1}`,
@@ -168,6 +168,10 @@ onMounted(() => {
     country: ["한국", "일본", "미국"][i % 3],
     detail: "-",
   }));
+};
+
+onMounted(() => {
+  loadData();
 });
 </script>
 

@@ -307,8 +307,8 @@ const handleDelete = () => {
   }
 };
 
-onMounted(() => {
-  // 샘플 데이터
+// 샘플 데이터 로드 함수
+const loadData = () => {
   codeList.value = Array.from({ length: 20 }, (_, i) => ({
     id: (i + 1).toString(),
     group: ["기계타입", "기계상태", "기계등급"][i % 3],
@@ -319,6 +319,10 @@ onMounted(() => {
     isActive: i % 4 !== 0, // 4의 배수는 미사용
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));
+};
+
+onMounted(() => {
+  loadData();
 });
 </script>
 

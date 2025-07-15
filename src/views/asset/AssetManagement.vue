@@ -1,6 +1,7 @@
 <template>
-  <div class="asset-management">
-    <p>유입종류 관리 페이지입니다.</p>
+  <div class="asset-management-layout">
+    <!-- Router View for Sub Pages -->
+    <router-view />
   </div>
 </template>
 

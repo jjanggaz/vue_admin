@@ -18,7 +18,7 @@ const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
 // 기계 관리 페이지
 const MachineList = () => import("@/views/machine/MachineList.vue");
 const Machine = () => import("@/views/machine/Machine.vue");
-const MachineCodeMng = () => import("@/views/machine/MachineCodeMng.vue");
+const MachineCodeManagement = () => import("@/views/machine/MachineCodeManagement.vue");
 const CostTarget = () => import("@/views/machine/CostTarget.vue");
 
 const UserManagement = () => import("@/views/user/UserManagement.vue");
@@ -114,12 +114,43 @@ const routes: RouteRecordRaw[] = [
     path: "/asset",
     name: "AssetManagement",
     component: AssetManagement,
+    redirect: "/asset/inflow",
     meta: {
       requiresAuth: true,
-      title: "유일충류 관리",
+      title: "유입종류 관리",
       icon: "asset",
     },
+    children: [
+      {
+        path: "inflow",
+        name: "AssetInflow",
+        component: () => import("@/views/asset/Inflow.vue"),
+        meta: {
+          title: "유입",
+          breadcrumb: ["유입종류 관리", "유입"],
+        },
+      },
+      {
+        path: "outflow",
+        name: "AssetOutflow",
+        component: () => import("@/views/asset/Outflow.vue"),
+        meta: {
+          title: "유출",
+          breadcrumb: ["유입종류 관리", "유출"],
+        },
+      },
+      {
+        path: "recommended",
+        name: "AssetRecommended",
+        component: () => import("@/views/asset/RecommendedProcess.vue"),
+        meta: {
+          title: "추천공정",
+          breadcrumb: ["유입종류 관리", "추천공정"],
+        },
+      },
+    ],
   },
+
   {
     path: "/process",
     name: "ProcessManagement",
@@ -222,8 +253,8 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: "codeMng",
-        name: "MachineCodeMng",
-        component: MachineCodeMng,
+        name: "MachineCodeManagement",
+        component: MachineCodeManagement,
         meta: {
           title: "코드 관리",
           breadcrumb: ["기계", "코드 관리"],

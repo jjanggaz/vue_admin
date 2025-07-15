@@ -61,6 +61,11 @@ const sectionTabs = {
       to: "/model/standard",
     },
   ],
+  asset: [
+    { name: "Inflow", label: "유입", to: "/asset/inflow" },
+    { name: "Outflow", label: "유출", to: "/asset/outflow" },
+    { name: "RecommendedProcess", label: "추천공정", to: "/asset/recommended" },
+  ],
   process: [
     { name: "Process", label: "공정 관리", to: "/process/process" },
     // { name: 'Output', label: '공정 출력', to: '/process/output' }
@@ -77,7 +82,7 @@ const sectionTabs = {
   machine: [
     { name: "Machine", label: "기계", to: "/machine/machine" },
     {
-      name: "MachineCodeMng",
+      name: "MachineCodeManagement",
       label: "코드관리",
       to: "/machine/codeMng",
     },
@@ -109,6 +114,8 @@ const currentTabs = computed<TabItem[]>(() => {
   // 3D 모델 관리 섹션인 경우
   if (currentPath.startsWith("/model")) {
     return sectionTabs.model;
+  } else if (currentPath.startsWith("/asset")) {
+    return sectionTabs.asset;
   } else if (currentPath.startsWith("/process")) {
     // 공정 관리 섹션인 경우
     return sectionTabs.process;

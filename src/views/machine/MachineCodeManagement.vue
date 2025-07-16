@@ -44,6 +44,11 @@
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
     >
+      <!-- 사용여부 슬롯 -->
+      <template #cell-isActive="{ value }">
+        {{ t("machineCode.isActive." + value) }}
+      </template>
+
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="editItem(item)">
           {{ t("common.edit") }}
@@ -65,8 +70,12 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
-          <button class="btn-close" @click="closeRegistModal">
-            {{ t("common.close") }}
+          <button
+            class="btn-close"
+            @click="closeRegistModal"
+            aria-label="Close"
+          >
+            ×
           </button>
         </div>
         <div class="modal-body">
@@ -116,7 +125,7 @@
                 rows="3"
               ></textarea>
             </dd>
-            <dt>{{ t("machineCode.isActive") }}</dt>
+            <dt>{{ t("machineCode.isActive.label") }}</dt>
             <dd>
               <select v-model="newCode.isActive" class="form-input">
                 <option value="true">
@@ -203,7 +212,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "isActive",
-    title: t("machineCode.isActive"),
+    title: t("machineCode.isActive.label"),
     width: "100px",
     sortable: true,
   },
@@ -339,7 +348,11 @@ const handleDelete = () => {
     alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
-  if (confirm(`${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)) {
+  if (
+    confirm(
+      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+    )
+  ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     codeList.value = codeList.value.filter(
       (item) => !selectedIds.includes(item.id)

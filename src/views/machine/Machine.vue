@@ -44,6 +44,11 @@
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
     >
+      <!-- 기계타입 슬롯 -->
+      <template #cell-type="{ value }">
+        {{ t("machine.type." + mapMachineType(value)) }}
+      </template>
+
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="openDetailModal(item)">
           {{ t("common.view") }}
@@ -65,7 +70,13 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
-          <button class="btn-close" @click="closeRegistModal">X</button>
+          <button
+            class="btn-close"
+            @click="closeRegistModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -87,7 +98,7 @@
                 :placeholder="t('machine.codePlaceholder')"
               />
             </dd>
-            <dt>{{ t("machine.type") }}</dt>
+            <dt>{{ t("machine.type.label") }}</dt>
             <dd>
               <select v-model="newMachine.type" class="form-input">
                 <option value="">-- {{ t("common.select") }} --</option>
@@ -129,7 +140,13 @@
       <div class="modal-container" style="max-width: 1200px">
         <div class="modal-header">
           <h3>{{ t("common.detailInfo") }}</h3>
-          <button class="btn-close" @click="closeDetailModal">X</button>
+          <button
+            class="btn-close"
+            @click="closeDetailModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div style="overflow-x: auto">
@@ -148,7 +165,7 @@
                 <tr>
                   <th>{{ t("machine.name") }}</th>
                   <th>{{ t("machine.code") }}</th>
-                  <th>{{ t("machine.type") }}</th>
+                  <th>{{ t("machine.type.label") }}</th>
                   <th>{{ t("machine.description") }}</th>
                 </tr>
               </thead>
@@ -236,7 +253,12 @@ const tableColumns: TableColumn[] = [
   { key: "mcId", title: t("machine.mcId"), width: "150px", sortable: true },
   { key: "name", title: t("machine.name"), width: "150px", sortable: true },
   { key: "code", title: t("machine.code"), width: "120px", sortable: true },
-  { key: "type", title: t("machine.type"), width: "100px", sortable: true },
+  {
+    key: "type",
+    title: t("machine.type.label"),
+    width: "100px",
+    sortable: true,
+  },
   {
     key: "description",
     title: t("machine.description"),
@@ -292,12 +314,20 @@ const detailEditData = ref<RegistForm>({
 const detailTableColumns: TableColumn[] = [
   { key: "name", title: t("machine.name"), width: "150px" },
   { key: "code", title: t("machine.code"), width: "150px" },
-  { key: "type", title: t("machine.type"), width: "120px" },
+  { key: "type", title: t("machine.type.label"), width: "120px" },
   { key: "description", title: t("machine.description"), width: "200px" },
 ];
-const detailTableData = computed(() =>
-  detailItemData.value ? [detailItemData.value] : []
-);
+const detailTableData = computed(() => {
+  if (!detailItemData.value) return [];
+
+  // type 값을 번역된 값으로 변환
+  const translatedData = {
+    ...detailItemData.value,
+    type: t("machine.type." + mapMachineType(detailItemData.value.type)),
+  };
+
+  return [translatedData];
+});
 
 const filteredMachineList = computed(() => {
   if (searchQuery.value) {
@@ -399,18 +429,20 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(
+      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+    )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     machineList.value = machineList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("common.deleted"));
   }
 };
 
@@ -461,6 +493,14 @@ const loadData = () => {
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));
 };
+
+// 기계타입 매핑 (한글 → 영문 키)
+function mapMachineType(val: string) {
+  if (val === "펌프" || val === "pump") return "pump";
+  if (val === "모터" || val === "motor") return "motor";
+  if (val === "컨베이어" || val === "conveyor") return "conveyor";
+  return val;
+}
 
 onMounted(() => {
   loadData();

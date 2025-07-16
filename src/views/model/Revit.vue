@@ -70,7 +70,7 @@
             <input
               v-model="uploadForm.title"
               type="text"
-              placeholder="파일명을 입력하세요"
+              :placeholder="t('common.enterFileName')"
             />
           </div>
           <div class="form-group">
@@ -78,7 +78,7 @@
             <input
               v-model="uploadForm.project"
               type="text"
-              placeholder="프로젝트명을 입력하세요"
+              :placeholder="t('common.enterProjectName')"
             />
           </div>
           <div class="form-group">
@@ -86,7 +86,7 @@
             <input
               v-model="uploadForm.version"
               type="text"
-              placeholder="버전을 입력하세요 (예: 1.0)"
+              :placeholder="t('common.enterVersion')"
             />
           </div>
           <div class="form-group">
@@ -95,7 +95,7 @@
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                placeholder="파일을 선택하세요"
+                :placeholder="t('common.selectFilePlaceholder')"
                 readonly
                 class="file-name-input"
               />
@@ -147,7 +147,7 @@
             <input
               v-model="editForm.title"
               type="text"
-              placeholder="파일명을 입력하세요"
+              :placeholder="t('common.enterFileName')"
             />
           </div>
           <div class="form-group">
@@ -155,7 +155,7 @@
             <input
               v-model="editForm.project"
               type="text"
-              placeholder="프로젝트명을 입력하세요"
+              :placeholder="t('common.enterProjectName')"
             />
           </div>
           <div class="form-group">
@@ -163,7 +163,7 @@
             <input
               v-model="editForm.version"
               type="text"
-              placeholder="버전을 입력하세요"
+              :placeholder="t('common.enterVersion')"
             />
           </div>
           <div class="form-group">

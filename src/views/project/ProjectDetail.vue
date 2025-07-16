@@ -72,7 +72,7 @@
             :class="['structure-tab', { active: structureActiveTab === idx }]"
             @click="structureActiveTab = idx"
           >
-            {{ tab }}
+            {{ t("projectDetail.structureTabs." + tab) }}
           </button>
         </div>
         <div class="structure-table-wrap">
@@ -131,7 +131,7 @@
             ]"
             @click="handleLayout3dTabChange(idx)"
           >
-            {{ tab }}
+            {{ t("projectDetail.layout3dTabs." + tab) }}
           </button>
         </div>
         <div class="layout3d-table-wrap">
@@ -154,7 +154,7 @@
             :class="['output-subtab', { active: outputActiveTab === idx }]"
             @click="handleOutputTabChange(idx)"
           >
-            {{ tab }}
+            {{ t("projectDetail.outputTabs." + tab) }}
           </button>
         </div>
         <div class="output-file-list">
@@ -234,6 +234,9 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
+
+// 프로젝트 ID (임시 데이터)
+const projectId = ref("PRJ-2025-001");
 const tabs = [
   "기본 정보",
   "프로세스 정보",
@@ -437,13 +440,13 @@ const handleDesigncondTabChange = (tab: number) => {
 
 // 기본 정보
 const basicColumns: TableColumn[] = [
-  { key: "project", title: "프로젝트명" },
-  { key: "title1", title: "제목" },
-  { key: "content1", title: "내용텍스트" },
-  { key: "title2", title: "제목" },
-  { key: "content2", title: "내용텍스트" },
-  { key: "title3", title: "제목" },
-  { key: "content3", title: "내용텍스트" },
+  { key: "project", title: t("projectDetail.columns.project") },
+  { key: "title1", title: t("projectDetail.columns.title") },
+  { key: "content1", title: t("projectDetail.columns.content") },
+  { key: "title2", title: t("projectDetail.columns.title") },
+  { key: "content2", title: t("projectDetail.columns.content") },
+  { key: "title3", title: t("projectDetail.columns.title") },
+  { key: "content3", title: t("projectDetail.columns.content") },
 ];
 const basicRows = [
   {
@@ -476,10 +479,10 @@ const basicRows = [
 ];
 // 프로세스 정보 - 수질정보
 const processWaterColumns: TableColumn[] = [
-  { key: "item", title: "Item" },
-  { key: "influent", title: "Influent" },
-  { key: "unit", title: "Unit" },
-  { key: "remark", title: "Remark" },
+  { key: "item", title: t("projectDetail.columns.item") },
+  { key: "influent", title: t("projectDetail.columns.influent") },
+  { key: "unit", title: t("projectDetail.columns.unit") },
+  { key: "remark", title: t("projectDetail.columns.remark") },
 ];
 const processWaterRows = [
   { item: "text", influent: "text", unit: "text", remark: "text" },
@@ -487,7 +490,7 @@ const processWaterRows = [
 ];
 // 프로세스 정보 - 구조물
 const structureColumns: TableColumn[] = [
-  { key: "col1", title: "Structure" },
+  { key: "col1", title: t("projectDetail.columns.structure") },
   { key: "col2", title: "" },
   { key: "col3", title: "" },
   { key: "col4", title: "" },
@@ -543,12 +546,12 @@ const waterInfoRows = [
 ];
 // 3D 레이아웃 정보
 const layout3dColumns: TableColumn[] = [
-  { key: "no", title: "순번" },
-  { key: "structure", title: "구조물" },
-  { key: "device", title: "기기명" },
-  { key: "type", title: "기기타입" },
-  { key: "model", title: "3D모델" },
-  { key: "feature", title: "모델특성" },
+  { key: "no", title: t("projectDetail.columns.no") },
+  { key: "structure", title: t("projectDetail.columns.structure") },
+  { key: "device", title: t("projectDetail.columns.deviceName") },
+  { key: "type", title: t("projectDetail.columns.deviceType") },
+  { key: "model", title: t("projectDetail.columns.model3d") },
+  { key: "feature", title: t("projectDetail.columns.modelFeature") },
 ];
 const layout3dRows = [
   {
@@ -563,10 +566,13 @@ const layout3dRows = [
 // 산출물, 설계조건 등은 카드/커스텀 UI이므로 table 변환 제외
 
 const projectInfoColumns: TableColumn[] = [
-  { key: "projectPeriod", title: "프로젝트 기간" },
-  { key: "projectManager", title: "담당자" },
-  { key: "influentType", title: "유입종류" },
-  { key: "facilityCapacity", title: "시설용량 (m³/d)" },
+  { key: "projectPeriod", title: t("projectDetail.columns.projectPeriod") },
+  { key: "projectManager", title: t("projectDetail.columns.projectManager") },
+  { key: "influentType", title: t("projectDetail.columns.influentType") },
+  {
+    key: "facilityCapacity",
+    title: t("projectDetail.columns.facilityCapacity"),
+  },
 ];
 const projectInfoRows = [
   {
@@ -578,16 +584,16 @@ const projectInfoRows = [
 ];
 
 const designcondHydroColumns: TableColumn[] = [
-  { key: "col1", title: "항목" },
-  { key: "col2", title: "값1" },
-  { key: "col3", title: "값2" },
-  { key: "col4", title: "단위" },
+  { key: "col1", title: t("projectDetail.columns.item") },
+  { key: "col2", title: t("projectDetail.columns.value1") },
+  { key: "col3", title: t("projectDetail.columns.value2") },
+  { key: "col4", title: t("projectDetail.columns.unit") },
 ];
 const designcondConcreteColumns: TableColumn[] = [
-  { key: "col1", title: "구조물명" },
-  { key: "col2", title: "길이" },
-  { key: "col3", title: "너비" },
-  { key: "col4", title: "높이" },
+  { key: "col1", title: t("projectDetail.columns.structureName") },
+  { key: "col2", title: t("projectDetail.columns.length") },
+  { key: "col3", title: t("projectDetail.columns.width") },
+  { key: "col4", title: t("projectDetail.columns.height") },
 ];
 </script>
 

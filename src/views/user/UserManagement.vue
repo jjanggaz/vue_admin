@@ -501,16 +501,16 @@ const saveUser = () => {
     !newUser.value.corpType ||
     !newUser.value.role
   ) {
-    alert("모든 필드를 입력 혹은 선택 해주세요.");
+    alert(t("common.pleaseCompleteAllFields"));
     return;
   }
   if (!isEditMode.value && !isIdChecked.value) {
-    alert("아이디 중복체크를 해주세요.");
+    alert(t("common.pleaseCheckIdDuplication"));
     return;
   }
 
   if (newUser.value.pwd !== newUser.value.pwdChk) {
-    alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+    alert(t("common.passwordsDoNotMatch"));
     return;
   }
   if (isEditMode.value) {
@@ -518,7 +518,7 @@ const saveUser = () => {
     const idx = userList.value.findIndex((u) => u.id === newUser.value.id);
     if (idx !== -1) {
       userList.value[idx] = { ...newUser.value };
-      alert("사용자 정보가 수정되었습니다.");
+      alert(t("common.userInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 사용자 추가
@@ -528,7 +528,7 @@ const saveUser = () => {
       id: nextId,
       createdAt: new Date().toISOString(),
     });
-    alert("사용자가 등록되었습니다.");
+    alert(t("common.userRegistered"));
   }
   isRegistModalOpen.value = false;
   newUser.value = {
@@ -551,7 +551,7 @@ const saveUser = () => {
 const handleCheckId = () => {
   // 실제로는 서버에 중복 체크 요청을 해야 함
   if (!newUser.value.id) {
-    alert("아이디를 입력하세요.");
+    alert(t("common.pleaseEnterId"));
     return;
   }
 
@@ -559,10 +559,10 @@ const handleCheckId = () => {
   const exists = userList.value.some((user) => user.id === newUser.value.id);
 
   if (exists) {
-    alert("이미 존재하는 아이디입니다.");
+    alert(t("common.idAlreadyExists"));
     isIdChecked.value = false;
   } else {
-    alert("사용 가능한 아이디입니다.");
+    alert(t("common.idAvailable"));
     isIdChecked.value = true;
   }
 };
@@ -570,11 +570,13 @@ const handleCheckId = () => {
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(
+      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+    )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
     const selectedIds = selectedItems.value.map((item) => item.id);
@@ -582,14 +584,14 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("common.deleted"));
   }
 };
 
 // 선택된 항목 수정
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert("수정할 항목을 하나만 선택하세요.");
+    alert(t("common.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];

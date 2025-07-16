@@ -176,59 +176,150 @@
             </dd>
             <dt class="essential">{{ t("process.processSymbol") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('processSymbolFile', $event)"
-                accept="image/*,.svg"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.processSymbolFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('processSymbolFile', $event)"
+                    accept="image/*,.svg"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt class="essential">{{ t("process.calculation") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('calculationFile', $event)"
-                accept=".xlsx,.xls,.csv"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.calculationFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('calculationFile', $event)"
+                    accept=".xlsx,.xls,.csv"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt>{{ t("process.pdf") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('pdfFile' as any, $event)"
-                accept=".pdf"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.pdfFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('pdfFile' as any, $event)"
+                    accept=".pdf"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt>{{ t("process.electricDrawing") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('electricFile' as any, $event)"
-                accept=".dwg,.dxf"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.electricFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('electricFile' as any, $event)"
+                    accept=".dwg,.dxf"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt>{{ t("process.mccDiagram") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('mccFile' as any, $event)"
-                accept=".dwg,.dxf"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.mccFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('mccFile' as any, $event)"
+                    accept=".dwg,.dxf"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt class="essential">{{ t("process.pid") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('pidFile', $event)"
-                accept=".dwg,.dxf"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.pidFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('pidFile', $event)"
+                    accept=".dwg,.dxf"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt class="essential">{{ t("process.mappingExcel") }}</dt>
             <dd>
-              <input
-                type="file"
-                @change="handleFileChange('excelFile', $event)"
-                accept=".xlsx,.xls"
-              />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.excelFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('excelFile', $event)"
+                    accept=".xlsx,.xls"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <!-- <dt>{{ t('process.pidInfoOverview') }}</dt>
             <dd>
@@ -343,6 +434,9 @@ const registForm = ref<RegistForm>({
   excelFile: null,
 });
 
+// 파일 선택 관련 상태
+const selectedFiles = ref<{ [key: string]: File }>({});
+
 // 폼 유효성 검사
 const isFormValid = computed(() => {
   return (
@@ -380,7 +474,10 @@ const closeRegistModal = () => {
 const handleFileChange = (field: keyof RegistForm, event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    (registForm.value as any)[field] = target.files[0];
+    const file = target.files[0];
+    (registForm.value as any)[field] = file;
+    // 파일명 표시를 위해 selectedFiles에도 저장
+    selectedFiles.value[field] = file;
   }
 };
 
@@ -389,7 +486,7 @@ const handleSave = async () => {
     // 정합성 체크
     if (registForm.value.consistencyCheck) {
       // 정합성 체크 로직
-      alert("정합성 체크 로직 구현해야함");
+      alert(t("process.consistencyCheckLogicRequired"));
       return;
     }
 
@@ -424,21 +521,23 @@ const handleSave = async () => {
       console.log("Excel 파일:", registForm.value.excelFile.name);
     }
 
-    alert("공정이 성공적으로 등록되었습니다.");
+    alert(t("process.processRegisteredSuccessfully"));
     closeRegistModal();
   } catch (error) {
     console.error("등록 실패:", error);
-    alert("등록 중 오류가 발생했습니다.");
+    alert(t("process.registrationError"));
   }
 };
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("process.selectItemsToDelete"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(
+      t("process.confirmDeleteItems", { count: selectedItems.value.length })
+    )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
     const selectedProcessNms = selectedItems.value.map(
@@ -450,7 +549,7 @@ const handleDelete = () => {
     totalCount.value = processList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("process.deletedSuccessfully"));
   }
 };
 

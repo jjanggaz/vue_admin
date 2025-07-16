@@ -228,7 +228,6 @@ body {
     font-weight: $font-weight-bold;
     color: $text-color;
     h4 {
-
     }
   }
 
@@ -287,5 +286,46 @@ body {
 @media (min-width: $breakpoint-md) {
   .hidden-desktop {
     display: none !important;
+  }
+}
+
+// File upload components
+.file-upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .file-name-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #f9fafb;
+    color: #111827;
+  }
+
+  .file-select-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #222e77 !important;
+    color: #fff !important;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+
+    &:hover {
+      background: #1a2560 !important;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
   }
 }

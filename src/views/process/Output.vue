@@ -83,8 +83,12 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("output.register") }}</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-            {{ t("common.close") }}
+          <button
+            class="btn-close"
+            @click="isRegistModalOpen = false"
+            aria-label="Close"
+          >
+            ×
           </button>
         </div>
         <div class="modal-body">
@@ -100,7 +104,23 @@
             </dd>
             <dt>{{ t("output.fileUpload") }}</dt>
             <dd>
-              <input type="file" class="form-input" />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFile?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt>{{ t("output.etc") }}</dt>
             <dd>
@@ -177,6 +197,9 @@ const newTypeName = ref("");
 // 동적 탭 목록
 const tabs = ref<string[]>(["탭1", "탭2", "탭3"]);
 
+// 파일 선택 관련
+const selectedFile = ref<File | null>(null);
+
 const activeTab = ref(0);
 let touchStartX = 0;
 let touchEndX = 0;
@@ -226,6 +249,14 @@ const handleRowClick = (item: OutputItem) => {
 const handleRegist = () => {
   isRegistModalOpen.value = true;
   console.log("신규등록 버튼 클릭");
+};
+
+// 파일 선택 핸들러
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFile.value = target.files[0];
+  }
 };
 
 // 모달 저장 버튼: 새로운 탭 추가

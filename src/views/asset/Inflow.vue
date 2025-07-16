@@ -70,11 +70,26 @@
 
           <DataTable :columns="gridColumns2" :data="currentGridData2">
             <template #cell-formula="{ item, index }">
-              <input
+              <div
                 v-if="index === currentGridData2.length - 1"
-                type="file"
-                class="form-input"
-              />
+                class="file-upload-row"
+              >
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles[`table1_${index}`]?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange(`table1_${index}`, $event)"
+                    style="display: none"
+                  />
+                </label>
+              </div>
               <span v-else>{{ item.formula }}</span>
             </template>
             <template #cell-apply="{ item }: { item: GridRow2 }">
@@ -108,8 +123,8 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ t("inflow.registerNew") }}</h3>
-          <button class="close-btn" @click="closeModal">
-            {{ t("common.close") }}
+          <button class="close-btn" @click="closeModal" aria-label="Close">
+            ×
           </button>
         </div>
         <div class="modal-body">
@@ -149,7 +164,23 @@
           <dl class="column-regist">
             <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
             <dd>
-              <input type="file" class="form-input" />
+              <div class="file-upload-row">
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles.modalUpload?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange('modalUpload', $event)"
+                    style="display: none"
+                  />
+                </label>
+              </div>
             </dd>
             <dt>{{ t("common.etc") }}</dt>
             <dd>
@@ -163,11 +194,26 @@
 
           <DataTable :columns="gridColumns2" :data="currentGridData2">
             <template #cell-formula="{ item, index }">
-              <input
+              <div
                 v-if="index === currentGridData2.length - 1"
-                type="file"
-                class="form-input"
-              />
+                class="file-upload-row"
+              >
+                <input
+                  type="text"
+                  class="file-name-input"
+                  :value="selectedFiles[`table2_${index}`]?.name || ''"
+                  :placeholder="t('common.selectFilePlaceholder')"
+                  readonly
+                />
+                <label class="file-select-btn">
+                  {{ t("common.selectFile") }}
+                  <input
+                    type="file"
+                    @change="handleFileChange(`table2_${index}`, $event)"
+                    style="display: none"
+                  />
+                </label>
+              </div>
               <span v-else>{{ item.formula }}</span>
             </template>
             <template #cell-apply="{ item }: { item: GridRow2 }">
@@ -252,13 +298,16 @@ const tabsContainer = ref<HTMLElement | null>(null);
 const isModalOpen = ref(false);
 const newTabName = ref("");
 
+// 파일 선택 관련 상태
+const selectedFiles = ref<{ [key: string]: File }>({});
+
 const gridColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "80px" },
-  { key: "item", title: "항목" },
-  { key: "influent", title: "INFLUENT" },
-  { key: "unit", title: "UNIT" },
-  { key: "display", title: "표출여부" },
-  { key: "remarks", title: "비고" },
+  { key: "id", title: t("inflow.columns.no"), width: "80px" },
+  { key: "item", title: t("inflow.columns.item") },
+  { key: "influent", title: t("inflow.columns.influent") },
+  { key: "unit", title: t("inflow.columns.unit") },
+  { key: "display", title: t("inflow.columns.display") },
+  { key: "remarks", title: t("inflow.columns.remarks") },
 ];
 
 const gridData = ref<GridRow[]>([
@@ -305,12 +354,12 @@ const gridData = ref<GridRow[]>([
 ]);
 
 const gridColumns2: TableColumn[] = [
-  { key: "id", title: "순번", width: "80px" },
-  { key: "formula", title: "계산식" },
-  { key: "uploadDate", title: "업로드 일자" },
-  { key: "author", title: "작성자" },
-  { key: "apply", title: "적용선택" },
-  { key: "remarks", title: "비고" },
+  { key: "id", title: t("inflow.columns.no"), width: "80px" },
+  { key: "formula", title: t("inflow.columns.formula") },
+  { key: "uploadDate", title: t("inflow.columns.uploadDate") },
+  { key: "author", title: t("inflow.columns.author") },
+  { key: "apply", title: t("inflow.columns.apply") },
+  { key: "remarks", title: t("inflow.columns.remarks") },
 ];
 
 const gridData2 = ref<GridRow2[]>([
@@ -509,7 +558,7 @@ const closeModal = () => {
 
 const createNewTab = () => {
   if (!newTabName.value.trim()) {
-    alert("탭 이름을 입력하세요.");
+    alert(t("common.pleaseEnterTabName"));
     return;
   }
   const newIndex = tabs.value.length;
@@ -538,6 +587,14 @@ const createNewTab = () => {
 
 const onTabClick = (index: number) => {
   activeTab.value = index;
+};
+
+// 파일 선택 핸들러
+const handleFileChange = (key: string, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFiles.value[key] = target.files[0];
+  }
 };
 
 const updateScrollButtons = () => {

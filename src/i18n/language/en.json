@@ -47,7 +47,46 @@
     "detailInfo": "Detail Info",
     "view": "View",
     "action": "Action",
-    "upload": "Upload"
+    "upload": "Upload",
+    "pleaseSelectItemToDelete": "Please select items to delete.",
+    "selectItemToDelete": "Please select items to delete.",
+    "confirmDeleteItems": "Are you sure you want to delete the selected {count} items?",
+    "deleted": "Successfully deleted.",
+    "pleaseCompleteAllFields": "Please complete all fields.",
+    "pleaseCheckIdDuplication": "Please check for ID duplication.",
+    "passwordsDoNotMatch": "Password and password confirmation do not match.",
+    "userInfoUpdated": "User information has been updated.",
+    "userRegistered": "User has been registered.",
+    "pleaseEnterId": "Please enter an ID.",
+    "idAlreadyExists": "This ID already exists.",
+    "idAvailable": "This ID is available.",
+    "selectOneItemToEdit": "Please select only one item to edit.",
+    "pleaseCompleteRequiredFields": "Please complete all required fields.",
+    "informationUpdated": "Information has been updated.",
+    "itemRegistered": "Item has been registered.",
+    "pleaseEnterTabName": "Please enter a tab name.",
+    "processInfoUpdated": "Process information has been updated.",
+    "processRegistered": "Process has been registered.",
+    "codeInfoUpdated": "Code information has been updated.",
+    "codeRegistered": "Code has been registered.",
+    "pidItemDeleted": "P&ID item has been deleted.",
+    "pdfItemDeleted": "PDF item has been deleted.",
+    "electricDrawingItemDeleted": "Electric drawing item has been deleted.",
+    "mccDiagramItemDeleted": "MCC diagram item has been deleted.",
+    "enterFileName": "Please enter file name",
+    "enterProjectName": "Please enter project name",
+    "enterVersion": "Please enter version (e.g., 1.0)",
+    "enterModelName": "Please enter model name",
+    "enterGroupName": "Please enter ",
+    "enterCodeName": "Please enter ",
+    "enterCodeValue": "Please enter ",
+    "enterOrder": "Please enter ",
+    "enterDescription": "Please enter description",
+    "filesSelected": "{count} files selected",
+    "close": "Close",
+    "selectFile": "Select File",
+    "selectFilePlaceholder": "Please select a file",
+    "chooseFile": "Choose File"
   },
   "user": {
     "id": "ID",
@@ -114,7 +153,58 @@
     "systemIntegration": "System Integration",
     "testVerification": "Test Verification",
     "installationWork": "Installation Work",
-    "operationManual": "Operation Manual"
+    "operationManual": "Operation Manual",
+    "consistencyCheckLogicRequired": "Consistency check logic needs to be implemented",
+    "processRegisteredSuccessfully": "Process has been successfully registered.",
+    "registrationError": "An error occurred during registration.",
+    "selectItemsToDelete": "Please select items to delete.",
+    "confirmDeleteItems": "Are you sure you want to delete the selected {count} items?",
+    "deletedSuccessfully": "Successfully deleted."
+  },
+  "processDetail": {
+    "processType": "Process Type",
+    "processName": "Process Name",
+    "mode": "Mode",
+    "processSymbol": "Process Symbol",
+    "etc": "Others",
+    "tabs": {
+      "P&ID": "P&ID",
+      "설계조건": "Design Conditions",
+      "공용구조물": "Common Structures",
+      "계산식 관리": "Formula Management",
+      "PDF": "PDF",
+      "전기도면": "Electrical Drawings",
+      "Mcc 구성도": "MCC Diagrams"
+    },
+    "addPid": "Add P&ID",
+    "attachPidFile": "Attach P&ID File",
+    "pidFile": "P&ID File",
+    "columns": {
+      "dwgFile": "Drawing File DWG",
+      "excel": "Excel",
+      "infoOverview": "Info Overview",
+      "svgPreview": "SVG Drawing Preview",
+      "item": "Item",
+      "influent": "Influent",
+      "effluent": "Effluent",
+      "sludge": "Sludge",
+      "unit": "Unit",
+      "remark": "Remark",
+      "value": "Value",
+      "min": "Min",
+      "max": "Max",
+      "view": "View",
+      "no": "No.",
+      "formulaVersion": "Formula Version",
+      "appliedVersion": "Applied Version",
+      "remarks": "Remarks",
+      "type": "Type",
+      "components": "Components",
+      "equipmentType": "Equipment Type"
+    },
+    "attachPdfFile": "Attach PDF File",
+    "attachElectricFile": "Attach Electrical File",
+    "attachMccFile": "Attach MCC File"
   },
   "code": {
     "codeGroup": "Code Group",
@@ -146,10 +236,12 @@
     "namePlaceholder": "Enter machine name",
     "code": "Machine Code",
     "codePlaceholder": "Enter machine code",
-    "type": "Machine Type",
-    "type.pump": "Pump",
-    "type.motor": "Motor",
-    "type.conveyor": "Conveyor",
+    "type": {
+      "label": "Machine Type",
+      "pump": "Pump",
+      "motor": "Motor",
+      "conveyor": "Conveyor"
+    },
     "description": "Description",
     "descriptionPlaceholder": "Enter description",
     "createdAt": "Created At",
@@ -167,9 +259,11 @@
     "orderPlaceholder": "Enter order",
     "description": "Description",
     "descriptionPlaceholder": "Enter description",
-    "isActive": "Active",
-    "isActive.true": "Active",
-    "isActive.false": "Inactive",
+    "isActive": {
+      "label": "Active Status",
+      "true": "Active",
+      "false": "Inactive"
+    },
     "createdAt": "Created At",
     "machineType": "Machine Type",
     "machineStatus": "Machine Status",
@@ -181,27 +275,37 @@
     "id": "No.",
     "name": "Target Name",
     "namePlaceholder": "Enter target name",
-    "machineName": "Machine Name",
-    "machineName.pump1": "Pump1",
-    "machineName.motor1": "Motor1",
-    "machineName.conveyor1": "Conveyor1",
+    "machineName": {
+      "label": "Machine Name",
+      "pump1": "Pump1",
+      "motor1": "Motor1",
+      "conveyor1": "Conveyor1"
+    },
     "targetCost": "Target Cost",
     "targetCostPlaceholder": "Enter target cost",
-    "unit": "Unit",
-    "unit.won": "KRW",
-    "unit.dollar": "USD",
-    "unit.yen": "Yen",
-    "targetPeriod": "Target Period",
+    "unit": {
+      "label": "Unit",
+      "won": "KRW",
+      "dollar": "USD",
+      "yen": "Yen"
+    },
+    "targetPeriod": {
+      "label": "Target Period",
+      "example": "e.g."
+    },
     "targetPeriodPlaceholder": "Enter target period (e.g. 2025.01-2025.12)",
-    "targetPeriod.example": "e.g.",
-    "description": "Description",
+    "description": {
+      "label": "Description",
+      "example": "Description for"
+    },
     "descriptionPlaceholder": "Enter description",
-    "description.example": "Description for",
-    "status": "Status",
-    "status.inProgress": "In Progress",
-    "status.completed": "Completed",
-    "status.delayed": "Delayed",
-    "status.cancelled": "Cancelled",
+    "status": {
+      "label": "Status",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "delayed": "Delayed",
+      "cancelled": "Cancelled"
+    },
     "createdAt": "Created At",
     "costTarget": "Cost Target"
   },
@@ -235,6 +339,11 @@
     "placeholder": {
       "enterDetail": "Enter detail"
     },
+    "sample": {
+      "name": "Project",
+      "client": "Client",
+      "manager": "Manager"
+    },
     "approve": "Approve",
     "reject": "Reject"
   },
@@ -244,10 +353,27 @@
     "export": "Export",
     "tabs": {
       "기본 정보": "Basic Info",
-      "공정 정보": "Process Info",
-      "3D 배치": "3D Layout",
+      "프로세스 정보": "Process Info",
+      "3D 레이아웃 정보": "3D Layout Info",
       "산출물": "Output",
       "설계조건": "Design Condition"
+    },
+    "structureTabs": {
+      "구조물1": "Structure 1",
+      "구조물2": "Structure 2",
+      "구조물3": "Structure 3",
+      "구조물4": "Structure 4"
+    },
+    "layout3dTabs": {
+      "구조물": "Structure",
+      "기기": "Equipment",
+      "배관": "Piping",
+      "표준배치": "Standard Layout"
+    },
+    "outputTabs": {
+      "계산서": "Calculation",
+      "내역서": "Specification",
+      "도면": "Drawing"
     },
     "type": "Inflow Type",
     "typeValue": "Food Waste",
@@ -262,7 +388,49 @@
     "designCondition": "Design Condition",
     "repairCondition": "Repair Condition",
     "concreteStructure": "Concrete Structure Setting",
-    "emptyTabContent": "Tab content (sample)"
+    "emptyTabContent": "Tab content (sample)",
+    "columns": {
+      "project": "Project Name",
+      "title": "Title",
+      "content": "Content Text",
+      "projectPeriod": "Project Period",
+      "projectManager": "Project Manager",
+      "influentType": "Influent Type",
+      "facilityCapacity": "Facility Capacity (m³/d)",
+      "item": "Item",
+      "influent": "Influent",
+      "unit": "Unit",
+      "remark": "Remark",
+      "structure": "Structure",
+      "deviceName": "Device Name",
+      "deviceType": "Device Type",
+      "model3d": "3D Model",
+      "modelFeature": "Model Feature",
+      "no": "No.",
+      "length": "Length",
+      "width": "Width",
+      "height": "Height",
+      "value1": "Value1",
+      "value2": "Value2",
+      "structureName": "Structure Name"
+    }
+  },
+  "recommendedProcess": {
+    "title": "Recommended Process",
+    "inflowType": "Inflow Type",
+    "applicationField": "Application Field",
+    "solution": "Solution",
+    "layout3d": "3D Standard Layout",
+    "remarks": "Remarks",
+    "no": "No.",
+    "registerNew": "Register New",
+    "editProcess": "Edit Process",
+    "registerProcess": "Register Process",
+    "inflowTypePlaceholder": "Enter inflow type",
+    "applicationFieldPlaceholder": "Enter application field",
+    "solutionPlaceholder": "Enter solution",
+    "layout3dPlaceholder": "Enter 3D layout",
+    "remarksPlaceholder": "Enter remarks"
   },
   "inflow": {
     "registerNew": "Register New",
@@ -275,7 +443,37 @@
     "symbolColor": "Symbol Color",
     "uploadFormula": "Upload Formula",
     "formulaPlaceholder": "Enter formula",
-    "register": "Register"
+    "register": "Register",
+    "columns": {
+      "no": "No.",
+      "item": "Item",
+      "influent": "INFLUENT",
+      "unit": "UNIT",
+      "display": "Display",
+      "remarks": "Remarks",
+      "formula": "Formula",
+      "uploadDate": "Upload Date",
+      "author": "Author",
+      "apply": "Apply"
+    }
+  },
+  "outflow": {
+    "registerNew": "Register New",
+    "addItem": "Add Item",
+    "save": "Save",
+    "outputName": "Output Name",
+    "outputNamePlaceholder": "Enter inflow type name",
+    "remarks": "Remarks",
+    "remarksPlaceholder": "Enter formula",
+    "register": "Register",
+    "cancel": "Cancel",
+    "columns": {
+      "no": "No.",
+      "item": "Item",
+      "influent": "INFLUENT",
+      "unit": "UNIT",
+      "remarks": "Remarks"
+    }
   },
   "sidebar": {
     "dashboard": "Dashboard",

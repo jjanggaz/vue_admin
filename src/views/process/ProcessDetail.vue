@@ -23,15 +23,35 @@
         </dd>
         <dt class="essential">{{ t("processDetail.processSymbol") }}</dt>
         <dd>
-          <input type="file" class="form-input" placeholder="" />
+          <div class="file-upload-row">
+            <input
+              type="text"
+              class="file-name-input"
+              :value="selectedFiles.processSymbol?.name || ''"
+              :placeholder="t('common.selectFilePlaceholder')"
+              readonly
+            />
+            <label class="file-select-btn">
+              {{ t("common.selectFile") }}
+              <input
+                type="file"
+                @change="handleFileChange('processSymbol', $event)"
+                style="display: none"
+              />
+            </label>
+          </div>
         </dd>
         <!-- <dt class="essential">계산식</dt>
         <dd>
-          <input type="text" class="form-input" placeholder="">
+          <input type="text" class="form-input" :placeholder="t('common.enterDescription')">
         </dd> -->
         <dt>{{ t("processDetail.etc") }}</dt>
         <dd class="extend-all">
-          <input type="text" class="form-input" placeholder="" />
+          <input
+            type="text"
+            class="form-input"
+            :placeholder="t('common.enterDescription')"
+          />
         </dd>
       </dl>
 
@@ -280,15 +300,36 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3>{{ t("processDetail.attachPidFile") }}</h3>
-        <button class="btn-close" @click="closePidModal">
-          {{ t("common.close") }}
+        <button
+          class="btn-close"
+          @click="closePidModal"
+          :aria-label="t('common.close')"
+        >
+          ×
         </button>
       </div>
       <div class="modal-body">
         <dl class="column-regist">
           <dt class="essential">{{ t("processDetail.pidFile") }}</dt>
           <dd>
-            <input type="file" multiple @change="handlePidFilesSelected" />
+            <div class="file-upload-row">
+              <input
+                type="text"
+                class="file-name-input"
+                :value="getSelectedFilesText('pidFiles')"
+                :placeholder="t('common.selectFilePlaceholder')"
+                readonly
+              />
+              <label class="file-select-btn">
+                {{ t("common.selectFile") }}
+                <input
+                  type="file"
+                  multiple
+                  @change="handlePidFilesSelected"
+                  style="display: none"
+                />
+              </label>
+            </div>
           </dd>
         </dl>
       </div>
@@ -307,12 +348,38 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3>{{ t("processDetail.attachPdfFile") }}</h3>
-        <button class="btn-close" @click="closePdfModal">
-          {{ t("common.close") }}
+        <button
+          class="btn-close"
+          @click="closePdfModal"
+          :aria-label="t('common.close')"
+        >
+          ×
         </button>
       </div>
       <div class="modal-body">
-        <input type="file" multiple @change="handlePdfFilesSelected" />
+        <dl class="column-regist">
+          <dt class="essential">{{ t("processDetail.attachPdfFile") }}</dt>
+          <dd>
+            <div class="file-upload-row">
+              <input
+                type="text"
+                class="file-name-input"
+                :value="getSelectedFilesText('pdfFiles')"
+                :placeholder="t('common.selectFilePlaceholder')"
+                readonly
+              />
+              <label class="file-select-btn">
+                {{ t("common.selectFile") }}
+                <input
+                  type="file"
+                  multiple
+                  @change="handlePdfFilesSelected"
+                  style="display: none"
+                />
+              </label>
+            </div>
+          </dd>
+        </dl>
       </div>
       <div class="modal-buttons">
         <button class="btn btn-primary" @click="uploadPdfFiles">
@@ -329,12 +396,38 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3>{{ t("processDetail.attachElectricFile") }}</h3>
-        <button class="btn-close" @click="closeElectricModal">
-          {{ t("common.close") }}
+        <button
+          class="btn-close"
+          @click="closeElectricModal"
+          :aria-label="t('common.close')"
+        >
+          ×
         </button>
       </div>
       <div class="modal-body">
-        <input type="file" multiple @change="handleElectricFilesSelected" />
+        <dl class="column-regist">
+          <dt class="essential">{{ t("processDetail.attachElectricFile") }}</dt>
+          <dd>
+            <div class="file-upload-row">
+              <input
+                type="text"
+                class="file-name-input"
+                :value="getSelectedFilesText('electricFiles')"
+                :placeholder="t('common.selectFilePlaceholder')"
+                readonly
+              />
+              <label class="file-select-btn">
+                {{ t("common.selectFile") }}
+                <input
+                  type="file"
+                  multiple
+                  @change="handleElectricFilesSelected"
+                  style="display: none"
+                />
+              </label>
+            </div>
+          </dd>
+        </dl>
       </div>
       <div class="modal-buttons">
         <button class="btn btn-primary" @click="uploadElectricFiles">
@@ -351,12 +444,38 @@
     <div class="modal-window">
       <div class="modal-header">
         <h3>{{ t("processDetail.attachMccFile") }}</h3>
-        <button class="btn-close" @click="closeMccModal">
-          {{ t("common.close") }}
+        <button
+          class="btn-close"
+          @click="closeMccModal"
+          :aria-label="t('common.close')"
+        >
+          ×
         </button>
       </div>
       <div class="modal-body">
-        <input type="file" multiple @change="handleMccFilesSelected" />
+        <dl class="column-regist">
+          <dt class="essential">{{ t("processDetail.attachMccFile") }}</dt>
+          <dd>
+            <div class="file-upload-row">
+              <input
+                type="text"
+                class="file-name-input"
+                :value="getSelectedFilesText('mccFiles')"
+                :placeholder="t('common.selectFilePlaceholder')"
+                readonly
+              />
+              <label class="file-select-btn">
+                {{ t("common.selectFile") }}
+                <input
+                  type="file"
+                  multiple
+                  @change="handleMccFilesSelected"
+                  style="display: none"
+                />
+              </label>
+            </div>
+          </dd>
+        </dl>
       </div>
       <div class="modal-buttons">
         <button class="btn btn-primary" @click="uploadMccFiles">
@@ -383,10 +502,10 @@ const loading = ref(false);
 
 // 0: P&ID 탭용 컬럼/데이터
 const pidColumns: TableColumn[] = [
-  { key: "dwg", title: "도면파일DWG" },
-  { key: "excel", title: "Excel" },
-  { key: "info", title: "정보개요" },
-  { key: "view", title: "Svg도면 미리보기" },
+  { key: "dwg", title: t("processDetail.columns.dwgFile") },
+  { key: "excel", title: t("processDetail.columns.excel") },
+  { key: "info", title: t("processDetail.columns.infoOverview") },
+  { key: "view", title: t("processDetail.columns.svgPreview") },
 ];
 const pidList = ref<any[]>([]);
 
@@ -409,85 +528,101 @@ const handlePageChangePid = (page: number) => {
 
 // 1: 설계조건 탭용 컬럼/데이터 (기존 복원)
 const designColumns: TableColumn[] = [
-  { key: "columnNm", title: "항목" },
-  { key: "influent", title: "Influent" },
-  { key: "effluent", title: "Effluent" },
-  { key: "sludge", title: "Sludge" },
-  { key: "unit", title: "Unit" },
-  { key: "remark", title: "Remark" },
+  { key: "columnNm", title: t("processDetail.columns.item") },
+  { key: "influent", title: t("processDetail.columns.influent") },
+  { key: "effluent", title: t("processDetail.columns.effluent") },
+  { key: "sludge", title: t("processDetail.columns.sludge") },
+  { key: "unit", title: t("processDetail.columns.unit") },
+  { key: "remark", title: t("processDetail.columns.remark") },
 ];
 const designList = ref<any[]>([]);
 
 const designCriteriaColumns: TableColumn[] = [
-  { key: "columnNm", title: "항목" },
-  { key: "value", title: "Value" },
-  { key: "min", title: "Min" },
-  { key: "max", title: "Max" },
-  { key: "unit", title: "Unit" },
-  { key: "remark", title: "Remark" },
+  { key: "columnNm", title: t("processDetail.columns.item") },
+  { key: "value", title: t("processDetail.columns.value") },
+  { key: "min", title: t("processDetail.columns.min") },
+  { key: "max", title: t("processDetail.columns.max") },
+  { key: "unit", title: t("processDetail.columns.unit") },
+  { key: "remark", title: t("processDetail.columns.remark") },
 ];
 const designCriteriaList = ref<any[]>([]);
 
 const designParameterColumns: TableColumn[] = [
-  { key: "columnNm", title: "항목" },
-  { key: "view", title: "view" },
+  { key: "columnNm", title: t("processDetail.columns.item") },
+  { key: "view", title: t("processDetail.columns.view") },
 ];
 const designParameterList = ref<any[]>([]);
 
 // 5: 설계조건 효율 테이블용 컬럼/데이터
 const designEfficiencyColumns: TableColumn[] = [
-  { key: "columnNm", title: "항목" },
-  { key: "value", title: "Value" },
-  { key: "min", title: "Min" },
-  { key: "max", title: "Max" },
-  { key: "unit", title: "Unit" },
-  { key: "remark", title: "Remark" },
+  { key: "columnNm", title: t("processDetail.columns.item") },
+  { key: "value", title: t("processDetail.columns.value") },
+  { key: "min", title: t("processDetail.columns.min") },
+  { key: "max", title: t("processDetail.columns.max") },
+  { key: "unit", title: t("processDetail.columns.unit") },
+  { key: "remark", title: t("processDetail.columns.remark") },
 ];
 const designEfficiencyList = ref<any[]>([]);
 
 // 6: 계산식 관리 탭용 컬럼/데이터
 const calculationColumns: TableColumn[] = [
-  { key: "no", title: "순번" },
-  { key: "formulaVersion", title: "계산식 버전" },
-  { key: "appliedVersion", title: "적용 버전" },
-  { key: "remark", title: "비고" },
+  { key: "no", title: t("processDetail.columns.no") },
+  { key: "formulaVersion", title: t("processDetail.columns.formulaVersion") },
+  { key: "appliedVersion", title: t("processDetail.columns.appliedVersion") },
+  { key: "remark", title: t("processDetail.columns.remarks") },
 ];
 const calculationList = ref<any[]>([]);
 
 // 7: PDF 탭용 컬럼/데이터
 const pdfColumns: TableColumn[] = [
-  { key: "dwg", title: "도면파일DWG", sortable: true },
-  { key: "excel", title: "Excel", sortable: true },
-  { key: "info", title: "정보개요", sortable: true },
-  { key: "view", title: "Svg도면 미리보기", sortable: true },
+  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
+  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  {
+    key: "info",
+    title: t("processDetail.columns.infoOverview"),
+    sortable: true,
+  },
+  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
 ];
 const pdfList = ref<any[]>([]);
 const selectedPdfItems = ref<any[]>([]);
 const handlePdfSelectionChange = (items: any[]) => {
   selectedPdfItems.value = items;
-  console.log("PDF 선택 변경:", items);
+  console.log("PDF selection changed:", items);
 };
 
 // 8: 전기도면 탭용 컬럼/데이터
 const electricColumns: TableColumn[] = [
-  { key: "dwg", title: "도면파일DWG", sortable: true },
-  { key: "excel", title: "Excel", sortable: true },
-  { key: "info", title: "정보개요", sortable: true },
-  { key: "view", title: "Svg도면 미리보기", sortable: true },
+  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
+  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  {
+    key: "info",
+    title: t("processDetail.columns.infoOverview"),
+    sortable: true,
+  },
+  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
 ];
 const electricList = ref<any[]>([]);
 // 전기도면 탭 선택 상태
 const selectedElectricItems = ref<any[]>([]);
 const handleElectricSelectionChange = (items: any[]) => {
   selectedElectricItems.value = items;
-  console.log("전기도면 선택 변경:", items);
+  console.log("Electric drawing selection changed:", items);
 };
 
 const structColumns: TableColumn[] = [
-  { key: "type", title: "구분", sortable: true },
-  { key: "components", title: "Components", sortable: true },
-  { key: "equipmentType", title: "장비유형", sortable: true },
-  { key: "item", title: "Item", sortable: true },
+  { key: "type", title: t("processDetail.columns.type"), sortable: true },
+  {
+    key: "components",
+    title: t("processDetail.columns.components"),
+    sortable: true,
+  },
+  {
+    key: "equipmentType",
+    title: t("processDetail.columns.equipmentType"),
+    sortable: true,
+  },
+  { key: "item", title: t("processDetail.columns.item"), sortable: true },
 ];
 const structList = ref<any[]>([]);
 
@@ -496,31 +631,35 @@ const selectedPidItems = ref<any[]>([]);
 // PID 탭 선택 변경 핸들러
 const handlePidSelectionChange = (items: any[]) => {
   selectedPidItems.value = items;
-  console.log("PID 선택 변경:", items);
+  console.log("PID selection changed:", items);
 };
 
 // 9: Mcc 구성도 탭용 컬럼/데이터
 const mccColumns: TableColumn[] = [
-  { key: "dwg", title: "도면파일DWG", sortable: true },
-  { key: "excel", title: "Excel", sortable: true },
-  { key: "info", title: "정보개요", sortable: true },
-  { key: "view", title: "Svg도면 미리보기", sortable: true },
+  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
+  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  {
+    key: "info",
+    title: t("processDetail.columns.infoOverview"),
+    sortable: true,
+  },
+  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
 ];
 const mccList = ref<any[]>([]);
 // Mcc 구성도 탭 선택 상태
 const selectedMccItems = ref<any[]>([]);
 const handleMccSelectionChange = (items: any[]) => {
   selectedMccItems.value = items;
-  console.log("Mcc 구성도 선택 변경:", items);
+  console.log("MCC diagram selection changed:", items);
 };
 
 // 정렬 이벤트 핸들러
 const handleSortChange = (args: { key: string; direction: "asc" | "desc" }) => {
-  console.log("정렬:", args.key, args.direction);
+  console.log("Sort:", args.key, args.direction);
 };
 // 행 클릭 핸들러
 const handleRowClick = (item: any, index: number) => {
-  console.log("행 클릭:", item, index);
+  console.log("Row clicked:", item, index);
 };
 
 const tabs = ref([
@@ -537,8 +676,46 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
 
+// 파일 선택 관련 상태
+const selectedFiles = ref<{ [key: string]: File }>({});
+
 const onTabClick = (index: number) => {
   activeTab.value = index;
+};
+
+// 파일 선택 핸들러
+const handleFileChange = (key: string, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFiles.value[key] = target.files[0];
+  }
+};
+
+// 여러 파일 선택 시 파일명 텍스트 생성
+const getSelectedFilesText = (key: string) => {
+  if (key === "pidFiles" && selectedPidFiles.value.length > 0) {
+    return selectedPidFiles.value.length === 1
+      ? selectedPidFiles.value[0].name
+      : t("common.filesSelected", { count: selectedPidFiles.value.length });
+  }
+  if (key === "pdfFiles" && selectedPdfFiles.value.length > 0) {
+    return selectedPdfFiles.value.length === 1
+      ? selectedPdfFiles.value[0].name
+      : t("common.filesSelected", { count: selectedPdfFiles.value.length });
+  }
+  if (key === "electricFiles" && selectedElectricFiles.value.length > 0) {
+    return selectedElectricFiles.value.length === 1
+      ? selectedElectricFiles.value[0].name
+      : t("common.filesSelected", {
+          count: selectedElectricFiles.value.length,
+        });
+  }
+  if (key === "mccFiles" && selectedMccFiles.value.length > 0) {
+    return selectedMccFiles.value.length === 1
+      ? selectedMccFiles.value[0].name
+      : t("common.filesSelected", { count: selectedMccFiles.value.length });
+  }
+  return selectedFiles.value[key]?.name || "";
 };
 
 const updateScrollButtons = () => {
@@ -771,11 +948,11 @@ const closePidModal = () => {
 const handlePidFilesSelected = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   selectedPidFiles.value = files ? Array.from(files) : [];
-  console.log("선택된 P&ID 파일:", selectedPidFiles.value);
+  console.log("Selected P&ID files:", selectedPidFiles.value);
 };
 const uploadPidFiles = () => {
   // TODO: implement actual upload
-  console.log("업로드 실행:", selectedPidFiles.value);
+  console.log("Upload executed:", selectedPidFiles.value);
   closePidModal();
 };
 
@@ -792,10 +969,10 @@ const closePdfModal = () => {
 const handlePdfFilesSelected = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   selectedPdfFiles.value = files ? Array.from(files) : [];
-  console.log("선택된 PDF 파일:", selectedPdfFiles.value);
+  console.log("Selected PDF files:", selectedPdfFiles.value);
 };
 const uploadPdfFiles = () => {
-  console.log("PDF 업로드 실행:", selectedPdfFiles.value);
+  console.log("PDF upload executed:", selectedPdfFiles.value);
   closePdfModal();
 };
 
@@ -811,10 +988,10 @@ const closeElectricModal = () => {
 const handleElectricFilesSelected = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   selectedElectricFiles.value = files ? Array.from(files) : [];
-  console.log("선택된 전기도면 파일:", selectedElectricFiles.value);
+  console.log("Selected electric drawing files:", selectedElectricFiles.value);
 };
 const uploadElectricFiles = () => {
-  console.log("전기도면 업로드 실행:", selectedElectricFiles.value);
+  console.log("Electric drawing upload executed:", selectedElectricFiles.value);
   closeElectricModal();
 };
 
@@ -830,23 +1007,23 @@ const closeMccModal = () => {
 const handleMccFilesSelected = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   selectedMccFiles.value = files ? Array.from(files) : [];
-  console.log("선택된 Mcc 구성도 파일:", selectedMccFiles.value);
+  console.log("Selected MCC diagram files:", selectedMccFiles.value);
 };
 const uploadMccFiles = () => {
-  console.log("Mcc 업로드 실행:", selectedMccFiles.value);
+  console.log("MCC upload executed:", selectedMccFiles.value);
   closeMccModal();
 };
 
 // 삭제 핸들러 함수들
 const handlePidDelete = () => {
   if (selectedPidItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      `선택된 ${selectedPidItems.value.length}개의 P&ID 항목을 삭제하시겠습니까?`
+      t("common.confirmDeleteItems", { count: selectedPidItems.value.length })
     )
   ) {
     // 선택된 항목들을 pidList에서 제거
@@ -855,19 +1032,19 @@ const handlePidDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedPidItems.value = [];
-    alert("P&ID 항목이 삭제되었습니다.");
+    alert(t("common.pidItemDeleted"));
   }
 };
 
 const handlePdfDelete = () => {
   if (selectedPdfItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      `선택된 ${selectedPdfItems.value.length}개의 PDF 항목을 삭제하시겠습니까?`
+      t("common.confirmDeleteItems", { count: selectedPdfItems.value.length })
     )
   ) {
     // 선택된 항목들을 pdfList에서 제거
@@ -876,19 +1053,21 @@ const handlePdfDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedPdfItems.value = [];
-    alert("PDF 항목이 삭제되었습니다.");
+    alert(t("common.pdfItemDeleted"));
   }
 };
 
 const handleElectricDelete = () => {
   if (selectedElectricItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      `선택된 ${selectedElectricItems.value.length}개의 전기도면 항목을 삭제하시겠습니까?`
+      t("common.confirmDeleteItems", {
+        count: selectedElectricItems.value.length,
+      })
     )
   ) {
     // 선택된 항목들을 electricList에서 제거
@@ -897,19 +1076,19 @@ const handleElectricDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedElectricItems.value = [];
-    alert("전기도면 항목이 삭제되었습니다.");
+    alert(t("common.electricDrawingItemDeleted"));
   }
 };
 
 const handleMccDelete = () => {
   if (selectedMccItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      `선택된 ${selectedMccItems.value.length}개의 Mcc 구성도 항목을 삭제하시겠습니까?`
+      t("common.confirmDeleteItems", { count: selectedMccItems.value.length })
     )
   ) {
     // 선택된 항목들을 mccList에서 제거
@@ -918,12 +1097,14 @@ const handleMccDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedMccItems.value = [];
-    alert("Mcc 구성도 항목이 삭제되었습니다.");
+    alert(t("common.mccDiagramItemDeleted"));
   }
 };
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .public-management-layout {
   height: 100%;
   padding: $spacing-lg;

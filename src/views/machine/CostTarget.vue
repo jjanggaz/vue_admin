@@ -44,6 +44,21 @@
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
     >
+      <!-- 기계명 슬롯 -->
+      <template #cell-machineName="{ value }">
+        {{ t("costTarget.machineName." + mapMachineName(value)) }}
+      </template>
+
+      <!-- 단위 슬롯 -->
+      <template #cell-unit="{ value }">
+        {{ t("costTarget.unit." + mapUnit(value)) }}
+      </template>
+
+      <!-- 상태 슬롯 -->
+      <template #cell-status="{ value }">
+        {{ t("costTarget.status." + mapStatus(value)) }}
+      </template>
+
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="editItem(item)">
           {{ t("common.edit") }}
@@ -65,8 +80,12 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
-          <button class="btn-close" @click="closeRegistModal">
-            {{ t("common.close") }}
+          <button
+            class="btn-close"
+            @click="closeRegistModal"
+            aria-label="Close"
+          >
+            ×
           </button>
         </div>
         <div class="modal-body">
@@ -80,7 +99,7 @@
                 :placeholder="t('costTarget.namePlaceholder')"
               />
             </dd>
-            <dt class="essential">{{ t("costTarget.machineName") }}</dt>
+            <dt class="essential">{{ t("costTarget.machineName.label") }}</dt>
             <dd>
               <select v-model="newCost.machineName" class="form-input">
                 <option value="">-- {{ t("common.select") }} --</option>
@@ -104,7 +123,7 @@
                 :placeholder="t('costTarget.targetCostPlaceholder')"
               />
             </dd>
-            <dt>{{ t("costTarget.unit") }}</dt>
+            <dt>{{ t("costTarget.unit.label") }}</dt>
             <dd>
               <select v-model="newCost.unit" class="form-input">
                 <option value="원">{{ t("costTarget.unit.won") }}</option>
@@ -112,7 +131,7 @@
                 <option value="엔">{{ t("costTarget.unit.yen") }}</option>
               </select>
             </dd>
-            <dt>{{ t("costTarget.targetPeriod") }}</dt>
+            <dt>{{ t("costTarget.targetPeriod.label") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetPeriod"
@@ -121,7 +140,7 @@
                 :placeholder="t('costTarget.targetPeriodPlaceholder')"
               />
             </dd>
-            <dt>{{ t("costTarget.description") }}</dt>
+            <dt>{{ t("costTarget.description.label") }}</dt>
             <dd>
               <textarea
                 v-model="newCost.description"
@@ -130,7 +149,7 @@
                 rows="3"
               ></textarea>
             </dd>
-            <dt>{{ t("costTarget.status") }}</dt>
+            <dt>{{ t("costTarget.status.label") }}</dt>
             <dd>
               <select v-model="newCost.status" class="form-input">
                 <option value="진행중">
@@ -201,7 +220,7 @@ const tableColumns: TableColumn[] = [
   { key: "name", title: t("costTarget.name"), width: "150px", sortable: true },
   {
     key: "machineName",
-    title: t("costTarget.machineName"),
+    title: t("costTarget.machineName.label"),
     width: "120px",
     sortable: true,
   },
@@ -211,22 +230,27 @@ const tableColumns: TableColumn[] = [
     width: "120px",
     sortable: true,
   },
-  { key: "unit", title: t("costTarget.unit"), width: "80px", sortable: true },
+  {
+    key: "unit",
+    title: t("costTarget.unit.label"),
+    width: "80px",
+    sortable: true,
+  },
   {
     key: "targetPeriod",
-    title: t("costTarget.targetPeriod"),
+    title: t("costTarget.targetPeriod.label"),
     width: "150px",
     sortable: true,
   },
   {
     key: "description",
-    title: t("costTarget.description"),
+    title: t("costTarget.description.label"),
     width: "200px",
     sortable: true,
   },
   {
     key: "status",
-    title: t("costTarget.status"),
+    title: t("costTarget.status.label"),
     width: "100px",
     sortable: true,
   },
@@ -401,6 +425,31 @@ const loadData = () => {
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));
 };
+
+// 기계명 매핑 (한글 → 영문 키)
+function mapMachineName(val: string) {
+  if (val === "펌프1" || val === "pump1") return "pump1";
+  if (val === "모터1" || val === "motor1") return "motor1";
+  if (val === "컨베이어1" || val === "conveyor1") return "conveyor1";
+  return val;
+}
+
+// 단위 매핑 (한글 → 영문 키)
+function mapUnit(val: string) {
+  if (val === "원" || val === "won") return "won";
+  if (val === "달러" || val === "dollar") return "dollar";
+  if (val === "엔" || val === "yen") return "yen";
+  return val;
+}
+
+// 상태 매핑 (한글 → 영문 키)
+function mapStatus(val: string) {
+  if (val === "진행중" || val === "inProgress") return "inProgress";
+  if (val === "완료" || val === "completed") return "completed";
+  if (val === "지연" || val === "delayed") return "delayed";
+  if (val === "취소" || val === "cancelled") return "cancelled";
+  return val;
+}
 
 onMounted(() => {
   loadData();

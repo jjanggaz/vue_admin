@@ -243,7 +243,9 @@ function deleteSelected(type: "project" | "client" | "etc") {
   if (type === "project") {
     if (!selectedProject.value.length) return;
     if (
-      !confirm(`${selectedProject.value.length}개의 항목을 삭제하시겠습니까?`)
+      !confirm(
+        t("common.confirmDeleteItems", { count: selectedProject.value.length })
+      )
     )
       return;
     projectRows.value = projectRows.value.filter(
@@ -252,7 +254,11 @@ function deleteSelected(type: "project" | "client" | "etc") {
     selectedProject.value = [];
   } else if (type === "client") {
     if (!selectedClient.value.length) return;
-    if (!confirm(`${selectedClient.value.length}개의 항목을 삭제하시겠습니까?`))
+    if (
+      !confirm(
+        t("common.confirmDeleteItems", { count: selectedClient.value.length })
+      )
+    )
       return;
     clientRows.value = clientRows.value.filter(
       (row) => !selectedClient.value.includes(row)
@@ -260,7 +266,11 @@ function deleteSelected(type: "project" | "client" | "etc") {
     selectedClient.value = [];
   } else {
     if (!selectedEtc.value.length) return;
-    if (!confirm(`${selectedEtc.value.length}개의 항목을 삭제하시겠습니까?`))
+    if (
+      !confirm(
+        t("common.confirmDeleteItems", { count: selectedEtc.value.length })
+      )
+    )
       return;
     etcRows.value = etcRows.value.filter(
       (row) => !selectedEtc.value.includes(row)

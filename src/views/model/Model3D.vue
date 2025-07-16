@@ -64,7 +64,7 @@
             <input
               v-model="uploadForm.title"
               type="text"
-              placeholder="모델명을 입력하세요"
+              :placeholder="t('common.enterModelName')"
             />
           </div>
           <div class="form-group">
@@ -91,7 +91,7 @@
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                placeholder="파일을 선택하세요"
+                :placeholder="t('common.selectFilePlaceholder')"
                 readonly
                 class="file-name-input"
               />
@@ -141,7 +141,7 @@
             <input
               v-model="editForm.title"
               type="text"
-              placeholder="모델명을 입력하세요"
+              :placeholder="t('common.enterModelName')"
             />
           </div>
           <div class="form-group">

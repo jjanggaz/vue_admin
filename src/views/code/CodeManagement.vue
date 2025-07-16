@@ -95,7 +95,7 @@
                 id="code-name"
                 v-model="newCode.codeGroup"
                 type="text"
-                placeholder=" 입력하세요"
+                :placeholder="t('common.enterGroupName')"
                 :disabled="isEditMode"
               />
             </dd>
@@ -105,7 +105,7 @@
                 id="code-name"
                 v-model="newCode.highCode"
                 type="text"
-                placeholder=" 입력하세요"
+                :placeholder="t('common.enterCodeName')"
                 :disabled="isEditMode"
               />
             </dd>
@@ -115,7 +115,7 @@
                 id="code-corp"
                 v-model="newCode.codeName"
                 type="text"
-                placeholder=" 입력하세요"
+                :placeholder="t('common.enterCodeValue')"
               />
             </dd>
             <dt>{{ t("code.codeName") }}</dt>
@@ -124,7 +124,7 @@
                 id="code-phone"
                 v-model="newCode.rank"
                 type="text"
-                placeholder=" 입력하세요"
+                :placeholder="t('common.enterOrder')"
               />
             </dd>
             <dt>{{ t("code.description") }}</dt>
@@ -133,7 +133,7 @@
                 id="code-email"
                 v-model="newCode.etc"
                 type="text"
-                placeholder="을 입력하세요"
+                :placeholder="t('common.enterDescription')"
               />
             </dd>
           </dl>
@@ -420,7 +420,7 @@ const saveCode = () => {
     !newCode.value.rank ||
     !newCode.value.etc
   ) {
-    alert("모든 필드를 입력 해주세요.");
+    alert(t("common.pleaseCompleteAllFields"));
     return;
   }
 
@@ -429,7 +429,7 @@ const saveCode = () => {
     const idx = codeList.value.findIndex((u) => u.id === newCode.value.id);
     if (idx !== -1) {
       codeList.value[idx] = { ...newCode.value };
-      alert("코드 정보가 수정되었습니다.");
+      alert(t("common.codeInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 코드 추가
@@ -438,7 +438,7 @@ const saveCode = () => {
       ...newCode.value,
       id: nextId,
     });
-    alert("코드가 등록되었습니다.");
+    alert(t("common.codeRegistered"));
   }
 
   isRegistModalOpen.value = false;
@@ -456,11 +456,13 @@ const saveCode = () => {
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(
+      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+    )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
     const selectedIds = selectedItems.value.map((item) => item.id);
@@ -468,14 +470,14 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("common.deleted"));
   }
 };
 
 // 선택된 항목 수정
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert("수정할 항목을 하나만 선택하세요.");
+    alert(t("common.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];

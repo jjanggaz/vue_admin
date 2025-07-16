@@ -47,7 +47,46 @@
     "detailInfo": "상세정보",
     "view": "보기",
     "action": "동작",
-    "upload": "업로드"
+    "upload": "업로드",
+    "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",
+    "selectItemToDelete": "삭제할 항목을 선택하세요.",
+    "confirmDeleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
+    "deleted": "삭제되었습니다.",
+    "pleaseCompleteAllFields": "모든 필드를 입력 혹은 선택 해주세요.",
+    "pleaseCheckIdDuplication": "아이디 중복체크를 해주세요.",
+    "passwordsDoNotMatch": "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+    "userInfoUpdated": "사용자 정보가 수정되었습니다.",
+    "userRegistered": "사용자가 등록되었습니다.",
+    "pleaseEnterId": "아이디를 입력하세요.",
+    "idAlreadyExists": "이미 존재하는 아이디입니다.",
+    "idAvailable": "사용 가능한 아이디입니다.",
+    "selectOneItemToEdit": "수정할 항목을 하나만 선택하세요.",
+    "pleaseCompleteRequiredFields": "필수 필드를 입력해주세요.",
+    "informationUpdated": "정보가 수정되었습니다.",
+    "itemRegistered": "항목이 등록되었습니다.",
+    "pleaseEnterTabName": "탭 이름을 입력하세요.",
+    "processInfoUpdated": "공정 정보가 수정되었습니다.",
+    "processRegistered": "공정이 등록되었습니다.",
+    "codeInfoUpdated": "코드 정보가 수정되었습니다.",
+    "codeRegistered": "코드가 등록되었습니다.",
+    "pidItemDeleted": "P&ID 항목이 삭제되었습니다.",
+    "pdfItemDeleted": "PDF 항목이 삭제되었습니다.",
+    "electricDrawingItemDeleted": "전기도면 항목이 삭제되었습니다.",
+    "mccDiagramItemDeleted": "Mcc 구성도 항목이 삭제되었습니다.",
+    "enterFileName": "파일명을 입력하세요",
+    "enterProjectName": "프로젝트명을 입력하세요",
+    "enterVersion": "버전을 입력하세요 (예: 1.0)",
+    "enterModelName": "모델명을 입력하세요",
+    "enterGroupName": " 입력하세요",
+    "enterCodeName": " 입력하세요",
+    "enterCodeValue": " 입력하세요",
+    "enterOrder": " 입력하세요",
+    "enterDescription": "을 입력하세요",
+    "filesSelected": "{count}개 파일 선택됨",
+    "close": "닫기",
+    "selectFile": "파일 선택",
+    "selectFilePlaceholder": "파일을 선택하세요",
+    "chooseFile": "파일 선택하기"
   },
   "user": {
     "id": "아이디",
@@ -114,7 +153,58 @@
     "systemIntegration": "시스템 통합",
     "testVerification": "테스트 검증",
     "installationWork": "설치 작업",
-    "operationManual": "운영 매뉴얼"
+    "operationManual": "운영 매뉴얼",
+    "consistencyCheckLogicRequired": "정합성 체크 로직 구현해야함",
+    "processRegisteredSuccessfully": "공정이 성공적으로 등록되었습니다.",
+    "registrationError": "등록 중 오류가 발생했습니다.",
+    "selectItemsToDelete": "삭제할 항목을 선택하세요.",
+    "confirmDeleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
+    "deletedSuccessfully": "삭제되었습니다."
+  },
+  "processDetail": {
+    "processType": "공정구분",
+    "processName": "공정명",
+    "mode": "모드",
+    "processSymbol": "공정심볼",
+    "etc": "기타",
+    "tabs": {
+      "P&ID": "P&ID",
+      "설계조건": "설계조건",
+      "공용구조물": "공용구조물",
+      "계산식 관리": "계산식 관리",
+      "PDF": "PDF",
+      "전기도면": "전기도면",
+      "Mcc 구성도": "Mcc 구성도"
+    },
+    "addPid": "P&ID 추가",
+    "attachPidFile": "P&ID 파일 첨부",
+    "pidFile": "P&ID 파일",
+    "columns": {
+      "dwgFile": "도면파일DWG",
+      "excel": "Excel",
+      "infoOverview": "정보개요",
+      "svgPreview": "Svg도면 미리보기",
+      "item": "항목",
+      "influent": "Influent",
+      "effluent": "Effluent",
+      "sludge": "Sludge",
+      "unit": "Unit",
+      "remark": "Remark",
+      "value": "Value",
+      "min": "Min",
+      "max": "Max",
+      "view": "view",
+      "no": "순번",
+      "formulaVersion": "계산식 버전",
+      "appliedVersion": "적용 버전",
+      "remarks": "비고",
+      "type": "구분",
+      "components": "Components",
+      "equipmentType": "장비유형"
+    },
+    "attachPdfFile": "PDF 파일 첨부",
+    "attachElectricFile": "전기도면 파일 첨부",
+    "attachMccFile": "Mcc 구성도 파일 첨부"
   },
   "code": {
     "codeGroup": "코드그룹",
@@ -146,10 +236,12 @@
     "namePlaceholder": "기계명을 입력하세요",
     "code": "기계코드",
     "codePlaceholder": "기계코드를 입력하세요",
-    "type": "기계타입",
-    "type.pump": "펌프",
-    "type.motor": "모터",
-    "type.conveyor": "컨베이어",
+    "type": {
+      "label": "기계타입",
+      "pump": "펌프",
+      "motor": "모터",
+      "conveyor": "컨베이어"
+    },
     "description": "설명",
     "descriptionPlaceholder": "설명을 입력하세요",
     "createdAt": "생성일",
@@ -167,9 +259,11 @@
     "orderPlaceholder": "순서를 입력하세요",
     "description": "설명",
     "descriptionPlaceholder": "설명을 입력하세요",
-    "isActive": "사용여부",
-    "isActive.true": "사용",
-    "isActive.false": "미사용",
+    "isActive": {
+      "label": "사용여부",
+      "true": "사용",
+      "false": "미사용"
+    },
     "createdAt": "생성일",
     "machineType": "기계타입",
     "machineStatus": "기계상태",
@@ -181,27 +275,37 @@
     "id": "순번",
     "name": "목표명",
     "namePlaceholder": "목표명을 입력하세요",
-    "machineName": "기계명",
-    "machineName.pump1": "펌프1",
-    "machineName.motor1": "모터1",
-    "machineName.conveyor1": "컨베이어1",
+    "machineName": {
+      "label": "기계명",
+      "pump1": "펌프1",
+      "motor1": "모터1",
+      "conveyor1": "컨베이어1"
+    },
     "targetCost": "목표비용",
     "targetCostPlaceholder": "목표비용을 입력하세요",
-    "unit": "단위",
-    "unit.won": "원",
-    "unit.dollar": "달러",
-    "unit.yen": "엔",
-    "targetPeriod": "목표기간",
+    "unit": {
+      "label": "단위",
+      "won": "원",
+      "dollar": "달러",
+      "yen": "엔"
+    },
+    "targetPeriod": {
+      "label": "목표기간",
+      "example": "예시:"
+    },
     "targetPeriodPlaceholder": "목표기간을 입력하세요 (예: 2025.01-2025.12)",
-    "targetPeriod.example": "예시:",
-    "description": "설명",
+    "description": {
+      "label": "설명",
+      "example": "에 대한 설명입니다."
+    },
     "descriptionPlaceholder": "설명을 입력하세요",
-    "description.example": "에 대한 설명입니다.",
-    "status": "상태",
-    "status.inProgress": "진행중",
-    "status.completed": "완료",
-    "status.delayed": "지연",
-    "status.cancelled": "취소",
+    "status": {
+      "label": "상태",
+      "inProgress": "진행중",
+      "completed": "완료",
+      "delayed": "지연",
+      "cancelled": "취소"
+    },
     "createdAt": "생성일",
     "costTarget": "비용목표"
   },
@@ -235,6 +339,11 @@
     "placeholder": {
       "enterDetail": "내용을 입력하세요"
     },
+    "sample": {
+      "name": "프로젝트",
+      "client": "고객사",
+      "manager": "담당자"
+    },
     "approve": "승인",
     "reject": "반려"
   },
@@ -244,10 +353,27 @@
     "export": "내보내기",
     "tabs": {
       "기본 정보": "기본 정보",
-      "공정 정보": "공정 정보",
-      "3D 배치": "3D 배치",
+      "프로세스 정보": "프로세스 정보",
+      "3D 레이아웃 정보": "3D 레이아웃 정보",
       "산출물": "산출물",
       "설계조건": "설계조건"
+    },
+    "structureTabs": {
+      "구조물1": "구조물1",
+      "구조물2": "구조물2",
+      "구조물3": "구조물3",
+      "구조물4": "구조물4"
+    },
+    "layout3dTabs": {
+      "구조물": "구조물",
+      "기기": "기기",
+      "배관": "배관",
+      "표준배치": "표준배치"
+    },
+    "outputTabs": {
+      "계산서": "계산서",
+      "내역서": "내역서",
+      "도면": "도면"
     },
     "type": "유입종류",
     "typeValue": "음식물쓰레기",
@@ -262,7 +388,49 @@
     "designCondition": "설계조건",
     "repairCondition": "수리 조건",
     "concreteStructure": "콘크리트 구조물 설정",
-    "emptyTabContent": "탭 내용 (샘플)"
+    "emptyTabContent": "탭 내용 (샘플)",
+    "columns": {
+      "project": "프로젝트명",
+      "title": "제목",
+      "content": "내용텍스트",
+      "projectPeriod": "프로젝트 기간",
+      "projectManager": "담당자",
+      "influentType": "유입종류",
+      "facilityCapacity": "시설용량 (m³/d)",
+      "item": "항목",
+      "influent": "유입수",
+      "unit": "단위",
+      "remark": "비고",
+      "structure": "구조물",
+      "deviceName": "기기명",
+      "deviceType": "기기타입",
+      "model3d": "3D모델",
+      "modelFeature": "모델특성",
+      "no": "순번",
+      "length": "길이",
+      "width": "너비",
+      "height": "높이",
+      "value1": "값1",
+      "value2": "값2",
+      "structureName": "구조물명"
+    }
+  },
+  "recommendedProcess": {
+    "title": "추천 공정",
+    "inflowType": "유입종류",
+    "applicationField": "적용분야",
+    "solution": "솔루션",
+    "layout3d": "3D 표준 배치도",
+    "remarks": "비고",
+    "no": "순번",
+    "registerNew": "신규등록",
+    "editProcess": "공정 수정",
+    "registerProcess": "공정 등록",
+    "inflowTypePlaceholder": "유입종류를 입력하세요",
+    "applicationFieldPlaceholder": "적용분야를 입력하세요",
+    "solutionPlaceholder": "솔루션을 입력하세요",
+    "layout3dPlaceholder": "3D 배치도를 입력하세요",
+    "remarksPlaceholder": "비고를 입력하세요"
   },
   "inflow": {
     "registerNew": "신규등록",
@@ -275,7 +443,37 @@
     "symbolColor": "심볼색상",
     "uploadFormula": "계산식 업로드",
     "formulaPlaceholder": "계산식을 입력하세요",
-    "register": "등록"
+    "register": "등록",
+    "columns": {
+      "no": "순번",
+      "item": "항목",
+      "influent": "INFLUENT",
+      "unit": "UNIT",
+      "display": "표출여부",
+      "remarks": "비고",
+      "formula": "계산식",
+      "uploadDate": "업로드 일자",
+      "author": "작성자",
+      "apply": "적용선택"
+    }
+  },
+  "outflow": {
+    "registerNew": "신규등록",
+    "addItem": "항목 추가",
+    "save": "저장",
+    "outputName": "아웃풋명",
+    "outputNamePlaceholder": "유입종류명을 입력하세요",
+    "remarks": "비고",
+    "remarksPlaceholder": "계산식을 입력하세요",
+    "register": "등록",
+    "cancel": "취소",
+    "columns": {
+      "no": "순번",
+      "item": "항목",
+      "influent": "INFLUENT",
+      "unit": "UNIT",
+      "remarks": "비고"
+    }
   },
   "sidebar": {
     "dashboard": "대시보드",

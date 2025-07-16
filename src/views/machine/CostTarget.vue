@@ -4,29 +4,33 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="search" class="label-search">검색</label>
+          <label for="search" class="label-search">{{
+            t("common.search")
+          }}</label>
           <div class="form-item">
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('common.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
         <button class="btn btn-primary btn-add" @click="openRegistModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -41,7 +45,9 @@
       @selection-change="handleSelectionChange"
     >
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="editItem(item)">
+          {{ t("common.edit") }}
+        </button>
       </template>
     </DataTable>
 
@@ -58,85 +64,101 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ isEditMode ? "수정" : "등록" }}</h3>
-          <button class="btn-close" @click="closeRegistModal">X</button>
+          <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
+          <button class="btn-close" @click="closeRegistModal">
+            {{ t("common.close") }}
+          </button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">목표명</dt>
+            <dt class="essential">{{ t("costTarget.name") }}</dt>
             <dd>
               <input
                 v-model="newCost.name"
                 type="text"
                 class="form-input"
-                placeholder="목표명을 입력하세요"
+                :placeholder="t('costTarget.namePlaceholder')"
               />
             </dd>
-            <dt class="essential">기계명</dt>
+            <dt class="essential">{{ t("costTarget.machineName") }}</dt>
             <dd>
               <select v-model="newCost.machineName" class="form-input">
-                <option value="">-- 선택 --</option>
-                <option value="펌프1">펌프1</option>
-                <option value="모터1">모터1</option>
-                <option value="컨베이어1">컨베이어1</option>
+                <option value="">-- {{ t("common.select") }} --</option>
+                <option value="펌프1">
+                  {{ t("costTarget.machineName.pump1") }}
+                </option>
+                <option value="모터1">
+                  {{ t("costTarget.machineName.motor1") }}
+                </option>
+                <option value="컨베이어1">
+                  {{ t("costTarget.machineName.conveyor1") }}
+                </option>
               </select>
             </dd>
-            <dt>목표비용</dt>
+            <dt>{{ t("costTarget.targetCost") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetCost"
                 type="number"
                 class="form-input"
-                placeholder="목표비용을 입력하세요"
+                :placeholder="t('costTarget.targetCostPlaceholder')"
               />
             </dd>
-            <dt>단위</dt>
+            <dt>{{ t("costTarget.unit") }}</dt>
             <dd>
               <select v-model="newCost.unit" class="form-input">
-                <option value="원">원</option>
-                <option value="달러">달러</option>
-                <option value="엔">엔</option>
+                <option value="원">{{ t("costTarget.unit.won") }}</option>
+                <option value="달러">{{ t("costTarget.unit.dollar") }}</option>
+                <option value="엔">{{ t("costTarget.unit.yen") }}</option>
               </select>
             </dd>
-            <dt>목표기간</dt>
+            <dt>{{ t("costTarget.targetPeriod") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetPeriod"
                 type="text"
                 class="form-input"
-                placeholder="목표기간을 입력하세요 (예: 2025.01-2025.12)"
+                :placeholder="t('costTarget.targetPeriodPlaceholder')"
               />
             </dd>
-            <dt>설명</dt>
+            <dt>{{ t("costTarget.description") }}</dt>
             <dd>
               <textarea
                 v-model="newCost.description"
                 class="form-input"
-                placeholder="설명을 입력하세요"
+                :placeholder="t('costTarget.descriptionPlaceholder')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>상태</dt>
+            <dt>{{ t("costTarget.status") }}</dt>
             <dd>
               <select v-model="newCost.status" class="form-input">
-                <option value="진행중">진행중</option>
-                <option value="완료">완료</option>
-                <option value="지연">지연</option>
-                <option value="취소">취소</option>
+                <option value="진행중">
+                  {{ t("costTarget.status.inProgress") }}
+                </option>
+                <option value="완료">
+                  {{ t("costTarget.status.completed") }}
+                </option>
+                <option value="지연">
+                  {{ t("costTarget.status.delayed") }}
+                </option>
+                <option value="취소">
+                  {{ t("costTarget.status.cancelled") }}
+                </option>
               </select>
             </dd>
           </dl>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="handleSave"
             :disabled="!isFormValid"
           >
-            저장
+            {{ t("common.save") }}
           </button>
         </div>
       </div>
@@ -148,6 +170,8 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 interface CostItem {
   id: string;
@@ -173,16 +197,46 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px", sortable: false },
-  { key: "name", title: "목표명", width: "150px", sortable: true },
-  { key: "machineName", title: "기계명", width: "120px", sortable: true },
-  { key: "targetCost", title: "목표비용", width: "120px", sortable: true },
-  { key: "unit", title: "단위", width: "80px", sortable: true },
-  { key: "targetPeriod", title: "목표기간", width: "150px", sortable: true },
-  { key: "description", title: "설명", width: "200px", sortable: true },
-  { key: "status", title: "상태", width: "100px", sortable: true },
-  { key: "createdAt", title: "생성일", width: "120px", sortable: true },
-  { key: "actions", title: "수정", width: "80px", sortable: false },
+  { key: "id", title: t("costTarget.id"), width: "60px", sortable: false },
+  { key: "name", title: t("costTarget.name"), width: "150px", sortable: true },
+  {
+    key: "machineName",
+    title: t("costTarget.machineName"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "targetCost",
+    title: t("costTarget.targetCost"),
+    width: "120px",
+    sortable: true,
+  },
+  { key: "unit", title: t("costTarget.unit"), width: "80px", sortable: true },
+  {
+    key: "targetPeriod",
+    title: t("costTarget.targetPeriod"),
+    width: "150px",
+    sortable: true,
+  },
+  {
+    key: "description",
+    title: t("costTarget.description"),
+    width: "200px",
+    sortable: true,
+  },
+  {
+    key: "status",
+    title: t("costTarget.status"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "createdAt",
+    title: t("costTarget.createdAt"),
+    width: "120px",
+    sortable: true,
+  },
+  { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
 ];
 
 const costList = ref<CostItem[]>([]);
@@ -310,18 +364,22 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.selectItemToDelete"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(
+      `${selectedItems.value.length} ${t("common.items")} ${t(
+        "common.deleteConfirm"
+      )}`
+    )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     costList.value = costList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("common.deleted"));
   }
 };
 
@@ -329,15 +387,16 @@ const handleDelete = () => {
 const loadData = () => {
   costList.value = Array.from({ length: 18 }, (_, i) => ({
     id: (i + 1).toString(),
-    name: `비용목표${i + 1}`,
+    name: `${t("costTarget.costTarget")} ${i + 1}`,
     machineName: ["펌프1", "모터1", "컨베이어1"][i % 3],
     targetCost: 1000000 + i * 500000,
     unit: ["원", "달러", "엔"][i % 3],
-    targetPeriod: `2025.${String(Math.floor(i / 3) + 1).padStart(
-      2,
-      "0"
-    )}-2025.${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
-    description: `비용목표 ${i + 1}에 대한 설명입니다.`,
+    targetPeriod: `${t("costTarget.targetPeriod.example")} ${String(
+      Math.floor(i / 3) + 1
+    ).padStart(2, "0")}-${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
+    description: `${t("costTarget.costTarget")} ${i + 1} ${t(
+      "costTarget.description.example"
+    )}`,
     status: ["진행중", "완료", "지연", "취소"][i % 4],
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));

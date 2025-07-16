@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        새 표준배치 업로드
+        {{ t("standard.uploadNew") }}
       </button>
     </div>
 
@@ -18,7 +18,9 @@
     >
       <!-- 수정 버튼 슬롯 -->
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="editItem(item)">
+          {{ t("common.edit") }}
+        </button>
       </template>
 
       <!-- 도면번호 슬롯 -->
@@ -26,17 +28,15 @@
         <span class="drawing-number-badge">{{ value }}</span>
       </template>
 
+      <!-- 도면종류 슬롯 -->
+      <template #cell-drawingType="{ value }">
+        {{ t("standard.drawingType." + mapDrawingType(value)) }}
+      </template>
+
       <!-- 승인상태 슬롯 -->
       <template #cell-approvalStatus="{ value }">
-        <span
-          class="status-badge"
-          :class="{
-            approved: value === '승인',
-            pending: value === '검토중',
-            rejected: value === '반려',
-          }"
-        >
-          {{ value }}
+        <span class="status-badge" :class="mapApprovalStatus(value)">
+          {{ t("standard.approvalStatus." + mapApprovalStatus(value)) }}
         </span>
       </template>
     </DataTable>
@@ -54,48 +54,62 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>새 표준배치 업로드</h3>
-          <button class="modal-close" @click="closeUploadModal">×</button>
+          <h3>{{ t("standard.uploadNew") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeUploadModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>도면명</label>
+            <label>{{ t("standard.drawingName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
-              placeholder="도면명을 입력하세요"
+              :placeholder="t('standard.enterDrawingName')"
             />
           </div>
           <div class="form-group">
-            <label>도면번호</label>
+            <label>{{ t("standard.drawingNumber") }}</label>
             <input
               v-model="uploadForm.drawingNumber"
               type="text"
-              placeholder="도면번호를 입력하세요"
+              :placeholder="t('standard.enterDrawingNumber')"
             />
           </div>
           <div class="form-group">
-            <label>도면종류</label>
+            <label>{{ t("standard.drawingType.label") }}</label>
             <select v-model="uploadForm.drawingType">
-              <option value="">도면종류를 선택하세요</option>
-              <option value="평면도">평면도</option>
-              <option value="입면도">입면도</option>
-              <option value="단면도">단면도</option>
-              <option value="상세도">상세도</option>
+              <option value="">{{ t("standard.selectDrawingType") }}</option>
+              <option value="평면도">
+                {{ t("standard.drawingType.plan") }}
+              </option>
+              <option value="입면도">
+                {{ t("standard.drawingType.elevation") }}
+              </option>
+              <option value="단면도">
+                {{ t("standard.drawingType.section") }}
+              </option>
+              <option value="상세도">
+                {{ t("standard.drawingType.detail") }}
+              </option>
             </select>
           </div>
           <div class="form-group">
-            <label>파일 업로드</label>
+            <label>{{ t("standard.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                placeholder="파일을 선택하세요"
+                :placeholder="t('standard.selectFile')"
                 readonly
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                파일 선택
+                {{ t("standard.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -108,7 +122,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeUploadModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
@@ -119,7 +133,7 @@
               !uploadForm.drawingType
             "
           >
-            업로드
+            {{ t("common.upload") }}
           </button>
         </div>
       </div>
@@ -129,48 +143,68 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>표준배치 수정</h3>
-          <button class="modal-close" @click="closeEditModal">×</button>
+          <h3>{{ t("standard.editStandard") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeEditModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>도면명</label>
+            <label>{{ t("standard.drawingName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
-              placeholder="도면명을 입력하세요"
+              :placeholder="t('standard.enterDrawingName')"
             />
           </div>
           <div class="form-group">
-            <label>도면번호</label>
+            <label>{{ t("standard.drawingNumber") }}</label>
             <input
               v-model="editForm.drawingNumber"
               type="text"
-              placeholder="도면번호를 입력하세요"
+              :placeholder="t('standard.enterDrawingNumber')"
             />
           </div>
           <div class="form-group">
-            <label>도면종류</label>
+            <label>{{ t("standard.drawingType.label") }}</label>
             <select v-model="editForm.drawingType">
-              <option value="">도면종류를 선택하세요</option>
-              <option value="평면도">평면도</option>
-              <option value="입면도">입면도</option>
-              <option value="단면도">단면도</option>
-              <option value="상세도">상세도</option>
+              <option value="">{{ t("standard.selectDrawingType") }}</option>
+              <option value="평면도">
+                {{ t("standard.drawingType.plan") }}
+              </option>
+              <option value="입면도">
+                {{ t("standard.drawingType.elevation") }}
+              </option>
+              <option value="단면도">
+                {{ t("standard.drawingType.section") }}
+              </option>
+              <option value="상세도">
+                {{ t("standard.drawingType.detail") }}
+              </option>
             </select>
           </div>
           <div class="form-group">
-            <label>승인상태</label>
+            <label>{{ t("standard.approvalStatus.label") }}</label>
             <select v-model="editForm.approvalStatus">
-              <option value="검토중">검토중</option>
-              <option value="승인">승인</option>
-              <option value="반려">반려</option>
+              <option value="검토중">
+                {{ t("standard.approvalStatus.pending") }}
+              </option>
+              <option value="승인">
+                {{ t("standard.approvalStatus.approved") }}
+              </option>
+              <option value="반려">
+                {{ t("standard.approvalStatus.rejected") }}
+              </option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeEditModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
@@ -181,7 +215,7 @@
               !editForm.drawingType
             "
           >
-            수정
+            {{ t("common.edit") }}
           </button>
         </div>
       </div>
@@ -193,6 +227,9 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface StandardItem {
   id: string;
@@ -221,32 +258,20 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
+  { key: "id", title: t("standard.id"), sortable: true },
+  { key: "drawingNumber", title: t("standard.drawingNumber"), sortable: true },
+  { key: "title", title: t("standard.drawingName"), sortable: true },
   {
-    key: "index",
-    title: "순번",
-    sortable: false,
-    formatter: (value: any, item: any) => {
-      const index = standardList.value.findIndex((s) => s.id === item.id);
-      return String(index + 1);
-    },
-  },
-  { key: "title", title: "도면명", sortable: true },
-  { key: "drawingNumber", title: "도면번호", sortable: true },
-  { key: "drawingType", title: "도면종류", sortable: true },
-  {
-    key: "createdAt",
-    title: "등록일시",
+    key: "drawingType",
+    title: t("standard.drawingType.label"),
     sortable: true,
-    formatter: (value: any) => formatDate(value),
   },
   {
-    key: "lastModified",
-    title: "최종수정일시",
+    key: "approvalStatus",
+    title: t("standard.approvalStatus.label"),
     sortable: true,
-    formatter: (value: any) => formatDate(value),
   },
-  { key: "approvalStatus", title: "승인상태", sortable: true },
-  { key: "actions", title: "수정", sortable: false },
+  { key: "actions", title: t("common.action"), sortable: false },
 ];
 
 const standardList = ref<StandardItem[]>([]);
@@ -543,6 +568,21 @@ const loadStandardList = async (sortInfo?: {
     loading.value = false;
   }
 };
+
+function mapApprovalStatus(val: string) {
+  if (val === "승인" || val === "approved") return "approved";
+  if (val === "반려" || val === "rejected") return "rejected";
+  if (val === "검토중" || val === "pending") return "pending";
+  return val;
+}
+
+function mapDrawingType(val: string) {
+  if (val === "평면도" || val === "plan") return "plan";
+  if (val === "입면도" || val === "elevation") return "elevation";
+  if (val === "단면도" || val === "section") return "section";
+  if (val === "상세도" || val === "detail") return "detail";
+  return val;
+}
 
 onMounted(() => {
   loadStandardList();

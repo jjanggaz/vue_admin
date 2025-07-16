@@ -1,44 +1,58 @@
 <template>
   <div class="login-page">
     <div class="login-container">
+      <div class="lang-select-wrap abs-lang-select">
+        <span class="lang-icon">🌐</span>
+        <select
+          v-model="selectedLang"
+          @change="changeLang"
+          class="lang-select"
+          ref="langSelectRef"
+        >
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+        </select>
+      </div>
       <div class="login-header">
         <h1 class="logo">
           <img :src="logoWai" alt="WAI Logo" />
         </h1>
-        <p class="subtitle">수처리플랜트 설계를 위한 전문시스템</p>
+        <p class="subtitle">{{ t("login.subtitle") }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <!-- <label for="username">사용자 ID</label> -->
           <input
             id="username"
             v-model="loginForm.username"
             type="text"
-            placeholder="아이디"
+            :placeholder="t('login.usernamePlaceholder')"
             required
           />
         </div>
 
         <div class="form-group">
-          <!-- <label for="password">비밀번호</label> -->
           <input
             id="password"
             v-model="loginForm.password"
             type="password"
-            placeholder="비밀번호"
+            :placeholder="t('login.passwordPlaceholder')"
             required
           />
         </div>
         <div class="form-options">
           <label>
             <input type="checkbox" v-model="rememberUsername" />
-            아이디 기억하기
+            {{ t("login.rememberId") }}
           </label>
-          <a href="/forgot-password" class="forgot-password">비밀번호 찾기</a>
+          <a href="/forgot-password" class="forgot-password">{{
+            t("login.forgotPassword")
+          }}</a>
         </div>
 
-        <button type="submit" class="btn btn-primary login-btn">로그인</button>
+        <button type="submit" class="btn btn-primary login-btn">
+          {{ t("login.loginBtn") }}
+        </button>
       </form>
     </div>
   </div>
@@ -47,17 +61,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../stores/authStore";
-import logoWai from '@/assets/images/logo/logo_wai.svg'
+import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+import logoWai from "@/assets/images/logo/logo_wai.svg";
 
+const { t, locale } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
-// prettier-ignore
-const loginForm = ref({username: '', password: ''})
+const loginForm = ref({ username: "", password: "" });
 const rememberUsername = ref(false);
 
-// 로컬 스토리지에서 저장된 아이디 불러오기
+const selectedLang = ref(
+  localStorage.getItem("wai_lang") || locale.value || "ko"
+);
+const langSelectRef = ref();
+
 const loadSavedUsername = () => {
   const savedUsername = localStorage.getItem("rememberedUsername");
   if (savedUsername) {
@@ -66,26 +85,30 @@ const loadSavedUsername = () => {
   }
 };
 
-// 컴포넌트 마운트 시 저장된 아이디 불러오기
 onMounted(() => {
   loadSavedUsername();
+  // 언어 select가 mount되면 바로 펼쳐지도록 포커스
+  if (langSelectRef.value) {
+    langSelectRef.value.blur(); // 자동으로 펼치지 않으려면 주석처리
+  }
 });
+
+const changeLang = () => {
+  locale.value = selectedLang.value;
+  localStorage.setItem("wai_lang", selectedLang.value);
+};
 
 const handleLogin = async () => {
   try {
     await authStore.login(loginForm.value.username, loginForm.value.password);
-
-    // 로그인 성공 시 아이디 기억하기 처리
     if (rememberUsername.value) {
       localStorage.setItem("rememberedUsername", loginForm.value.username);
     } else {
       localStorage.removeItem("rememberedUsername");
     }
-
     router.push("/dashboard");
   } catch (error) {
-    console.error("로그인 실패:", error);
-    alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+    alert(t("login.loginFail"));
   }
 };
 </script>
@@ -100,7 +123,14 @@ const handleLogin = async () => {
     center / cover;
 }
 
+.abs-lang-select {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+}
 .login-container {
+  position: relative;
   width: 100%;
   max-width: 500px;
   background: $background-color;
@@ -189,6 +219,24 @@ const handleLogin = async () => {
     width: 100%;
     height: 60px;
     font-size: $font-size-base;
+  }
+}
+
+.lang-select-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 10px;
+  .lang-icon {
+    margin-right: 6px;
+    font-size: 18px;
+  }
+  .lang-select {
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+    outline: none;
   }
 }
 </style>

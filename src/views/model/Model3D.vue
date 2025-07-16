@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        새모델 업로드
+        {{ t("tabs.model3d.uploadNew") }}
       </button>
     </div>
 
@@ -18,7 +18,9 @@
     >
       <!-- 수정 버튼 슬롯 -->
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="editItem(item)">
+          {{ t("common.edit") }}
+        </button>
       </template>
 
       <!-- 반납여부 슬롯 -->
@@ -27,7 +29,9 @@
           class="status-badge"
           :class="{ returned: value, pending: !value }"
         >
-          {{ value ? "반납" : "미반납" }}
+          {{
+            value ? t("tabs.model3d.returned") : t("tabs.model3d.notReturned")
+          }}
         </span>
       </template>
     </DataTable>
@@ -45,12 +49,18 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>새모델 업로드</h3>
-          <button class="modal-close" @click="closeUploadModal">×</button>
+          <h3>{{ t("tabs.model3d.uploadNew") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeUploadModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>모델명</label>
+            <label>{{ t("tabs.model3d.modelName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
@@ -58,17 +68,25 @@
             />
           </div>
           <div class="form-group">
-            <label>정보분류</label>
+            <label>{{ t("tabs.model3d.infoClassification") }}</label>
             <select v-model="uploadForm.category">
-              <option value="">분류를 선택하세요</option>
-              <option value="건축">건축</option>
-              <option value="기계">기계</option>
-              <option value="전기">전기</option>
-              <option value="토목">토목</option>
+              <option value="">{{ t("tabs.model3d.selectCategory") }}</option>
+              <option value="건축">
+                {{ t("tabs.model3d.category.architecture") }}
+              </option>
+              <option value="기계">
+                {{ t("tabs.model3d.category.mechanical") }}
+              </option>
+              <option value="전기">
+                {{ t("tabs.model3d.category.electrical") }}
+              </option>
+              <option value="토목">
+                {{ t("tabs.model3d.category.civil") }}
+              </option>
             </select>
           </div>
           <div class="form-group">
-            <label>파일 업로드</label>
+            <label>{{ t("tabs.model3d.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
@@ -78,7 +96,7 @@
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                파일 선택
+                {{ t("tabs.model3d.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -91,14 +109,14 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeUploadModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="submitUpload"
             :disabled="!uploadForm.title || !uploadForm.category"
           >
-            업로드
+            {{ t("common.upload") }}
           </button>
         </div>
       </div>
@@ -108,12 +126,18 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>모델 수정</h3>
-          <button class="modal-close" @click="closeEditModal">×</button>
+          <h3>{{ t("tabs.model3d.editModel") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeEditModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>모델명</label>
+            <label>{{ t("tabs.model3d.modelName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
@@ -121,33 +145,43 @@
             />
           </div>
           <div class="form-group">
-            <label>정보분류</label>
+            <label>{{ t("tabs.model3d.infoClassification") }}</label>
             <select v-model="editForm.category">
-              <option value="">분류를 선택하세요</option>
-              <option value="건축">건축</option>
-              <option value="기계">기계</option>
-              <option value="전기">전기</option>
-              <option value="토목">토목</option>
+              <option value="">{{ t("tabs.model3d.selectCategory") }}</option>
+              <option value="건축">
+                {{ t("tabs.model3d.category.architecture") }}
+              </option>
+              <option value="기계">
+                {{ t("tabs.model3d.category.mechanical") }}
+              </option>
+              <option value="전기">
+                {{ t("tabs.model3d.category.electrical") }}
+              </option>
+              <option value="토목">
+                {{ t("tabs.model3d.category.civil") }}
+              </option>
             </select>
           </div>
           <div class="form-group">
-            <label>반납여부</label>
+            <label>{{ t("tabs.model3d.isReturned") }}</label>
             <select v-model="editForm.isReturned">
-              <option :value="false">미반납</option>
-              <option :value="true">반납</option>
+              <option :value="false">
+                {{ t("tabs.model3d.notReturned") }}
+              </option>
+              <option :value="true">{{ t("tabs.model3d.returned") }}</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeEditModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="submitEdit"
             :disabled="!editForm.title || !editForm.category"
           >
-            수정
+            {{ t("common.edit") }}
           </button>
         </div>
       </div>
@@ -159,6 +193,9 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface ModelItem {
   id: string;
@@ -184,31 +221,25 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
+  { key: "id", title: t("tabs.model3d.id"), sortable: true },
+  { key: "title", title: t("tabs.model3d.modelName"), sortable: true },
   {
-    key: "index",
-    title: "순번",
-    sortable: false,
-    formatter: (value: any, item: any) => {
-      const index = modelList.value.findIndex((m) => m.id === item.id);
-      return String(index + 1);
-    },
+    key: "category",
+    title: t("tabs.model3d.infoClassification"),
+    sortable: true,
   },
-  { key: "title", title: "항목", sortable: true },
-  { key: "category", title: "정보분류", sortable: true },
   {
     key: "createdAt",
-    title: "입력일시",
+    title: t("tabs.model3d.createdAt"),
     sortable: true,
-    formatter: (value: any) => formatDate(value),
   },
+  { key: "lastUsed", title: t("tabs.model3d.lastUsed"), sortable: true },
   {
-    key: "lastUsed",
-    title: "등록다운 활용 일시",
+    key: "isReturned",
+    title: t("tabs.model3d.isReturned"),
     sortable: true,
-    formatter: (value: any) => formatDate(value),
   },
-  { key: "isReturned", title: "반납여부", sortable: true },
-  { key: "actions", title: "수정", sortable: false },
+  { key: "actions", title: t("common.action"), sortable: false },
 ];
 
 const modelList = ref<ModelItem[]>([]);

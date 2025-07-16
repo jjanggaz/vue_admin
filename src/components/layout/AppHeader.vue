@@ -15,7 +15,9 @@
       <div class="user-section">
         <span class="user-id">{{ userName }} ({{ userRole }}) &nbsp;</span>
         <Date />
-        <button class="logout-btn" @click="handleLogout">LOGOUT</button>
+        <button class="logout-btn" @click="handleLogout">
+          {{ t("common.logout") }}
+        </button>
       </div>
     </div>
   </header>
@@ -29,6 +31,8 @@ import { computed } from "vue";
 import TabNavigation from "@/components/common/TabNavigation.vue";
 import type { TabItem } from "@/components/common/TabNavigation.vue";
 import Date from "../../utils/headerDate.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
@@ -53,42 +57,66 @@ const handleLogout = () => {
 // 각 섹션별 탭들 정의
 const sectionTabs = {
   model: [
-    { name: "Model3D", label: "3D 모델 관리", to: "/model/3d" },
-    { name: "RevitManagement", label: "Revit 관리", to: "/model/revit" },
+    { name: "Model3D", label: t("tabs.model.model3d"), to: "/model/3d" },
+    {
+      name: "RevitManagement",
+      label: t("tabs.model.revitManagement"),
+      to: "/model/revit",
+    },
     {
       name: "StandardManagement",
-      label: "표준배치 관리",
+      label: t("tabs.model.standardManagement"),
       to: "/model/standard",
     },
   ],
   asset: [
-    { name: "Inflow", label: "유입", to: "/asset/inflow" },
-    { name: "Outflow", label: "유출", to: "/asset/outflow" },
-    { name: "RecommendedProcess", label: "추천공정", to: "/asset/recommended" },
+    { name: "Inflow", label: t("tabs.asset.inflow"), to: "/asset/inflow" },
+    { name: "Outflow", label: t("tabs.asset.outflow"), to: "/asset/outflow" },
+    {
+      name: "RecommendedProcess",
+      label: t("tabs.asset.recommendedProcess"),
+      to: "/asset/recommended",
+    },
   ],
   process: [
-    { name: "Process", label: "공정 관리", to: "/process/process" },
+    {
+      name: "Process",
+      label: t("tabs.process.process"),
+      to: "/process/process",
+    },
     // { name: 'Output', label: '공정 출력', to: '/process/output' }
   ],
   project: [
-    { name: "Project", label: "프로젝트", to: "/project/project" },
-    { name: "ProjectApp", label: "승인대기", to: "/project/projectApp" },
+    {
+      name: "Project",
+      label: t("tabs.project.project"),
+      to: "/project/project",
+    },
+    {
+      name: "ProjectApp",
+      label: t("tabs.project.projectApp"),
+      to: "/project/projectApp",
+    },
     {
       name: "ProjectItem",
-      label: "항목관리",
+      label: t("tabs.project.projectItem"),
       to: "/project/projectItem",
     },
   ],
   machine: [
-    { name: "Machine", label: "기계", to: "/machine/machine" },
+    {
+      name: "Machine",
+      label: t("tabs.machine.machine"),
+      to: "/machine/machine",
+    },
     {
       name: "MachineCodeManagement",
-      label: "코드관리",
+      label: t("tabs.machine.machineCodeManagement"),
       to: "/machine/codeMng",
     },
     {
       name: "CostTarget",
-      label: "단가표",
+      label: t("tabs.machine.costTarget"),
       to: "/machine/costTarget",
     },
   ],
@@ -134,16 +162,19 @@ const currentPageTitle = computed<string>(() => {
   const currentPath = route.path;
 
   // 1뎁스 경로별 제목 (탭을 포함하는 상위 섹션 제목)
-  if (currentPath.startsWith("/dashboard")) return "대시보드";
-  if (currentPath.startsWith("/project")) return "프로젝트 관리";
-  if (currentPath.startsWith("/asset")) return "유입종류 관리";
-  if (currentPath.startsWith("/process")) return "공정 관리";
-  if (currentPath.startsWith("/model")) return "3D모델 관리"; // 하위 탭이 있는 경우에도 상위 제목 유지
-  if (currentPath.startsWith("/machine")) return "기기리스트 관리";
-  if (currentPath.startsWith("/user")) return "사용자 관리";
-  if (currentPath.startsWith("/code")) return "코드 관리";
+  if (currentPath.startsWith("/dashboard")) return t("pageTitles.dashboard");
+  if (currentPath.startsWith("/project"))
+    return t("pageTitles.projectManagement");
+  if (currentPath.startsWith("/asset")) return t("pageTitles.assetManagement");
+  if (currentPath.startsWith("/process"))
+    return t("pageTitles.processManagement");
+  if (currentPath.startsWith("/model")) return t("pageTitles.modelManagement"); // 하위 탭이 있는 경우에도 상위 제목 유지
+  if (currentPath.startsWith("/machine"))
+    return t("pageTitles.machineManagement");
+  if (currentPath.startsWith("/user")) return t("pageTitles.userManagement");
+  if (currentPath.startsWith("/code")) return t("pageTitles.codeManagement");
 
-  return "WAI DESIGN";
+  return t("pageTitles.default");
 });
 </script>
 

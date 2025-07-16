@@ -4,11 +4,15 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="role" class="label-search">검색</label>
-          <label for="codeGroup" class="label-title">코드그룹</label>
+          <label for="role" class="label-search">{{
+            t("common.search")
+          }}</label>
+          <label for="codeGroup" class="label-title">{{
+            t("code.codeGroup")
+          }}</label>
           <div class="form-item">
             <select id="codeGroup" v-model="searchCodeGroupInput">
-              <option value="">항목을 선택해주세요</option>
+              <option value="">{{ t("common.selectItem") }}</option>
               <option
                 v-for="group in uniqueCodeGroups"
                 :key="group"
@@ -18,16 +22,20 @@
               </option>
             </select>
           </div>
-          <label for="highCode" class="label-title">상위코드명</label>
+          <label for="highCode" class="label-title">{{
+            t("code.highCode")
+          }}</label>
           <div class="form-item">
             <select id="highCode" v-model="searchHighCodeInput">
-              <option value="">항목을 선택해주세요</option>
+              <option value="">{{ t("common.selectItem") }}</option>
               <option v-for="high in uniqueHighCodes" :key="high" :value="high">
                 {{ high }}
               </option>
             </select>
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
@@ -36,17 +44,17 @@
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
         <button
           class="btn btn-primary btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
-          수정
+          {{ t("common.edit") }}
         </button>
         <button class="btn btn-primary btn-regist" @click="handleRegist">
-          등록
+          {{ t("common.register") }}
         </button>
       </div>
     </div>
@@ -72,14 +80,16 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ isEditMode ? "코드 수정" : "코드 등록" }}</h3>
+          <h3>
+            {{ isEditMode ? t("code.editCode") : t("code.registerCode") }}
+          </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
           </button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>코드그룹</dt>
+            <dt>{{ t("code.codeGroup") }}</dt>
             <dd>
               <input
                 id="code-name"
@@ -89,7 +99,7 @@
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>상위코드</dt>
+            <dt>{{ t("code.highCode") }}</dt>
             <dd>
               <input
                 id="code-name"
@@ -99,7 +109,7 @@
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>코드</dt>
+            <dt>{{ t("code.code") }}</dt>
             <dd>
               <input
                 id="code-corp"
@@ -108,7 +118,7 @@
                 placeholder=" 입력하세요"
               />
             </dd>
-            <dt>코드명</dt>
+            <dt>{{ t("code.codeName") }}</dt>
             <dd>
               <input
                 id="code-phone"
@@ -117,7 +127,7 @@
                 placeholder=" 입력하세요"
               />
             </dd>
-            <dt>설명</dt>
+            <dt>{{ t("code.description") }}</dt>
             <dd>
               <input
                 id="code-email"
@@ -130,9 +140,11 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            취소
+            {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-primary" @click="saveCode">저장</button>
+          <button class="btn btn-primary" @click="saveCode">
+            {{ t("common.save") }}
+          </button>
         </div>
       </div>
     </div>
@@ -143,6 +155,9 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface CodeItem {
   id: string;
@@ -156,11 +171,26 @@ interface CodeItem {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   //{ key: "id", title: "ID", width: "60px", sortable: true },
-  { key: "codeGroup", title: "코드그룹", width: "100px", sortable: true },
-  { key: "highCode", title: "상위코드명", width: "100px", sortable: true },
-  { key: "codeName", title: "코드명", width: "150px", sortable: true },
-  { key: "rank", title: "순서", width: "100px", sortable: true },
-  { key: "etc", title: "설명", width: "200px", sortable: true },
+  {
+    key: "codeGroup",
+    title: t("code.codeGroup"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "highCode",
+    title: t("code.highCode"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "codeName",
+    title: t("code.codeName"),
+    width: "150px",
+    sortable: true,
+  },
+  { key: "rank", title: t("code.order"), width: "100px", sortable: true },
+  { key: "etc", title: t("code.description"), width: "200px", sortable: true },
 ];
 
 const codeList = ref<CodeItem[]>([]);

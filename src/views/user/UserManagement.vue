@@ -4,16 +4,18 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="role" class="label-search">검색</label>
+          <label for="role" class="label-search">{{
+            t("common.search")
+          }}</label>
           <div class="form-item">
             <select id="role" v-model="searchOptionInput">
-              <option value="">항목을 선택해주세요</option>
-              <option value="id">아이디</option>
-              <option value="name">이름</option>
-              <option value="corpName">업체</option>
-              <option value="phone">전화번호</option>
-              <option value="email">이메일</option>
-              <option value="role">권한</option>
+              <option value="">{{ t("common.selectItem") }}</option>
+              <option value="id">{{ t("user.id") }}</option>
+              <option value="name">{{ t("user.name") }}</option>
+              <option value="corpName">{{ t("user.corpName") }}</option>
+              <option value="phone">{{ t("user.phone") }}</option>
+              <option value="email">{{ t("user.email") }}</option>
+              <option value="role">{{ t("user.role") }}</option>
             </select>
           </div>
         </div>
@@ -22,12 +24,14 @@
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('common.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
@@ -36,17 +40,17 @@
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
         <button
           class="btn btn-primary btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
-          수정
+          {{ t("common.edit") }}
         </button>
         <button class="btn btn-primary btn-regist" @click="handleRegist">
-          등록
+          {{ t("common.register") }}
         </button>
       </div>
     </div>
@@ -72,20 +76,22 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ isEditMode ? "사용자 수정" : "사용자 등록" }}</h3>
+          <h3>
+            {{ isEditMode ? t("user.editUser") : t("user.registerUser") }}
+          </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
           </button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>아이디</dt>
+            <dt>{{ t("user.id") }}</dt>
             <dd>
               <input
                 id="user-id"
                 v-model="newUser.id"
                 type="text"
-                placeholder=""
+                :placeholder="t('user.idPlaceholder')"
                 :disabled="isEditMode"
                 @input="resetIdChecked"
               />
@@ -94,86 +100,88 @@
                 v-if="!isEditMode"
                 @click="handleCheckId"
               >
-                중복체크
+                {{ t("user.duplicateCheck") }}
               </button>
             </dd>
-            <dt>비밀번호</dt>
+            <dt>{{ t("user.password") }}</dt>
             <dd>
               <input
                 id="user-pw"
                 v-model="newUser.pwd"
                 type="password"
-                placeholder="비밀번호를 입력하세요"
+                :placeholder="t('user.passwordPlaceholder')"
               />
             </dd>
-            <dt>비밀번호 확인</dt>
+            <dt>{{ t("user.passwordConfirm") }}</dt>
             <dd>
               <input
                 id="confirm-pw"
                 v-model="newUser.pwdChk"
                 type="password"
-                placeholder="비밀번호를 확인하세요"
+                :placeholder="t('user.passwordConfirmPlaceholder')"
               />
             </dd>
-            <dt>이름</dt>
+            <dt>{{ t("user.name") }}</dt>
             <dd>
               <input
                 id="user-name"
                 v-model="newUser.name"
                 type="text"
-                placeholder="이름을 입력하세요"
+                :placeholder="t('user.namePlaceholder')"
               />
             </dd>
-            <dt>업체명</dt>
+            <dt>{{ t("user.corpName") }}</dt>
             <dd>
               <input
                 id="user-corp"
                 v-model="newUser.corpName"
                 type="text"
-                placeholder="업체명을 입력하세요"
+                :placeholder="t('user.corpNamePlaceholder')"
               />
             </dd>
-            <dt>전화번호</dt>
+            <dt>{{ t("user.phone") }}</dt>
             <dd>
               <input
                 id="user-phone"
                 v-model="newUser.phone"
                 type="text"
-                placeholder="전화번호를 입력하세요"
+                :placeholder="t('user.phonePlaceholder')"
               />
             </dd>
-            <dt>이메일</dt>
+            <dt>{{ t("user.email") }}</dt>
             <dd>
               <input
                 id="user-email"
                 v-model="newUser.email"
                 type="email"
-                placeholder="이메일을 입력하세요"
+                :placeholder="t('user.emailPlaceholder')"
               />
             </dd>
-            <dt>사내외</dt>
+            <dt>{{ t("user.corpType") }}</dt>
             <dd>
               <select id="user-corpType" v-model="newUser.corpType">
-                <option value="">-- 선택 --</option>
-                <option value="사내">사내</option>
-                <option value="사외">사외</option>
+                <option value="">{{ t("common.select") }}</option>
+                <option value="사내">{{ t("user.corpTypeIn") }}</option>
+                <option value="사외">{{ t("user.corpTypeOut") }}</option>
               </select>
             </dd>
-            <dt>권한</dt>
+            <dt>{{ t("user.role") }}</dt>
             <dd>
               <select id="user-role" v-model="newUser.role">
-                <option value="">-- 선택 --</option>
-                <option value="관리자">관리자</option>
-                <option value="사용자">사용자</option>
+                <option value="">{{ t("common.select") }}</option>
+                <option value="관리자">{{ t("user.roleAdmin") }}</option>
+                <option value="사용자">{{ t("user.roleUser") }}</option>
               </select>
             </dd>
           </dl>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            취소
+            {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-primary" @click="saveUser">저장</button>
+          <button class="btn btn-primary" @click="saveUser">
+            {{ t("common.save") }}
+          </button>
         </div>
       </div>
     </div>
@@ -184,6 +192,9 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface UserItem {
   id: string;
@@ -200,23 +211,28 @@ interface UserItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "아이디", width: "100px", sortable: true },
+  { key: "id", title: t("user.id"), width: "100px", sortable: true },
   //{ key: 'index', label: '번호', width: "50px", sortable: true },
-  { key: "name", title: "이름", width: "150px", sortable: true },
-  { key: "corpName", title: "업체", width: "150px", sortable: true },
+  { key: "name", title: t("user.name"), width: "150px", sortable: true },
+  {
+    key: "corpName",
+    title: t("user.corpName"),
+    width: "150px",
+    sortable: true,
+  },
   {
     key: "phone",
-    title: "전화번호",
+    title: t("user.phone"),
     width: "150px",
     sortable: true,
   },
   {
     key: "email",
-    title: "이메일",
+    title: t("user.email"),
     width: "200px",
     sortable: true,
   },
-  { key: "role", title: "권한", width: "150px", sortable: true },
+  { key: "role", title: t("user.role"), width: "150px", sortable: true },
 ];
 
 const userList = ref<UserItem[]>([]);

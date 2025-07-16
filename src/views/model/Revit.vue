@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        새 Revit 파일 업로드
+        {{ t("revit.uploadNew") }}
       </button>
     </div>
 
@@ -18,7 +18,9 @@
     >
       <!-- 수정 버튼 슬롯 -->
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="editItem(item)">
+          {{ t("common.edit") }}
+        </button>
       </template>
 
       <!-- 버전 슬롯 -->
@@ -30,9 +32,12 @@
       <template #cell-status="{ value }">
         <span
           class="status-badge"
-          :class="{ active: value === '활성', inactive: value === '비활성' }"
+          :class="{
+            active: value === 'active',
+            inactive: value === 'inactive',
+          }"
         >
-          {{ value }}
+          {{ t("revit.status." + value) }}
         </span>
       </template>
     </DataTable>
@@ -50,12 +55,18 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>새 Revit 파일 업로드</h3>
-          <button class="modal-close" @click="closeUploadModal">×</button>
+          <h3>{{ t("revit.uploadNew") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeUploadModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>파일명</label>
+            <label>{{ t("revit.fileName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
@@ -63,7 +74,7 @@
             />
           </div>
           <div class="form-group">
-            <label>프로젝트명</label>
+            <label>{{ t("revit.projectName") }}</label>
             <input
               v-model="uploadForm.project"
               type="text"
@@ -71,7 +82,7 @@
             />
           </div>
           <div class="form-group">
-            <label>버전</label>
+            <label>{{ t("revit.version") }}</label>
             <input
               v-model="uploadForm.version"
               type="text"
@@ -79,7 +90,7 @@
             />
           </div>
           <div class="form-group">
-            <label>파일 업로드</label>
+            <label>{{ t("revit.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
@@ -89,7 +100,7 @@
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                파일 선택
+                {{ t("revit.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -102,7 +113,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeUploadModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
@@ -111,7 +122,7 @@
               !uploadForm.title || !uploadForm.project || !uploadForm.version
             "
           >
-            업로드
+            {{ t("common.upload") }}
           </button>
         </div>
       </div>
@@ -121,12 +132,18 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Revit 파일 수정</h3>
-          <button class="modal-close" @click="closeEditModal">×</button>
+          <h3>{{ t("revit.editFile") }}</h3>
+          <button
+            class="modal-close"
+            @click="closeEditModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>파일명</label>
+            <label>{{ t("revit.fileName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
@@ -134,7 +151,7 @@
             />
           </div>
           <div class="form-group">
-            <label>프로젝트명</label>
+            <label>{{ t("revit.projectName") }}</label>
             <input
               v-model="editForm.project"
               type="text"
@@ -142,7 +159,7 @@
             />
           </div>
           <div class="form-group">
-            <label>버전</label>
+            <label>{{ t("revit.version") }}</label>
             <input
               v-model="editForm.version"
               type="text"
@@ -150,16 +167,16 @@
             />
           </div>
           <div class="form-group">
-            <label>상태</label>
+            <label>{{ t("revit.status.label") }}</label>
             <select v-model="editForm.status">
-              <option value="활성">활성</option>
-              <option value="비활성">비활성</option>
+              <option value="active">{{ t("revit.status.active") }}</option>
+              <option value="inactive">{{ t("revit.status.inactive") }}</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeEditModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
@@ -168,7 +185,7 @@
               !editForm.title || !editForm.project || !editForm.version
             "
           >
-            수정
+            {{ t("common.edit") }}
           </button>
         </div>
       </div>
@@ -180,6 +197,9 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface RevitItem {
   id: string;
@@ -208,32 +228,14 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  {
-    key: "index",
-    title: "순번",
-    sortable: false,
-    formatter: (value: any, item: any) => {
-      const index = revitList.value.findIndex((r) => r.id === item.id);
-      return String(index + 1);
-    },
-  },
-  { key: "title", title: "파일명", sortable: true },
-  { key: "project", title: "프로젝트명", sortable: true },
-  { key: "version", title: "버전", sortable: true },
-  {
-    key: "createdAt",
-    title: "생성일시",
-    sortable: true,
-    formatter: (value: any) => formatDate(value),
-  },
-  {
-    key: "lastModified",
-    title: "최종수정일시",
-    sortable: true,
-    formatter: (value: any) => formatDate(value),
-  },
-  { key: "status", title: "상태", sortable: true },
-  { key: "actions", title: "수정", sortable: false },
+  { key: "id", title: t("revit.id"), sortable: true },
+  { key: "title", title: t("revit.fileName"), sortable: true },
+  { key: "project", title: t("revit.projectName"), sortable: true },
+  { key: "version", title: t("revit.version"), sortable: true },
+  { key: "createdAt", title: t("revit.createdAt"), sortable: true },
+  { key: "lastModified", title: t("revit.lastModified"), sortable: true },
+  { key: "status", title: t("revit.status.label"), sortable: true },
+  { key: "actions", title: t("common.action"), sortable: false },
 ];
 
 const revitList = ref<RevitItem[]>([]);
@@ -317,7 +319,7 @@ const submitUpload = () => {
     version: uploadForm.value.version,
     createdAt: new Date().toISOString().split("T")[0],
     lastModified: new Date().toISOString().split("T")[0],
-    status: "활성",
+    status: "active",
   };
 
   revitList.value.unshift(newRevit);
@@ -388,7 +390,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.0",
         createdAt: "2024-01-15",
         lastModified: "2024-07-01",
-        status: "활성",
+        status: "active",
       },
       {
         id: "2",
@@ -397,7 +399,7 @@ const loadRevitList = async (sortInfo?: {
         version: "2.1",
         createdAt: "2024-02-20",
         lastModified: "2024-06-15",
-        status: "활성",
+        status: "active",
       },
       {
         id: "3",
@@ -406,7 +408,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.5",
         createdAt: "2024-03-10",
         lastModified: "2024-06-30",
-        status: "활성",
+        status: "active",
       },
       {
         id: "4",
@@ -415,7 +417,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.2",
         createdAt: "2024-03-25",
         lastModified: "2024-05-20",
-        status: "비활성",
+        status: "inactive",
       },
       {
         id: "5",
@@ -424,7 +426,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.0",
         createdAt: "2024-04-05",
         lastModified: "2024-06-10",
-        status: "활성",
+        status: "active",
       },
       {
         id: "6",
@@ -433,7 +435,7 @@ const loadRevitList = async (sortInfo?: {
         version: "2.0",
         createdAt: "2024-04-12",
         lastModified: "2024-06-30",
-        status: "활성",
+        status: "active",
       },
       {
         id: "7",
@@ -442,7 +444,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.8",
         createdAt: "2024-04-18",
         lastModified: "2024-07-10",
-        status: "활성",
+        status: "active",
       },
       {
         id: "8",
@@ -451,7 +453,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.1",
         createdAt: "2024-04-25",
         lastModified: "2024-05-15",
-        status: "비활성",
+        status: "inactive",
       },
       {
         id: "9",
@@ -460,7 +462,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.3",
         createdAt: "2024-05-02",
         lastModified: "2024-06-25",
-        status: "활성",
+        status: "active",
       },
       {
         id: "10",
@@ -469,7 +471,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.7",
         createdAt: "2024-05-08",
         lastModified: "2024-07-05",
-        status: "활성",
+        status: "active",
       },
       {
         id: "11",
@@ -478,7 +480,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.4",
         createdAt: "2024-05-15",
         lastModified: "2024-06-20",
-        status: "활성",
+        status: "active",
       },
       {
         id: "12",
@@ -487,7 +489,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.0",
         createdAt: "2024-05-22",
         lastModified: "2024-06-18",
-        status: "비활성",
+        status: "inactive",
       },
       {
         id: "13",
@@ -496,7 +498,7 @@ const loadRevitList = async (sortInfo?: {
         version: "2.2",
         createdAt: "2024-05-29",
         lastModified: "2024-07-12",
-        status: "활성",
+        status: "active",
       },
       {
         id: "14",
@@ -505,7 +507,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.6",
         createdAt: "2024-06-05",
         lastModified: "2024-06-28",
-        status: "활성",
+        status: "active",
       },
       {
         id: "15",
@@ -514,7 +516,7 @@ const loadRevitList = async (sortInfo?: {
         version: "1.9",
         createdAt: "2024-06-12",
         lastModified: "2024-07-08",
-        status: "활성",
+        status: "active",
       },
     ];
 

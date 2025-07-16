@@ -4,17 +4,21 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="search" class="label-search">검색</label>
+          <label for="search" class="label-search">{{
+            t("common.search")
+          }}</label>
           <div class="form-item">
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('common.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
@@ -23,7 +27,7 @@
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -37,7 +41,9 @@
       @selection-change="handleSelectionChange"
     >
       <template #cell-detail="{ item }">
-        <button class="btn-view" @click.stop="viewDetail(item)">보기</button>
+        <button class="btn-view" @click.stop="viewDetail(item)">
+          {{ t("common.view") }}
+        </button>
       </template>
     </DataTable>
     <!-- 페이징 -->
@@ -56,6 +62,8 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 interface ProjectItem {
   id: string;
@@ -70,16 +78,61 @@ interface ProjectItem {
 }
 
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px", sortable: false },
-  { key: "name", title: "프로젝트명", width: "180px", sortable: true },
-  { key: "client", title: "고객사", width: "120px", sortable: true },
-  { key: "manager", title: "설계담당자", width: "120px", sortable: true },
-  { key: "type", title: "유입종류", width: "100px", sortable: true },
-  { key: "capacity", title: "시설용량(m³/d)", width: "120px", sortable: true },
-  { key: "process", title: "적용 공정", width: "120px", sortable: true },
-  { key: "createdAt", title: "생성일", width: "120px", sortable: true },
-  { key: "country", title: "국가", width: "100px", sortable: true },
-  { key: "detail", title: "상세정보", width: "100px", sortable: false },
+  { key: "id", title: t("project.table.id"), width: "60px", sortable: false },
+  {
+    key: "name",
+    title: t("project.table.name"),
+    width: "180px",
+    sortable: true,
+  },
+  {
+    key: "client",
+    title: t("project.table.client"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "manager",
+    title: t("project.table.manager"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "type",
+    title: t("project.table.type"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "capacity",
+    title: t("project.table.capacity"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "process",
+    title: t("project.table.process"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "createdAt",
+    title: t("project.table.createdAt"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "country",
+    title: t("project.table.country"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "detail",
+    title: t("project.table.detail"),
+    width: "100px",
+    sortable: false,
+  },
 ];
 
 const projectList = ref<ProjectItem[]>([]);
@@ -131,18 +184,18 @@ const handleSearch = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("project.delete.noItemsSelected"));
     return;
   }
   if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
+    confirm(t("project.delete.confirm", { count: selectedItems.value.length }))
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     projectList.value = projectList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("project.delete.deleted"));
   }
 };
 
@@ -158,9 +211,9 @@ const viewDetail = (item: ProjectItem) => {
 const loadData = () => {
   projectList.value = Array.from({ length: 11 }, (_, i) => ({
     id: (i + 1).toString(),
-    name: `프로젝트${i + 1}`,
-    client: `고객사${(i % 5) + 1}`,
-    manager: `설계자${(i % 3) + 1}`,
+    name: `${t("project.sample.name")}${i + 1}`,
+    client: `${t("project.sample.client")}${(i % 5) + 1}`,
+    manager: `${t("project.sample.manager")}${(i % 3) + 1}`,
     type: ["A", "B", "C"][i % 3],
     capacity: `${100 + i * 10}`,
     process: ["공정1", "공정2"][i % 2],

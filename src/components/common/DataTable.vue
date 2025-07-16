@@ -27,7 +27,7 @@
             :style="column.width ? { width: column.width } : {}"
           >
             <div class="th-content">
-              <span class="th-text">{{ column.title }}</span>
+              <span class="th-text">{{ $t(column.title) }}</span>
               <span v-if="column.sortable" class="sort-icon">
                 <span
                   class="sort-arrow sort-up"
@@ -322,8 +322,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-@use "sass:color";
-
 .data-table-container {
   background: $background-color;
   border-radius: $border-radius-lg;
@@ -364,7 +362,7 @@ watch(
         transition: $transition-base;
 
         &:hover {
-          background-color: color.scale($background-light, $lightness: -3%);
+          background-color: darken($background-light, 3%);
         }
       }
 

@@ -4,29 +4,33 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="search" class="label-search">검색</label>
+          <label for="search" class="label-search">{{
+            t("common.search")
+          }}</label>
           <div class="form-item">
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('common.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
         <button class="btn btn-primary btn-add" @click="openRegistModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -42,7 +46,7 @@
     >
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="openDetailModal(item)">
-          보기
+          {{ t("common.view") }}
         </button>
       </template>
     </DataTable>
@@ -60,44 +64,46 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ isEditMode ? "수정" : "등록" }}</h3>
+          <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
           <button class="btn-close" @click="closeRegistModal">X</button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">기계명</dt>
+            <dt class="essential">{{ t("machine.name") }}</dt>
             <dd>
               <input
                 v-model="newMachine.name"
                 type="text"
                 class="form-input"
-                placeholder="기계명을 입력하세요"
+                :placeholder="t('machine.namePlaceholder')"
               />
             </dd>
-            <dt class="essential">기계코드</dt>
+            <dt class="essential">{{ t("machine.code") }}</dt>
             <dd>
               <input
                 v-model="newMachine.code"
                 type="text"
                 class="form-input"
-                placeholder="기계코드를 입력하세요"
+                :placeholder="t('machine.codePlaceholder')"
               />
             </dd>
-            <dt>기계타입</dt>
+            <dt>{{ t("machine.type") }}</dt>
             <dd>
               <select v-model="newMachine.type" class="form-input">
-                <option value="">-- 선택 --</option>
-                <option value="펌프">펌프</option>
-                <option value="모터">모터</option>
-                <option value="컨베이어">컨베이어</option>
+                <option value="">-- {{ t("common.select") }} --</option>
+                <option value="펌프">{{ t("machine.type.pump") }}</option>
+                <option value="모터">{{ t("machine.type.motor") }}</option>
+                <option value="컨베이어">
+                  {{ t("machine.type.conveyor") }}
+                </option>
               </select>
             </dd>
-            <dt>설명</dt>
+            <dt>{{ t("machine.description") }}</dt>
             <dd>
               <textarea
                 v-model="newMachine.description"
                 class="form-input"
-                placeholder="설명을 입력하세요"
+                :placeholder="t('machine.descriptionPlaceholder')"
                 rows="3"
               ></textarea>
             </dd>
@@ -105,14 +111,14 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="handleSave"
             :disabled="!isFormValid"
           >
-            저장
+            {{ t("common.save") }}
           </button>
         </div>
       </div>
@@ -122,7 +128,7 @@
     <div v-if="isDetailModalOpen" class="modal-overlay">
       <div class="modal-container" style="max-width: 1200px">
         <div class="modal-header">
-          <h3>상세정보</h3>
+          <h3>{{ t("common.detailInfo") }}</h3>
           <button class="btn-close" @click="closeDetailModal">X</button>
         </div>
         <div class="modal-body">
@@ -140,10 +146,10 @@
             >
               <thead>
                 <tr>
-                  <th>기계명</th>
-                  <th>기계코드</th>
-                  <th>기계타입</th>
-                  <th>설명</th>
+                  <th>{{ t("machine.name") }}</th>
+                  <th>{{ t("machine.code") }}</th>
+                  <th>{{ t("machine.type") }}</th>
+                  <th>{{ t("machine.description") }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -156,10 +162,14 @@
                   </td>
                   <td>
                     <select v-model="detailEditData.type" class="form-input">
-                      <option value="">-- 선택 --</option>
-                      <option value="펌프">펌프</option>
-                      <option value="모터">모터</option>
-                      <option value="컨베이어">컨베이어</option>
+                      <option value="">-- {{ t("common.select") }} --</option>
+                      <option value="펌프">{{ t("machine.type.pump") }}</option>
+                      <option value="모터">
+                        {{ t("machine.type.motor") }}
+                      </option>
+                      <option value="컨베이어">
+                        {{ t("machine.type.conveyor") }}
+                      </option>
                     </select>
                   </td>
                   <td>
@@ -179,17 +189,17 @@
             class="btn btn-primary"
             @click="handleDetailEdit"
           >
-            수정
+            {{ t("common.edit") }}
           </button>
           <button
             v-if="isDetailEditMode"
             class="btn btn-primary"
             @click="handleDetailSave"
           >
-            저장
+            {{ t("common.save") }}
           </button>
           <button class="btn btn-secondary" @click="closeDetailModal">
-            닫기
+            {{ t("common.close") }}
           </button>
         </div>
       </div>
@@ -201,6 +211,8 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 interface MachineItem {
   id: string;
@@ -220,15 +232,35 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px", sortable: false },
-  { key: "mcId", title: "기계ID", width: "150px", sortable: true },
-  { key: "name", title: "기계명", width: "150px", sortable: true },
-  { key: "code", title: "기계유형", width: "120px", sortable: true },
-  { key: "type", title: "용량", width: "100px", sortable: true },
-  { key: "description", title: "모델명", width: "200px", sortable: true },
-  { key: "createdAt", title: "계산식", width: "120px", sortable: true },
-  { key: "createdAt", title: "업체명", width: "120px", sortable: true },
-  { key: "actions", title: "상세정보", width: "80px", sortable: false },
+  { key: "id", title: t("machine.id"), width: "60px", sortable: false },
+  { key: "mcId", title: t("machine.mcId"), width: "150px", sortable: true },
+  { key: "name", title: t("machine.name"), width: "150px", sortable: true },
+  { key: "code", title: t("machine.code"), width: "120px", sortable: true },
+  { key: "type", title: t("machine.type"), width: "100px", sortable: true },
+  {
+    key: "description",
+    title: t("machine.description"),
+    width: "200px",
+    sortable: true,
+  },
+  {
+    key: "createdAt",
+    title: t("machine.createdAt"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "company",
+    title: t("machine.company"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "actions",
+    title: t("common.detailInfo"),
+    width: "80px",
+    sortable: false,
+  },
 ];
 
 const machineList = ref<MachineItem[]>([]);
@@ -258,10 +290,10 @@ const detailEditData = ref<RegistForm>({
 
 // 상세정보 DataTable용 컬럼
 const detailTableColumns: TableColumn[] = [
-  { key: "name", title: "기계명", width: "150px" },
-  { key: "code", title: "기계코드", width: "150px" },
-  { key: "type", title: "기계타입", width: "120px" },
-  { key: "description", title: "설명", width: "200px" },
+  { key: "name", title: t("machine.name"), width: "150px" },
+  { key: "code", title: t("machine.code"), width: "150px" },
+  { key: "type", title: t("machine.type"), width: "120px" },
+  { key: "description", title: t("machine.description"), width: "200px" },
 ];
 const detailTableData = computed(() =>
   detailItemData.value ? [detailItemData.value] : []

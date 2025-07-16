@@ -3,10 +3,12 @@
     <!-- 상단 정보 -->
     <div class="project-header">
       <div class="title-area">
-        <h1>하수처리장 설계 2025</h1>
-        <span class="project-id">프로젝트 ID. PRJ-2025-0620-001</span>
+        <h1>{{ t("projectDetail.title") }}</h1>
+        <span class="project-id">{{
+          t("projectDetail.projectId", { id: projectId })
+        }}</span>
       </div>
-      <button class="btn-export">내보내기</button>
+      <button class="btn-export">{{ t("projectDetail.export") }}</button>
     </div>
     <div class="project-info-table">
       <DataTable :columns="projectInfoColumns" :data="projectInfoRows" />
@@ -19,7 +21,7 @@
         :class="['tab', { active: activeTab === idx }]"
         @click="activeTab = idx"
       >
-        {{ tab }}
+        {{ t("projectDetail.tabs." + tab) }}
       </div>
     </div>
     <!-- 탭별 내용 -->
@@ -30,9 +32,9 @@
       <div v-else-if="activeTab === 1">
         <div class="process-info-section">
           <div class="process-info-row">
-            <div class="info-label">유입종류</div>
-            <div class="info-value">음식물쓰레기</div>
-            <div class="info-label">수질정보</div>
+            <div class="info-label">{{ t("projectDetail.type") }}</div>
+            <div class="info-value">{{ t("projectDetail.typeValue") }}</div>
+            <div class="info-label">{{ t("projectDetail.waterInfo") }}</div>
             <div class="info-table-wrap">
               <DataTable
                 :columns="processWaterColumns"
@@ -41,24 +43,24 @@
             </div>
           </div>
           <div class="process-info-row">
-            <div class="info-label">공정구분</div>
+            <div class="info-label">{{ t("projectDetail.processType") }}</div>
             <div class="info-value">
               <select>
-                <option>전처리</option>
+                <option>{{ t("projectDetail.processTypeOption") }}</option>
               </select>
             </div>
-            <div class="info-label">공정명</div>
+            <div class="info-label">{{ t("projectDetail.processName") }}</div>
             <div class="info-value">
               <input
                 type="text"
-                value="종합 협잡물 제거"
+                :value="t('projectDetail.processNameValue')"
                 style="width: 180px"
               />
             </div>
-            <div class="info-label">구조물</div>
+            <div class="info-label">{{ t("projectDetail.structure") }}</div>
             <div class="info-value">
               <select>
-                <option>PN 조</option>
+                <option>{{ t("projectDetail.structureOption") }}</option>
               </select>
             </div>
           </div>
@@ -74,18 +76,22 @@
           </button>
         </div>
         <div class="structure-table-wrap">
-          <div class="structure-title">Structure</div>
+          <div class="structure-title">{{ t("projectDetail.structure") }}</div>
           <DataTable :columns="structureColumns" :data="structureRows" />
         </div>
-        <div class="structure-title">기기</div>
+        <div class="structure-title">{{ t("projectDetail.device") }}</div>
         <DataTable :columns="deviceColumns" :data="deviceRows" />
         <div class="row-tables">
           <div class="row-table-block">
-            <div class="structure-title">수질정보</div>
+            <div class="structure-title">
+              {{ t("projectDetail.waterInfo") }}
+            </div>
             <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
           </div>
           <div class="row-table-block">
-            <div class="structure-title">설계조건</div>
+            <div class="structure-title">
+              {{ t("projectDetail.designCondition") }}
+            </div>
             <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
           </div>
         </div>
@@ -93,24 +99,24 @@
       <div v-else-if="activeTab === 2">
         <div class="layout3d-info-section">
           <div class="layout3d-info-row">
-            <div class="info-label">공정구분</div>
+            <div class="info-label">{{ t("projectDetail.processType") }}</div>
             <div class="info-value">
               <select>
-                <option>전처리</option>
+                <option>{{ t("projectDetail.processTypeOption") }}</option>
               </select>
             </div>
-            <div class="info-label">공정명</div>
+            <div class="info-label">{{ t("projectDetail.processName") }}</div>
             <div class="info-value">
               <input
                 type="text"
-                value="종합 협잡물 제거"
+                :value="t('projectDetail.processNameValue')"
                 style="width: 180px"
               />
             </div>
-            <div class="info-label">구조물</div>
+            <div class="info-label">{{ t("projectDetail.structure") }}</div>
             <div class="info-value">
               <select>
-                <option>PN 조</option>
+                <option>{{ t("projectDetail.structureOption") }}</option>
               </select>
             </div>
           </div>
@@ -183,14 +189,14 @@
             :class="{ active: designcondActiveTab === 0 }"
             @click="handleDesigncondTabChange(0)"
           >
-            수리 조건
+            {{ t("projectDetail.repairCondition") }}
           </button>
           <button
             class="btn-designcond"
             :class="{ active: designcondActiveTab === 1 }"
             @click="handleDesigncondTabChange(1)"
           >
-            콘크리트 구조물 설정
+            {{ t("projectDetail.concreteStructure") }}
           </button>
         </div>
         <div class="designcond-table-wrap">
@@ -216,7 +222,7 @@
         </div>
       </div>
       <div v-else>
-        <div class="empty-tab">탭 내용 (샘플)</div>
+        <div class="empty-tab">{{ t("projectDetail.emptyTabContent") }}</div>
       </div>
     </div>
   </div>
@@ -226,6 +232,8 @@
 import { ref, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const tabs = [
   "기본 정보",
   "프로세스 정보",

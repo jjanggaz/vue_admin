@@ -17,7 +17,7 @@
         @click="deleteSelected('project')"
         :disabled="selectedProject.length === 0"
       >
-        삭제
+        {{ t("common.delete") }}
       </button>
       <button
         class="btn-delete"
@@ -25,7 +25,7 @@
         @click="deleteSelected('client')"
         :disabled="selectedClient.length === 0"
       >
-        삭제
+        {{ t("common.delete") }}
       </button>
       <button
         class="btn-delete"
@@ -33,7 +33,7 @@
         @click="deleteSelected('etc')"
         :disabled="selectedEtc.length === 0"
       >
-        삭제
+        {{ t("common.delete") }}
       </button>
     </div>
     <div v-if="activeTab === 0">
@@ -47,23 +47,23 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            placeholder="내용을 입력하세요"
+            :placeholder="t('project.placeholder.enterDetail')"
             v-model="item.detail"
           />
         </template>
         <template #cell-inputType="{ item }">
           <select v-model="item.inputType">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-required="{ item }">
           <select v-model="item.required">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-visible="{ item }">
           <select v-model="item.visible">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-edit="{ item }">
@@ -82,18 +82,18 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            placeholder="내용을 입력하세요"
+            :placeholder="t('project.placeholder.enterDetail')"
             v-model="item.detail"
           />
         </template>
         <template #cell-inputType="{ item }">
           <select v-model="item.inputType">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-required="{ item }">
           <select v-model="item.required">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-edit="{ item }">
@@ -112,18 +112,18 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            placeholder="내용을 입력하세요"
+            :placeholder="t('project.placeholder.enterDetail')"
             v-model="item.detail"
           />
         </template>
         <template #cell-inputType="{ item }">
           <select v-model="item.inputType">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-required="{ item }">
           <select v-model="item.required">
-            <option>선택</option>
+            <option>{{ t("common.select") }}</option>
           </select>
         </template>
         <template #cell-edit="{ item }">
@@ -136,8 +136,14 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-const tabs = ["프로젝트 정보", "고객 정보", "기타"];
+const { t } = useI18n();
+const tabs = [
+  t("project.tabs.projectInfo"),
+  t("project.tabs.clientInfo"),
+  t("project.tabs.etc"),
+];
 const activeTab = ref(0);
 
 interface ItemRow {
@@ -149,26 +155,26 @@ interface ItemRow {
 }
 
 const projectColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px" },
-  { key: "detail", title: "세부 항목" },
-  { key: "inputType", title: "입력방식" },
-  { key: "required", title: "필수여부" },
-  { key: "visible", title: "표시여부" },
-  { key: "edit", title: "수정", width: "60px" },
+  { key: "id", title: t("project.table.id"), width: "60px" },
+  { key: "detail", title: t("project.table.detailItem") },
+  { key: "inputType", title: t("project.table.inputType") },
+  { key: "required", title: t("project.table.required") },
+  { key: "visible", title: t("project.table.visible") },
+  { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 const clientColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px" },
-  { key: "detail", title: "세부 항목" },
-  { key: "inputType", title: "입력방식" },
-  { key: "required", title: "필수여부" },
-  { key: "edit", title: "수정", width: "60px" },
+  { key: "id", title: t("project.table.id"), width: "60px" },
+  { key: "detail", title: t("project.table.detailItem") },
+  { key: "inputType", title: t("project.table.inputType") },
+  { key: "required", title: t("project.table.required") },
+  { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 const etcColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px" },
-  { key: "detail", title: "세부 항목" },
-  { key: "inputType", title: "입력방식" },
-  { key: "required", title: "필수여부" },
-  { key: "edit", title: "수정", width: "60px" },
+  { key: "id", title: t("project.table.id"), width: "60px" },
+  { key: "detail", title: t("project.table.detailItem") },
+  { key: "inputType", title: t("project.table.inputType") },
+  { key: "required", title: t("project.table.required") },
+  { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 
 const projectRows = ref<ItemRow[]>([
@@ -237,9 +243,7 @@ function deleteSelected(type: "project" | "client" | "etc") {
   if (type === "project") {
     if (!selectedProject.value.length) return;
     if (
-      !confirm(
-        `선택된 ${selectedProject.value.length}개의 항목을 삭제하시겠습니까?`
-      )
+      !confirm(`${selectedProject.value.length}개의 항목을 삭제하시겠습니까?`)
     )
       return;
     projectRows.value = projectRows.value.filter(
@@ -248,11 +252,7 @@ function deleteSelected(type: "project" | "client" | "etc") {
     selectedProject.value = [];
   } else if (type === "client") {
     if (!selectedClient.value.length) return;
-    if (
-      !confirm(
-        `선택된 ${selectedClient.value.length}개의 항목을 삭제하시겠습니까?`
-      )
-    )
+    if (!confirm(`${selectedClient.value.length}개의 항목을 삭제하시겠습니까?`))
       return;
     clientRows.value = clientRows.value.filter(
       (row) => !selectedClient.value.includes(row)
@@ -260,11 +260,7 @@ function deleteSelected(type: "project" | "client" | "etc") {
     selectedClient.value = [];
   } else {
     if (!selectedEtc.value.length) return;
-    if (
-      !confirm(
-        `선택된 ${selectedEtc.value.length}개의 항목을 삭제하시겠습니까?`
-      )
-    )
+    if (!confirm(`${selectedEtc.value.length}개의 항목을 삭제하시겠습니까?`))
       return;
     etcRows.value = etcRows.value.filter(
       (row) => !selectedEtc.value.includes(row)

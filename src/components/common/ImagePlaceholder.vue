@@ -22,37 +22,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
-  variant?: 'empty' | 'loading' | 'error' | 'no-data' | 'upload'
-  title?: string
-  description?: string
-  showAction?: boolean
-  actionText?: string
+  variant?: "empty" | "loading" | "error" | "no-data" | "upload";
+  title?: string;
+  description?: string;
+  showAction?: boolean;
+  actionText?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  variant: 'no-data',
-  title: '데이터가 없습니다',
-  description: '표시할 데이터가 없습니다.',
+  variant: "no-data",
+  title: t("placeholder.noData"),
+  description: t("placeholder.noDataDescription"),
   showAction: false,
-  actionText: '새로 추가'
-})
+  actionText: t("placeholder.addNew"),
+});
 
 defineEmits<{
-  'action-click': []
-}>()
+  "action-click": [];
+}>();
 
 const defaultIcon = computed(() => {
   switch (props.variant) {
-    case 'empty': return '📄'
-    case 'loading': return '⏳'
-    case 'error': return '❌'
-    case 'upload': return '📤'
-    default: return '📋'
+    case "empty":
+      return "📄";
+    case "loading":
+      return "⏳";
+    case "error":
+      return "❌";
+    case "upload":
+      return "📤";
+    default:
+      return "📋";
   }
-})
+});
 </script>
 
 <style scoped lang="scss">

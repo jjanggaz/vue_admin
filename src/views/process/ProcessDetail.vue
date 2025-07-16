@@ -3,25 +3,25 @@
     <!-- Add Button -->
     <div class="action-bar">
       <dl class="column-search">
-        <dt class="essential">공정구분</dt>
+        <dt class="essential">{{ t("processDetail.processType") }}</dt>
         <dd>
           <select name="" id="">
             <option value=""></option>
           </select>
         </dd>
-        <dt class="essential">공정명</dt>
+        <dt class="essential">{{ t("processDetail.processName") }}</dt>
         <dd>
           <select name="" id="">
             <option value=""></option>
           </select>
         </dd>
-        <dt>모드</dt>
+        <dt>{{ t("processDetail.mode") }}</dt>
         <dd>
           <select name="" id="">
             <option value=""></option>
           </select>
         </dd>
-        <dt class="essential">공정심볼</dt>
+        <dt class="essential">{{ t("processDetail.processSymbol") }}</dt>
         <dd>
           <input type="file" class="form-input" placeholder="" />
         </dd>
@@ -29,15 +29,17 @@
         <dd>
           <input type="text" class="form-input" placeholder="">
         </dd> -->
-        <dt>비고</dt>
+        <dt>{{ t("processDetail.etc") }}</dt>
         <dd class="extend-all">
           <input type="text" class="form-input" placeholder="" />
         </dd>
       </dl>
 
       <div class="btns">
-        <button class="btn btn-primary btn-regist">등록</button>
-        <button class="btn btn-primary btn-edit">수정</button>
+        <button class="btn btn-primary btn-regist">
+          {{ t("common.register") }}
+        </button>
+        <button class="btn btn-primary btn-edit">{{ t("common.edit") }}</button>
       </div>
     </div>
   </div>
@@ -59,7 +61,7 @@
             :class="['tab', { active: activeTab === idx }]"
             @click="onTabClick(idx)"
           >
-            {{ tab }}
+            {{ t("processDetail.tabs." + tab) }}
           </div>
         </div>
         <button
@@ -77,56 +79,56 @@
       <!-- P&ID 탭 버튼들 -->
       <div v-if="activeTab === 0" class="btns">
         <button class="btn btn-primary btn-regist" @click="openPidModal">
-          P&ID 추가
+          {{ t("processDetail.addPid") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handlePidDelete"
           :disabled="selectedPidItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
 
       <!-- PDF 탭 버튼들 -->
       <div v-if="activeTab === 4" class="btns">
         <button class="btn btn-primary btn-add" @click="openPdfModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handlePdfDelete"
           :disabled="selectedPdfItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
 
       <!-- 전기도면 탭 버튼들 -->
       <div v-if="activeTab === 5" class="btns">
         <button class="btn btn-primary btn-add" @click="openElectricModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleElectricDelete"
           :disabled="selectedElectricItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
 
       <!-- Mcc 구성도 탭 버튼들 -->
       <div v-if="activeTab === 6" class="btns">
         <button class="btn btn-primary btn-add" @click="openMccModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleMccDelete"
           :disabled="selectedMccItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -277,20 +279,26 @@
   <div v-if="showPidModal" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>P&ID 파일 첨부</h3>
-        <button class="btn-close" @click="closePidModal">X</button>
+        <h3>{{ t("processDetail.attachPidFile") }}</h3>
+        <button class="btn-close" @click="closePidModal">
+          {{ t("common.close") }}
+        </button>
       </div>
       <div class="modal-body">
         <dl class="column-regist">
-          <dt class="essential">P&ID 파일</dt>
+          <dt class="essential">{{ t("processDetail.pidFile") }}</dt>
           <dd>
             <input type="file" multiple @change="handlePidFilesSelected" />
           </dd>
         </dl>
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadPidFiles">업로드</button>
-        <button class="btn" @click="closePidModal">취소</button>
+        <button class="btn btn-primary" @click="uploadPidFiles">
+          {{ t("common.upload") }}
+        </button>
+        <button class="btn" @click="closePidModal">
+          {{ t("common.cancel") }}
+        </button>
       </div>
     </div>
   </div>
@@ -298,15 +306,21 @@
   <div v-if="showPdfModal" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>PDF 파일 첨부</h3>
-        <button class="btn-close" @click="closePdfModal">X</button>
+        <h3>{{ t("processDetail.attachPdfFile") }}</h3>
+        <button class="btn-close" @click="closePdfModal">
+          {{ t("common.close") }}
+        </button>
       </div>
       <div class="modal-body">
         <input type="file" multiple @change="handlePdfFilesSelected" />
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadPdfFiles">업로드</button>
-        <button class="btn" @click="closePdfModal">취소</button>
+        <button class="btn btn-primary" @click="uploadPdfFiles">
+          {{ t("common.upload") }}
+        </button>
+        <button class="btn" @click="closePdfModal">
+          {{ t("common.cancel") }}
+        </button>
       </div>
     </div>
   </div>
@@ -314,17 +328,21 @@
   <div v-if="showElectricModal" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>전기도면 파일 첨부</h3>
-        <button class="btn-close" @click="closeElectricModal">X</button>
+        <h3>{{ t("processDetail.attachElectricFile") }}</h3>
+        <button class="btn-close" @click="closeElectricModal">
+          {{ t("common.close") }}
+        </button>
       </div>
       <div class="modal-body">
         <input type="file" multiple @change="handleElectricFilesSelected" />
       </div>
       <div class="modal-buttons">
         <button class="btn btn-primary" @click="uploadElectricFiles">
-          업로드
+          {{ t("common.upload") }}
         </button>
-        <button class="btn" @click="closeElectricModal">취소</button>
+        <button class="btn" @click="closeElectricModal">
+          {{ t("common.cancel") }}
+        </button>
       </div>
     </div>
   </div>
@@ -332,15 +350,21 @@
   <div v-if="showMccModal" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>Mcc 구성도 파일 첨부</h3>
-        <button class="btn-close" @click="closeMccModal">X</button>
+        <h3>{{ t("processDetail.attachMccFile") }}</h3>
+        <button class="btn-close" @click="closeMccModal">
+          {{ t("common.close") }}
+        </button>
       </div>
       <div class="modal-body">
         <input type="file" multiple @change="handleMccFilesSelected" />
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadMccFiles">업로드</button>
-        <button class="btn" @click="closeMccModal">취소</button>
+        <button class="btn btn-primary" @click="uploadMccFiles">
+          {{ t("common.upload") }}
+        </button>
+        <button class="btn" @click="closeMccModal">
+          {{ t("common.cancel") }}
+        </button>
       </div>
     </div>
   </div>
@@ -350,6 +374,9 @@
 import { ref, onMounted, nextTick, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+defineExpose({ t });
 
 // 공통 로딩 상태
 const loading = ref(false);

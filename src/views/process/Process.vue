@@ -4,46 +4,58 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="searchOption" class="label-search">검색</label>
-          <label for="searchOption" class="label-title">공정구분</label>
+          <label for="searchOption" class="label-search">{{
+            t("common.search")
+          }}</label>
+          <label for="searchOption" class="label-title">{{
+            t("process.processType")
+          }}</label>
           <div class="form-item">
             <select
               id="searchOption"
               v-model="searchOptionInput"
               class="form-select"
             >
-              <option value="">항목을 선택해주세요</option>
-              <option value="processType">공정구분</option>
-              <option value="processNm">공정명</option>
-              <option value="mode">모드</option>
-              <option value="processSymbol">공정심볼</option>
+              <option value="">{{ t("common.selectItem") }}</option>
+              <option value="processType">
+                {{ t("process.processType") }}
+              </option>
+              <option value="processNm">{{ t("process.processName") }}</option>
+              <option value="mode">{{ t("process.mode") }}</option>
+              <option value="processSymbol">
+                {{ t("process.processSymbol") }}
+              </option>
             </select>
           </div>
         </div>
         <div class="group-form">
-          <label for="searchQuery" class="label-title">공정명</label>
+          <label for="searchQuery" class="label-title">{{
+            t("process.processName")
+          }}</label>
           <div class="form-item">
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('process.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
         <button class="btn btn-primary btn-regist" @click="handleRegist">
-          등록
+          {{ t("common.register") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          선택 삭제
+          {{ t("process.deleteSelected") }}
         </button>
       </div>
     </div>
@@ -63,7 +75,9 @@
     >
       <!-- 수정 버튼 슬롯 -->
       <template #cell-viewDetail="{ item }">
-        <button class="btn-view" @click.stop="viewDetail(item)">보기</button>
+        <button class="btn-view" @click.stop="viewDetail(item)">
+          {{ t("process.viewDetail") }}
+        </button>
       </template>
     </DataTable>
 
@@ -80,61 +94,87 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>공정 등록</h3>
+          <h3>{{ t("process.registerProcess") }}</h3>
           <button class="btn-close" @click="closeRegistModal">×</button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">공정구분</dt>
+            <dt class="essential">{{ t("process.processType") }}</dt>
             <dd>
               <select
                 v-model="registForm.processType"
                 class="form-select"
                 required
               >
-                <option value="">선택</option>
-                <option value="제작">제작</option>
-                <option value="설계">설계</option>
-                <option value="검토">검토</option>
-                <option value="조립">조립</option>
-                <option value="검사">검사</option>
+                <option value="">{{ t("common.select") }}</option>
+                <option value="제작">{{ t("process.manufacture") }}</option>
+                <option value="설계">{{ t("process.design") }}</option>
+                <option value="검토">{{ t("process.review") }}</option>
+                <option value="조립">{{ t("process.assembly") }}</option>
+                <option value="검사">{{ t("process.inspection") }}</option>
               </select>
             </dd>
-            <dt class="essential">공정명</dt>
+            <dt class="essential">{{ t("process.processName") }}</dt>
             <dd>
               <select
                 v-model="registForm.processNm"
                 class="form-select"
                 required
               >
-                <option value="">선택</option>
-                <option value="3D 모델링">3D 모델링</option>
-                <option value="CAD 도면">CAD 도면</option>
-                <option value="품질 검사">품질 검사</option>
-                <option value="용접 작업">용접 작업</option>
-                <option value="구조 분석">구조 분석</option>
-                <option value="안전 검토">안전 검토</option>
-                <option value="조립 작업">조립 작업</option>
-                <option value="배관 설계">배관 설계</option>
-                <option value="기술 검토">기술 검토</option>
-                <option value="도장 작업">도장 작업</option>
-                <option value="전기 설계">전기 설계</option>
-                <option value="시스템 통합">시스템 통합</option>
-                <option value="테스트 검증">테스트 검증</option>
-                <option value="설치 작업">설치 작업</option>
-                <option value="운영 매뉴얼">운영 매뉴얼</option>
+                <option value="">{{ t("common.select") }}</option>
+                <option value="3D 모델링">{{ t("process.3dModeling") }}</option>
+                <option value="CAD 도면">{{ t("process.cadDrawing") }}</option>
+                <option value="품질 검사">
+                  {{ t("process.qualityInspection") }}
+                </option>
+                <option value="용접 작업">
+                  {{ t("process.weldingWork") }}
+                </option>
+                <option value="구조 분석">
+                  {{ t("process.structuralAnalysis") }}
+                </option>
+                <option value="안전 검토">
+                  {{ t("process.safetyReview") }}
+                </option>
+                <option value="조립 작업">
+                  {{ t("process.assemblyWork") }}
+                </option>
+                <option value="배관 설계">
+                  {{ t("process.pipelineDesign") }}
+                </option>
+                <option value="기술 검토">
+                  {{ t("process.technicalReview") }}
+                </option>
+                <option value="도장 작업">
+                  {{ t("process.paintingWork") }}
+                </option>
+                <option value="전기 설계">
+                  {{ t("process.electricalDesign") }}
+                </option>
+                <option value="시스템 통합">
+                  {{ t("process.systemIntegration") }}
+                </option>
+                <option value="테스트 검증">
+                  {{ t("process.testVerification") }}
+                </option>
+                <option value="설치 작업">
+                  {{ t("process.installationWork") }}
+                </option>
+                <option value="운영 매뉴얼">
+                  {{ t("process.operationManual") }}
+                </option>
               </select>
             </dd>
-            <dt>모드</dt>
+            <dt>{{ t("process.mode") }}</dt>
             <dd>
               <input
                 type="text"
                 v-model="registForm.mode"
                 class="form-input"
-                placeholder="모드를 입력하세요"
+                :placeholder="t('process.modePlaceholder')"
               />
             </dd>
-            <dt class="essential">공정심볼</dt>
+            <dt class="essential">{{ t("process.processSymbol") }}</dt>
             <dd>
               <input
                 type="file"
@@ -142,7 +182,7 @@
                 accept="image/*,.svg"
               />
             </dd>
-            <dt class="essential">계산식</dt>
+            <dt class="essential">{{ t("process.calculation") }}</dt>
             <dd>
               <input
                 type="file"
@@ -150,31 +190,31 @@
                 accept=".xlsx,.xls,.csv"
               />
             </dd>
-            <dt>PDF</dt>
+            <dt>{{ t("process.pdf") }}</dt>
             <dd>
               <input
                 type="file"
-                @change="handleFileChange('pdfFile', $event)"
+                @change="handleFileChange('pdfFile' as any, $event)"
                 accept=".pdf"
               />
             </dd>
-            <dt>전기도면</dt>
+            <dt>{{ t("process.electricDrawing") }}</dt>
             <dd>
               <input
                 type="file"
-                @change="handleFileChange('electricFile', $event)"
+                @change="handleFileChange('electricFile' as any, $event)"
                 accept=".dwg,.dxf"
               />
             </dd>
-            <dt>Mcc구성도</dt>
+            <dt>{{ t("process.mccDiagram") }}</dt>
             <dd>
               <input
                 type="file"
-                @change="handleFileChange('mccFile', $event)"
+                @change="handleFileChange('mccFile' as any, $event)"
                 accept=".dwg,.dxf"
               />
             </dd>
-            <dt class="essential">P&ID</dt>
+            <dt class="essential">{{ t("process.pid") }}</dt>
             <dd>
               <input
                 type="file"
@@ -182,7 +222,7 @@
                 accept=".dwg,.dxf"
               />
             </dd>
-            <dt class="essential">매핑테이블 Excel</dt>
+            <dt class="essential">{{ t("process.mappingExcel") }}</dt>
             <dd>
               <input
                 type="file"
@@ -190,16 +230,16 @@
                 accept=".xlsx,.xls"
               />
             </dd>
-            <!-- <dt>P&ID 정보개요</dt>
+            <!-- <dt>{{ t('process.pidInfoOverview') }}</dt>
             <dd>
               <input
                 type="text"
                 v-model="registForm.pidInfo"
                 class="form-input"
-                placeholder="P&ID 정보개요를 입력하세요"
+                :placeholder="t('process.pidInfoPlaceholder')"
               />
             </dd> -->
-            <dt>정합성 체크</dt>
+            <dt>{{ t("process.consistencyCheck") }}</dt>
             <dd>
               <label for="consistencyCheck">
                 <input
@@ -207,21 +247,21 @@
                   id="consistencyCheck"
                   v-model="registForm.consistencyCheck"
                 />
-                정합성 체크를 수행합니다.
+                {{ t("process.consistencyCheckDescription") }}
               </label>
             </dd>
           </dl>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="handleSave"
             :disabled="!isFormValid"
           >
-            저장
+            {{ t("common.save") }}
           </button>
         </div>
       </div>
@@ -234,6 +274,9 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface ProcessItem {
   id: string;
@@ -259,13 +302,13 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "processType", title: "공정구분", sortable: true },
-  { key: "processNm", title: "공정명", sortable: true },
-  { key: "mode", title: "모드", sortable: true },
-  { key: "processSymbol", title: "공정심볼", sortable: true },
+  { key: "processType", title: t("process.processType"), sortable: true },
+  { key: "processNm", title: t("process.processName"), sortable: true },
+  { key: "mode", title: t("process.mode"), sortable: true },
+  { key: "processSymbol", title: t("process.processSymbol"), sortable: true },
   {
     key: "viewDetail",
-    title: "상세보기",
+    title: t("process.viewDetail"),
     sortable: false,
     formatter: (value) => formatDate(value),
   },

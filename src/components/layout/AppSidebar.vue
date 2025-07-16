@@ -8,42 +8,42 @@
       <nav class="nav-menu">
         <router-link to="/dashboard" class="nav-item">
           <span class="nav-icon">📊</span>
-          <span class="nav-text">대시보드</span>
+          <span class="nav-text">{{ t("sidebar.dashboard") }}</span>
         </router-link>
 
         <router-link to="/project" class="nav-item">
           <span class="nav-icon">📁</span>
-          <span class="nav-text">프로젝트 관리</span>
+          <span class="nav-text">{{ t("sidebar.project") }}</span>
         </router-link>
 
         <router-link to="/asset" class="nav-item">
           <span class="nav-icon">⚙️</span>
-          <span class="nav-text">유입종류 관리</span>
+          <span class="nav-text">{{ t("sidebar.asset") }}</span>
         </router-link>
 
         <router-link to="/process" class="nav-item">
           <span class="nav-icon">🏗️</span>
-          <span class="nav-text">공정 관리</span>
+          <span class="nav-text">{{ t("sidebar.process") }}</span>
         </router-link>
 
         <router-link to="/model" class="nav-item">
           <span class="nav-icon">📦</span>
-          <span class="nav-text">3D모델 관리</span>
+          <span class="nav-text">{{ t("sidebar.model") }}</span>
         </router-link>
 
         <router-link to="/machine" class="nav-item">
           <span class="nav-icon">🏭</span>
-          <span class="nav-text">기기리스트 관리</span>
+          <span class="nav-text">{{ t("sidebar.machine") }}</span>
         </router-link>
 
         <router-link to="/user" class="nav-item">
           <span class="nav-icon">👥</span>
-          <span class="nav-text">사용자 관리</span>
+          <span class="nav-text">{{ t("sidebar.user") }}</span>
         </router-link>
 
         <router-link to="/code" class="nav-item">
           <span class="nav-icon">🔑</span>
-          <span class="nav-text">코드 관리</span>
+          <span class="nav-text">{{ t("sidebar.code") }}</span>
         </router-link>
       </nav>
     </div>
@@ -51,7 +51,9 @@
 </template>
 
 <script setup lang="ts">
-import logoWaiSd from '@/assets/images/logo/logo_wai_sd.svg'
+import logoWaiSd from "@/assets/images/logo/logo_wai_sd.svg";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 </script>
 
 <style scoped lang="scss">

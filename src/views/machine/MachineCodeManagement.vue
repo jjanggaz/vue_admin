@@ -4,29 +4,33 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="search" class="label-search">검색</label>
+          <label for="search" class="label-search">{{
+            t("common.search")
+          }}</label>
           <div class="form-item">
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요."
+              :placeholder="t('common.searchQueryPlaceholder')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">검색</button>
+          <button class="btn-search" @click="handleSearch">
+            {{ t("common.search") }}
+          </button>
         </div>
       </div>
       <div class="btns">
         <button class="btn btn-primary btn-add" @click="openRegistModal">
-          추가
+          {{ t("common.add") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -41,7 +45,9 @@
       @selection-change="handleSelectionChange"
     >
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">수정</button>
+        <button class="btn-edit" @click.stop="editItem(item)">
+          {{ t("common.edit") }}
+        </button>
       </template>
     </DataTable>
 
@@ -58,75 +64,81 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ isEditMode ? "수정" : "등록" }}</h3>
-          <button class="btn-close" @click="closeRegistModal">X</button>
+          <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
+          <button class="btn-close" @click="closeRegistModal">
+            {{ t("common.close") }}
+          </button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">코드그룹</dt>
+            <dt class="essential">{{ t("machineCode.group") }}</dt>
             <dd>
               <input
                 v-model="newCode.group"
                 type="text"
                 class="form-input"
-                placeholder="코드그룹을 입력하세요"
+                :placeholder="t('machineCode.groupPlaceholder')"
               />
             </dd>
-            <dt class="essential">코드명</dt>
+            <dt class="essential">{{ t("machineCode.name") }}</dt>
             <dd>
               <input
                 v-model="newCode.name"
                 type="text"
                 class="form-input"
-                placeholder="코드명을 입력하세요"
+                :placeholder="t('machineCode.namePlaceholder')"
               />
             </dd>
-            <dt>코드값</dt>
+            <dt>{{ t("machineCode.value") }}</dt>
             <dd>
               <input
                 v-model="newCode.value"
                 type="text"
                 class="form-input"
-                placeholder="코드값을 입력하세요"
+                :placeholder="t('machineCode.valuePlaceholder')"
               />
             </dd>
-            <dt>순서</dt>
+            <dt>{{ t("machineCode.order") }}</dt>
             <dd>
               <input
                 v-model="newCode.order"
                 type="number"
                 class="form-input"
-                placeholder="순서를 입력하세요"
+                :placeholder="t('machineCode.orderPlaceholder')"
               />
             </dd>
-            <dt>설명</dt>
+            <dt>{{ t("machineCode.description") }}</dt>
             <dd>
               <textarea
                 v-model="newCode.description"
                 class="form-input"
-                placeholder="설명을 입력하세요"
+                :placeholder="t('machineCode.descriptionPlaceholder')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>사용여부</dt>
+            <dt>{{ t("machineCode.isActive") }}</dt>
             <dd>
               <select v-model="newCode.isActive" class="form-input">
-                <option value="true">사용</option>
-                <option value="false">미사용</option>
+                <option value="true">
+                  {{ t("machineCode.isActive.true") }}
+                </option>
+                <option value="false">
+                  {{ t("machineCode.isActive.false") }}
+                </option>
               </select>
             </dd>
           </dl>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
-            취소
+            {{ t("common.cancel") }}
           </button>
           <button
             class="btn btn-primary"
             @click="handleSave"
             :disabled="!isFormValid"
           >
-            저장
+            {{ t("common.save") }}
           </button>
         </div>
       </div>
@@ -138,6 +150,8 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 interface CodeItem {
   id: string;
@@ -161,15 +175,45 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: "순번", width: "60px", sortable: false },
-  { key: "group", title: "코드그룹", width: "120px", sortable: true },
-  { key: "name", title: "코드명", width: "150px", sortable: true },
-  { key: "value", title: "코드값", width: "100px", sortable: true },
-  { key: "order", title: "순서", width: "80px", sortable: true },
-  { key: "description", title: "설명", width: "200px", sortable: true },
-  { key: "isActive", title: "사용여부", width: "100px", sortable: true },
-  { key: "createdAt", title: "생성일", width: "120px", sortable: true },
-  { key: "actions", title: "수정", width: "80px", sortable: false },
+  { key: "id", title: t("machineCode.id"), width: "60px", sortable: false },
+  {
+    key: "group",
+    title: t("machineCode.group"),
+    width: "120px",
+    sortable: true,
+  },
+  { key: "name", title: t("machineCode.name"), width: "150px", sortable: true },
+  {
+    key: "value",
+    title: t("machineCode.value"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "order",
+    title: t("machineCode.order"),
+    width: "80px",
+    sortable: true,
+  },
+  {
+    key: "description",
+    title: t("machineCode.description"),
+    width: "200px",
+    sortable: true,
+  },
+  {
+    key: "isActive",
+    title: t("machineCode.isActive"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "createdAt",
+    title: t("machineCode.createdAt"),
+    width: "120px",
+    sortable: true,
+  },
+  { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
 ];
 
 const codeList = ref<CodeItem[]>([]);
@@ -292,18 +336,16 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택하세요.");
+    alert(t("common.pleaseSelectItemToDelete"));
     return;
   }
-  if (
-    confirm(`선택된 ${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)
-  ) {
+  if (confirm(`${selectedItems.value.length}개의 항목을 삭제하시겠습니까?`)) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     codeList.value = codeList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert("삭제되었습니다.");
+    alert(t("common.deleted"));
   }
 };
 
@@ -311,11 +353,15 @@ const handleDelete = () => {
 const loadData = () => {
   codeList.value = Array.from({ length: 20 }, (_, i) => ({
     id: (i + 1).toString(),
-    group: ["기계타입", "기계상태", "기계등급"][i % 3],
-    name: `코드${i + 1}`,
-    value: `CODE-${String(i + 1).padStart(3, "0")}`,
+    group: [
+      t("machineCode.machineType"),
+      t("machineCode.machineStatus"),
+      t("machineCode.machineGrade"),
+    ][i % 3],
+    name: `${t("machineCode.code")} ${i + 1}`,
+    value: `${t("machineCode.codeValue")} ${String(i + 1).padStart(3, "0")}`,
     order: i + 1,
-    description: `코드 ${i + 1}에 대한 설명입니다.`,
+    description: `${t("machineCode.description")} ${i + 1}`,
     isActive: i % 4 !== 0, // 4의 배수는 미사용
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));

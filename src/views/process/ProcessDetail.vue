@@ -1017,7 +1017,7 @@ const handleMccDelete = () => {
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: darken($primary-color, 10%);
+      background-color: #0056b3; // Darken primary color for hover
     }
 
     &:disabled {
@@ -1032,7 +1032,7 @@ const handleMccDelete = () => {
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: darken(#dc3545, 10%);
+      background-color: color.scale(#dc3545, $lightness: -10%);
     }
 
     &:disabled {

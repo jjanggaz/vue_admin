@@ -349,6 +349,8 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .cost-target-page {
   padding: $spacing-lg;
 }
@@ -397,7 +399,7 @@ onMounted(() => {
     color: white;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.scale($primary-color, $lightness: -10%);
     }
 
     &:disabled {
@@ -412,7 +414,7 @@ onMounted(() => {
     border: 1px solid $border-color;
 
     &:hover {
-      background-color: darken($background-light, 5%);
+      background-color: color.scale($background-light, $lightness: -5%);
     }
   }
 }
@@ -427,7 +429,7 @@ onMounted(() => {
   font-size: 0.9rem;
 
   &:hover {
-    background-color: darken($primary-color, 10%);
+    background-color: color.scale($primary-color, $lightness: -10%);
   }
 }
 
@@ -441,7 +443,7 @@ onMounted(() => {
   font-size: 0.8rem;
 
   &:hover {
-    background-color: darken($primary-color, 10%);
+    background-color: color.scale($primary-color, $lightness: -10%);
   }
 }
 

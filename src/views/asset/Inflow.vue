@@ -371,6 +371,8 @@ interface GridRow2 {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .inflow {
   padding: $spacing-xl;
 
@@ -480,7 +482,7 @@ interface GridRow2 {
     background-color: $primary-color;
     color: #fff;
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.scale($primary-color, $lightness: -10%);
     }
   }
 }

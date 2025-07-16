@@ -480,6 +480,8 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .model-3d-page {
   padding: $spacing-lg;
 }
@@ -656,7 +658,7 @@ onMounted(() => {
         transition: $transition-base;
         border: none;
         &:hover {
-          background: darken($primary-color, 10%);
+          background-color: color.scale($primary-color, $lightness: -10%);
         }
         input[type="file"] {
           display: none;
@@ -686,7 +688,7 @@ onMounted(() => {
       color: white;
 
       &:hover:not(:disabled) {
-        background-color: darken($primary-color, 10%);
+        background-color: color.scale($primary-color, $lightness: -10%);
       }
 
       &:disabled {
@@ -701,7 +703,7 @@ onMounted(() => {
       border: 1px solid $border-color;
 
       &:hover {
-        background-color: darken($background-light, 5%);
+        background-color: color.scale($background-light, $lightness: -5%);
       }
     }
   }

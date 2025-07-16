@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="login-header">
         <h1 class="logo">
-          <img src="/public/images/logo/logo_wai.svg" alt="" />
+          <img :src="logoWai" alt="WAI Logo" />
         </h1>
         <p class="subtitle">수처리플랜트 설계를 위한 전문시스템</p>
       </div>
@@ -48,6 +48,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
+import logoWai from '@/assets/images/logo/logo_wai.svg'
 
 const router = useRouter();
 const authStore = useAuthStore();

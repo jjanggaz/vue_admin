@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "variables" as *;
+
 input,
 select,
 textarea {
@@ -67,8 +70,8 @@ dl.column-search {
       transition: background-color 0.3s, border-color 0.3s;
 
       &:hover {
-        background-color: darken($background-light, 10%);
-        border-color: darken($border-form, 10%);
+        background-color: color.scale($background-light, $lightness: -10%);
+        border-color: color.scale($border-form, $lightness: -10%);
       }
     }
   }
@@ -129,8 +132,8 @@ dl.column-search {
    transition: background-color 0.3s, border-color 0.3s;
 
    &:hover {
-     background-color: darken($background-light, 10%);
-     border-color: darken($border-form, 10%);
+     background-color: color.scale($background-light, $lightness: -10%);
+     border-color: color.scale($border-form, $lightness: -10%);
    }
  }
 }
@@ -196,8 +199,8 @@ dl.column-regist {
       transition: background-color 0.3s, border-color 0.3s;
 
       &:hover {
-        background-color: darken($background-light, 10%);
-        border-color: darken($border-form, 10%);
+        background-color: color.scale($background-light, $lightness: -10%);
+        border-color: color.scale($border-form, $lightness: -10%);
       }
     }
   }
@@ -219,7 +222,7 @@ input[type="file"] {
   cursor: pointer;
   appearance: none;
   &:hover {
-    background-color: lighten($background-light, 10%);
+    background-color: color.scale($background-light, $lightness: 10%);
   }
   &::file-selector-button {
     display: none;

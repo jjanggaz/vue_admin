@@ -1,7 +1,8 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-content">
-      <img src="/public/images/logo/logo_wai_sd.svg" alt="" />
+      <!-- <img src="/public/images/logo/logo_wai_sd.svg" alt="" /> -->
+      <img :src="logoWaiSd" alt="WAI SD Logo" />
 
       <!-- Navigation Menu -->
       <nav class="nav-menu">
@@ -50,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-// 라우터 활성 링크는 Vue Router가 자동으로 처리
+import logoWaiSd from '@/assets/images/logo/logo_wai_sd.svg'
 </script>
 
 <style scoped lang="scss">

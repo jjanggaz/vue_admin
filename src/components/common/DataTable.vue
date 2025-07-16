@@ -322,6 +322,8 @@ watch(
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
+
 .data-table-container {
   background: $background-color;
   border-radius: $border-radius-lg;
@@ -362,7 +364,7 @@ watch(
         transition: $transition-base;
 
         &:hover {
-          background-color: darken($background-light, 3%);
+          background-color: color.scale($background-light, $lightness: -3%);
         }
       }
 

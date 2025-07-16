@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "variables" as *;
+
 // Global styles and resets
 *,
 *::before,
@@ -125,7 +128,7 @@ body {
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: darken($primary-color, 10%);
+      background-color: color.scale($primary-color, $lightness: -10%);
     }
   }
 
@@ -134,7 +137,7 @@ body {
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: darken($secondary-color, 10%);
+      background-color: color.scale($secondary-color, $lightness: -10%);
     }
   }
 
@@ -240,7 +243,7 @@ body {
       color: white;
       background-color: $background-blue;
       &:hover {
-        background-color: darken($background-light, 5%);
+        background-color: color.scale($background-light, $lightness: -5%);
       }
     }
   }

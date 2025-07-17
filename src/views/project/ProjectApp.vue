@@ -57,58 +57,58 @@ interface ApprovalItem {
 }
 
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("project.table.id"), width: "60px", sortable: false },
+  { key: "id", title: t("columns.project.id"), width: "60px", sortable: false },
   {
     key: "name",
-    title: t("project.table.name"),
+    title: t("columns.project.name"),
     width: "180px",
     sortable: true,
   },
   {
     key: "client",
-    title: t("project.table.client"),
+    title: t("columns.project.client"),
     width: "120px",
     sortable: true,
   },
   {
     key: "manager",
-    title: t("project.table.manager"),
+    title: t("columns.project.manager"),
     width: "120px",
     sortable: true,
   },
   {
     key: "type",
-    title: t("project.table.type"),
+    title: t("columns.project.type"),
     width: "100px",
     sortable: true,
   },
   {
     key: "capacity",
-    title: t("project.table.capacity"),
+    title: t("columns.project.capacity"),
     width: "120px",
     sortable: true,
   },
   {
     key: "process",
-    title: t("project.table.process"),
+    title: t("columns.project.process"),
     width: "120px",
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("project.table.createdAt"),
+    title: t("columns.project.createdAt"),
     width: "120px",
     sortable: true,
   },
   {
     key: "country",
-    title: t("project.table.country"),
+    title: t("columns.project.country"),
     width: "100px",
     sortable: true,
   },
   {
     key: "detail",
-    title: t("project.table.detail"),
+    title: t("columns.project.detail"),
     width: "100px",
     sortable: false,
   },
@@ -143,18 +143,20 @@ const handlePageChange = (page: number) => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("project.delete.noItemsSelected"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
-    confirm(t("project.delete.confirm", { count: selectedItems.value.length }))
+    confirm(
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
+    )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
     approvalList.value = approvalList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("project.delete.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 

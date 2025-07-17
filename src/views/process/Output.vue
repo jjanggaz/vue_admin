@@ -32,7 +32,7 @@
       </div>
       <div class="group-form">
         <button class="btn-regist" @click="handleRegist">
-          {{ t("output.registerNew") }}
+          {{ t("common.register") }}
         </button>
       </div>
     </div>
@@ -82,7 +82,7 @@
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container">
         <div class="modal-header">
-          <h3>{{ t("output.register") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="btn-close"
             @click="isRegistModalOpen = false"
@@ -93,23 +93,23 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("output.inflowTypeName") }}</dt>
+            <dt class="essential">{{ t("common.typeName") }}</dt>
             <dd>
               <input
                 v-model="newTypeName"
                 type="text"
                 class="form-input"
-                :placeholder="t('output.enterInflowTypeName')"
+                :placeholder="t('placeholder.inflowTypeName')"
               />
             </dd>
-            <dt>{{ t("output.fileUpload") }}</dt>
+            <dt>{{ t("common.fileUpload") }}</dt>
             <dd>
               <div class="file-upload-row">
                 <input
                   type="text"
                   class="file-name-input"
                   :value="selectedFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -122,7 +122,7 @@
                 </label>
               </div>
             </dd>
-            <dt>{{ t("output.etc") }}</dt>
+            <dt>{{ t("common.etc") }}</dt>
             <dd>
               <input type="text" class="form-input" />
             </dd>
@@ -159,18 +159,18 @@ interface OutputItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("output.id"), sortable: true, hidden: true },
+  { key: "id", title: t("columns.output.id"), sortable: true, hidden: true },
 
   {
     key: "num",
-    title: t("output.number"),
+    title: t("common.number"),
     sortable: true,
     formatter: (value, item, index) => String((index || 0) + 1),
   },
-  { key: "column", title: t("output.item"), sortable: true },
-  { key: "influent", title: t("output.influent"), sortable: true },
-  { key: "unit", title: t("output.unit"), sortable: true },
-  { key: "etc", title: t("output.etc"), sortable: true },
+  { key: "column", title: t("common.item"), sortable: true },
+  { key: "influent", title: t("common.influent"), sortable: true },
+  { key: "unit", title: t("common.unit"), sortable: true },
+  { key: "etc", title: t("common.etc"), sortable: true },
 ];
 
 const outputList = ref<OutputItem[]>([

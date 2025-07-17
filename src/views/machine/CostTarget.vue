@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('common.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -46,17 +46,17 @@
     >
       <!-- 기계명 슬롯 -->
       <template #cell-machineName="{ value }">
-        {{ t("costTarget.machineName." + mapMachineName(value)) }}
+        {{ t("common.costTargetMachine." + mapMachineName(value)) }}
       </template>
 
       <!-- 단위 슬롯 -->
       <template #cell-unit="{ value }">
-        {{ t("costTarget.unit." + mapUnit(value)) }}
+        {{ t("common.costTargetUnit." + mapUnit(value)) }}
       </template>
 
       <!-- 상태 슬롯 -->
       <template #cell-status="{ value }">
-        {{ t("costTarget.status." + mapStatus(value)) }}
+        {{ t("common.costTargetStatus." + mapStatus(value)) }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -90,79 +90,81 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("costTarget.name") }}</dt>
+            <dt class="essential">{{ t("common.name") }}</dt>
             <dd>
               <input
                 v-model="newCost.name"
                 type="text"
                 class="form-input"
-                :placeholder="t('costTarget.namePlaceholder')"
+                :placeholder="t('placeholder.costTargetName')"
               />
             </dd>
-            <dt class="essential">{{ t("costTarget.machineName.label") }}</dt>
+            <dt class="essential">{{ t("columns.costTarget.machineName") }}</dt>
             <dd>
               <select v-model="newCost.machineName" class="form-input">
                 <option value="">-- {{ t("common.select") }} --</option>
                 <option value="펌프1">
-                  {{ t("costTarget.machineName.pump1") }}
+                  {{ t("common.costTargetMachine.pump1") }}
                 </option>
                 <option value="모터1">
-                  {{ t("costTarget.machineName.motor1") }}
+                  {{ t("common.costTargetMachine.motor1") }}
                 </option>
                 <option value="컨베이어1">
-                  {{ t("costTarget.machineName.conveyor1") }}
+                  {{ t("common.costTargetMachine.conveyor1") }}
                 </option>
               </select>
             </dd>
-            <dt>{{ t("costTarget.targetCost") }}</dt>
+            <dt>{{ t("columns.costTarget.targetCost") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetCost"
                 type="number"
                 class="form-input"
-                :placeholder="t('costTarget.targetCostPlaceholder')"
+                :placeholder="t('placeholder.costTargetCost')"
               />
             </dd>
-            <dt>{{ t("costTarget.unit.label") }}</dt>
+            <dt>{{ t("columns.costTarget.unit") }}</dt>
             <dd>
               <select v-model="newCost.unit" class="form-input">
-                <option value="원">{{ t("costTarget.unit.won") }}</option>
-                <option value="달러">{{ t("costTarget.unit.dollar") }}</option>
-                <option value="엔">{{ t("costTarget.unit.yen") }}</option>
+                <option value="원">{{ t("common.costTargetUnit.won") }}</option>
+                <option value="달러">
+                  {{ t("common.costTargetUnit.dollar") }}
+                </option>
+                <option value="엔">{{ t("common.costTargetUnit.yen") }}</option>
               </select>
             </dd>
-            <dt>{{ t("costTarget.targetPeriod.label") }}</dt>
+            <dt>{{ t("columns.costTarget.targetPeriod") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetPeriod"
                 type="text"
                 class="form-input"
-                :placeholder="t('costTarget.targetPeriodPlaceholder')"
+                :placeholder="t('placeholder.costTargetPeriod')"
               />
             </dd>
-            <dt>{{ t("costTarget.description.label") }}</dt>
+            <dt>{{ t("common.description") }}</dt>
             <dd>
               <textarea
                 v-model="newCost.description"
                 class="form-input"
-                :placeholder="t('costTarget.descriptionPlaceholder')"
+                :placeholder="t('placeholder.costTargetDescription')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>{{ t("costTarget.status.label") }}</dt>
+            <dt>{{ t("columns.costTarget.status") }}</dt>
             <dd>
               <select v-model="newCost.status" class="form-input">
                 <option value="진행중">
-                  {{ t("costTarget.status.inProgress") }}
+                  {{ t("common.costTargetStatus.inProgress") }}
                 </option>
                 <option value="완료">
-                  {{ t("costTarget.status.completed") }}
+                  {{ t("common.costTargetStatus.completed") }}
                 </option>
                 <option value="지연">
-                  {{ t("costTarget.status.delayed") }}
+                  {{ t("common.costTargetStatus.delayed") }}
                 </option>
                 <option value="취소">
-                  {{ t("costTarget.status.cancelled") }}
+                  {{ t("common.costTargetStatus.cancelled") }}
                 </option>
               </select>
             </dd>
@@ -216,47 +218,57 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("costTarget.id"), width: "60px", sortable: false },
-  { key: "name", title: t("costTarget.name"), width: "150px", sortable: true },
+  {
+    key: "id",
+    title: t("columns.costTarget.id"),
+    width: "60px",
+    sortable: false,
+  },
+  {
+    key: "name",
+    title: t("columns.costTarget.name"),
+    width: "150px",
+    sortable: true,
+  },
   {
     key: "machineName",
-    title: t("costTarget.machineName.label"),
+    title: t("columns.costTarget.machineName"),
     width: "120px",
     sortable: true,
   },
   {
     key: "targetCost",
-    title: t("costTarget.targetCost"),
+    title: t("columns.costTarget.targetCost"),
     width: "120px",
     sortable: true,
   },
   {
     key: "unit",
-    title: t("costTarget.unit.label"),
+    title: t("columns.costTarget.unit"),
     width: "80px",
     sortable: true,
   },
   {
     key: "targetPeriod",
-    title: t("costTarget.targetPeriod.label"),
+    title: t("columns.costTarget.targetPeriod"),
     width: "150px",
     sortable: true,
   },
   {
     key: "description",
-    title: t("costTarget.description.label"),
+    title: t("columns.costTarget.description"),
     width: "200px",
     sortable: true,
   },
   {
     key: "status",
-    title: t("costTarget.status.label"),
+    title: t("columns.costTarget.status"),
     width: "100px",
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("costTarget.createdAt"),
+    title: t("columns.costTarget.createdAt"),
     width: "120px",
     sortable: true,
   },
@@ -388,14 +400,12 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.selectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      `${selectedItems.value.length} ${t("common.items")} ${t(
-        "common.deleteConfirm"
-      )}`
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
@@ -403,7 +413,7 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 
@@ -411,16 +421,15 @@ const handleDelete = () => {
 const loadData = () => {
   costList.value = Array.from({ length: 18 }, (_, i) => ({
     id: (i + 1).toString(),
-    name: `${t("costTarget.costTarget")} ${i + 1}`,
+    name: `목표 ${i + 1}`,
     machineName: ["펌프1", "모터1", "컨베이어1"][i % 3],
     targetCost: 1000000 + i * 500000,
     unit: ["원", "달러", "엔"][i % 3],
-    targetPeriod: `${t("costTarget.targetPeriod.example")} ${String(
-      Math.floor(i / 3) + 1
-    ).padStart(2, "0")}-${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
-    description: `${t("costTarget.costTarget")} ${i + 1} ${t(
-      "costTarget.description.example"
-    )}`,
+    targetPeriod: `2024.${String(Math.floor(i / 3) + 1).padStart(
+      2,
+      "0"
+    )}-2024.${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
+    description: `목표 ${i + 1}에 대한 설명입니다`,
     status: ["진행중", "완료", "지연", "취소"][i % 4],
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));

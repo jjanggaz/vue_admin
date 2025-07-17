@@ -78,7 +78,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles[`table1_${index}`]?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -134,7 +134,7 @@
               <input
                 type="text"
                 v-model="newInflowTypeName"
-                :placeholder="t('inflow.typeNamePlaceholder')"
+                :placeholder="t('placeholder.inflowTypeName')"
                 class="form-input"
               />
             </dd>
@@ -169,7 +169,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.modalUpload?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -186,7 +186,7 @@
             <dd>
               <input
                 type="text"
-                :placeholder="t('inflow.formulaPlaceholder')"
+                :placeholder="t('placeholder.inflowFormula')"
                 class="form-input"
               />
             </dd>
@@ -202,7 +202,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles[`table2_${index}`]?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -302,12 +302,12 @@ const newTabName = ref("");
 const selectedFiles = ref<{ [key: string]: File }>({});
 
 const gridColumns: TableColumn[] = [
-  { key: "id", title: t("inflow.columns.no"), width: "80px" },
-  { key: "item", title: t("inflow.columns.item") },
-  { key: "influent", title: t("inflow.columns.influent") },
-  { key: "unit", title: t("inflow.columns.unit") },
-  { key: "display", title: t("inflow.columns.display") },
-  { key: "remarks", title: t("inflow.columns.remarks") },
+  { key: "id", title: t("columns.inflow.no"), width: "80px" },
+  { key: "item", title: t("columns.inflow.item") },
+  { key: "influent", title: t("columns.inflow.influent") },
+  { key: "unit", title: t("columns.inflow.unit") },
+  { key: "display", title: t("columns.inflow.display") },
+  { key: "remarks", title: t("columns.inflow.remarks") },
 ];
 
 const gridData = ref<GridRow[]>([
@@ -354,12 +354,12 @@ const gridData = ref<GridRow[]>([
 ]);
 
 const gridColumns2: TableColumn[] = [
-  { key: "id", title: t("inflow.columns.no"), width: "80px" },
-  { key: "formula", title: t("inflow.columns.formula") },
-  { key: "uploadDate", title: t("inflow.columns.uploadDate") },
-  { key: "author", title: t("inflow.columns.author") },
-  { key: "apply", title: t("inflow.columns.apply") },
-  { key: "remarks", title: t("inflow.columns.remarks") },
+  { key: "id", title: t("columns.inflow.no"), width: "80px" },
+  { key: "formula", title: t("columns.inflow.formula") },
+  { key: "uploadDate", title: t("columns.inflow.uploadDate") },
+  { key: "author", title: t("columns.inflow.author") },
+  { key: "apply", title: t("columns.inflow.apply") },
+  { key: "remarks", title: t("columns.inflow.remarks") },
 ];
 
 const gridData2 = ref<GridRow2[]>([
@@ -558,7 +558,7 @@ const closeModal = () => {
 
 const createNewTab = () => {
   if (!newTabName.value.trim()) {
-    alert(t("common.pleaseEnterTabName"));
+    alert(t("messages.warning.pleaseEnterTabName"));
     return;
   }
   const newIndex = tabs.value.length;

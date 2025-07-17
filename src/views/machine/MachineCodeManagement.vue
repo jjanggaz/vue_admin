@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('common.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -46,7 +46,7 @@
     >
       <!-- 사용여부 슬롯 -->
       <template #cell-isActive="{ value }">
-        {{ t("machineCode.isActive." + value) }}
+        {{ t("common.machineCodeStatus." + (value ? "active" : "inactive")) }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -80,59 +80,59 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("machineCode.group") }}</dt>
+            <dt class="essential">{{ t("common.group") }}</dt>
             <dd>
               <input
                 v-model="newCode.group"
                 type="text"
                 class="form-input"
-                :placeholder="t('machineCode.groupPlaceholder')"
+                :placeholder="t('placeholder.machineCodeGroup')"
               />
             </dd>
-            <dt class="essential">{{ t("machineCode.name") }}</dt>
+            <dt class="essential">{{ t("common.name") }}</dt>
             <dd>
               <input
                 v-model="newCode.name"
                 type="text"
                 class="form-input"
-                :placeholder="t('machineCode.namePlaceholder')"
+                :placeholder="t('placeholder.machineCodeName')"
               />
             </dd>
-            <dt>{{ t("machineCode.value") }}</dt>
+            <dt>{{ t("common.value") }}</dt>
             <dd>
               <input
                 v-model="newCode.value"
                 type="text"
                 class="form-input"
-                :placeholder="t('machineCode.valuePlaceholder')"
+                :placeholder="t('placeholder.machineCodeValue')"
               />
             </dd>
-            <dt>{{ t("machineCode.order") }}</dt>
+            <dt>{{ t("common.order") }}</dt>
             <dd>
               <input
                 v-model="newCode.order"
                 type="number"
                 class="form-input"
-                :placeholder="t('machineCode.orderPlaceholder')"
+                :placeholder="t('placeholder.machineCodeOrder')"
               />
             </dd>
-            <dt>{{ t("machineCode.description") }}</dt>
+            <dt>{{ t("common.description") }}</dt>
             <dd>
               <textarea
                 v-model="newCode.description"
                 class="form-input"
-                :placeholder="t('machineCode.descriptionPlaceholder')"
+                :placeholder="t('placeholder.machineCodeDescription')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>{{ t("machineCode.isActive.label") }}</dt>
+            <dt>{{ t("common.statusLabel") }}</dt>
             <dd>
               <select v-model="newCode.isActive" class="form-input">
                 <option value="true">
-                  {{ t("machineCode.isActive.true") }}
+                  {{ t("common.machineCodeStatus.active") }}
                 </option>
                 <option value="false">
-                  {{ t("machineCode.isActive.false") }}
+                  {{ t("common.machineCodeStatus.inactive") }}
                 </option>
               </select>
             </dd>
@@ -184,41 +184,51 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("machineCode.id"), width: "60px", sortable: false },
+  {
+    key: "id",
+    title: t("columns.machineCode.id"),
+    width: "60px",
+    sortable: false,
+  },
   {
     key: "group",
-    title: t("machineCode.group"),
+    title: t("columns.machineCode.group"),
     width: "120px",
     sortable: true,
   },
-  { key: "name", title: t("machineCode.name"), width: "150px", sortable: true },
+  {
+    key: "name",
+    title: t("columns.machineCode.name"),
+    width: "150px",
+    sortable: true,
+  },
   {
     key: "value",
-    title: t("machineCode.value"),
+    title: t("columns.machineCode.value"),
     width: "100px",
     sortable: true,
   },
   {
     key: "order",
-    title: t("machineCode.order"),
+    title: t("columns.machineCode.order"),
     width: "80px",
     sortable: true,
   },
   {
     key: "description",
-    title: t("machineCode.description"),
+    title: t("columns.machineCode.description"),
     width: "200px",
     sortable: true,
   },
   {
     key: "isActive",
-    title: t("machineCode.isActive.label"),
+    title: t("columns.machineCode.isActive"),
     width: "100px",
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("machineCode.createdAt"),
+    title: t("columns.machineCode.createdAt"),
     width: "120px",
     sortable: true,
   },
@@ -345,12 +355,12 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
@@ -358,7 +368,7 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 
@@ -366,15 +376,11 @@ const handleDelete = () => {
 const loadData = () => {
   codeList.value = Array.from({ length: 20 }, (_, i) => ({
     id: (i + 1).toString(),
-    group: [
-      t("machineCode.machineType"),
-      t("machineCode.machineStatus"),
-      t("machineCode.machineGrade"),
-    ][i % 3],
-    name: `${t("machineCode.code")} ${i + 1}`,
-    value: `${t("machineCode.codeValue")} ${String(i + 1).padStart(3, "0")}`,
+    group: ["기계타입", "기계상태", "기계등급"][i % 3],
+    name: `코드 ${i + 1}`,
+    value: `코드값 ${String(i + 1).padStart(3, "0")}`,
     order: i + 1,
-    description: `${t("machineCode.description")} ${i + 1}`,
+    description: `코드 ${i + 1}에 대한 설명`,
     isActive: i % 4 !== 0, // 4의 배수는 미사용
     createdAt: `2023-01-${(i % 28) + 1}`,
   }));

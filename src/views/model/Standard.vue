@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        {{ t("standard.uploadNew") }}
+        {{ t("common.register") }}
       </button>
     </div>
 
@@ -30,13 +30,13 @@
 
       <!-- 도면종류 슬롯 -->
       <template #cell-drawingType="{ value }">
-        {{ t("standard.drawingType." + mapDrawingType(value)) }}
+        {{ t("common.drawingType." + mapDrawingType(value)) }}
       </template>
 
       <!-- 승인상태 슬롯 -->
       <template #cell-approvalStatus="{ value }">
         <span class="status-badge" :class="mapApprovalStatus(value)">
-          {{ t("standard.approvalStatus." + mapApprovalStatus(value)) }}
+          {{ t("common.approvalStatus." + mapApprovalStatus(value)) }}
         </span>
       </template>
     </DataTable>
@@ -54,7 +54,7 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("standard.uploadNew") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="modal-close"
             @click="closeUploadModal"
@@ -65,51 +65,51 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("standard.drawingName") }}</label>
+            <label>{{ t("common.drawingName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
-              :placeholder="t('standard.enterDrawingName')"
+              :placeholder="t('placeholder.standardDrawingName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("standard.drawingNumber") }}</label>
+            <label>{{ t("common.drawingNumber") }}</label>
             <input
               v-model="uploadForm.drawingNumber"
               type="text"
-              :placeholder="t('standard.enterDrawingNumber')"
+              :placeholder="t('placeholder.standardDrawingNumber')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("standard.drawingType.label") }}</label>
+            <label>{{ t("common.drawingTypeLabel") }}</label>
             <select v-model="uploadForm.drawingType">
-              <option value="">{{ t("standard.selectDrawingType") }}</option>
+              <option value="">{{ t("common.selectDrawingType") }}</option>
               <option value="평면도">
-                {{ t("standard.drawingType.plan") }}
+                {{ t("common.drawingType.plan") }}
               </option>
               <option value="입면도">
-                {{ t("standard.drawingType.elevation") }}
+                {{ t("common.drawingType.elevation") }}
               </option>
               <option value="단면도">
-                {{ t("standard.drawingType.section") }}
+                {{ t("common.drawingType.section") }}
               </option>
               <option value="상세도">
-                {{ t("standard.drawingType.detail") }}
+                {{ t("common.drawingType.detail") }}
               </option>
             </select>
           </div>
           <div class="form-group">
-            <label>{{ t("standard.fileUpload") }}</label>
+            <label>{{ t("common.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                :placeholder="t('standard.selectFile')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                {{ t("standard.selectFile") }}
+                {{ t("common.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -143,7 +143,7 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("standard.editStandard") }}</h3>
+          <h3>{{ t("common.editStandard") }}</h3>
           <button
             class="modal-close"
             @click="closeEditModal"
@@ -154,50 +154,50 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("standard.drawingName") }}</label>
+            <label>{{ t("common.drawingName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
-              :placeholder="t('standard.enterDrawingName')"
+              :placeholder="t('placeholder.standardDrawingName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("standard.drawingNumber") }}</label>
+            <label>{{ t("common.drawingNumber") }}</label>
             <input
               v-model="editForm.drawingNumber"
               type="text"
-              :placeholder="t('standard.enterDrawingNumber')"
+              :placeholder="t('placeholder.standardDrawingNumber')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("standard.drawingType.label") }}</label>
+            <label>{{ t("common.drawingTypeLabel") }}</label>
             <select v-model="editForm.drawingType">
-              <option value="">{{ t("standard.selectDrawingType") }}</option>
+              <option value="">{{ t("common.selectDrawingType") }}</option>
               <option value="평면도">
-                {{ t("standard.drawingType.plan") }}
+                {{ t("common.drawingType.plan") }}
               </option>
               <option value="입면도">
-                {{ t("standard.drawingType.elevation") }}
+                {{ t("common.drawingType.elevation") }}
               </option>
               <option value="단면도">
-                {{ t("standard.drawingType.section") }}
+                {{ t("common.drawingType.section") }}
               </option>
               <option value="상세도">
-                {{ t("standard.drawingType.detail") }}
+                {{ t("common.drawingType.detail") }}
               </option>
             </select>
           </div>
           <div class="form-group">
-            <label>{{ t("standard.approvalStatus.label") }}</label>
+            <label>{{ t("common.approvalStatusLabel") }}</label>
             <select v-model="editForm.approvalStatus">
               <option value="검토중">
-                {{ t("standard.approvalStatus.pending") }}
+                {{ t("common.approvalStatus.pending") }}
               </option>
               <option value="승인">
-                {{ t("standard.approvalStatus.approved") }}
+                {{ t("common.approvalStatus.approved") }}
               </option>
               <option value="반려">
-                {{ t("standard.approvalStatus.rejected") }}
+                {{ t("common.approvalStatus.rejected") }}
               </option>
             </select>
           </div>
@@ -258,17 +258,21 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("standard.id"), sortable: true },
-  { key: "drawingNumber", title: t("standard.drawingNumber"), sortable: true },
-  { key: "title", title: t("standard.drawingName"), sortable: true },
+  { key: "id", title: t("columns.standard.id"), sortable: true },
+  {
+    key: "drawingNumber",
+    title: t("columns.standard.drawingNumber"),
+    sortable: true,
+  },
+  { key: "title", title: t("columns.standard.drawingName"), sortable: true },
   {
     key: "drawingType",
-    title: t("standard.drawingType.label"),
+    title: t("columns.standard.drawingType"),
     sortable: true,
   },
   {
     key: "approvalStatus",
-    title: t("standard.approvalStatus.label"),
+    title: t("columns.standard.approvalStatus"),
     sortable: true,
   },
   { key: "actions", title: t("common.action"), sortable: false },

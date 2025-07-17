@@ -28,7 +28,7 @@
               type="text"
               class="file-name-input"
               :value="selectedFiles.processSymbol?.name || ''"
-              :placeholder="t('common.selectFilePlaceholder')"
+              :placeholder="t('placeholder.selectFile')"
               readonly
             />
             <label class="file-select-btn">
@@ -43,14 +43,14 @@
         </dd>
         <!-- <dt class="essential">계산식</dt>
         <dd>
-          <input type="text" class="form-input" :placeholder="t('common.enterDescription')">
+          <input type="text" class="form-input" :placeholder="t('placeholder.projectDetail')">
         </dd> -->
         <dt>{{ t("processDetail.etc") }}</dt>
         <dd class="extend-all">
           <input
             type="text"
             class="form-input"
-            :placeholder="t('common.enterDescription')"
+            :placeholder="t('placeholder.projectDetail')"
           />
         </dd>
       </dl>
@@ -317,7 +317,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('pidFiles')"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
               />
               <label class="file-select-btn">
@@ -365,7 +365,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('pdfFiles')"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
               />
               <label class="file-select-btn">
@@ -413,7 +413,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('electricFiles')"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
               />
               <label class="file-select-btn">
@@ -461,7 +461,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('mccFiles')"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
               />
               <label class="file-select-btn">
@@ -502,10 +502,10 @@ const loading = ref(false);
 
 // 0: P&ID 탭용 컬럼/데이터
 const pidColumns: TableColumn[] = [
-  { key: "dwg", title: t("processDetail.columns.dwgFile") },
-  { key: "excel", title: t("processDetail.columns.excel") },
-  { key: "info", title: t("processDetail.columns.infoOverview") },
-  { key: "view", title: t("processDetail.columns.svgPreview") },
+  { key: "dwg", title: t("columns.processDetail.dwgFile") },
+  { key: "excel", title: t("columns.processDetail.excel") },
+  { key: "info", title: t("columns.processDetail.infoOverview") },
+  { key: "view", title: t("columns.processDetail.svgPreview") },
 ];
 const pidList = ref<any[]>([]);
 
@@ -528,61 +528,61 @@ const handlePageChangePid = (page: number) => {
 
 // 1: 설계조건 탭용 컬럼/데이터 (기존 복원)
 const designColumns: TableColumn[] = [
-  { key: "columnNm", title: t("processDetail.columns.item") },
-  { key: "influent", title: t("processDetail.columns.influent") },
-  { key: "effluent", title: t("processDetail.columns.effluent") },
-  { key: "sludge", title: t("processDetail.columns.sludge") },
-  { key: "unit", title: t("processDetail.columns.unit") },
-  { key: "remark", title: t("processDetail.columns.remark") },
+  { key: "columnNm", title: t("columns.processDetail.item") },
+  { key: "influent", title: t("columns.processDetail.influent") },
+  { key: "effluent", title: t("columns.processDetail.effluent") },
+  { key: "sludge", title: t("columns.processDetail.sludge") },
+  { key: "unit", title: t("columns.processDetail.unit") },
+  { key: "remark", title: t("columns.processDetail.remark") },
 ];
 const designList = ref<any[]>([]);
 
 const designCriteriaColumns: TableColumn[] = [
-  { key: "columnNm", title: t("processDetail.columns.item") },
-  { key: "value", title: t("processDetail.columns.value") },
-  { key: "min", title: t("processDetail.columns.min") },
-  { key: "max", title: t("processDetail.columns.max") },
-  { key: "unit", title: t("processDetail.columns.unit") },
-  { key: "remark", title: t("processDetail.columns.remark") },
+  { key: "columnNm", title: t("columns.processDetail.item") },
+  { key: "value", title: t("columns.processDetail.value") },
+  { key: "min", title: t("columns.processDetail.min") },
+  { key: "max", title: t("columns.processDetail.max") },
+  { key: "unit", title: t("columns.processDetail.unit") },
+  { key: "remark", title: t("columns.processDetail.remark") },
 ];
 const designCriteriaList = ref<any[]>([]);
 
 const designParameterColumns: TableColumn[] = [
-  { key: "columnNm", title: t("processDetail.columns.item") },
-  { key: "view", title: t("processDetail.columns.view") },
+  { key: "columnNm", title: t("columns.processDetail.item") },
+  { key: "view", title: t("columns.processDetail.view") },
 ];
 const designParameterList = ref<any[]>([]);
 
 // 5: 설계조건 효율 테이블용 컬럼/데이터
 const designEfficiencyColumns: TableColumn[] = [
-  { key: "columnNm", title: t("processDetail.columns.item") },
-  { key: "value", title: t("processDetail.columns.value") },
-  { key: "min", title: t("processDetail.columns.min") },
-  { key: "max", title: t("processDetail.columns.max") },
-  { key: "unit", title: t("processDetail.columns.unit") },
-  { key: "remark", title: t("processDetail.columns.remark") },
+  { key: "columnNm", title: t("columns.processDetail.item") },
+  { key: "value", title: t("columns.processDetail.value") },
+  { key: "min", title: t("columns.processDetail.min") },
+  { key: "max", title: t("columns.processDetail.max") },
+  { key: "unit", title: t("columns.processDetail.unit") },
+  { key: "remark", title: t("columns.processDetail.remark") },
 ];
 const designEfficiencyList = ref<any[]>([]);
 
 // 6: 계산식 관리 탭용 컬럼/데이터
 const calculationColumns: TableColumn[] = [
-  { key: "no", title: t("processDetail.columns.no") },
-  { key: "formulaVersion", title: t("processDetail.columns.formulaVersion") },
-  { key: "appliedVersion", title: t("processDetail.columns.appliedVersion") },
-  { key: "remark", title: t("processDetail.columns.remarks") },
+  { key: "no", title: t("columns.processDetail.no") },
+  { key: "formulaVersion", title: t("columns.processDetail.formulaVersion") },
+  { key: "appliedVersion", title: t("columns.processDetail.appliedVersion") },
+  { key: "remark", title: t("columns.processDetail.remarks") },
 ];
 const calculationList = ref<any[]>([]);
 
 // 7: PDF 탭용 컬럼/데이터
 const pdfColumns: TableColumn[] = [
-  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
-  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
   {
     key: "info",
-    title: t("processDetail.columns.infoOverview"),
+    title: t("columns.processDetail.infoOverview"),
     sortable: true,
   },
-  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
+  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
 ];
 const pdfList = ref<any[]>([]);
 const selectedPdfItems = ref<any[]>([]);
@@ -593,14 +593,14 @@ const handlePdfSelectionChange = (items: any[]) => {
 
 // 8: 전기도면 탭용 컬럼/데이터
 const electricColumns: TableColumn[] = [
-  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
-  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
   {
     key: "info",
-    title: t("processDetail.columns.infoOverview"),
+    title: t("columns.processDetail.infoOverview"),
     sortable: true,
   },
-  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
+  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
 ];
 const electricList = ref<any[]>([]);
 // 전기도면 탭 선택 상태
@@ -611,18 +611,18 @@ const handleElectricSelectionChange = (items: any[]) => {
 };
 
 const structColumns: TableColumn[] = [
-  { key: "type", title: t("processDetail.columns.type"), sortable: true },
+  { key: "type", title: t("columns.processDetail.type"), sortable: true },
   {
     key: "components",
-    title: t("processDetail.columns.components"),
+    title: t("columns.processDetail.components"),
     sortable: true,
   },
   {
     key: "equipmentType",
-    title: t("processDetail.columns.equipmentType"),
+    title: t("columns.processDetail.equipmentType"),
     sortable: true,
   },
-  { key: "item", title: t("processDetail.columns.item"), sortable: true },
+  { key: "item", title: t("columns.processDetail.item"), sortable: true },
 ];
 const structList = ref<any[]>([]);
 
@@ -636,14 +636,14 @@ const handlePidSelectionChange = (items: any[]) => {
 
 // 9: Mcc 구성도 탭용 컬럼/데이터
 const mccColumns: TableColumn[] = [
-  { key: "dwg", title: t("processDetail.columns.dwgFile"), sortable: true },
-  { key: "excel", title: t("processDetail.columns.excel"), sortable: true },
+  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
   {
     key: "info",
-    title: t("processDetail.columns.infoOverview"),
+    title: t("columns.processDetail.infoOverview"),
     sortable: true,
   },
-  { key: "view", title: t("processDetail.columns.svgPreview"), sortable: true },
+  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
 ];
 const mccList = ref<any[]>([]);
 // Mcc 구성도 탭 선택 상태
@@ -1017,13 +1017,15 @@ const uploadMccFiles = () => {
 // 삭제 핸들러 함수들
 const handlePidDelete = () => {
   if (selectedPidItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedPidItems.value.length })
+      t("messages.confirm.deleteItems", {
+        count: selectedPidItems.value.length,
+      })
     )
   ) {
     // 선택된 항목들을 pidList에서 제거
@@ -1032,19 +1034,21 @@ const handlePidDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedPidItems.value = [];
-    alert(t("common.pidItemDeleted"));
+    alert(t("messages.success.pidItemDeleted"));
   }
 };
 
 const handlePdfDelete = () => {
   if (selectedPdfItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedPdfItems.value.length })
+      t("messages.confirm.deleteItems", {
+        count: selectedPdfItems.value.length,
+      })
     )
   ) {
     // 선택된 항목들을 pdfList에서 제거
@@ -1053,19 +1057,19 @@ const handlePdfDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedPdfItems.value = [];
-    alert(t("common.pdfItemDeleted"));
+    alert(t("messages.success.pdfItemDeleted"));
   }
 };
 
 const handleElectricDelete = () => {
   if (selectedElectricItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      t("common.confirmDeleteItems", {
+      t("messages.confirm.deleteItems", {
         count: selectedElectricItems.value.length,
       })
     )
@@ -1076,19 +1080,21 @@ const handleElectricDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedElectricItems.value = [];
-    alert(t("common.electricDrawingItemDeleted"));
+    alert(t("messages.success.electricDrawingItemDeleted"));
   }
 };
 
 const handleMccDelete = () => {
   if (selectedMccItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedMccItems.value.length })
+      t("messages.confirm.deleteItems", {
+        count: selectedMccItems.value.length,
+      })
     )
   ) {
     // 선택된 항목들을 mccList에서 제거
@@ -1097,7 +1103,7 @@ const handleMccDelete = () => {
       (item) => !selectedIds.includes(item.dwg)
     );
     selectedMccItems.value = [];
-    alert(t("common.mccDiagramItemDeleted"));
+    alert(t("messages.success.mccDiagramItemDeleted"));
   }
 };
 </script>

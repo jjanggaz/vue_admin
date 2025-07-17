@@ -79,7 +79,7 @@
             <dd>
               <input
                 type="text"
-                :placeholder="t('outflow.outputNamePlaceholder')"
+                :placeholder="t('placeholder.outflowOutputName')"
                 class="form-input"
               />
             </dd>
@@ -107,7 +107,7 @@
             <dd>
               <input
                 type="text"
-                :placeholder="t('outflow.remarksPlaceholder')"
+                :placeholder="t('placeholder.outflowRemarks')"
                 class="form-input"
               />
             </dd>
@@ -115,10 +115,10 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-cancel" @click="closeModal">
-            {{ t("outflow.cancel") }}
+            {{ t("common.cancel") }}
           </button>
           <button class="btn btn-confirm" @click="createNewTab">
-            {{ t("outflow.register") }}
+            {{ t("common.register") }}
           </button>
         </div>
       </div>
@@ -174,11 +174,11 @@ const isModalOpen = ref(false);
 const newTabName = ref("");
 
 const gridColumns: TableColumn[] = [
-  { key: "id", title: t("outflow.columns.no"), width: "80px" },
-  { key: "item", title: t("outflow.columns.item") },
-  { key: "influent", title: t("outflow.columns.influent") },
-  { key: "unit", title: t("outflow.columns.unit") },
-  { key: "remarks", title: t("outflow.columns.remarks") },
+  { key: "id", title: t("columns.outflow.no"), width: "80px" },
+  { key: "item", title: t("columns.outflow.item") },
+  { key: "influent", title: t("columns.outflow.influent") },
+  { key: "unit", title: t("columns.outflow.unit") },
+  { key: "remarks", title: t("columns.outflow.remarks") },
 ];
 
 const gridData = ref<GridRow[]>([
@@ -429,7 +429,7 @@ const closeModal = () => {
 
 const createNewTab = () => {
   if (!newTabName.value.trim()) {
-    alert(t("common.pleaseEnterTabName"));
+    alert(t("messages.warning.pleaseEnterTabName"));
     return;
   }
   const newIndex = tabs.value.length;

@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        {{ t("revit.uploadNew") }}
+        {{ t("common.register") }}
       </button>
     </div>
 
@@ -37,7 +37,7 @@
             inactive: value === 'inactive',
           }"
         >
-          {{ t("revit.status." + value) }}
+          {{ t("common.status." + value) }}
         </span>
       </template>
     </DataTable>
@@ -55,7 +55,7 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("revit.uploadNew") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="modal-close"
             @click="closeUploadModal"
@@ -66,41 +66,41 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("revit.fileName") }}</label>
+            <label>{{ t("common.fileName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
-              :placeholder="t('common.enterFileName')"
+              :placeholder="t('placeholder.enterFileName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.projectName") }}</label>
+            <label>{{ t("common.projectName") }}</label>
             <input
               v-model="uploadForm.project"
               type="text"
-              :placeholder="t('common.enterProjectName')"
+              :placeholder="t('placeholder.enterProjectName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.version") }}</label>
+            <label>{{ t("common.version") }}</label>
             <input
               v-model="uploadForm.version"
               type="text"
-              :placeholder="t('common.enterVersion')"
+              :placeholder="t('placeholder.enterVersion')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.fileUpload") }}</label>
+            <label>{{ t("common.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                {{ t("revit.selectFile") }}
+                {{ t("common.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -132,7 +132,7 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("revit.editFile") }}</h3>
+          <h3>{{ t("common.editFile") }}</h3>
           <button
             class="modal-close"
             @click="closeEditModal"
@@ -143,34 +143,36 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("revit.fileName") }}</label>
+            <label>{{ t("common.fileName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
-              :placeholder="t('common.enterFileName')"
+              :placeholder="t('placeholder.enterFileName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.projectName") }}</label>
+            <label>{{ t("common.projectName") }}</label>
             <input
               v-model="editForm.project"
               type="text"
-              :placeholder="t('common.enterProjectName')"
+              :placeholder="t('placeholder.enterProjectName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.version") }}</label>
+            <label>{{ t("common.version") }}</label>
             <input
               v-model="editForm.version"
               type="text"
-              :placeholder="t('common.enterVersion')"
+              :placeholder="t('placeholder.enterVersion')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("revit.status.label") }}</label>
+            <label>{{ t("common.statusLabel") }}</label>
             <select v-model="editForm.status">
-              <option value="active">{{ t("revit.status.active") }}</option>
-              <option value="inactive">{{ t("revit.status.inactive") }}</option>
+              <option value="active">{{ t("common.status.active") }}</option>
+              <option value="inactive">
+                {{ t("common.status.inactive") }}
+              </option>
             </select>
           </div>
         </div>
@@ -228,13 +230,17 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("revit.id"), sortable: true },
-  { key: "title", title: t("revit.fileName"), sortable: true },
-  { key: "project", title: t("revit.projectName"), sortable: true },
-  { key: "version", title: t("revit.version"), sortable: true },
-  { key: "createdAt", title: t("revit.createdAt"), sortable: true },
-  { key: "lastModified", title: t("revit.lastModified"), sortable: true },
-  { key: "status", title: t("revit.status.label"), sortable: true },
+  { key: "id", title: t("columns.revit.id"), sortable: true },
+  { key: "title", title: t("columns.revit.fileName"), sortable: true },
+  { key: "project", title: t("columns.revit.projectName"), sortable: true },
+  { key: "version", title: t("columns.revit.version"), sortable: true },
+  { key: "createdAt", title: t("columns.revit.createdAt"), sortable: true },
+  {
+    key: "lastModified",
+    title: t("columns.revit.lastModified"),
+    sortable: true,
+  },
+  { key: "status", title: t("columns.revit.status"), sortable: true },
   { key: "actions", title: t("common.action"), sortable: false },
 ];
 

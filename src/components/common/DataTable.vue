@@ -27,7 +27,7 @@
             :style="column.width ? { width: column.width } : {}"
           >
             <div class="th-content">
-              <span class="th-text">{{ $t(column.title) }}</span>
+              <span class="th-text">{{ column.title }}</span>
               <span v-if="column.sortable" class="sort-icon">
                 <span
                   class="sort-arrow sort-up"
@@ -59,7 +59,8 @@
             class="loading-message"
           >
             <div class="loading-spinner"></div>
-            <span>데이터를 불러오는 중...</span>
+            <span>{{ $t("datatable.loading") }}</span>
+            <!-- 데이터를 불러오는 중... -->
           </td>
         </tr>
         <tr v-else-if="sortedData.length === 0" class="empty-row">
@@ -70,7 +71,8 @@
             <slot name="empty">
               <div class="empty-state">
                 <span class="empty-icon">📂</span>
-                <p>등록된 데이터가 없습니다</p>
+                <p>{{ $t("datatable.noData") }}</p>
+                <!-- 등록된 데이터가 없습니다 -->
               </div>
             </slot>
           </td>

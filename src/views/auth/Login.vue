@@ -26,7 +26,7 @@
             id="username"
             v-model="loginForm.username"
             type="text"
-            :placeholder="t('login.usernamePlaceholder')"
+            :placeholder="t('placeholder.loginUsername')"
             required
           />
         </div>
@@ -36,7 +36,7 @@
             id="password"
             v-model="loginForm.password"
             type="password"
-            :placeholder="t('login.passwordPlaceholder')"
+            :placeholder="t('placeholder.loginPassword')"
             required
           />
         </div>
@@ -108,7 +108,7 @@ const handleLogin = async () => {
     }
     router.push("/dashboard");
   } catch (error) {
-    alert(t("login.loginFail"));
+    alert(t("messages.error.loginFail"));
   }
 };
 </script>

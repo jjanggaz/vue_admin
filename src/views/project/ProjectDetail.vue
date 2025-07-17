@@ -440,13 +440,13 @@ const handleDesigncondTabChange = (tab: number) => {
 
 // 기본 정보
 const basicColumns: TableColumn[] = [
-  { key: "project", title: t("projectDetail.columns.project") },
-  { key: "title1", title: t("projectDetail.columns.title") },
-  { key: "content1", title: t("projectDetail.columns.content") },
-  { key: "title2", title: t("projectDetail.columns.title") },
-  { key: "content2", title: t("projectDetail.columns.content") },
-  { key: "title3", title: t("projectDetail.columns.title") },
-  { key: "content3", title: t("projectDetail.columns.content") },
+  { key: "project", title: t("columns.projectDetail.project") },
+  { key: "title1", title: t("columns.projectDetail.title") },
+  { key: "content1", title: t("columns.projectDetail.content") },
+  { key: "title2", title: t("columns.projectDetail.title") },
+  { key: "content2", title: t("columns.projectDetail.content") },
+  { key: "title3", title: t("columns.projectDetail.title") },
+  { key: "content3", title: t("columns.projectDetail.content") },
 ];
 const basicRows = [
   {
@@ -479,10 +479,10 @@ const basicRows = [
 ];
 // 프로세스 정보 - 수질정보
 const processWaterColumns: TableColumn[] = [
-  { key: "item", title: t("projectDetail.columns.item") },
-  { key: "influent", title: t("projectDetail.columns.influent") },
-  { key: "unit", title: t("projectDetail.columns.unit") },
-  { key: "remark", title: t("projectDetail.columns.remark") },
+  { key: "item", title: t("columns.projectDetail.item") },
+  { key: "influent", title: t("columns.projectDetail.influent") },
+  { key: "unit", title: t("columns.projectDetail.unit") },
+  { key: "remark", title: t("columns.projectDetail.remark") },
 ];
 const processWaterRows = [
   { item: "text", influent: "text", unit: "text", remark: "text" },
@@ -490,7 +490,7 @@ const processWaterRows = [
 ];
 // 프로세스 정보 - 구조물
 const structureColumns: TableColumn[] = [
-  { key: "col1", title: t("projectDetail.columns.structure") },
+  { key: "col1", title: t("columns.projectDetail.structure") },
   { key: "col2", title: "" },
   { key: "col3", title: "" },
   { key: "col4", title: "" },
@@ -546,12 +546,12 @@ const waterInfoRows = [
 ];
 // 3D 레이아웃 정보
 const layout3dColumns: TableColumn[] = [
-  { key: "no", title: t("projectDetail.columns.no") },
-  { key: "structure", title: t("projectDetail.columns.structure") },
-  { key: "device", title: t("projectDetail.columns.deviceName") },
-  { key: "type", title: t("projectDetail.columns.deviceType") },
-  { key: "model", title: t("projectDetail.columns.model3d") },
-  { key: "feature", title: t("projectDetail.columns.modelFeature") },
+  { key: "no", title: t("columns.projectDetail.no") },
+  { key: "structure", title: t("columns.projectDetail.structure") },
+  { key: "device", title: t("columns.projectDetail.deviceName") },
+  { key: "type", title: t("columns.projectDetail.deviceType") },
+  { key: "model", title: t("columns.projectDetail.model3d") },
+  { key: "feature", title: t("columns.projectDetail.modelFeature") },
 ];
 const layout3dRows = [
   {
@@ -566,12 +566,12 @@ const layout3dRows = [
 // 산출물, 설계조건 등은 카드/커스텀 UI이므로 table 변환 제외
 
 const projectInfoColumns: TableColumn[] = [
-  { key: "projectPeriod", title: t("projectDetail.columns.projectPeriod") },
-  { key: "projectManager", title: t("projectDetail.columns.projectManager") },
-  { key: "influentType", title: t("projectDetail.columns.influentType") },
+  { key: "projectPeriod", title: t("columns.projectDetail.projectPeriod") },
+  { key: "projectManager", title: t("columns.projectDetail.projectManager") },
+  { key: "influentType", title: t("columns.projectDetail.influentType") },
   {
     key: "facilityCapacity",
-    title: t("projectDetail.columns.facilityCapacity"),
+    title: t("columns.projectDetail.facilityCapacity"),
   },
 ];
 const projectInfoRows = [
@@ -584,16 +584,16 @@ const projectInfoRows = [
 ];
 
 const designcondHydroColumns: TableColumn[] = [
-  { key: "col1", title: t("projectDetail.columns.item") },
-  { key: "col2", title: t("projectDetail.columns.value1") },
-  { key: "col3", title: t("projectDetail.columns.value2") },
-  { key: "col4", title: t("projectDetail.columns.unit") },
+  { key: "col1", title: t("columns.projectDetail.item") },
+  { key: "col2", title: t("columns.projectDetail.value1") },
+  { key: "col3", title: t("columns.projectDetail.value2") },
+  { key: "col4", title: t("columns.projectDetail.unit") },
 ];
 const designcondConcreteColumns: TableColumn[] = [
-  { key: "col1", title: t("projectDetail.columns.structureName") },
-  { key: "col2", title: t("projectDetail.columns.length") },
-  { key: "col3", title: t("projectDetail.columns.width") },
-  { key: "col4", title: t("projectDetail.columns.height") },
+  { key: "col1", title: t("columns.projectDetail.structureName") },
+  { key: "col2", title: t("columns.projectDetail.length") },
+  { key: "col3", title: t("columns.projectDetail.width") },
+  { key: "col4", title: t("columns.projectDetail.height") },
 ];
 </script>
 

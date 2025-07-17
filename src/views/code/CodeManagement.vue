@@ -8,7 +8,7 @@
             t("common.search")
           }}</label>
           <label for="codeGroup" class="label-title">{{
-            t("code.codeGroup")
+            t("columns.code.codeGroup")
           }}</label>
           <div class="form-item">
             <select id="codeGroup" v-model="searchCodeGroupInput">
@@ -23,7 +23,7 @@
             </select>
           </div>
           <label for="highCode" class="label-title">{{
-            t("code.highCode")
+            t("columns.code.highCode")
           }}</label>
           <div class="form-item">
             <select id="highCode" v-model="searchHighCodeInput">
@@ -81,7 +81,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>
-            {{ isEditMode ? t("code.editCode") : t("code.registerCode") }}
+            {{ isEditMode ? t("common.editCode") : t("common.registerCode") }}
           </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
@@ -89,51 +89,51 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("code.codeGroup") }}</dt>
+            <dt>{{ t("columns.code.codeGroup") }}</dt>
             <dd>
               <input
                 id="code-name"
                 v-model="newCode.codeGroup"
                 type="text"
-                :placeholder="t('common.enterGroupName')"
+                :placeholder="t('placeholder.codeGroup')"
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>{{ t("code.highCode") }}</dt>
+            <dt>{{ t("columns.code.highCode") }}</dt>
             <dd>
               <input
                 id="code-name"
                 v-model="newCode.highCode"
                 type="text"
-                :placeholder="t('common.enterCodeName')"
+                :placeholder="t('placeholder.codeHighCode')"
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>{{ t("code.code") }}</dt>
+            <dt>{{ t("columns.code.codeName") }}</dt>
             <dd>
               <input
                 id="code-corp"
                 v-model="newCode.codeName"
                 type="text"
-                :placeholder="t('common.enterCodeValue')"
+                :placeholder="t('placeholder.codeCodeName')"
               />
             </dd>
-            <dt>{{ t("code.codeName") }}</dt>
+            <dt>{{ t("columns.code.order") }}</dt>
             <dd>
               <input
                 id="code-phone"
                 v-model="newCode.rank"
                 type="text"
-                :placeholder="t('common.enterOrder')"
+                :placeholder="t('placeholder.codeOrder')"
               />
             </dd>
-            <dt>{{ t("code.description") }}</dt>
+            <dt>{{ t("columns.code.description") }}</dt>
             <dd>
               <input
                 id="code-email"
                 v-model="newCode.etc"
                 type="text"
-                :placeholder="t('common.enterDescription')"
+                :placeholder="t('placeholder.codeDescription')"
               />
             </dd>
           </dl>
@@ -173,24 +173,34 @@ const tableColumns: TableColumn[] = [
   //{ key: "id", title: "ID", width: "60px", sortable: true },
   {
     key: "codeGroup",
-    title: t("code.codeGroup"),
+    title: t("columns.code.codeGroup"),
     width: "100px",
     sortable: true,
   },
   {
     key: "highCode",
-    title: t("code.highCode"),
+    title: t("columns.code.highCode"),
     width: "100px",
     sortable: true,
   },
   {
     key: "codeName",
-    title: t("code.codeName"),
+    title: t("columns.code.codeName"),
     width: "150px",
     sortable: true,
   },
-  { key: "rank", title: t("code.order"), width: "100px", sortable: true },
-  { key: "etc", title: t("code.description"), width: "200px", sortable: true },
+  {
+    key: "rank",
+    title: t("columns.code.order"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "etc",
+    title: t("columns.code.description"),
+    width: "200px",
+    sortable: true,
+  },
 ];
 
 const codeList = ref<CodeItem[]>([]);
@@ -420,7 +430,7 @@ const saveCode = () => {
     !newCode.value.rank ||
     !newCode.value.etc
   ) {
-    alert(t("common.pleaseCompleteAllFields"));
+    alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
   }
 
@@ -429,7 +439,7 @@ const saveCode = () => {
     const idx = codeList.value.findIndex((u) => u.id === newCode.value.id);
     if (idx !== -1) {
       codeList.value[idx] = { ...newCode.value };
-      alert(t("common.codeInfoUpdated"));
+      alert(t("messages.success.codeInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 코드 추가
@@ -438,7 +448,7 @@ const saveCode = () => {
       ...newCode.value,
       id: nextId,
     });
-    alert(t("common.codeRegistered"));
+    alert(t("messages.success.codeRegistered"));
   }
 
   isRegistModalOpen.value = false;
@@ -456,12 +466,12 @@ const saveCode = () => {
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
@@ -470,14 +480,14 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 
 // 선택된 항목 수정
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert(t("common.selectOneItemToEdit"));
+    alert(t("messages.warning.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];

@@ -47,7 +47,7 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            :placeholder="t('project.placeholder.enterDetail')"
+            :placeholder="t('placeholder.projectDetail')"
             v-model="item.detail"
           />
         </template>
@@ -82,7 +82,7 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            :placeholder="t('project.placeholder.enterDetail')"
+            :placeholder="t('placeholder.projectDetail')"
             v-model="item.detail"
           />
         </template>
@@ -112,7 +112,7 @@
         <template #cell-detail="{ item }">
           <input
             class="input-cell"
-            :placeholder="t('project.placeholder.enterDetail')"
+            :placeholder="t('placeholder.projectDetail')"
             v-model="item.detail"
           />
         </template>
@@ -155,25 +155,25 @@ interface ItemRow {
 }
 
 const projectColumns: TableColumn[] = [
-  { key: "id", title: t("project.table.id"), width: "60px" },
-  { key: "detail", title: t("project.table.detailItem") },
-  { key: "inputType", title: t("project.table.inputType") },
-  { key: "required", title: t("project.table.required") },
-  { key: "visible", title: t("project.table.visible") },
+  { key: "id", title: t("columns.project.id"), width: "60px" },
+  { key: "detail", title: t("columns.project.detailItem") },
+  { key: "inputType", title: t("columns.project.inputType") },
+  { key: "required", title: t("columns.project.required") },
+  { key: "visible", title: t("columns.project.visible") },
   { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 const clientColumns: TableColumn[] = [
-  { key: "id", title: t("project.table.id"), width: "60px" },
-  { key: "detail", title: t("project.table.detailItem") },
-  { key: "inputType", title: t("project.table.inputType") },
-  { key: "required", title: t("project.table.required") },
+  { key: "id", title: t("columns.project.id"), width: "60px" },
+  { key: "detail", title: t("columns.project.detailItem") },
+  { key: "inputType", title: t("columns.project.inputType") },
+  { key: "required", title: t("columns.project.required") },
   { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 const etcColumns: TableColumn[] = [
-  { key: "id", title: t("project.table.id"), width: "60px" },
-  { key: "detail", title: t("project.table.detailItem") },
-  { key: "inputType", title: t("project.table.inputType") },
-  { key: "required", title: t("project.table.required") },
+  { key: "id", title: t("columns.project.id"), width: "60px" },
+  { key: "detail", title: t("columns.project.detailItem") },
+  { key: "inputType", title: t("columns.project.inputType") },
+  { key: "required", title: t("columns.project.required") },
   { key: "edit", title: t("common.edit"), width: "60px" },
 ];
 
@@ -244,7 +244,9 @@ function deleteSelected(type: "project" | "client" | "etc") {
     if (!selectedProject.value.length) return;
     if (
       !confirm(
-        t("common.confirmDeleteItems", { count: selectedProject.value.length })
+        t("messages.confirm.deleteItems", {
+          count: selectedProject.value.length,
+        })
       )
     )
       return;
@@ -256,7 +258,9 @@ function deleteSelected(type: "project" | "client" | "etc") {
     if (!selectedClient.value.length) return;
     if (
       !confirm(
-        t("common.confirmDeleteItems", { count: selectedClient.value.length })
+        t("messages.confirm.deleteItems", {
+          count: selectedClient.value.length,
+        })
       )
     )
       return;
@@ -268,7 +272,7 @@ function deleteSelected(type: "project" | "client" | "etc") {
     if (!selectedEtc.value.length) return;
     if (
       !confirm(
-        t("common.confirmDeleteItems", { count: selectedEtc.value.length })
+        t("messages.confirm.deleteItems", { count: selectedEtc.value.length })
       )
     )
       return;

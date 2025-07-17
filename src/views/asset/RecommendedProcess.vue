@@ -33,7 +33,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('common.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -104,7 +104,7 @@
                 id="process-inflowType"
                 v-model="newProcess.inflowType"
                 type="text"
-                :placeholder="t('recommendedProcess.inflowTypePlaceholder')"
+                :placeholder="t('placeholder.recommendedProcessInflowType')"
               />
             </dd>
             <dt>{{ t("recommendedProcess.applicationField") }}</dt>
@@ -114,7 +114,7 @@
                 v-model="newProcess.applicationField"
                 type="text"
                 :placeholder="
-                  t('recommendedProcess.applicationFieldPlaceholder')
+                  t('placeholder.recommendedProcessApplicationField')
                 "
               />
             </dd>
@@ -124,7 +124,7 @@
                 id="process-solution"
                 v-model="newProcess.solution"
                 type="text"
-                :placeholder="t('recommendedProcess.solutionPlaceholder')"
+                :placeholder="t('placeholder.recommendedProcessSolution')"
               />
             </dd>
             <dt>{{ t("recommendedProcess.layout3d") }}</dt>
@@ -133,7 +133,7 @@
                 id="process-layout3d"
                 v-model="newProcess.layout3d"
                 type="text"
-                :placeholder="t('recommendedProcess.layout3dPlaceholder')"
+                :placeholder="t('placeholder.recommendedProcessLayout3d')"
               />
             </dd>
             <dt>{{ t("recommendedProcess.remarks") }}</dt>
@@ -142,7 +142,7 @@
                 id="process-remarks"
                 v-model="newProcess.remarks"
                 type="text"
-                :placeholder="t('recommendedProcess.remarksPlaceholder')"
+                :placeholder="t('placeholder.recommendedProcessRemarks')"
               />
             </dd>
           </dl>
@@ -439,7 +439,7 @@ const saveProcess = () => {
     !newProcess.value.solution ||
     !newProcess.value.layout3d
   ) {
-    alert(t("common.pleaseCompleteRequiredFields"));
+    alert(t("messages.warning.pleaseCompleteRequiredFields"));
     return;
   }
 
@@ -450,7 +450,7 @@ const saveProcess = () => {
     );
     if (idx !== -1) {
       processList.value[idx] = { ...newProcess.value };
-      alert(t("common.processInfoUpdated"));
+      alert(t("messages.success.processInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 공정 추가
@@ -459,7 +459,7 @@ const saveProcess = () => {
       ...newProcess.value,
       id: nextId,
     });
-    alert(t("common.processRegistered"));
+    alert(t("messages.success.processRegistered"));
   }
   isRegistModalOpen.value = false;
   newProcess.value = {
@@ -476,12 +476,12 @@ const saveProcess = () => {
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
@@ -490,14 +490,14 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 
 // 선택된 항목 수정
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert(t("common.selectOneItemToEdit"));
+    alert(t("messages.warning.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];

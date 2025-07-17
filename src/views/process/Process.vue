@@ -36,7 +36,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('process.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -171,7 +171,7 @@
                 type="text"
                 v-model="registForm.mode"
                 class="form-input"
-                :placeholder="t('process.modePlaceholder')"
+                :placeholder="t('placeholder.processMode')"
               />
             </dd>
             <dt class="essential">{{ t("process.processSymbol") }}</dt>
@@ -181,7 +181,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.processSymbolFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -202,7 +202,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.calculationFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -223,7 +223,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.pdfFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -244,7 +244,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.electricFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -265,7 +265,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.mccFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -286,7 +286,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.pidFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -307,7 +307,7 @@
                   type="text"
                   class="file-name-input"
                   :value="selectedFiles.excelFile?.name || ''"
-                  :placeholder="t('common.selectFilePlaceholder')"
+                  :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
                 <label class="file-select-btn">
@@ -486,7 +486,7 @@ const handleSave = async () => {
     // 정합성 체크
     if (registForm.value.consistencyCheck) {
       // 정합성 체크 로직
-      alert(t("process.consistencyCheckLogicRequired"));
+      alert(t("messages.warning.consistencyCheckLogicRequired"));
       return;
     }
 
@@ -521,22 +521,22 @@ const handleSave = async () => {
       console.log("Excel 파일:", registForm.value.excelFile.name);
     }
 
-    alert(t("process.processRegisteredSuccessfully"));
+    alert(t("messages.success.processRegistered"));
     closeRegistModal();
   } catch (error) {
     console.error("등록 실패:", error);
-    alert(t("process.registrationError"));
+    alert(t("messages.error.registrationError"));
   }
 };
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("process.selectItemsToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("process.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
@@ -549,7 +549,7 @@ const handleDelete = () => {
     totalCount.value = processList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
     selectedItems.value = [];
-    alert(t("process.deletedSuccessfully"));
+    alert(t("messages.success.deleted"));
   }
 };
 

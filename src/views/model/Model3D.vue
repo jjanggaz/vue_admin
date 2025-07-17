@@ -4,7 +4,7 @@
     <div class="action-bar">
       <button class="btn btn-primary add-button" @click="openUploadModal">
         <span class="plus-icon">+</span>
-        {{ t("tabs.model3d.uploadNew") }}
+        {{ t("common.register") }}
       </button>
     </div>
 
@@ -29,9 +29,7 @@
           class="status-badge"
           :class="{ returned: value, pending: !value }"
         >
-          {{
-            value ? t("tabs.model3d.returned") : t("tabs.model3d.notReturned")
-          }}
+          {{ value ? t("common.returned") : t("common.notReturned") }}
         </span>
       </template>
     </DataTable>
@@ -49,7 +47,7 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="closeUploadModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("tabs.model3d.uploadNew") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="modal-close"
             @click="closeUploadModal"
@@ -60,43 +58,43 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("tabs.model3d.modelName") }}</label>
+            <label>{{ t("common.modelName") }}</label>
             <input
               v-model="uploadForm.title"
               type="text"
-              :placeholder="t('common.enterModelName')"
+              :placeholder="t('placeholder.enterModelName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("tabs.model3d.infoClassification") }}</label>
+            <label>{{ t("common.infoClassification") }}</label>
             <select v-model="uploadForm.category">
-              <option value="">{{ t("tabs.model3d.selectCategory") }}</option>
+              <option value="">{{ t("common.selectCategory") }}</option>
               <option value="건축">
-                {{ t("tabs.model3d.category.architecture") }}
+                {{ t("common.category.architecture") }}
               </option>
               <option value="기계">
-                {{ t("tabs.model3d.category.mechanical") }}
+                {{ t("common.category.mechanical") }}
               </option>
               <option value="전기">
-                {{ t("tabs.model3d.category.electrical") }}
+                {{ t("common.category.electrical") }}
               </option>
               <option value="토목">
-                {{ t("tabs.model3d.category.civil") }}
+                {{ t("common.category.civil") }}
               </option>
             </select>
           </div>
           <div class="form-group">
-            <label>{{ t("tabs.model3d.fileUpload") }}</label>
+            <label>{{ t("common.fileUpload") }}</label>
             <div class="file-upload-row">
               <input
                 type="text"
                 :value="uploadForm.file ? uploadForm.file.name : ''"
-                :placeholder="t('common.selectFilePlaceholder')"
+                :placeholder="t('placeholder.selectFile')"
                 readonly
                 class="file-name-input"
               />
               <label class="file-select-btn">
-                {{ t("tabs.model3d.selectFile") }}
+                {{ t("common.selectFile") }}
                 <input
                   type="file"
                   @change="handleFileUpload"
@@ -126,7 +124,7 @@
     <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>{{ t("tabs.model3d.editModel") }}</h3>
+          <h3>{{ t("common.editModel") }}</h3>
           <button
             class="modal-close"
             @click="closeEditModal"
@@ -137,38 +135,38 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ t("tabs.model3d.modelName") }}</label>
+            <label>{{ t("common.modelName") }}</label>
             <input
               v-model="editForm.title"
               type="text"
-              :placeholder="t('common.enterModelName')"
+              :placeholder="t('placeholder.enterModelName')"
             />
           </div>
           <div class="form-group">
-            <label>{{ t("tabs.model3d.infoClassification") }}</label>
+            <label>{{ t("common.infoClassification") }}</label>
             <select v-model="editForm.category">
-              <option value="">{{ t("tabs.model3d.selectCategory") }}</option>
+              <option value="">{{ t("common.selectCategory") }}</option>
               <option value="건축">
-                {{ t("tabs.model3d.category.architecture") }}
+                {{ t("common.category.architecture") }}
               </option>
               <option value="기계">
-                {{ t("tabs.model3d.category.mechanical") }}
+                {{ t("common.category.mechanical") }}
               </option>
               <option value="전기">
-                {{ t("tabs.model3d.category.electrical") }}
+                {{ t("common.category.electrical") }}
               </option>
               <option value="토목">
-                {{ t("tabs.model3d.category.civil") }}
+                {{ t("common.category.civil") }}
               </option>
             </select>
           </div>
           <div class="form-group">
-            <label>{{ t("tabs.model3d.isReturned") }}</label>
+            <label>{{ t("common.isReturned") }}</label>
             <select v-model="editForm.isReturned">
               <option :value="false">
-                {{ t("tabs.model3d.notReturned") }}
+                {{ t("common.notReturned") }}
               </option>
-              <option :value="true">{{ t("tabs.model3d.returned") }}</option>
+              <option :value="true">{{ t("common.returned") }}</option>
             </select>
           </div>
         </div>
@@ -221,22 +219,22 @@ interface EditForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("tabs.model3d.id"), sortable: true },
-  { key: "title", title: t("tabs.model3d.modelName"), sortable: true },
+  { key: "id", title: t("columns.model3d.id"), sortable: true },
+  { key: "title", title: t("columns.model3d.modelName"), sortable: true },
   {
     key: "category",
-    title: t("tabs.model3d.infoClassification"),
+    title: t("columns.model3d.infoClassification"),
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("tabs.model3d.createdAt"),
+    title: t("columns.model3d.createdAt"),
     sortable: true,
   },
-  { key: "lastUsed", title: t("tabs.model3d.lastUsed"), sortable: true },
+  { key: "lastUsed", title: t("columns.model3d.lastUsed"), sortable: true },
   {
     key: "isReturned",
-    title: t("tabs.model3d.isReturned"),
+    title: t("columns.model3d.isReturned"),
     sortable: true,
   },
   { key: "actions", title: t("common.action"), sortable: false },

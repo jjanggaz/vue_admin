@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('common.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -46,7 +46,7 @@
     >
       <!-- 기계타입 슬롯 -->
       <template #cell-type="{ value }">
-        {{ t("machine.type." + mapMachineType(value)) }}
+        {{ t("common.machineType." + mapMachineType(value)) }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -80,41 +80,43 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("machine.name") }}</dt>
+            <dt class="essential">{{ t("common.name") }}</dt>
             <dd>
               <input
                 v-model="newMachine.name"
                 type="text"
                 class="form-input"
-                :placeholder="t('machine.namePlaceholder')"
+                :placeholder="t('placeholder.machineName')"
               />
             </dd>
-            <dt class="essential">{{ t("machine.code") }}</dt>
+            <dt class="essential">{{ t("common.code") }}</dt>
             <dd>
               <input
                 v-model="newMachine.code"
                 type="text"
                 class="form-input"
-                :placeholder="t('machine.codePlaceholder')"
+                :placeholder="t('placeholder.machineCode')"
               />
             </dd>
-            <dt>{{ t("machine.type.label") }}</dt>
+            <dt>{{ t("common.type") }}</dt>
             <dd>
               <select v-model="newMachine.type" class="form-input">
                 <option value="">-- {{ t("common.select") }} --</option>
-                <option value="펌프">{{ t("machine.type.pump") }}</option>
-                <option value="모터">{{ t("machine.type.motor") }}</option>
+                <option value="펌프">{{ t("common.machineType.pump") }}</option>
+                <option value="모터">
+                  {{ t("common.machineType.motor") }}
+                </option>
                 <option value="컨베이어">
-                  {{ t("machine.type.conveyor") }}
+                  {{ t("common.machineType.conveyor") }}
                 </option>
               </select>
             </dd>
-            <dt>{{ t("machine.description") }}</dt>
+            <dt>{{ t("common.description") }}</dt>
             <dd>
               <textarea
                 v-model="newMachine.description"
                 class="form-input"
-                :placeholder="t('machine.descriptionPlaceholder')"
+                :placeholder="t('placeholder.machineDescription')"
                 rows="3"
               ></textarea>
             </dd>
@@ -163,10 +165,10 @@
             >
               <thead>
                 <tr>
-                  <th>{{ t("machine.name") }}</th>
-                  <th>{{ t("machine.code") }}</th>
-                  <th>{{ t("machine.type.label") }}</th>
-                  <th>{{ t("machine.description") }}</th>
+                  <th>{{ t("common.name") }}</th>
+                  <th>{{ t("common.code") }}</th>
+                  <th>{{ t("common.type") }}</th>
+                  <th>{{ t("common.description") }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,12 +182,14 @@
                   <td>
                     <select v-model="detailEditData.type" class="form-input">
                       <option value="">-- {{ t("common.select") }} --</option>
-                      <option value="펌프">{{ t("machine.type.pump") }}</option>
+                      <option value="펌프">
+                        {{ t("common.machineType.pump") }}
+                      </option>
                       <option value="모터">
-                        {{ t("machine.type.motor") }}
+                        {{ t("common.machineType.motor") }}
                       </option>
                       <option value="컨베이어">
-                        {{ t("machine.type.conveyor") }}
+                        {{ t("common.machineType.conveyor") }}
                       </option>
                     </select>
                   </td>
@@ -249,31 +253,46 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("machine.id"), width: "60px", sortable: false },
-  { key: "mcId", title: t("machine.mcId"), width: "150px", sortable: true },
-  { key: "name", title: t("machine.name"), width: "150px", sortable: true },
-  { key: "code", title: t("machine.code"), width: "120px", sortable: true },
+  { key: "id", title: t("columns.machine.id"), width: "60px", sortable: false },
+  {
+    key: "mcId",
+    title: t("columns.machine.mcId"),
+    width: "150px",
+    sortable: true,
+  },
+  {
+    key: "name",
+    title: t("columns.machine.name"),
+    width: "150px",
+    sortable: true,
+  },
+  {
+    key: "code",
+    title: t("columns.machine.code"),
+    width: "120px",
+    sortable: true,
+  },
   {
     key: "type",
-    title: t("machine.type.label"),
+    title: t("columns.machine.type"),
     width: "100px",
     sortable: true,
   },
   {
     key: "description",
-    title: t("machine.description"),
+    title: t("columns.machine.description"),
     width: "200px",
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("machine.createdAt"),
+    title: t("columns.machine.createdAt"),
     width: "120px",
     sortable: true,
   },
   {
     key: "company",
-    title: t("machine.company"),
+    title: t("columns.machine.company"),
     width: "120px",
     sortable: true,
   },
@@ -312,10 +331,14 @@ const detailEditData = ref<RegistForm>({
 
 // 상세정보 DataTable용 컬럼
 const detailTableColumns: TableColumn[] = [
-  { key: "name", title: t("machine.name"), width: "150px" },
-  { key: "code", title: t("machine.code"), width: "150px" },
-  { key: "type", title: t("machine.type.label"), width: "120px" },
-  { key: "description", title: t("machine.description"), width: "200px" },
+  { key: "name", title: t("columns.machine.name"), width: "150px" },
+  { key: "code", title: t("columns.machine.code"), width: "150px" },
+  { key: "type", title: t("columns.machine.type"), width: "120px" },
+  {
+    key: "description",
+    title: t("columns.machine.description"),
+    width: "200px",
+  },
 ];
 const detailTableData = computed(() => {
   if (!detailItemData.value) return [];
@@ -323,7 +346,7 @@ const detailTableData = computed(() => {
   // type 값을 번역된 값으로 변환
   const translatedData = {
     ...detailItemData.value,
-    type: t("machine.type." + mapMachineType(detailItemData.value.type)),
+    type: t("common.machineType." + mapMachineType(detailItemData.value.type)),
   };
 
   return [translatedData];
@@ -429,12 +452,12 @@ const handleSave = () => {
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
@@ -442,7 +465,7 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 

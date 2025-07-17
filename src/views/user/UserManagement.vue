@@ -10,12 +10,12 @@
           <div class="form-item">
             <select id="role" v-model="searchOptionInput">
               <option value="">{{ t("common.selectItem") }}</option>
-              <option value="id">{{ t("user.id") }}</option>
-              <option value="name">{{ t("user.name") }}</option>
-              <option value="corpName">{{ t("user.corpName") }}</option>
-              <option value="phone">{{ t("user.phone") }}</option>
-              <option value="email">{{ t("user.email") }}</option>
-              <option value="role">{{ t("user.role") }}</option>
+              <option value="id">{{ t("columns.user.id") }}</option>
+              <option value="name">{{ t("columns.user.name") }}</option>
+              <option value="corpName">{{ t("columns.user.corpName") }}</option>
+              <option value="phone">{{ t("columns.user.phone") }}</option>
+              <option value="email">{{ t("columns.user.email") }}</option>
+              <option value="role">{{ t("columns.user.role") }}</option>
             </select>
           </div>
         </div>
@@ -24,7 +24,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('common.searchQueryPlaceholder')"
+              :placeholder="t('placeholder.searchQuery')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -77,7 +77,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>
-            {{ isEditMode ? t("user.editUser") : t("user.registerUser") }}
+            {{ isEditMode ? t("common.editUser") : t("common.registerUser") }}
           </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
@@ -85,13 +85,13 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("user.id") }}</dt>
+            <dt>{{ t("columns.user.id") }}</dt>
             <dd>
               <input
                 id="user-id"
                 v-model="newUser.id"
                 type="text"
-                :placeholder="t('user.idPlaceholder')"
+                :placeholder="t('placeholder.userId')"
                 :disabled="isEditMode"
                 @input="resetIdChecked"
               />
@@ -100,77 +100,81 @@
                 v-if="!isEditMode"
                 @click="handleCheckId"
               >
-                {{ t("user.duplicateCheck") }}
+                {{ t("common.duplicateCheck") }}
               </button>
             </dd>
-            <dt>{{ t("user.password") }}</dt>
+            <dt>{{ t("common.password") }}</dt>
             <dd>
               <input
                 id="user-pw"
                 v-model="newUser.pwd"
                 type="password"
-                :placeholder="t('user.passwordPlaceholder')"
+                :placeholder="t('placeholder.userPassword')"
               />
             </dd>
-            <dt>{{ t("user.passwordConfirm") }}</dt>
+            <dt>{{ t("common.passwordConfirm") }}</dt>
             <dd>
               <input
                 id="confirm-pw"
                 v-model="newUser.pwdChk"
                 type="password"
-                :placeholder="t('user.passwordConfirmPlaceholder')"
+                :placeholder="t('placeholder.userPasswordConfirm')"
               />
             </dd>
-            <dt>{{ t("user.name") }}</dt>
+            <dt>{{ t("columns.user.name") }}</dt>
             <dd>
               <input
                 id="user-name"
                 v-model="newUser.name"
                 type="text"
-                :placeholder="t('user.namePlaceholder')"
+                :placeholder="t('placeholder.userName')"
               />
             </dd>
-            <dt>{{ t("user.corpName") }}</dt>
+            <dt>{{ t("columns.user.corpName") }}</dt>
             <dd>
               <input
                 id="user-corp"
                 v-model="newUser.corpName"
                 type="text"
-                :placeholder="t('user.corpNamePlaceholder')"
+                :placeholder="t('placeholder.userCorpName')"
               />
             </dd>
-            <dt>{{ t("user.phone") }}</dt>
+            <dt>{{ t("columns.user.phone") }}</dt>
             <dd>
               <input
                 id="user-phone"
                 v-model="newUser.phone"
                 type="text"
-                :placeholder="t('user.phonePlaceholder')"
+                :placeholder="t('placeholder.userPhone')"
               />
             </dd>
-            <dt>{{ t("user.email") }}</dt>
+            <dt>{{ t("columns.user.email") }}</dt>
             <dd>
               <input
                 id="user-email"
                 v-model="newUser.email"
                 type="email"
-                :placeholder="t('user.emailPlaceholder')"
+                :placeholder="t('placeholder.userEmail')"
               />
             </dd>
-            <dt>{{ t("user.corpType") }}</dt>
+            <dt>{{ t("common.corpType") }}</dt>
             <dd>
               <select id="user-corpType" v-model="newUser.corpType">
                 <option value="">{{ t("common.select") }}</option>
-                <option value="사내">{{ t("user.corpTypeIn") }}</option>
-                <option value="사외">{{ t("user.corpTypeOut") }}</option>
+                <option value="사내">
+                  {{ t("common.userCorpType.internal") }}
+                </option>
+                <option value="사외">
+                  {{ t("common.userCorpType.external") }}
+                </option>
               </select>
             </dd>
-            <dt>{{ t("user.role") }}</dt>
+            <dt>{{ t("columns.user.role") }}</dt>
             <dd>
               <select id="user-role" v-model="newUser.role">
                 <option value="">{{ t("common.select") }}</option>
-                <option value="관리자">{{ t("user.roleAdmin") }}</option>
-                <option value="사용자">{{ t("user.roleUser") }}</option>
+                <option value="관리자">{{ t("common.userRole.admin") }}</option>
+                <option value="사용자">{{ t("common.userRole.user") }}</option>
               </select>
             </dd>
           </dl>
@@ -211,28 +215,38 @@ interface UserItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("user.id"), width: "100px", sortable: true },
+  { key: "id", title: t("columns.user.id"), width: "100px", sortable: true },
   //{ key: 'index', label: '번호', width: "50px", sortable: true },
-  { key: "name", title: t("user.name"), width: "150px", sortable: true },
+  {
+    key: "name",
+    title: t("columns.user.name"),
+    width: "150px",
+    sortable: true,
+  },
   {
     key: "corpName",
-    title: t("user.corpName"),
+    title: t("columns.user.corpName"),
     width: "150px",
     sortable: true,
   },
   {
     key: "phone",
-    title: t("user.phone"),
+    title: t("columns.user.phone"),
     width: "150px",
     sortable: true,
   },
   {
     key: "email",
-    title: t("user.email"),
+    title: t("columns.user.email"),
     width: "200px",
     sortable: true,
   },
-  { key: "role", title: t("user.role"), width: "150px", sortable: true },
+  {
+    key: "role",
+    title: t("columns.user.role"),
+    width: "150px",
+    sortable: true,
+  },
 ];
 
 const userList = ref<UserItem[]>([]);
@@ -501,16 +515,16 @@ const saveUser = () => {
     !newUser.value.corpType ||
     !newUser.value.role
   ) {
-    alert(t("common.pleaseCompleteAllFields"));
+    alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
   }
   if (!isEditMode.value && !isIdChecked.value) {
-    alert(t("common.pleaseCheckIdDuplication"));
+    alert(t("messages.warning.pleaseCheckIdDuplication"));
     return;
   }
 
   if (newUser.value.pwd !== newUser.value.pwdChk) {
-    alert(t("common.passwordsDoNotMatch"));
+    alert(t("messages.error.passwordsDoNotMatch"));
     return;
   }
   if (isEditMode.value) {
@@ -518,7 +532,7 @@ const saveUser = () => {
     const idx = userList.value.findIndex((u) => u.id === newUser.value.id);
     if (idx !== -1) {
       userList.value[idx] = { ...newUser.value };
-      alert(t("common.userInfoUpdated"));
+      alert(t("messages.success.userInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 사용자 추가
@@ -528,7 +542,7 @@ const saveUser = () => {
       id: nextId,
       createdAt: new Date().toISOString(),
     });
-    alert(t("common.userRegistered"));
+    alert(t("messages.success.userRegistered"));
   }
   isRegistModalOpen.value = false;
   newUser.value = {
@@ -551,7 +565,7 @@ const saveUser = () => {
 const handleCheckId = () => {
   // 실제로는 서버에 중복 체크 요청을 해야 함
   if (!newUser.value.id) {
-    alert(t("common.pleaseEnterId"));
+    alert(t("messages.warning.pleaseEnterId"));
     return;
   }
 
@@ -559,10 +573,10 @@ const handleCheckId = () => {
   const exists = userList.value.some((user) => user.id === newUser.value.id);
 
   if (exists) {
-    alert(t("common.idAlreadyExists"));
+    alert(t("messages.error.idAlreadyExists"));
     isIdChecked.value = false;
   } else {
-    alert(t("common.idAvailable"));
+    alert(t("messages.success.idAvailable"));
     isIdChecked.value = true;
   }
 };
@@ -570,12 +584,12 @@ const handleCheckId = () => {
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
-    alert(t("common.pleaseSelectItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
     confirm(
-      t("common.confirmDeleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
@@ -584,14 +598,14 @@ const handleDelete = () => {
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
-    alert(t("common.deleted"));
+    alert(t("messages.success.deleted"));
   }
 };
 
 // 선택된 항목 수정
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert(t("common.selectOneItemToEdit"));
+    alert(t("messages.warning.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];

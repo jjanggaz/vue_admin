@@ -5,7 +5,10 @@ import {
 } from "vue-router";
 import i18n from "@/i18n";
 
-// 페이지 컴포넌트들을 lazy loading으로 import
+// 로그인 페이지
+const Login = () => import("@/views/auth/Login.vue");
+
+// 대시보드 페이지
 const Dashboard = () => import("@/views/dashboard/Dashboard.vue");
 
 // 프로젝트 관리 페이지
@@ -13,8 +16,25 @@ const ProjectManagement = () => import("@/views/project/ProjectManagement.vue");
 const Project = () => import("@/views/project/Project.vue");
 const ProjectApp = () => import("@/views/project/ProjectApp.vue");
 const ProjectItem = () => import("@/views/project/ProjectItem.vue");
+const ProjectDetail = () => import("@/views/project/ProjectDetail.vue");
 
+// 자산 관리 페이지
 const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
+const Inflow = () => import("@/views/asset/Inflow.vue");
+const Outflow = () => import("@/views/asset/Outflow.vue");
+const RecommendedProcess = () => import("@/views/asset/RecommendedProcess.vue");
+
+// 공정 관리 페이지
+const ProcessManagement = () => import("@/views/process/ProcessManagement.vue");
+const Process = () => import("@/views/process/Process.vue");
+const Output = () => import("@/views/process/Output.vue");
+const ProcessDetail = () => import("@/views/process/ProcessDetail.vue");
+
+// 3D 모델 관리 페이지
+const ModelManagement = () => import("@/views/model/ModelManagement.vue");
+const Model3D = () => import("@/views/model/Model3D.vue");
+const Revit = () => import("@/views/model/Revit.vue");
+const Standard = () => import("@/views/model/Standard.vue");
 
 // 기계 관리 페이지
 const MachineList = () => import("@/views/machine/MachineList.vue");
@@ -23,19 +43,14 @@ const MachineCodeManagement = () =>
   import("@/views/machine/MachineCodeManagement.vue");
 const CostTarget = () => import("@/views/machine/CostTarget.vue");
 
+// 사용자 관리 페이지
 const UserManagement = () => import("@/views/user/UserManagement.vue");
+
+// 코드 관리 페이지
 const CodeManagement = () => import("@/views/code/CodeManagement.vue");
-const Login = () => import("@/views/auth/Login.vue");
 
-// 공정 관리 페이지
-const ProcessManagement = () => import("@/views/process/ProcessManagement.vue");
-const Process = () => import("@/views/process/Process.vue");
-
-// 3D 모델 관리 페이지
-const ModelManagement = () => import("@/views/model/ModelManagement.vue");
-const Model3D = () => import("@/views/model/Model3D.vue");
-const Revit = () => import("@/views/model/Revit.vue");
-const Standard = () => import("@/views/model/Standard.vue");
+// 에러 페이지
+const NotFound = () => import("@/views/error/NotFound.vue");
 
 import { useAuthStore } from "../stores/authStore";
 
@@ -113,7 +128,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "detail/:id",
         name: "ProjectDetail",
-        component: () => import("@/views/project/ProjectDetail.vue"),
+        component: ProjectDetail,
         meta: {
           titleKey: "projectDetail.title",
           breadcrumbKeys: [
@@ -138,7 +153,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "inflow",
         name: "AssetInflow",
-        component: () => import("@/views/asset/Inflow.vue"),
+        component: Inflow,
         meta: {
           titleKey: "tabs.asset.inflow",
           breadcrumbKeys: ["pageTitles.assetManagement", "tabs.asset.inflow"],
@@ -147,7 +162,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "outflow",
         name: "AssetOutflow",
-        component: () => import("@/views/asset/Outflow.vue"),
+        component: Outflow,
         meta: {
           titleKey: "tabs.asset.outflow",
           breadcrumbKeys: ["pageTitles.assetManagement", "tabs.asset.outflow"],
@@ -156,7 +171,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "recommended",
         name: "AssetRecommended",
-        component: () => import("@/views/asset/RecommendedProcess.vue"),
+        component: RecommendedProcess,
         meta: {
           titleKey: "tabs.asset.recommendedProcess",
           breadcrumbKeys: [
@@ -194,7 +209,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "output",
         name: "Output",
-        component: () => import("@/views/process/Output.vue"),
+        component: Output,
         meta: {
           titleKey: "tabs.process.output",
           breadcrumbKeys: [
@@ -206,7 +221,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "detail/:id",
         name: "ProcessDetail",
-        component: () => import("@/views/process/ProcessDetail.vue"),
+        component: ProcessDetail,
         meta: {
           titleKey: "processDetail.processName",
           breadcrumbKeys: [
@@ -335,7 +350,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
-    component: () => import("@/views/error/NotFound.vue"),
+    component: NotFound,
   },
 ];
 

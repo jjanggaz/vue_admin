@@ -3,6 +3,7 @@ import {
   createWebHistory,
   type RouteRecordRaw,
 } from "vue-router";
+import i18n from "@/i18n";
 
 // 페이지 컴포넌트들을 lazy loading으로 import
 const Dashboard = () => import("@/views/dashboard/Dashboard.vue");
@@ -18,7 +19,8 @@ const AssetManagement = () => import("@/views/asset/AssetManagement.vue");
 // 기계 관리 페이지
 const MachineList = () => import("@/views/machine/MachineList.vue");
 const Machine = () => import("@/views/machine/Machine.vue");
-const MachineCodeManagement = () => import("@/views/machine/MachineCodeManagement.vue");
+const MachineCodeManagement = () =>
+  import("@/views/machine/MachineCodeManagement.vue");
 const CostTarget = () => import("@/views/machine/CostTarget.vue");
 
 const UserManagement = () => import("@/views/user/UserManagement.vue");
@@ -57,7 +59,7 @@ const routes: RouteRecordRaw[] = [
     component: Dashboard,
     meta: {
       requiresAuth: true,
-      title: "대시보드",
+      titleKey: "pageTitles.dashboard",
       icon: "dashboard",
     },
   },
@@ -68,7 +70,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/project/project",
     meta: {
       requiresAuth: true,
-      title: "프로젝트 관리",
+      titleKey: "pageTitles.projectManagement",
       icon: "project",
     },
     children: [
@@ -77,8 +79,11 @@ const routes: RouteRecordRaw[] = [
         name: "Project",
         component: Project,
         meta: {
-          title: "프로젝트",
-          breadcrumb: ["프로젝트 관리", "프로젝트"],
+          titleKey: "tabs.project.project",
+          breadcrumbKeys: [
+            "pageTitles.projectManagement",
+            "tabs.project.project",
+          ],
         },
       },
       {
@@ -86,8 +91,11 @@ const routes: RouteRecordRaw[] = [
         name: "ProjectApp",
         component: ProjectApp,
         meta: {
-          title: "승인대기",
-          breadcrumb: ["프로젝트 관리", "승인대기"],
+          titleKey: "tabs.project.projectApp",
+          breadcrumbKeys: [
+            "pageTitles.projectManagement",
+            "tabs.project.projectApp",
+          ],
         },
       },
       {
@@ -95,8 +103,11 @@ const routes: RouteRecordRaw[] = [
         name: "ProjectItem",
         component: ProjectItem,
         meta: {
-          title: "항목관리",
-          breadcrumb: ["프로젝트 관리", "항목관리"],
+          titleKey: "tabs.project.projectItem",
+          breadcrumbKeys: [
+            "pageTitles.projectManagement",
+            "tabs.project.projectItem",
+          ],
         },
       },
       {
@@ -104,8 +115,11 @@ const routes: RouteRecordRaw[] = [
         name: "ProjectDetail",
         component: () => import("@/views/project/ProjectDetail.vue"),
         meta: {
-          title: "프로젝트 상세",
-          breadcrumb: ["프로젝트 관리", "프로젝트 상세"],
+          titleKey: "projectDetail.title",
+          breadcrumbKeys: [
+            "pageTitles.projectManagement",
+            "projectDetail.title",
+          ],
         },
       },
     ],
@@ -117,7 +131,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/asset/inflow",
     meta: {
       requiresAuth: true,
-      title: "유입종류 관리",
+      titleKey: "pageTitles.assetManagement",
       icon: "asset",
     },
     children: [
@@ -126,8 +140,8 @@ const routes: RouteRecordRaw[] = [
         name: "AssetInflow",
         component: () => import("@/views/asset/Inflow.vue"),
         meta: {
-          title: "유입",
-          breadcrumb: ["유입종류 관리", "유입"],
+          titleKey: "tabs.asset.inflow",
+          breadcrumbKeys: ["pageTitles.assetManagement", "tabs.asset.inflow"],
         },
       },
       {
@@ -135,8 +149,8 @@ const routes: RouteRecordRaw[] = [
         name: "AssetOutflow",
         component: () => import("@/views/asset/Outflow.vue"),
         meta: {
-          title: "유출",
-          breadcrumb: ["유입종류 관리", "유출"],
+          titleKey: "tabs.asset.outflow",
+          breadcrumbKeys: ["pageTitles.assetManagement", "tabs.asset.outflow"],
         },
       },
       {
@@ -144,8 +158,11 @@ const routes: RouteRecordRaw[] = [
         name: "AssetRecommended",
         component: () => import("@/views/asset/RecommendedProcess.vue"),
         meta: {
-          title: "추천공정",
-          breadcrumb: ["유입종류 관리", "추천공정"],
+          titleKey: "tabs.asset.recommendedProcess",
+          breadcrumbKeys: [
+            "pageTitles.assetManagement",
+            "tabs.asset.recommendedProcess",
+          ],
         },
       },
     ],
@@ -158,7 +175,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/process/process",
     meta: {
       requiresAuth: true,
-      title: "공정 관리",
+      titleKey: "pageTitles.processManagement",
       icon: "process",
     },
     children: [
@@ -167,8 +184,11 @@ const routes: RouteRecordRaw[] = [
         name: "Process",
         component: Process,
         meta: {
-          title: "공정",
-          breadcrumb: ["공정", "공정 관리"],
+          titleKey: "tabs.process.process",
+          breadcrumbKeys: [
+            "pageTitles.processManagement",
+            "tabs.process.process",
+          ],
         },
       },
       {
@@ -176,8 +196,11 @@ const routes: RouteRecordRaw[] = [
         name: "Output",
         component: () => import("@/views/process/Output.vue"),
         meta: {
-          title: "Output",
-          breadcrumb: ["공정", "Output"],
+          titleKey: "tabs.process.output",
+          breadcrumbKeys: [
+            "pageTitles.processManagement",
+            "tabs.process.output",
+          ],
         },
       },
       {
@@ -185,8 +208,11 @@ const routes: RouteRecordRaw[] = [
         name: "ProcessDetail",
         component: () => import("@/views/process/ProcessDetail.vue"),
         meta: {
-          title: "공정 상세",
-          breadcrumb: ["공정", "공정 상세"],
+          titleKey: "processDetail.processName",
+          breadcrumbKeys: [
+            "pageTitles.processManagement",
+            "processDetail.processName",
+          ],
         },
       },
     ],
@@ -198,7 +224,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/model/3d",
     meta: {
       requiresAuth: true,
-      title: "3D모델 관리",
+      titleKey: "pageTitles.modelManagement",
       icon: "model",
     },
     children: [
@@ -207,8 +233,8 @@ const routes: RouteRecordRaw[] = [
         name: "Model3D",
         component: Model3D,
         meta: {
-          title: "3D 모델 관리",
-          breadcrumb: ["3D모델 관리", "3D모델 관리"],
+          titleKey: "tabs.model.model3d",
+          breadcrumbKeys: ["pageTitles.modelManagement", "tabs.model.model3d"],
         },
       },
       {
@@ -216,8 +242,11 @@ const routes: RouteRecordRaw[] = [
         name: "Revit",
         component: Revit,
         meta: {
-          title: "Revit 관리",
-          breadcrumb: ["3D모델 관리", "Revit 관리"],
+          titleKey: "tabs.model.revitManagement",
+          breadcrumbKeys: [
+            "pageTitles.modelManagement",
+            "tabs.model.revitManagement",
+          ],
         },
       },
       {
@@ -225,8 +254,11 @@ const routes: RouteRecordRaw[] = [
         name: "Standard",
         component: Standard,
         meta: {
-          title: "표준배치 관리",
-          breadcrumb: ["3D모델 관리", "표준배치 관리"],
+          titleKey: "tabs.model.standardManagement",
+          breadcrumbKeys: [
+            "pageTitles.modelManagement",
+            "tabs.model.standardManagement",
+          ],
         },
       },
     ],
@@ -238,7 +270,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/machine/machine",
     meta: {
       requiresAuth: true,
-      title: "기기리스트 관리",
+      titleKey: "pageTitles.machineManagement",
       icon: "machine",
     },
     children: [
@@ -247,8 +279,11 @@ const routes: RouteRecordRaw[] = [
         name: "Machine",
         component: Machine,
         meta: {
-          title: "기계",
-          breadcrumb: ["기계", "기계 관리"],
+          titleKey: "tabs.machine.machine",
+          breadcrumbKeys: [
+            "pageTitles.machineManagement",
+            "tabs.machine.machine",
+          ],
         },
       },
       {
@@ -256,8 +291,11 @@ const routes: RouteRecordRaw[] = [
         name: "MachineCodeManagement",
         component: MachineCodeManagement,
         meta: {
-          title: "코드 관리",
-          breadcrumb: ["기계", "코드 관리"],
+          titleKey: "tabs.machine.machineCodeManagement",
+          breadcrumbKeys: [
+            "pageTitles.machineManagement",
+            "tabs.machine.machineCodeManagement",
+          ],
         },
       },
       {
@@ -265,8 +303,11 @@ const routes: RouteRecordRaw[] = [
         name: "CostTarget",
         component: CostTarget,
         meta: {
-          title: "단가표",
-          breadcrumb: ["기계", "단가표"],
+          titleKey: "tabs.machine.costTarget",
+          breadcrumbKeys: [
+            "pageTitles.machineManagement",
+            "tabs.machine.costTarget",
+          ],
         },
       },
     ],
@@ -277,7 +318,7 @@ const routes: RouteRecordRaw[] = [
     component: UserManagement,
     meta: {
       requiresAuth: true,
-      title: "사용자 관리",
+      titleKey: "pageTitles.userManagement",
       icon: "user",
     },
   },
@@ -287,7 +328,7 @@ const routes: RouteRecordRaw[] = [
     component: CodeManagement,
     meta: {
       requiresAuth: true,
-      title: "코드 관리",
+      titleKey: "pageTitles.codeManagement",
       icon: "code",
     },
   },
@@ -372,10 +413,12 @@ router.beforeEach((to, _from, next) => {
 
 // 페이지 타이틀 설정
 router.afterEach((to) => {
-  if (to.meta.title) {
-    document.title = `${to.meta.title} - WAI DESIGN`;
+  const titleKey = to.meta.titleKey as string;
+  if (titleKey) {
+    const translatedTitle = i18n.global.t(titleKey);
+    document.title = `${translatedTitle} - WAI DESIGN`;
   } else {
-    document.title = "WAI DESIGN";
+    document.title = i18n.global.t("pageTitles.default");
   }
 });
 

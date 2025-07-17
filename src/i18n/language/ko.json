@@ -540,7 +540,8 @@
       "recommendedProcess": "추천공정"
     },
     "process": {
-      "process": "공정 관리"
+      "process": "공정 관리",
+      "output": "Output"
     },
     "project": {
       "project": "프로젝트",

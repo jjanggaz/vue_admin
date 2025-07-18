@@ -515,7 +515,8 @@
     "model": "3D모델 관리",
     "machine": "기기리스트 관리",
     "user": "사용자 관리",
-    "code": "코드 관리"
+    "code": "코드 관리",
+    "test": "테스트"
   },
   "pageTitles": {
     "dashboard": "대시보드",
@@ -526,6 +527,7 @@
     "machineManagement": "기기리스트 관리",
     "userManagement": "사용자 관리",
     "codeManagement": "코드 관리",
+    "test": "테스트",
     "default": "WAI DESIGN"
   },
   "tabs": {

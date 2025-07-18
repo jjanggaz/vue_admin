@@ -514,7 +514,8 @@
     "model": "3D Model Management",
     "machine": "Machine Management",
     "user": "User Management",
-    "code": "Code Management"
+    "code": "Code Management",
+    "test": "Test"
   },
   "pageTitles": {
     "dashboard": "Dashboard",
@@ -525,6 +526,7 @@
     "machineManagement": "Machine Management",
     "userManagement": "User Management",
     "codeManagement": "Code Management",
+    "test": "Test",
     "default": "WAI DESIGN"
   },
   "tabs": {

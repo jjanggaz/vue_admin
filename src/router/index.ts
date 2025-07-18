@@ -49,6 +49,9 @@ const UserManagement = () => import("@/views/user/UserManagement.vue");
 // 코드 관리 페이지
 const CodeManagement = () => import("@/views/code/CodeManagement.vue");
 
+// 테스트 페이지
+const Test = () => import("@/views/test/Test.vue");
+
 // 에러 페이지
 const NotFound = () => import("@/views/error/NotFound.vue");
 
@@ -345,6 +348,16 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       titleKey: "pageTitles.codeManagement",
       icon: "code",
+    },
+  },
+  {
+    path: "/test",
+    name: "Test",
+    component: Test,
+    meta: {
+      requiresAuth: true,
+      titleKey: "pageTitles.test",
+      icon: "test",
     },
   },
   {

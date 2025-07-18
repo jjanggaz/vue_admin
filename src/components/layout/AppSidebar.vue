@@ -45,6 +45,11 @@
           <span class="nav-icon">🔑</span>
           <span class="nav-text">{{ t("sidebar.code") }}</span>
         </router-link>
+
+        <router-link to="/test" class="nav-item">
+          <span class="nav-icon">🧪</span>
+          <span class="nav-text">{{ t("sidebar.test") }}</span>
+        </router-link>
       </nav>
     </div>
   </aside>

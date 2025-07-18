@@ -13,7 +13,10 @@
 
       <!-- User Section -->
       <div class="user-section">
-        <span class="user-id">{{ userName }} ({{ userRole }}) &nbsp;</span>
+        <span class="user-id">
+          {{ userName }}
+          <!--({{ userRole }}) &nbsp;-->
+        </span>
         <Date />
         <button class="logout-btn" @click="handleLogout">
           {{ t("common.logout") }}

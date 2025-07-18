@@ -13,7 +13,6 @@
           <input
             ref="fileInput"
             type="file"
-            multiple
             @change="handleFileSelect"
             class="file-input"
             id="fileInput"
@@ -21,7 +20,7 @@
           <label
             for="fileInput"
             class="file-upload-label"
-            :class="{ 'drag-over': isDragOver }"
+            :class="{ 'drag-over': fileUploadStore.isDragOver }"
             @dragenter.prevent="handleDragEnter"
             @dragover.prevent="handleDragOver"
             @dragleave.prevent="handleDragLeave"
@@ -30,73 +29,98 @@
             <div class="upload-icon">📁</div>
             <div class="upload-text">
               <p>파일을 선택하거나 드래그하여 업로드하세요</p>
-              <p class="upload-hint">최대 10MB, 여러 파일 선택 가능</p>
+              <p class="upload-hint">
+                최대 {{ fileUploadStore.maxFileSizeFormatted }}, 단일 파일만
+                선택 가능
+              </p>
             </div>
           </label>
         </div>
 
-        <div v-if="selectedFiles.length > 0" class="selected-files">
-          <h3>선택된 파일 목록</h3>
+        <div v-if="fileUploadStore.hasSelectedFiles" class="selected-files">
+          <h3>선택된 파일</h3>
           <div class="file-list">
             <div
-              v-for="(file, index) in selectedFiles"
+              v-for="(file, index) in fileUploadStore.selectedFiles"
               :key="index"
               class="file-item"
             >
               <div class="file-info">
                 <span class="file-name">{{ file.name }}</span>
-                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                <span class="file-size">{{
+                  fileUploadStore.formatFileSize(file.size)
+                }}</span>
               </div>
-              <button @click="removeFile(index)" class="remove-btn">×</button>
+              <button
+                @click="fileUploadStore.removeSelectedFile(index)"
+                class="remove-btn"
+              >
+                ×
+              </button>
             </div>
           </div>
         </div>
 
         <div class="upload-actions">
           <button
-            @click="uploadFiles"
-            :disabled="selectedFiles.length === 0 || uploading"
+            @click="fileUploadStore.uploadFiles"
+            :disabled="
+              !fileUploadStore.hasSelectedFiles || fileUploadStore.uploading
+            "
             class="btn btn-primary"
           >
-            {{ uploading ? "업로드 중..." : "파일 업로드" }}
+            {{ fileUploadStore.uploading ? "업로드 중..." : "파일 업로드" }}
           </button>
           <button @click="clearFiles" class="btn btn-secondary">
-            전체 삭제
+            파일 삭제
           </button>
         </div>
 
-        <div v-if="uploadProgress > 0" class="upload-progress">
+        <div
+          v-if="fileUploadStore.uploading || fileUploadStore.uploadProgress > 0"
+          class="upload-progress"
+        >
           <div class="progress-bar">
             <div
               class="progress-fill"
-              :style="{ width: uploadProgress + '%' }"
+              :style="{ width: fileUploadStore.uploadProgress + '%' }"
             ></div>
           </div>
-          <span class="progress-text">{{ uploadProgress }}%</span>
+          <span class="progress-text">
+            {{
+              fileUploadStore.uploading
+                ? fileUploadStore.uploadProgress + "%"
+                : "완료!"
+            }}
+          </span>
         </div>
       </div>
 
       <div class="uploaded-files-section">
         <h2>업로드된 파일 목록</h2>
-        <div v-if="uploadedFiles.length === 0" class="no-files">
+        <div v-if="!fileUploadStore.hasUploadedFiles" class="no-files">
           업로드된 파일이 없습니다.
         </div>
         <div v-else class="uploaded-list">
           <div
-            v-for="file in uploadedFiles"
+            v-for="file in fileUploadStore.uploadedFiles"
             :key="file.id"
             class="uploaded-item"
           >
             <div class="file-details">
-              <span class="file-name">{{ file.name }}</span>
+              <span class="file-name">{{ file.originalName }}</span>
               <span class="file-date">{{ formatDate(file.uploadDate) }}</span>
+              <span class="file-path">{{ file.filepath }}</span>
             </div>
             <div class="file-actions">
-              <button @click="downloadFile(file)" class="btn btn-sm">
+              <button
+                @click="fileUploadStore.downloadFile(file)"
+                class="btn btn-sm"
+              >
                 다운로드
               </button>
               <button
-                @click="deleteFile(file.id)"
+                @click="fileUploadStore.deleteUploadedFile(file.id)"
                 class="btn btn-sm btn-danger"
               >
                 삭제
@@ -110,67 +134,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useFileUploadStore } from "@/stores/fileUploadStore";
 
 const { t } = useI18n();
+const fileUploadStore = useFileUploadStore();
 
-// 파일 관련 상태
+// 파일 input 참조
 const fileInput = ref<HTMLInputElement>();
-const selectedFiles = ref<File[]>([]);
-const uploading = ref(false);
-const uploadProgress = ref(0);
-const isDragOver = ref(false);
 
-// 업로드된 파일 목록 (실제로는 서버에서 받아와야 함)
-const uploadedFiles = reactive([
-  {
-    id: 1,
-    name: "test-file-1.pdf",
-    uploadDate: new Date(),
-    size: 1024000,
-  },
-  {
-    id: 2,
-    name: "test-image.jpg",
-    uploadDate: new Date(),
-    size: 2048000,
-  },
-]);
+// 컴포넌트 마운트 시 업로드된 파일 목록 불러오기
+onMounted(async () => {
+  try {
+    await fileUploadStore.loadUploadedFiles();
+  } catch (error) {
+    console.error("파일 목록 불러오기 실패:", error);
+    console.warn("서버가 실행중이 아니거나 CORS 설정이 필요할 수 있습니다");
+    // loadUploadedFiles에서 이미 alert 처리됨
+  }
+});
 
 // 파일 선택 처리
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  if (target.files) {
+
+  if (target.files && target.files.length > 0) {
     const newFiles = Array.from(target.files);
-    addFiles(newFiles);
+    fileUploadStore.addFiles(newFiles);
+
+    // 동일한 파일을 다시 선택할 수 있도록 input 값 초기화
+    target.value = "";
   }
-};
-
-// 파일 추가 공통 함수
-const addFiles = (files: File[]) => {
-  // 파일 크기 제한 (10MB)
-  const maxSize = 10 * 1024 * 1024;
-  const validFiles = files.filter((file) => {
-    if (file.size > maxSize) {
-      alert(`${file.name}은(는) 파일 크기가 너무 큽니다. (최대 10MB)`);
-      return false;
-    }
-    return true;
-  });
-
-  selectedFiles.value.push(...validFiles);
 };
 
 // 드래그 앤 드롭 이벤트 핸들러
 const handleDragEnter = (event: DragEvent) => {
   event.preventDefault();
-  isDragOver.value = true;
+  fileUploadStore.setDragOver(true);
 };
 
 const handleDragOver = (event: DragEvent) => {
   event.preventDefault();
-  isDragOver.value = true;
+  fileUploadStore.setDragOver(true);
 };
 
 const handleDragLeave = (event: DragEvent) => {
@@ -181,41 +187,28 @@ const handleDragLeave = (event: DragEvent) => {
   const y = event.clientY;
 
   if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
-    isDragOver.value = false;
+    fileUploadStore.setDragOver(false);
   }
 };
 
 const handleDrop = (event: DragEvent) => {
   event.preventDefault();
-  isDragOver.value = false;
+  fileUploadStore.setDragOver(false);
 
   const files = event.dataTransfer?.files;
   if (files) {
     const fileArray = Array.from(files);
-    addFiles(fileArray);
+    fileUploadStore.addFiles(fileArray);
   }
 };
 
-// 파일 제거
-const removeFile = (index: number) => {
-  selectedFiles.value.splice(index, 1);
-};
-
-// 전체 파일 삭제
+// 전체 파일 삭제 (input value도 초기화)
 const clearFiles = () => {
-  selectedFiles.value = [];
+  fileUploadStore.clearSelectedFiles();
+  // input 값 초기화 (동일한 파일 재선택을 위해)
   if (fileInput.value) {
     fileInput.value.value = "";
   }
-};
-
-// 파일 크기 포맷팅
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 // 날짜 포맷팅
@@ -227,74 +220,6 @@ const formatDate = (date: Date): string => {
     hour: "2-digit",
     minute: "2-digit",
   });
-};
-
-// 파일 업로드 (실제 구현 시 Python 백엔드 API 호출)
-const uploadFiles = async () => {
-  if (selectedFiles.value.length === 0) return;
-
-  uploading.value = true;
-  uploadProgress.value = 0;
-
-  try {
-    // 실제 구현에서는 FormData를 사용하여 파일 전송
-    const formData = new FormData();
-    selectedFiles.value.forEach((file, index) => {
-      formData.append(`files[${index}]`, file);
-    });
-
-    // 진행률 시뮬레이션 (실제로는 axios의 onUploadProgress 사용)
-    const progressInterval = setInterval(() => {
-      uploadProgress.value += 10;
-      if (uploadProgress.value >= 100) {
-        clearInterval(progressInterval);
-        // 업로드 완료 시 업로드된 파일 목록에 추가
-        selectedFiles.value.forEach((file) => {
-          uploadedFiles.push({
-            id: uploadedFiles.length + 1,
-            name: file.name,
-            uploadDate: new Date(),
-            size: file.size,
-          });
-        });
-        clearFiles();
-        uploadProgress.value = 0;
-        uploading.value = false;
-      }
-    }, 200);
-
-    // 실제 API 호출 예시:
-    // const response = await axios.post('/api/upload', formData, {
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data',
-    //   },
-    //   onUploadProgress: (progressEvent) => {
-    //     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-    //     uploadProgress.value = percentCompleted;
-    //   },
-    // });
-  } catch (error) {
-    console.error("파일 업로드 중 오류:", error);
-    uploading.value = false;
-    uploadProgress.value = 0;
-  }
-};
-
-// 파일 다운로드
-const downloadFile = (file: any) => {
-  // 실제 구현에서는 서버에서 파일 다운로드
-  console.log("파일 다운로드:", file.name);
-  // window.open(`/api/download/${file.id}`, '_blank');
-};
-
-// 파일 삭제
-const deleteFile = (fileId: number) => {
-  const index = uploadedFiles.findIndex((file) => file.id === fileId);
-  if (index > -1) {
-    uploadedFiles.splice(index, 1);
-  }
-  // 실제 구현에서는 서버에서도 파일 삭제
-  // await axios.delete(`/api/files/${fileId}`);
 };
 </script>
 
@@ -518,6 +443,12 @@ const deleteFile = (fileId: number) => {
     .file-date {
       font-size: $font-size-sm;
       color: $text-light;
+    }
+
+    .file-path {
+      font-size: $font-size-sm;
+      color: $text-light;
+      font-style: italic;
     }
   }
 

@@ -18,7 +18,15 @@
             class="file-input"
             id="fileInput"
           />
-          <label for="fileInput" class="file-upload-label">
+          <label
+            for="fileInput"
+            class="file-upload-label"
+            :class="{ 'drag-over': isDragOver }"
+            @dragenter.prevent="handleDragEnter"
+            @dragover.prevent="handleDragOver"
+            @dragleave.prevent="handleDragLeave"
+            @drop.prevent="handleDrop"
+          >
             <div class="upload-icon">📁</div>
             <div class="upload-text">
               <p>파일을 선택하거나 드래그하여 업로드하세요</p>
@@ -112,6 +120,7 @@ const fileInput = ref<HTMLInputElement>();
 const selectedFiles = ref<File[]>([]);
 const uploading = ref(false);
 const uploadProgress = ref(0);
+const isDragOver = ref(false);
 
 // 업로드된 파일 목록 (실제로는 서버에서 받아와야 함)
 const uploadedFiles = reactive([
@@ -134,7 +143,56 @@ const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files) {
     const newFiles = Array.from(target.files);
-    selectedFiles.value.push(...newFiles);
+    addFiles(newFiles);
+  }
+};
+
+// 파일 추가 공통 함수
+const addFiles = (files: File[]) => {
+  // 파일 크기 제한 (10MB)
+  const maxSize = 10 * 1024 * 1024;
+  const validFiles = files.filter((file) => {
+    if (file.size > maxSize) {
+      alert(`${file.name}은(는) 파일 크기가 너무 큽니다. (최대 10MB)`);
+      return false;
+    }
+    return true;
+  });
+
+  selectedFiles.value.push(...validFiles);
+};
+
+// 드래그 앤 드롭 이벤트 핸들러
+const handleDragEnter = (event: DragEvent) => {
+  event.preventDefault();
+  isDragOver.value = true;
+};
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault();
+  isDragOver.value = true;
+};
+
+const handleDragLeave = (event: DragEvent) => {
+  event.preventDefault();
+  // 자식 요소로 이동할 때 dragleave가 발생하는 것을 방지
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  const x = event.clientX;
+  const y = event.clientY;
+
+  if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+    isDragOver.value = false;
+  }
+};
+
+const handleDrop = (event: DragEvent) => {
+  event.preventDefault();
+  isDragOver.value = false;
+
+  const files = event.dataTransfer?.files;
+  if (files) {
+    const fileArray = Array.from(files);
+    addFiles(fileArray);
   }
 };
 
@@ -305,6 +363,21 @@ const deleteFile = (fileId: number) => {
     &:hover {
       border-color: $primary-color;
       background-color: rgba($primary-color, 0.05);
+    }
+
+    &.drag-over {
+      border-color: $primary-color;
+      background-color: rgba($primary-color, 0.1);
+
+      .upload-icon {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+      }
+
+      .upload-text p {
+        color: $primary-color;
+        font-weight: $font-weight-md;
+      }
     }
 
     .upload-icon {

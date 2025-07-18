@@ -383,8 +383,7 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const isLoggedIn = authStore.isLoggedIn;
-  const userId = authStore.user?.user_id;
-  const userName = authStore.user?.name;
+  const userName = authStore.user?.username;
   const userRole = authStore.user?.role || null;
 
   const requiresAuth = to.meta.requiresAuth ?? true;
@@ -393,8 +392,6 @@ router.beforeEach((to, _from, next) => {
   console.log(
     "[router/index.ts] isLoggedIn: ",
     isLoggedIn,
-    ", userId: ",
-    userId,
     ", userName: ",
     userName,
     ", userRole: ",
@@ -416,6 +413,12 @@ router.beforeEach((to, _from, next) => {
   if (requiresAuth && !isLoggedIn) {
     console.log("인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로 >> ");
     return next("/login");
+  }
+
+  // ✅ 이미 로그인된 사용자가 로그인 페이지 접근 시 → 대시보드로
+  if (to.path === "/login" && isLoggedIn) {
+    console.log("이미 로그인된 사용자가 로그인 페이지 접근 → 대시보드로 >> ");
+    return next("/dashboard");
   }
 
   // ✅ 관리자 권한 필요하지만 일반 사용자일 경우 → 홈으로 리디렉션

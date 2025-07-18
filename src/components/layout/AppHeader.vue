@@ -38,7 +38,7 @@ const router = useRouter();
 const route = useRoute();
 
 const authStore = useAuthStore();
-const userName = authStore.user?.name;
+const userName = authStore.user?.username;
 const userRole = authStore.user?.role;
 
 console.log(

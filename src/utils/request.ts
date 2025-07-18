@@ -1,11 +1,18 @@
+import { getTokenInfo } from "./cookies";
+import {
+  refreshAccessToken,
+  isCurrentTokenValid,
+  shouldRefreshToken,
+} from "./tokenManager";
+
 export const request = async (
   path: string,
   params?: Record<string, string> | Record<string, string>[],
   options: RequestInit = { method: "GET" }
 ) => {
   try {
-    const url = new URL("http://192.168.0.28:8092/fems" + path); //  서윤 PC IP
-    // const url = new URL('http://210.91.59.80:8092/fems' + path) //  운영 외부 IP
+    // 프록시 사용 시에는 상대 경로로 호출
+    const url = new URL(path, window.location.origin);
 
     // Add params to the query string
     if (params) {
@@ -22,7 +29,63 @@ export const request = async (
       }
     }
 
-    const res = await fetch(url.toString(), options);
+    // JWT 토큰을 헤더에 자동으로 추가
+    let tokenInfo = getTokenInfo();
+    const headers: Record<string, string> = {
+      ...options.headers,
+    } as Record<string, string>;
+
+    // 토큰이 있고 만료가 임박하면 자동 갱신
+    if (tokenInfo && shouldRefreshToken()) {
+      console.log("토큰 만료 임박, 자동 갱신 시도...");
+      const refreshSuccess = await refreshAccessToken();
+      if (refreshSuccess) {
+        tokenInfo = getTokenInfo(); // 갱신된 토큰 정보 가져오기
+      }
+    }
+
+    if (tokenInfo) {
+      headers[
+        "Authorization"
+      ] = `${tokenInfo.token_type} ${tokenInfo.access_token}`;
+    }
+
+    const requestOptions = {
+      ...options,
+      headers,
+    };
+
+    const res = await fetch(url.toString(), requestOptions);
+
+    // 401 에러 시 토큰 갱신 시도
+    if (res.status === 401 && tokenInfo) {
+      console.log("401 에러 발생, 토큰 갱신 시도...");
+      const refreshSuccess = await refreshAccessToken();
+
+      if (refreshSuccess) {
+        // 갱신된 토큰으로 재요청
+        const newTokenInfo = getTokenInfo();
+        if (newTokenInfo) {
+          headers[
+            "Authorization"
+          ] = `${newTokenInfo.token_type} ${newTokenInfo.access_token}`;
+          const retryOptions = {
+            ...options,
+            headers,
+          };
+
+          const retryRes = await fetch(url.toString(), retryOptions);
+          if (!retryRes.ok) {
+            throw new Error(`API Call Fail: ${retryRes.statusText}`);
+          }
+          return await retryRes.json();
+        }
+      }
+
+      // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
+      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+    }
+
     if (!res.ok) {
       throw new Error(`API Call Fail: ${res.statusText}`);
     }
@@ -30,8 +93,11 @@ export const request = async (
   } catch (e) {
     if (e instanceof Error) {
       console.error(e.message);
+      throw e; // 에러를 다시 throw해서 호출하는 곳에서 처리할 수 있도록
     } else {
-      alert("An unexpected error occurred");
+      const error = new Error("An unexpected error occurred");
+      console.error(error.message);
+      throw error;
     }
   }
 };

@@ -576,7 +576,7 @@
       "idAvailable": "ID is available."
     },
     "error": {
-      "loginFail": "Invalid username or password.",
+      "loginFail": "Login failed.",
       "passwordsDoNotMatch": "Passwords do not match.",
       "idAlreadyExists": "ID already exists.",
       "registrationError": "Registration error occurred."

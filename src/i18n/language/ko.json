@@ -578,7 +578,7 @@
       "idAvailable": "사용 가능한 아이디입니다."
     },
     "error": {
-      "loginFail": "아이디 또는 비밀번호가 올바르지 않습니다.",
+      "loginFail": "로그인에 실패했습니다.",
       "passwordsDoNotMatch": "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
       "idAlreadyExists": "이미 존재하는 아이디입니다.",
       "registrationError": "등록 중 오류가 발생했습니다."

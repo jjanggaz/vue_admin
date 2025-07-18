@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -41,6 +41,14 @@ export default defineConfig({
     cors: true,
     hmr: {
       overlay: true,
+    },
+    proxy: {
+      // 인증 API 프록시
+      "/api": {
+        target: "http://192.168.233.128:8000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

@@ -103,7 +103,7 @@ const handleLogin = async () => {
     // 기존 토큰이 있다면 먼저 삭제
     if (authStore.isLoggedIn) {
       console.log("기존 로그인 상태 감지, 토큰 삭제 후 재로그인");
-      authStore.logout();
+      await authStore.logout();
     }
 
     await authStore.login(loginForm.value.username, loginForm.value.password);

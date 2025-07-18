@@ -33,12 +33,12 @@ export const refreshAccessToken = async (): Promise<boolean> => {
     const result = await response.json();
 
     if (result && result.access_token) {
-      // 새로운 토큰 정보 저장
+      // 새로운 토큰 정보 저장 (expires_in은 초 단위)
       const newTokenInfo: TokenInfo = {
         access_token: result.access_token,
-        refresh_token: result.refresh_token || tokenInfo.refresh_token,
+        refresh_token: result.refresh_token || tokenInfo.refresh_token, // refresh_token은 30일 유효
         token_type: result.token_type || tokenInfo.token_type,
-        expires_in: result.expires_in || tokenInfo.expires_in,
+        expires_in: result.expires_in || tokenInfo.expires_in, // 초 단위
         scope: result.scope || tokenInfo.scope,
       };
       setTokenInfo(newTokenInfo);

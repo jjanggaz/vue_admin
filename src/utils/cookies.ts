@@ -38,8 +38,10 @@ export interface TokenInfo {
 }
 
 // JWT 토큰 관련 쿠키 관리
-export const setAuthToken = (token: string) => {
-  setCookie("auth_token", token, 1); // 1일간 유효 (access_token은 짧게)
+export const setAuthToken = (token: string, expiresInSeconds: number) => {
+  // expires_in이 초 단위이므로 일 단위로 변환 (최소 1일)
+  const days = Math.max(1, Math.ceil(expiresInSeconds / (24 * 60 * 60)));
+  setCookie("auth_token", token, days);
 };
 
 export const getAuthToken = (): string | null => {
@@ -50,9 +52,9 @@ export const removeAuthToken = () => {
   deleteCookie("auth_token");
 };
 
-// Refresh Token 관련 쿠키 관리
+// Refresh Token 관련 쿠키 관리 (30일 고정)
 export const setRefreshToken = (token: string) => {
-  setCookie("refresh_token", token, 30); // 30일간 유효 (refresh_token은 길게)
+  setCookie("refresh_token", token, 30); // 30일간 유효
 };
 
 export const getRefreshToken = (): string | null => {
@@ -76,7 +78,7 @@ export const removeTokenType = () => {
   deleteCookie("token_type");
 };
 
-// 토큰 만료 시간 관리
+// 토큰 만료 시간 관리 (초 단위 저장)
 export const setTokenExpiresIn = (expiresIn: number) => {
   setCookie("token_expires_in", expiresIn.toString(), 1);
 };
@@ -105,7 +107,7 @@ export const removeTokenScope = () => {
 
 // 전체 토큰 정보 저장
 export const setTokenInfo = (tokenInfo: TokenInfo) => {
-  setAuthToken(tokenInfo.access_token);
+  setAuthToken(tokenInfo.access_token, tokenInfo.expires_in);
   setRefreshToken(tokenInfo.refresh_token);
   setTokenType(tokenInfo.token_type);
   setTokenExpiresIn(tokenInfo.expires_in);

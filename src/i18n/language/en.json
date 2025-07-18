@@ -154,7 +154,9 @@
       "corpName": "Company",
       "phone": "Phone",
       "email": "Email",
-      "role": "Role"
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last Login"
     },
     "code": {
       "codeGroup": "Code Group",
@@ -196,6 +198,7 @@
     "save": "Save",
     "select": "-- Select --",
     "logout": "Logout",
+    "user": "User",
     "detailInfo": "Detail Info",
     "view": "View",
     "action": "Action",
@@ -245,7 +248,13 @@
       "admin": "Admin",
       "user": "User"
     },
+    "userStatus": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "duplicateCheck": "Duplicate Check",
+    "checking": "Checking...",
+    "changePassword": "Change Password",
     "registerUser": "Register User",
     "editUser": "Edit User",
     "password": "Password",
@@ -303,6 +312,7 @@
     "selectFile": "Please select a file",
     "userId": "Enter ID",
     "userPassword": "Enter password",
+    "userPasswordChange": "Enter new password (leave blank if no change)",
     "userPasswordConfirm": "Confirm your password",
     "userName": "Enter name",
     "userCorpName": "Enter company name",
@@ -579,13 +589,18 @@
       "loginFail": "Login failed.",
       "passwordsDoNotMatch": "Passwords do not match.",
       "idAlreadyExists": "ID already exists.",
-      "registrationError": "Registration error occurred."
+      "registrationError": "Registration error occurred.",
+      "deleteFailed": "Delete failed.",
+      "saveFailed": "Save failed.",
+      "duplicateCheckFailed": "Duplicate check failed."
     },
     "warning": {
       "pleaseSelectItemToDelete": "Please select items to delete.",
       "pleaseCompleteAllFields": "Please complete all fields.",
       "pleaseCheckIdDuplication": "Please check ID duplication.",
+      "pleaseCheckUsernameDuplication": "Please check username duplication.",
       "pleaseEnterId": "Please enter ID.",
+      "pleaseEnterUsername": "Please enter username.",
       "selectOneItemToEdit": "Please select one item to edit.",
       "pleaseCompleteRequiredFields": "Please complete required fields.",
       "pleaseEnterTabName": "Please enter tab name."

@@ -154,7 +154,9 @@
       "corpName": "업체명",
       "phone": "전화번호",
       "email": "이메일",
-      "role": "권한"
+      "role": "권한",
+      "status": "활성상태",
+      "lastLogin": "최근 로그인"
     },
     "code": {
       "codeGroup": "코드그룹",
@@ -196,6 +198,7 @@
     "save": "저장",
     "select": "-- 선택 --",
     "logout": "로그아웃",
+    "user": "사용자",
     "detailInfo": "상세정보",
     "view": "보기",
     "action": "동작",
@@ -245,7 +248,13 @@
       "admin": "관리자",
       "user": "사용자"
     },
+    "userStatus": {
+      "active": "활성",
+      "inactive": "비활성"
+    },
     "duplicateCheck": "중복체크",
+    "checking": "확인 중...",
+    "changePassword": "비밀번호 변경",
     "registerUser": "사용자 등록",
     "editUser": "사용자 수정",
     "password": "비밀번호",
@@ -370,6 +379,7 @@
     "selectFile": "파일을 선택하세요",
     "userId": "아이디를 입력하세요",
     "userPassword": "비밀번호를 입력하세요",
+    "userPasswordChange": "변경할 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)",
     "userPasswordConfirm": "비밀번호를 확인하세요",
     "userName": "이름을 입력하세요",
     "userCorpName": "업체명을 입력하세요",
@@ -581,13 +591,18 @@
       "loginFail": "로그인에 실패했습니다.",
       "passwordsDoNotMatch": "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
       "idAlreadyExists": "이미 존재하는 아이디입니다.",
-      "registrationError": "등록 중 오류가 발생했습니다."
+      "registrationError": "등록 중 오류가 발생했습니다.",
+      "deleteFailed": "삭제에 실패했습니다.",
+      "saveFailed": "저장에 실패했습니다.",
+      "duplicateCheckFailed": "중복 체크에 실패했습니다."
     },
     "warning": {
       "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",
       "pleaseCompleteAllFields": "모든 필드를 입력 혹은 선택 해주세요.",
       "pleaseCheckIdDuplication": "아이디 중복체크를 해주세요.",
+      "pleaseCheckUsernameDuplication": "사용자명 중복체크를 해주세요.",
       "pleaseEnterId": "아이디를 입력하세요.",
+      "pleaseEnterUsername": "사용자명을 입력하세요.",
       "selectOneItemToEdit": "수정할 항목을 하나만 선택하세요.",
       "pleaseCompleteRequiredFields": "필수 필드를 입력해주세요.",
       "pleaseEnterTabName": "탭 이름을 입력하세요."

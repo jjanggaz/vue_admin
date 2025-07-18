@@ -14,6 +14,7 @@
           <th
             v-for="column in columns"
             :key="column.key"
+            v-show="!column.hidden"
             :class="{
               sortable: column.sortable,
               sorted: sortConfig.key === column.key,
@@ -94,6 +95,7 @@
             <td
               v-for="column in columns"
               :key="column.key"
+              v-show="!column.hidden"
               :class="column.className"
               :style="column.width ? { width: column.width } : {}"
             >
@@ -124,6 +126,7 @@ export interface TableColumn {
   className?: string;
   formatter?: (value: any, item: any) => string;
   width?: string;
+  hidden?: boolean;
 }
 
 interface SortConfig {
@@ -206,9 +209,7 @@ const toggleSelectRow = (item: any) => {
 };
 
 const handleRowClick = (item: any, index: number) => {
-  if (props.selectable) {
-    toggleSelectRow(item);
-  }
+  // row 클릭 시에는 선택 토글하지 않고 row-click 이벤트만 발생
   emit("row-click", item, index);
 };
 

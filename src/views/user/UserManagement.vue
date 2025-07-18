@@ -10,12 +10,13 @@
           <div class="form-item">
             <select id="role" v-model="searchOptionInput">
               <option value="">{{ t("common.selectItem") }}</option>
-              <option value="id">{{ t("columns.user.id") }}</option>
-              <option value="name">{{ t("columns.user.name") }}</option>
-              <option value="corpName">{{ t("columns.user.corpName") }}</option>
-              <option value="phone">{{ t("columns.user.phone") }}</option>
+              <option value="username">{{ t("columns.user.name") }}</option>
+              <option value="organization">
+                {{ t("columns.user.corpName") }}
+              </option>
               <option value="email">{{ t("columns.user.email") }}</option>
-              <option value="role">{{ t("columns.user.role") }}</option>
+              <option value="is_superuser">{{ t("columns.user.role") }}</option>
+              <option value="is_active">{{ t("columns.user.status") }}</option>
             </select>
           </div>
         </div>
@@ -57,17 +58,32 @@
     <DataTable
       :columns="tableColumns"
       :data="paginatedUserList"
-      :loading="loading"
+      :loading="userStore.loading"
       :selectable="true"
       :selected-items="selectedItems"
+      row-key="user_id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
-    />
+    >
+      <template #cell-is_active="{ value }">
+        <span :class="value ? 'status-active' : 'status-inactive'">
+          {{
+            value
+              ? t("common.userStatus.active")
+              : t("common.userStatus.inactive")
+          }}
+        </span>
+      </template>
+      <template #cell-last_login="{ value }">
+        <span v-if="value">{{ formatDate(value) }}</span>
+        <span v-else class="no-data">-</span>
+      </template>
+    </DataTable>
     <!-- Pagination -->
     <div class="pagination-container">
       <Pagination
-        :current-page="currentPage"
+        :current-page="userStore.currentPage"
         :total-pages="totalPagesComputed"
         @page-change="handlePageChange"
       />
@@ -77,7 +93,11 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>
-            {{ isEditMode ? t("common.editUser") : t("common.registerUser") }}
+            {{
+              isEditMode
+                ? t("common.edit") + " " + t("common.user")
+                : t("common.register") + " " + t("common.user")
+            }}
           </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
@@ -88,8 +108,8 @@
             <dt>{{ t("columns.user.id") }}</dt>
             <dd>
               <input
-                id="user-id"
-                v-model="newUser.id"
+                id="user-username"
+                v-model="newUser.username"
                 type="text"
                 :placeholder="t('placeholder.userId')"
                 :disabled="isEditMode"
@@ -99,24 +119,68 @@
                 class="btn-check-id"
                 v-if="!isEditMode"
                 @click="handleCheckId"
+                :disabled="userStore.loading"
               >
-                {{ t("common.duplicateCheck") }}
+                {{
+                  userStore.loading
+                    ? t("common.checking")
+                    : t("common.duplicateCheck")
+                }}
               </button>
             </dd>
-            <dt>{{ t("common.password") }}</dt>
-            <dd>
+            <dt v-if="!isEditMode">{{ t("common.password") }}</dt>
+            <dd v-if="!isEditMode">
               <input
                 id="user-pw"
-                v-model="newUser.pwd"
+                v-model="newUser.password"
                 type="password"
                 :placeholder="t('placeholder.userPassword')"
               />
             </dd>
-            <dt>{{ t("common.passwordConfirm") }}</dt>
-            <dd>
+            <dt v-if="!isEditMode">{{ t("common.passwordConfirm") }}</dt>
+            <dd v-if="!isEditMode">
               <input
                 id="confirm-pw"
-                v-model="newUser.pwdChk"
+                v-model="newUser.passwordConfirm"
+                type="password"
+                :placeholder="t('placeholder.userPasswordConfirm')"
+              />
+            </dd>
+            <!-- 수정 모드에서 비밀번호 변경 -->
+            <dt v-if="isEditMode">{{ t("common.password") }}</dt>
+            <dd v-if="isEditMode">
+              <div v-if="!showPasswordChange">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-change-password"
+                  @click="showPasswordChange = true"
+                >
+                  {{ t("common.changePassword") }}
+                </button>
+              </div>
+              <div v-else>
+                <input
+                  id="user-pw-edit"
+                  v-model="newUser.password"
+                  type="password"
+                  :placeholder="t('placeholder.userPasswordChange')"
+                />
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-cancel-password"
+                  @click="cancelPasswordChange"
+                >
+                  {{ t("common.cancel") }}
+                </button>
+              </div>
+            </dd>
+            <dt v-if="isEditMode && showPasswordChange">
+              {{ t("common.passwordConfirm") }}
+            </dt>
+            <dd v-if="isEditMode && showPasswordChange">
+              <input
+                id="confirm-pw-edit"
+                v-model="newUser.passwordConfirm"
                 type="password"
                 :placeholder="t('placeholder.userPasswordConfirm')"
               />
@@ -125,7 +189,7 @@
             <dd>
               <input
                 id="user-name"
-                v-model="newUser.name"
+                v-model="newUser.full_name"
                 type="text"
                 :placeholder="t('placeholder.userName')"
               />
@@ -134,20 +198,12 @@
             <dd>
               <input
                 id="user-corp"
-                v-model="newUser.corpName"
+                v-model="newUser.organization"
                 type="text"
                 :placeholder="t('placeholder.userCorpName')"
               />
             </dd>
-            <dt>{{ t("columns.user.phone") }}</dt>
-            <dd>
-              <input
-                id="user-phone"
-                v-model="newUser.phone"
-                type="text"
-                :placeholder="t('placeholder.userPhone')"
-              />
-            </dd>
+
             <dt>{{ t("columns.user.email") }}</dt>
             <dd>
               <input
@@ -157,24 +213,22 @@
                 :placeholder="t('placeholder.userEmail')"
               />
             </dd>
-            <dt>{{ t("common.corpType") }}</dt>
+            <dt>{{ t("columns.user.status") }}</dt>
             <dd>
-              <select id="user-corpType" v-model="newUser.corpType">
-                <option value="">{{ t("common.select") }}</option>
-                <option value="사내">
-                  {{ t("common.userCorpType.internal") }}
+              <select id="user-status" v-model="newUser.is_active">
+                <option :value="true">
+                  {{ t("common.userStatus.active") }}
                 </option>
-                <option value="사외">
-                  {{ t("common.userCorpType.external") }}
+                <option :value="false">
+                  {{ t("common.userStatus.inactive") }}
                 </option>
               </select>
             </dd>
             <dt>{{ t("columns.user.role") }}</dt>
             <dd>
-              <select id="user-role" v-model="newUser.role">
-                <option value="">{{ t("common.select") }}</option>
-                <option value="관리자">{{ t("common.userRole.admin") }}</option>
-                <option value="사용자">{{ t("common.userRole.user") }}</option>
+              <select id="user-role" v-model="newUser.is_superuser">
+                <option :value="false">{{ t("common.userRole.user") }}</option>
+                <option :value="true">{{ t("common.userRole.admin") }}</option>
               </select>
             </dd>
           </dl>
@@ -197,41 +251,40 @@ import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useUserStore, type User, type UserFormData } from "@/stores/userStore";
 
 const { t } = useI18n();
+const userStore = useUserStore();
 
-interface UserItem {
-  id: string;
-  pwd?: string;
-  pwdChk?: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  corpName?: string;
-  phone?: string;
-  corpType: string;
+// 날짜 포맷 함수
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toISOString().split("T")[0]; // yyyy-mm-dd 형식
+  } catch (error) {
+    return "-";
+  }
+};
+
+// 폼용 사용자 인터페이스 (UI 전용)
+interface UserForm extends UserFormData {
+  passwordConfirm?: string;
 }
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("columns.user.id"), width: "100px", sortable: true },
-  //{ key: 'index', label: '번호', width: "50px", sortable: true },
+  { key: "user_id", title: "ID", width: "0px", sortable: false, hidden: true },
   {
-    key: "name",
+    key: "username",
     title: t("columns.user.name"),
     width: "150px",
     sortable: true,
   },
   {
-    key: "corpName",
+    key: "organization",
     title: t("columns.user.corpName"),
-    width: "150px",
-    sortable: true,
-  },
-  {
-    key: "phone",
-    title: t("columns.user.phone"),
     width: "150px",
     sortable: true,
   },
@@ -242,217 +295,104 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "role",
+    key: "is_superuser",
     title: t("columns.user.role"),
-    width: "150px",
+    width: "100px",
+    sortable: true,
+    formatter: (value) => (value ? "관리자" : "사용자"),
+  },
+  {
+    key: "is_active",
+    title: t("columns.user.status"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "last_login",
+    title: t("columns.user.lastLogin"),
+    width: "120px",
     sortable: true,
   },
 ];
 
-const userList = ref<UserItem[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const totalPages = ref(1);
-const pageSize = ref(10);
-const totalCount = ref(0);
-const sortColumn = ref<string | null>(null);
-const sortOrder = ref<"asc" | "desc" | null>(null);
 const searchOptionInput = ref("");
 const searchQueryInput = ref("");
 const searchOption = ref("");
 const searchQuery = ref("");
-const selectedItems = ref<UserItem[]>([]);
+const selectedItems = ref<User[]>([]);
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
-const newUser = ref<UserItem>({
-  id: "",
-  pwd: "",
-  pwdChk: "",
-  name: "",
+const newUser = ref<UserForm>({
+  username: "",
+  password: "",
+  passwordConfirm: "",
+  full_name: "",
   email: "",
-  role: "",
-  createdAt: "",
-  corpName: "",
-  phone: "",
-  corpType: "",
+  organization: "",
+  is_active: true,
+  is_superuser: false,
 });
 const isIdChecked = ref(false);
+const showPasswordChange = ref(false);
+
 const resetIdChecked = () => {
   isIdChecked.value = false;
+};
+
+const cancelPasswordChange = () => {
+  showPasswordChange.value = false;
+  newUser.value.password = "";
+  newUser.value.passwordConfirm = "";
 };
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredUserList = computed(() => {
   if (searchOption.value && searchQuery.value) {
-    return userList.value.filter((user) => {
-      const key = searchOption.value as keyof UserItem;
-      return (
-        user[key] &&
-        user[key]!.toString()
-          .toLowerCase()
-          .includes(searchQuery.value.toLowerCase())
-      );
-    });
+    return userStore.filteredUsers(searchOption.value, searchQuery.value);
   }
-  return userList.value;
+  return userStore.users;
 });
 
-const totalCountComputed = computed(() => filteredUserList.value.length);
-const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
-);
+const totalCountComputed = computed(() => {
+  // 검색 조건이 있으면 필터링된 결과의 개수, 없으면 서버의 전체 개수
+  if (searchOption.value && searchQuery.value) {
+    return filteredUserList.value.length;
+  }
+  return userStore.totalCount;
+});
+
+const totalPagesComputed = computed(() => {
+  // 검색 조건이 있으면 필터링된 결과 기반으로 페이지 계산
+  if (searchOption.value && searchQuery.value) {
+    return Math.ceil(totalCountComputed.value / userStore.itemsPerPage) || 1;
+  }
+  return userStore.totalPages;
+});
 
 const paginatedUserList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredUserList.value.slice(start, end);
+  return filteredUserList.value;
 });
 
 // 데이터 로드 함수
 const loadData = async () => {
-  loading.value = true;
   try {
-    userList.value = [
-      {
-        id: "1",
-        pwd: "",
-        name: "홍길동1",
-        email: "..@example.com",
-        role: "사용자",
-        createdAt: "2023-01-01",
-        corpName: "업체1",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "2",
-        pwd: "",
-        name: "홍길동2",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체2",
-        phone: "010-1234-5678",
-        corpType: "사외",
-      },
-      {
-        id: "3",
-        pwd: "",
-        name: "홍길동3",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체3",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "4",
-        pwd: "",
-        name: "홍길동4",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체4",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "5",
-        pwd: "",
-        name: "홍길동5",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체5",
-        phone: "010-1234-5678",
-        corpType: "사외",
-      },
-      {
-        id: "6",
-        pwd: "",
-        name: "홍길동6",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체6",
-        phone: "010-1234-5678",
-        corpType: "사외",
-      },
-      {
-        id: "7",
-        pwd: "",
-        name: "홍길동7",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체7",
-        phone: "010-1234-5678",
-        corpType: "사외외",
-      },
-      {
-        id: "8",
-        pwd: "",
-        name: "홍길동8",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체8",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "9",
-        pwd: "",
-        name: "홍길동9",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체9",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "10",
-        pwd: "",
-        name: "홍길동10",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체10",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-      {
-        id: "11",
-        pwd: "",
-        name: "홍길동11",
-        email: "..@example.com",
-        role: "관리자",
-        createdAt: "2023-01-01",
-        corpName: "업체11",
-        phone: "010-1234-5678",
-        corpType: "사내",
-      },
-    ];
-    totalCount.value = userList.value.length;
-    totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+    await userStore.fetchUsers({
+      page: userStore.currentPage,
+      itemsPerPage: userStore.itemsPerPage,
+    });
   } catch (error) {
     console.error("데이터 로드 실패:", error);
-  } finally {
-    loading.value = false;
   }
 };
 
-const handleSelectionChange = (selected: UserItem[]) => {
+const handleSelectionChange = (selected: User[]) => {
   selectedItems.value = selected;
 };
 
 // 페이지 변경 핸들러
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
+const handlePageChange = async (page: number) => {
+  await userStore.changePage(page);
   selectedItems.value = [];
-  //loadData();
 };
 
 // 정렬 변경 핸들러
@@ -460,13 +400,22 @@ const handleSortChange = (sortInfo: {
   key: string;
   direction: "asc" | "desc";
 }) => {
-  sortColumn.value = sortInfo.key;
-  sortOrder.value = sortInfo.direction;
+  console.log("정렬 변경:", sortInfo);
+  // 서버 측 정렬이 필요하다면 여기에 API 호출 추가
 };
 
 // 행 클릭 핸들러
-const handleRowClick = (item: UserItem) => {
+const handleRowClick = (item: User) => {
   console.log("Row clicked:", item);
+  // row 클릭 시 해당 항목 선택 토글
+  const index = selectedItems.value.findIndex(
+    (selected) => selected.user_id === item.user_id
+  );
+  if (index > -1) {
+    selectedItems.value.splice(index, 1);
+  } else {
+    selectedItems.value.push(item);
+  }
 };
 
 // 컴포넌트 마운트 시 데이터 로드
@@ -480,109 +429,135 @@ const handleSearch = () => {
   selectedItems.value = [];
   searchOption.value = searchOptionInput.value;
   searchQuery.value = searchQueryInput.value;
-  currentPage.value = 1;
+  // 검색 시 첫 페이지로 이동
+  userStore.changePage(1);
 };
 
 // 등록 버튼 핸들러
 const handleRegist = () => {
   isRegistModalOpen.value = true;
   isEditMode.value = false;
+  showPasswordChange.value = false;
   newUser.value = {
-    id: "",
-    pwd: "",
-    pwdChk: "",
-    name: "",
+    username: "",
+    password: "",
+    passwordConfirm: "",
+    full_name: "",
     email: "",
-    role: "",
-    createdAt: "",
-    corpName: "",
-    phone: "",
-    corpType: "",
+    organization: "",
+    is_active: true,
+    is_superuser: false,
   };
   isIdChecked.value = false;
 };
 
 // 사용자 저장
-const saveUser = () => {
+const saveUser = async () => {
   if (
-    !newUser.value.id ||
-    !newUser.value.pwd ||
-    !newUser.value.pwdChk ||
-    !newUser.value.name ||
-    !newUser.value.corpName ||
-    !newUser.value.phone ||
-    !newUser.value.email ||
-    !newUser.value.corpType ||
-    !newUser.value.role
+    !newUser.value.username ||
+    (!isEditMode.value && !newUser.value.password) ||
+    (!isEditMode.value && !newUser.value.passwordConfirm) ||
+    !newUser.value.full_name ||
+    !newUser.value.organization ||
+    !newUser.value.email
   ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
   }
   if (!isEditMode.value && !isIdChecked.value) {
-    alert(t("messages.warning.pleaseCheckIdDuplication"));
+    alert(t("messages.warning.pleaseCheckUsernameDuplication"));
     return;
   }
 
-  if (newUser.value.pwd !== newUser.value.pwdChk) {
+  // 비밀번호 확인 검증 (등록 모드 또는 수정 모드에서 비밀번호 변경 시)
+  if (
+    (!isEditMode.value || showPasswordChange.value) &&
+    newUser.value.password !== newUser.value.passwordConfirm
+  ) {
     alert(t("messages.error.passwordsDoNotMatch"));
     return;
   }
-  if (isEditMode.value) {
-    // 수정 모드: 기존 사용자 정보 업데이트
-    const idx = userList.value.findIndex((u) => u.id === newUser.value.id);
-    if (idx !== -1) {
-      userList.value[idx] = { ...newUser.value };
+
+  try {
+    if (isEditMode.value) {
+      // 수정 모드: 기존 사용자 정보 업데이트
+      const selectedUser = selectedItems.value[0];
+      await userStore.updateUser(selectedUser.user_id, {
+        username: newUser.value.username,
+        full_name: newUser.value.full_name,
+        email: newUser.value.email,
+        organization: newUser.value.organization,
+        is_active: newUser.value.is_active,
+        is_superuser: newUser.value.is_superuser,
+      });
       alert(t("messages.success.userInfoUpdated"));
+    } else {
+      // 등록 모드: 새 사용자 추가
+      await userStore.createUser({
+        username: newUser.value.username,
+        password: newUser.value.password,
+        full_name: newUser.value.full_name,
+        email: newUser.value.email,
+        organization: newUser.value.organization,
+        is_active: newUser.value.is_active,
+        is_superuser: newUser.value.is_superuser,
+      });
+      alert(t("messages.success.userRegistered"));
     }
-  } else {
-    // 등록 모드: 새 사용자 추가
-    const nextId = (userList.value.length + 1).toString();
-    userList.value.push({
-      ...newUser.value,
-      id: nextId,
-      createdAt: new Date().toISOString(),
-    });
-    alert(t("messages.success.userRegistered"));
+
+    isRegistModalOpen.value = false;
+    newUser.value = {
+      username: "",
+      password: "",
+      passwordConfirm: "",
+      full_name: "",
+      email: "",
+      organization: "",
+      is_active: true,
+      is_superuser: false,
+    };
+    isEditMode.value = false;
+    isIdChecked.value = false;
+  } catch (error) {
+    console.error("사용자 저장 실패:", error);
+    alert(t("messages.error.saveFailed"));
   }
-  isRegistModalOpen.value = false;
-  newUser.value = {
-    id: "",
-    pwd: "",
-    pwdChk: "",
-    name: "",
-    email: "",
-    role: "",
-    createdAt: "",
-    corpName: "",
-    phone: "",
-    corpType: "",
-  };
-  isEditMode.value = false;
-  isIdChecked.value = false;
 };
 
 // 중복체크 핸들러
-const handleCheckId = () => {
-  // 실제로는 서버에 중복 체크 요청을 해야 함
-  if (!newUser.value.id) {
-    alert(t("messages.warning.pleaseEnterId"));
+const handleCheckId = async () => {
+  if (!newUser.value.username) {
+    alert(t("messages.warning.pleaseEnterUsername"));
     return;
   }
 
-  //나중에 서버에 중복체크 요청을 해야 할 수 있음
-  const exists = userList.value.some((user) => user.id === newUser.value.id);
+  try {
+    // 중복 체크 중 로딩 표시
+    const originalLoading = userStore.loading;
+    userStore.loading = true;
 
-  if (exists) {
-    alert(t("messages.error.idAlreadyExists"));
-    isIdChecked.value = false;
-  } else {
-    alert(t("messages.success.idAvailable"));
-    isIdChecked.value = true;
+    const isAvailable = await userStore.checkUserIdDuplicate(
+      newUser.value.username
+    );
+
+    if (isAvailable) {
+      alert(t("messages.success.idAvailable"));
+      isIdChecked.value = true;
+    } else {
+      alert(t("messages.error.idAlreadyExists"));
+      isIdChecked.value = false;
+    }
+  } catch (error) {
+    console.error("중복 체크 실패:", error);
+    alert(t("messages.error.duplicateCheckFailed"));
+  } finally {
+    // 로딩 상태 복원
+    userStore.loading = false;
   }
 };
 
 // 선택된 항목 삭제
-const handleDelete = () => {
+const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
@@ -592,13 +567,15 @@ const handleDelete = () => {
       t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
-    console.log("삭제할 항목:", selectedItems.value);
-    const selectedIds = selectedItems.value.map((item) => item.id);
-    userList.value = userList.value.filter(
-      (item) => !selectedIds.includes(item.id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
+    try {
+      const userIds = selectedItems.value.map((user) => user.user_id);
+      await userStore.deleteUsers(userIds);
+      selectedItems.value = [];
+      alert(t("messages.success.deleted"));
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      alert(t("messages.error.deleteFailed"));
+    }
   }
 };
 
@@ -611,12 +588,50 @@ const handleEdit = () => {
   const itemToEdit = selectedItems.value[0];
   isRegistModalOpen.value = true;
   isEditMode.value = true;
-  newUser.value = { ...itemToEdit };
+  showPasswordChange.value = false;
+  newUser.value = {
+    username: itemToEdit.username,
+    password: "",
+    passwordConfirm: "",
+    full_name: itemToEdit.full_name,
+    email: itemToEdit.email,
+    organization: itemToEdit.organization,
+    is_active: itemToEdit.is_active,
+    is_superuser: itemToEdit.is_superuser,
+  };
 };
 </script>
 
 <style scoped lang="scss">
 .user-management {
   padding: $spacing-lg;
+}
+
+// 활성 상태 스타일
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.no-data {
+  color: #6c757d;
+  font-style: italic;
+}
+
+// 비밀번호 변경 버튼 스타일
+.btn-change-password,
+.btn-cancel-password {
+  margin-left: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-cancel-password {
+  margin-top: 4px;
 }
 </style>

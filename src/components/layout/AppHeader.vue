@@ -51,9 +51,9 @@ console.log(
   userRole
 );
 
-const handleLogout = () => {
+const handleLogout = async () => {
   console.log("[AppHeader.vue] handleLogout()");
-  authStore.logout();
+  await authStore.logout();
   router.push("/login");
 };
 

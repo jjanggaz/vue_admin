@@ -255,6 +255,7 @@
     "duplicateCheck": "Duplicate Check",
     "checking": "Checking...",
     "changePassword": "Change Password",
+    "changePasswordCancel": "Cancel Password Change",
     "registerUser": "Register User",
     "editUser": "Edit User",
     "password": "Password",

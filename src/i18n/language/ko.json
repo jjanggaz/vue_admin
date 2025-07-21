@@ -255,6 +255,7 @@
     "duplicateCheck": "중복체크",
     "checking": "확인 중...",
     "changePassword": "비밀번호 변경",
+    "changePasswordCancel": "비밀번호 변경 취소",
     "registerUser": "사용자 등록",
     "editUser": "사용자 수정",
     "password": "비밀번호",

@@ -170,7 +170,7 @@
                   class="btn btn-secondary btn-cancel-password"
                   @click="cancelPasswordChange"
                 >
-                  {{ t("common.cancel") }}
+                  {{ t("common.changePasswordCancel") }}
                 </button>
               </div>
             </dd>
@@ -467,6 +467,14 @@ const saveUser = async () => {
   if (!isEditMode.value && !isIdChecked.value) {
     alert(t("messages.warning.pleaseCheckUsernameDuplication"));
     return;
+  }
+
+  // 비밀번호 변경 모드에서 필수 필드 검증
+  if (isEditMode.value && showPasswordChange.value) {
+    if (!newUser.value.password || !newUser.value.passwordConfirm) {
+      alert(t("messages.warning.pleaseCompleteAllFields"));
+      return;
+    }
   }
 
   // 비밀번호 확인 검증 (등록 모드 또는 수정 모드에서 비밀번호 변경 시)

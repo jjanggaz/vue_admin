@@ -533,7 +533,6 @@ const handleCheckId = async () => {
 
   try {
     // 중복 체크 중 로딩 표시
-    const originalLoading = userStore.loading;
     userStore.loading = true;
 
     const isAvailable = await userStore.checkUserIdDuplicate(

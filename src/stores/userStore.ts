@@ -125,16 +125,6 @@ export const useUserStore = defineStore("user", {
       });
     },
 
-    // 사용자 검색 (필터링)
-    async searchUsers(searchOption: string, searchQuery: string) {
-      // 실제 API에서 검색 기능을 지원한다면 여기에 검색 파라미터 추가
-      // 현재는 클라이언트 측 필터링으로 구현
-      await this.fetchUsers({
-        page: 1,
-        itemsPerPage: this.itemsPerPage,
-      });
-    },
-
     // 사용자 등록
     async createUser(userData: UserFormData) {
       this.loading = true;
@@ -244,7 +234,7 @@ export const useUserStore = defineStore("user", {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ user_ids: userIds }),
+          body: JSON.stringify({ user_id: userIds }),
         });
 
         // 삭제 후 목록 새로고침
@@ -270,12 +260,20 @@ export const useUserStore = defineStore("user", {
     // 사용자 ID 중복 체크
     async checkUserIdDuplicate(username: string): Promise<boolean> {
       try {
-        // 모든 사용자 데이터를 조회하여 중복 체크
+        // 이미 조회된 데이터가 있으면 그것을 사용
+        if (this.users.length > 0) {
+          const existingUser = this.users.find(
+            (user) => user.username === username
+          );
+          return !existingUser; // 중복되지 않으면 true 반환
+        }
+
+        // 데이터가 없는 경우에만 API 호출
         const allUsersResponse = (await request(
           "/api/v1/auth/users/",
           {
             page: "1",
-            itemsPerPage: "10000", // 최대치로 설정
+            itemsPerPage: "100000", // 아이디 중복체크 해야하므로 최대치로 설정
           },
           {
             method: "GET",

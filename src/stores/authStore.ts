@@ -19,7 +19,7 @@ export const useAuthStore = defineStore("auth", {
     async login(username: string, password: string) {
       try {
         // 로그인 API 호출 (request 함수 사용)
-        const result = await request("/api/v1/auth/login", undefined, {
+        const result = await request("/api/v1/auth/auth/login", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export const useAuthStore = defineStore("auth", {
     async fetchUserInfo() {
       try {
         // request 함수 사용 (JWT 토큰 자동 포함)
-        const result = await request("/api/v1/auth/me", undefined, {
+        const result = await request("/api/v1/auth/auth/me", undefined, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export const useAuthStore = defineStore("auth", {
         const tokenInfo = getTokenInfo();
         if (tokenInfo && tokenInfo.access_token) {
           console.log("서버에 토큰 무효화 요청 중...");
-          await request("/api/v1/auth/logout", undefined, {
+          await request("/api/v1/auth/auth/logout", undefined, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

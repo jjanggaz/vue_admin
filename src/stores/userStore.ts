@@ -83,12 +83,16 @@ export const useUserStore = defineStore("user", {
         if (params.itemsPerPage !== undefined)
           queryParams.itemsPerPage = params.itemsPerPage.toString();
 
-        const response = (await request("/api/v1/auth/users/", queryParams, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })) as UserListResponse;
+        const response = (await request(
+          "/api/v1/auth/auth/users/",
+          queryParams,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )) as UserListResponse;
 
         this.users = response.data;
         this.totalCount = response.total_count;
@@ -142,7 +146,7 @@ export const useUserStore = defineStore("user", {
           is_superuser: userData.is_superuser,
         };
 
-        const response = await request("/api/v1/auth/users/", undefined, {
+        const response = await request("/api/v1/auth/auth/users/", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -192,7 +196,7 @@ export const useUserStore = defineStore("user", {
         }
 
         const response = await request(
-          `/api/v1/auth/users/${userId}`,
+          `/api/v1/auth/auth/users/${userId}`,
           undefined,
           {
             method: "PATCH",
@@ -229,7 +233,7 @@ export const useUserStore = defineStore("user", {
       this.error = null;
 
       try {
-        const response = await request("/api/v1/auth/users/", undefined, {
+        const response = await request("/api/v1/auth/auth/users/", undefined, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -270,7 +274,7 @@ export const useUserStore = defineStore("user", {
 
         // 데이터가 없는 경우에만 API 호출
         const allUsersResponse = (await request(
-          "/api/v1/auth/users/",
+          "/api/v1/auth/auth/users/",
           {
             page: "1",
             itemsPerPage: "100000", // 아이디 중복체크 해야하므로 최대치로 설정

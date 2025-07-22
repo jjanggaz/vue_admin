@@ -123,6 +123,15 @@ const sectionTabs = {
       to: "/machine/costTarget",
     },
   ],
+  user: [
+    {
+      name: "AccountManagement",
+      label: t("tabs.user.account"),
+      to: "/user/account",
+    },
+    { name: "RoleManagement", label: t("tabs.user.role"), to: "/user/role" },
+    { name: "MenuManagement", label: t("tabs.user.menu"), to: "/user/menu" },
+  ],
   // 향후 다른 섹션에 하위 탭이 필요하면 여기에 추가
   // project: [
   //   {
@@ -154,6 +163,8 @@ const currentTabs = computed<TabItem[]>(() => {
     return sectionTabs.project;
   } else if (currentPath.startsWith("/machine")) {
     return sectionTabs.machine;
+  } else if (currentPath.startsWith("/user")) {
+    return sectionTabs.user;
   }
 
   // 다른 섹션들은 탭이 없음 (단일 페이지)

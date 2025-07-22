@@ -149,15 +149,15 @@
       "createdAt": "생성일"
     },
     "user": {
+      "no": "순번",
       "id": "아이디",
       "name": "이름",
       "corpName": "업체명",
-      "phone": "전화번호",
       "email": "이메일",
-      "deptId": "부서ID",
-      "contactInfo": "연락처",
+      "deptId": "부서",
+      "contactInfo": "전화번호",
+      "status": "상태",
       "role": "권한",
-      "status": "활성상태",
       "lastLogin": "최근 로그인"
     },
     "code": {
@@ -569,6 +569,11 @@
       "machine": "기계",
       "machineCodeManagement": "코드관리",
       "costTarget": "단가표"
+    },
+    "user": {
+      "account": "계정관리",
+      "role": "권한관리",
+      "menu": "메뉴관리"
     }
   },
   "messages": {

@@ -149,15 +149,15 @@
       "createdAt": "Created At"
     },
     "user": {
+      "no": "No",
       "id": "ID",
       "name": "Name",
-      "corpName": "Company",
-      "phone": "Phone",
+      "corpName": "Company Name",
       "email": "Email",
-      "deptId": "Department ID",
-      "contactInfo": "Contact Info",
-      "role": "Role",
+      "deptId": "Department",
+      "contactInfo": "Phone Number",
       "status": "Status",
+      "role": "Role",
       "lastLogin": "Last Login"
     },
     "code": {
@@ -567,6 +567,11 @@
       "machine": "Machine",
       "machineCodeManagement": "Code Management",
       "costTarget": "Cost Target"
+    },
+    "user": {
+      "account": "Account Management",
+      "role": "Role Management",
+      "menu": "Menu Management"
     }
   },
   "messages": {

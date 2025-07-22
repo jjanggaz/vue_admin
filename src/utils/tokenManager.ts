@@ -15,7 +15,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       return false;
     }
 
-    const response = await fetch("/api/v1/auth/refresh", {
+    const response = await fetch("/api/v1/auth/refresh-token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

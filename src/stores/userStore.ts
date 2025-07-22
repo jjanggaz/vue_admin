@@ -30,8 +30,6 @@ export interface UserFormData
     | "created_at"
     | "updated_at"
     | "last_login"
-    | "dept_id"
-    | "contact_info"
     | "description"
     | "created_by"
     | "updated_by"
@@ -83,22 +81,29 @@ export const useUserStore = defineStore("user", {
         if (params.itemsPerPage !== undefined)
           queryParams.itemsPerPage = params.itemsPerPage.toString();
 
-        const response = (await request(
-          "/api/v1/auth/auth/users/",
-          queryParams,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )) as UserListResponse;
+        const response = await request("/api/v1/auth/users/", queryParams, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-        this.users = response.data;
-        this.totalCount = response.total_count;
-        this.currentPage = response.page;
-        this.itemsPerPage = response.items_per_page;
-        this.hasMore = response.has_more;
+        // API 응답 구조에 따라 처리
+        if (Array.isArray(response)) {
+          // 응답이 배열인 경우
+          this.users = response;
+          this.totalCount = response.length;
+          this.currentPage = 1;
+          this.itemsPerPage = response.length;
+          this.hasMore = false;
+        } else {
+          // 응답이 객체인 경우 (UserListResponse 형태)
+          this.users = response.data;
+          this.totalCount = response.total_count;
+          this.currentPage = response.page;
+          this.itemsPerPage = response.items_per_page;
+          this.hasMore = response.has_more;
+        }
 
         console.log("사용자 목록 조회 성공:", response);
       } catch (error) {
@@ -142,11 +147,15 @@ export const useUserStore = defineStore("user", {
           hashed_password: userData.password, // 비밀번호를 hashed_password로 전송
           full_name: userData.full_name,
           organization: userData.organization,
+          dept_id: userData.dept_id,
+          contact_info: userData.contact_info,
           is_active: userData.is_active,
           is_superuser: userData.is_superuser,
         };
 
-        const response = await request("/api/v1/auth/auth/users/", undefined, {
+        console.log("사용자 등록 요청 데이터:", requestData);
+
+        const response = await request("/api/v1/auth/users/", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -186,6 +195,8 @@ export const useUserStore = defineStore("user", {
           username: userData.username,
           full_name: userData.full_name,
           organization: userData.organization,
+          dept_id: userData.dept_id,
+          contact_info: userData.contact_info,
           is_active: userData.is_active,
           is_superuser: userData.is_superuser,
         };
@@ -196,7 +207,7 @@ export const useUserStore = defineStore("user", {
         }
 
         const response = await request(
-          `/api/v1/auth/auth/users/${userId}`,
+          `/api/v1/auth/users/${userId}`,
           undefined,
           {
             method: "PATCH",
@@ -233,13 +244,17 @@ export const useUserStore = defineStore("user", {
       this.error = null;
 
       try {
-        const response = await request("/api/v1/auth/auth/users/", undefined, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ user_id: userIds }),
-        });
+        const response = await request(
+          `/api/v1/auth/users/${userIds}`,
+          undefined,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user_id: userIds }),
+          }
+        );
 
         // 삭제 후 목록 새로고침
         await this.fetchUsers({
@@ -274,7 +289,7 @@ export const useUserStore = defineStore("user", {
 
         // 데이터가 없는 경우에만 API 호출
         const allUsersResponse = (await request(
-          "/api/v1/auth/auth/users/",
+          "/api/v1/auth/users/",
           {
             page: "1",
             itemsPerPage: "100000", // 아이디 중복체크 해야하므로 최대치로 설정

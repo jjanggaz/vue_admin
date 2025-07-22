@@ -154,6 +154,8 @@
       "corpName": "업체명",
       "phone": "전화번호",
       "email": "이메일",
+      "deptId": "부서ID",
+      "contactInfo": "연락처",
       "role": "권한",
       "status": "활성상태",
       "lastLogin": "최근 로그인"
@@ -386,6 +388,8 @@
     "userCorpName": "업체명을 입력하세요",
     "userPhone": "전화번호를 입력하세요",
     "userEmail": "이메일을 입력하세요",
+    "userDeptId": "부서ID를 입력하세요",
+    "userContactInfo": "연락처를 입력하세요",
     "processMode": "모드를 입력하세요",
     "processPidInfo": "P&ID 정보개요를 입력하세요",
     "machineName": "기계명을 입력하세요",

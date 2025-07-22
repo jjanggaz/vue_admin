@@ -154,6 +154,8 @@
       "corpName": "Company",
       "phone": "Phone",
       "email": "Email",
+      "deptId": "Department ID",
+      "contactInfo": "Contact Info",
       "role": "Role",
       "status": "Status",
       "lastLogin": "Last Login"
@@ -319,6 +321,8 @@
     "userCorpName": "Enter company name",
     "userPhone": "Enter phone number",
     "userEmail": "Enter email",
+    "userDeptId": "Enter department ID",
+    "userContactInfo": "Enter contact info",
     "processMode": "Enter mode",
     "processPidInfo": "Enter P&ID info overview",
     "machineName": "Enter machine name",

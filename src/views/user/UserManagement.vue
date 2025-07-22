@@ -213,6 +213,24 @@
                 :placeholder="t('placeholder.userEmail')"
               />
             </dd>
+            <dt>{{ t("columns.user.deptId") }}</dt>
+            <dd>
+              <input
+                id="user-dept"
+                v-model="newUser.dept_id"
+                type="text"
+                :placeholder="t('placeholder.userDeptId')"
+              />
+            </dd>
+            <dt>{{ t("columns.user.contactInfo") }}</dt>
+            <dd>
+              <input
+                id="user-contact"
+                v-model="newUser.contact_info"
+                type="text"
+                :placeholder="t('placeholder.userContactInfo')"
+              />
+            </dd>
             <dt>{{ t("columns.user.status") }}</dt>
             <dd>
               <select id="user-status" v-model="newUser.is_active">
@@ -295,6 +313,18 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
+    key: "dept_id",
+    title: t("columns.user.deptId"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "contact_info",
+    title: t("columns.user.contactInfo"),
+    width: "150px",
+    sortable: true,
+  },
+  {
     key: "is_superuser",
     title: t("columns.user.role"),
     width: "100px",
@@ -329,6 +359,8 @@ const newUser = ref<UserForm>({
   full_name: "",
   email: "",
   organization: "",
+  dept_id: null,
+  contact_info: null,
   is_active: true,
   is_superuser: false,
 });
@@ -350,7 +382,7 @@ const filteredUserList = computed(() => {
   if (searchOption.value && searchQuery.value) {
     return userStore.filteredUsers(searchOption.value, searchQuery.value);
   }
-  return userStore.users;
+  return userStore.users || [];
 });
 
 const totalCountComputed = computed(() => {
@@ -358,7 +390,7 @@ const totalCountComputed = computed(() => {
   if (searchOption.value && searchQuery.value) {
     return filteredUserList.value.length;
   }
-  return userStore.totalCount;
+  return userStore.totalCount || 0;
 });
 
 const totalPagesComputed = computed(() => {
@@ -366,7 +398,7 @@ const totalPagesComputed = computed(() => {
   if (searchOption.value && searchQuery.value) {
     return Math.ceil(totalCountComputed.value / userStore.itemsPerPage) || 1;
   }
-  return userStore.totalPages;
+  return userStore.totalPages || 1;
 });
 
 const paginatedUserList = computed(() => {
@@ -445,6 +477,8 @@ const handleRegist = () => {
     full_name: "",
     email: "",
     organization: "",
+    dept_id: null,
+    contact_info: null,
     is_active: true,
     is_superuser: false,
   };
@@ -495,6 +529,8 @@ const saveUser = async () => {
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
+        dept_id: newUser.value.dept_id,
+        contact_info: newUser.value.contact_info,
         is_active: newUser.value.is_active,
         is_superuser: newUser.value.is_superuser,
       });
@@ -507,6 +543,8 @@ const saveUser = async () => {
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
+        dept_id: newUser.value.dept_id,
+        contact_info: newUser.value.contact_info,
         is_active: newUser.value.is_active,
         is_superuser: newUser.value.is_superuser,
       });
@@ -521,6 +559,8 @@ const saveUser = async () => {
       full_name: "",
       email: "",
       organization: "",
+      dept_id: null,
+      contact_info: null,
       is_active: true,
       is_superuser: false,
     };
@@ -603,6 +643,8 @@ const handleEdit = () => {
     full_name: itemToEdit.full_name,
     email: itemToEdit.email,
     organization: itemToEdit.organization,
+    dept_id: itemToEdit.dept_id,
+    contact_info: itemToEdit.contact_info,
     is_active: itemToEdit.is_active,
     is_superuser: itemToEdit.is_superuser,
   };

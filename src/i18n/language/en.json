@@ -405,6 +405,10 @@
       "menu": "Menu"
     }
   },
+  "menuPermissions": {
+    "menuName": "Menu Name",
+    "selectAll": "Select All"
+  },
 
   "process": {
     "search": "Search",

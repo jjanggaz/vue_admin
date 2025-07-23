@@ -347,6 +347,10 @@
       "menu": "메뉴"
     }
   },
+  "menuPermissions": {
+    "menuName": "메뉴명",
+    "selectAll": "전체 선택"
+  },
 
   "process": {
     "search": "검색",

@@ -85,42 +85,45 @@
             </dd>
             <dt>{{ t("columns.roleGroup.menuPermissions") }}</dt>
             <dd>
-              <div class="menu-permissions">
-                <div class="permission-group">
-                  <label class="permission-label">
+              <div class="menu-permissions-container">
+                <div class="menu-permissions-header">
+                  <label class="select-all-label">
                     <input
                       type="checkbox"
-                      v-model="newRole.permissions.basic_menu"
+                      v-model="selectAllPermissions"
+                      @change="handleSelectAllPermissions"
                     />
-                    {{ t("roleGroup.basicMenu") }}
+                    <span class="select-all-text">{{
+                      t("menuPermissions.selectAll")
+                    }}</span>
                   </label>
                 </div>
-                <div class="permission-group">
-                  <label class="permission-label">
-                    <input
-                      type="checkbox"
-                      v-model="newRole.permissions.approval_menu"
-                    />
-                    {{ t("roleGroup.approvalMenu") }}
-                  </label>
-                </div>
-                <div class="permission-group">
-                  <label class="permission-label">
-                    <input
-                      type="checkbox"
-                      v-model="newRole.permissions.admin_menu"
-                    />
-                    {{ t("roleGroup.adminMenu") }}
-                  </label>
-                </div>
-                <div class="permission-group">
-                  <label class="permission-label">
-                    <input
-                      type="checkbox"
-                      v-model="newRole.permissions.all_menu"
-                    />
-                    {{ t("roleGroup.allMenu") }}
-                  </label>
+                <div class="menu-permissions-table">
+                  <AccordionTable
+                    :columns="menuPermissionsColumns"
+                    :data="menuPermissionsData"
+                    :loading="false"
+                    expand-column="name"
+                    children-key="children"
+                    row-key="id"
+                    :expanded-items="expandedMenuPermissions"
+                    @row-click="handleMenuPermissionClick"
+                    @child-row-click="handleChildMenuPermissionClick"
+                    @expand="handleMenuPermissionExpand"
+                  >
+                    <template #cell-checkbox="{ item }">
+                      <input
+                        type="checkbox"
+                        :checked="item.checked"
+                        @change="handleMenuPermissionCheckbox(item)"
+                        @click.stop
+                      />
+                    </template>
+
+                    <template #cell-name="{ item, isChild }">
+                      <span class="menu-name">{{ item.name }}</span>
+                    </template>
+                  </AccordionTable>
                 </div>
               </div>
             </dd>
@@ -143,6 +146,9 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import AccordionTable, {
+  type AccordionTableColumn,
+} from "@/components/common/AccordionTable.vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -155,6 +161,14 @@ interface RoleGroup {
   menu_permissions: string;
   created_at?: string;
   updated_at?: string;
+}
+
+// 메뉴 권한 아이템 인터페이스
+interface MenuPermissionItem {
+  id: number;
+  name: string;
+  checked: boolean;
+  children?: MenuPermissionItem[];
 }
 
 // 역할 그룹 폼 인터페이스
@@ -221,6 +235,81 @@ const newRole = ref<RoleForm>({
     all_menu: false,
   },
 });
+
+// 메뉴 권한 관련 상태
+const selectAllPermissions = ref(false);
+const expandedMenuPermissions = ref<MenuPermissionItem[]>([]);
+
+// 메뉴 권한 테이블 컬럼 설정
+const menuPermissionsColumns: AccordionTableColumn[] = [
+  {
+    key: "checkbox",
+    title: "",
+    width: "40px",
+  },
+  {
+    key: "name",
+    title: t("menuPermissions.menuName"),
+    width: "calc(100% - 40px)",
+  },
+];
+
+// 메뉴 권한 데이터 (이미지 기반)
+const menuPermissionsData = ref<MenuPermissionItem[]>([
+  {
+    id: 1,
+    name: "프로젝트 관리",
+    checked: true,
+    children: [
+      { id: 11, name: "신규생성", checked: true },
+      { id: 12, name: "기존 프로젝트 불러오기", checked: true },
+      { id: 13, name: "추천 프로젝트 불러오기", checked: true },
+      { id: 14, name: "프로젝트 승인", checked: false },
+    ],
+  },
+  {
+    id: 2,
+    name: "공정계획",
+    checked: false,
+    children: [
+      { id: 21, name: "프로세스", checked: false },
+      { id: 22, name: "추천공정", checked: false },
+      { id: 23, name: "조건설정", checked: false },
+      { id: 24, name: "시나리오 설정", checked: false },
+      { id: 25, name: "기기리스트", checked: false },
+    ],
+  },
+  {
+    id: 3,
+    name: "검토",
+    checked: false,
+  },
+  {
+    id: 4,
+    name: "기기리스트",
+    checked: false,
+  },
+  {
+    id: 5,
+    name: "P&ID",
+    checked: false,
+  },
+  {
+    id: 6,
+    name: "PFD",
+    checked: false,
+  },
+  {
+    id: 7,
+    name: "물질수지 및 계산서",
+    checked: false,
+  },
+  {
+    id: 8,
+    name: "구조물 리스트",
+    checked: false,
+  },
+]);
 
 // 메뉴 권한 텍스트 생성
 const getMenuPermissionsText = (permissions: RoleForm["permissions"]) => {
@@ -387,6 +476,74 @@ const handleDelete = async () => {
   }
 };
 
+// 메뉴 권한 관련 핸들러 함수들
+const handleSelectAllPermissions = () => {
+  const updateChecked = (items: MenuPermissionItem[], checked: boolean) => {
+    items.forEach((item) => {
+      item.checked = checked;
+      if (item.children) {
+        updateChecked(item.children, checked);
+      }
+    });
+  };
+
+  updateChecked(menuPermissionsData.value, selectAllPermissions.value);
+};
+
+const handleMenuPermissionClick = (item: MenuPermissionItem) => {
+  console.log("Menu permission clicked:", item);
+};
+
+const handleChildMenuPermissionClick = (
+  child: MenuPermissionItem,
+  parent: MenuPermissionItem
+) => {
+  console.log("Child menu permission clicked:", child, parent);
+};
+
+const handleMenuPermissionExpand = (
+  item: MenuPermissionItem,
+  expanded: boolean
+) => {
+  if (expanded) {
+    expandedMenuPermissions.value.push(item);
+  } else {
+    const index = expandedMenuPermissions.value.findIndex(
+      (menu) => menu.id === item.id
+    );
+    if (index > -1) {
+      expandedMenuPermissions.value.splice(index, 1);
+    }
+  }
+};
+
+const handleMenuPermissionCheckbox = (item: MenuPermissionItem) => {
+  // 부모 체크박스가 체크되면 모든 자식도 체크
+  if (item.children) {
+    item.children.forEach((child) => {
+      child.checked = item.checked;
+    });
+  }
+
+  // 자식 체크박스가 변경되면 부모 상태도 업데이트
+  if (item.children) {
+    const allChecked = item.children.every((child) => child.checked);
+    const someChecked = item.children.some((child) => child.checked);
+
+    if (allChecked) {
+      item.checked = true;
+    } else if (!someChecked) {
+      item.checked = false;
+    }
+  }
+
+  // 전체 선택 상태 업데이트
+  const allItemsChecked = menuPermissionsData.value.every(
+    (item) => item.checked
+  );
+  selectAllPermissions.value = allItemsChecked;
+};
+
 const saveRole = async () => {
   if (!newRole.value.role_name || !newRole.value.description) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
@@ -397,9 +554,11 @@ const saveRole = async () => {
     // 실제로는 API 호출
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const menuPermissionsText = getMenuPermissionsText(
-      newRole.value.permissions
+    // 메뉴 권한 데이터를 기존 형식으로 변환
+    const checkedMenus = menuPermissionsData.value.filter(
+      (item) => item.checked
     );
+    const menuPermissionsText = checkedMenus.map((item) => item.name).join("+");
 
     if (isEditMode.value) {
       // 수정 모드
@@ -539,8 +698,9 @@ onMounted(() => {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -571,6 +731,8 @@ onMounted(() => {
 
 .modal-body {
   padding: 20px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .column-regist {
@@ -609,24 +771,98 @@ onMounted(() => {
   }
 }
 
-.menu-permissions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.menu-permissions-container {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.permission-group {
-  .permission-label {
+.menu-permissions-header {
+  background-color: #f9fafb;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+
+  .select-all-label {
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
+    color: #374151;
 
     input[type="checkbox"] {
       width: auto;
       margin: 0;
     }
+
+    .select-all-text {
+      font-weight: 600;
+    }
+  }
+}
+
+.menu-permissions-table {
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+
+  :deep(.accordion-table-container) {
+    box-shadow: none;
+    border-radius: 0;
+    width: 100%;
+  }
+
+  :deep(.accordion-table) {
+    width: 100%;
+    table-layout: fixed;
+
+    thead {
+      display: none; // 헤더 숨기기
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #f3f4f6;
+
+        &:hover {
+          background-color: #f9fafb;
+        }
+
+        &.child-row {
+          background-color: #fafbfc;
+
+          &:hover {
+            background-color: #f3f4f6;
+          }
+        }
+      }
+
+      td {
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #374151;
+      }
+    }
+  }
+
+  :deep(.expand-cell-content) {
+    gap: 6px;
+  }
+
+  :deep(.child-cell-content) {
+    padding-left: 20px;
+  }
+
+  :deep(.menu-name) {
+    font-weight: 500;
+  }
+
+  :deep(input[type="checkbox"]) {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
   }
 }
 

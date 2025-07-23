@@ -108,6 +108,24 @@
       "drawingType": "Drawing Type",
       "approvalStatus": "Approval Status"
     },
+    "code": {
+      "codeGroup": "Code Group",
+      "codeGroupKorean": "Code Group Korean",
+      "codeGroupName": "Code Group Name",
+      "highCode": "High Code",
+      "parentCode": "Parent Code",
+      "codeName": "Code Name",
+      "code": "Code",
+      "codeNameKorean": "Code Name Korean",
+      "order": "Order",
+      "orderMovement": "Order Movement",
+      "description": "Description",
+      "codeDescription": "Code Description",
+      "usageStatus": "Usage Status",
+      "majorCategory": "Major Category",
+      "mediumCategory": "Medium Category",
+      "minorCategory": "Minor Category"
+    },
     "revit": {
       "id": "ID",
       "fileName": "File Name",
@@ -173,13 +191,7 @@
       "usage": "Usage",
       "edit": "Menu Edit"
     },
-    "code": {
-      "codeGroup": "Code Group",
-      "highCode": "High Code",
-      "codeName": "Code Name",
-      "order": "Order",
-      "description": "Description"
-    },
+
     "output": {
       "id": "ID"
     }
@@ -279,6 +291,11 @@
     "corpType": "Company Type",
     "registerCode": "Register Code",
     "editCode": "Edit Code",
+    "used": "Used",
+    "unused": "Unused",
+    "excelFormDownload": "Excel Form Download",
+    "excelRegister": "Excel Register",
+    "excelDataImported": "Excel data has been successfully imported.",
     "editModel": "Edit Model",
     "editStandard": "Edit Standard",
     "editFile": "Edit File",
@@ -378,7 +395,8 @@
     "enterRoleName": "Enter role name",
     "enterDescription": "Enter role description",
     "enterMenuName": "Enter menu name",
-    "enterSortOrder": "Enter sort order"
+    "enterSortOrder": "Enter sort order",
+    "selectGroupName": "Select Group Name"
   },
 
   "roleGroup": {
@@ -408,6 +426,19 @@
   "menuPermissions": {
     "menuName": "Menu Name",
     "selectAll": "Select All"
+  },
+  "codeManagement": {
+    "categories": {
+      "process": "Process",
+      "processType": "Process Type",
+      "machine": "Machine",
+      "type": "Type",
+      "inflowType": "Inflow Type",
+      "inflowItem": "Inflow Item",
+      "country": "Country",
+      "unit": "Unit",
+      "language": "Language"
+    }
   },
 
   "process": {
@@ -623,10 +654,8 @@
     }
   },
   "messages": {
-    "confirm": {
-      "deleteItems": "Are you sure you want to delete the selected {count} items?"
-    },
     "success": {
+      "excelDataImported": "Excel data has been successfully imported.",
       "deleted": "Successfully deleted.",
       "userInfoUpdated": "User information updated.",
       "userRegistered": "User registered successfully.",
@@ -647,6 +676,7 @@
       "menuUpdated": "Menu has been updated."
     },
     "error": {
+      "excelParseError": "An error occurred while parsing the Excel file.",
       "loginFail": "Login failed.",
       "passwordsDoNotMatch": "Passwords do not match.",
       "idAlreadyExists": "ID already exists.",
@@ -654,6 +684,9 @@
       "deleteFailed": "Delete failed.",
       "saveFailed": "Save failed.",
       "duplicateCheckFailed": "Duplicate check failed."
+    },
+    "confirm": {
+      "deleteItems": "Are you sure you want to delete the selected {count} items?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "Please select items to delete.",

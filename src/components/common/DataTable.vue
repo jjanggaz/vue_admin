@@ -209,7 +209,7 @@ const toggleSelectRow = (item: any) => {
 };
 
 const handleRowClick = (item: any, index: number) => {
-  // row 클릭 시에는 선택 토글하지 않고 row-click 이벤트만 발생
+  // row 클릭 시 row-click 이벤트 발생
   emit("row-click", item, index);
 };
 

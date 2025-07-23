@@ -166,6 +166,13 @@
       "description": "Description",
       "menuPermissions": "Menu Permissions"
     },
+    "menu": {
+      "menuName": "Menu Name",
+      "menuType": "Menu Type",
+      "sortOrder": "Sort Order",
+      "usage": "Usage",
+      "edit": "Menu Edit"
+    },
     "code": {
       "codeGroup": "Code Group",
       "highCode": "High Code",
@@ -369,7 +376,9 @@
     "noDataDescription": "No data to display",
     "addNew": "Add New",
     "enterRoleName": "Enter role name",
-    "enterDescription": "Enter role description"
+    "enterDescription": "Enter role description",
+    "enterMenuName": "Enter menu name",
+    "enterSortOrder": "Enter sort order"
   },
 
   "roleGroup": {
@@ -380,6 +389,21 @@
     "approvalMenu": "Approval Menu",
     "adminMenu": "Admin Menu",
     "allMenu": "All Menu"
+  },
+
+  "menuManagement": {
+    "title": "Menu Management",
+    "menuType": "Menu Type",
+    "waiDesignMenu": "Wai Design Menu",
+    "adminMenu": "Administrator Menu",
+    "menuList": "Menu List",
+    "editMenu": "Edit Menu",
+    "used": "Used",
+    "unused": "Unused",
+    "menuTypes": {
+      "list": "List",
+      "menu": "Menu"
+    }
   },
 
   "process": {
@@ -615,7 +639,8 @@
       "processRegisteredSuccessfully": "Process registered successfully.",
       "idAvailable": "ID is available.",
       "roleGroupRegistered": "Role group has been registered.",
-      "roleGroupUpdated": "Role group has been updated."
+      "roleGroupUpdated": "Role group has been updated.",
+      "menuUpdated": "Menu has been updated."
     },
     "error": {
       "loginFail": "Login failed.",

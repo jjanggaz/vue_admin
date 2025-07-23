@@ -166,6 +166,13 @@
       "description": "설명",
       "menuPermissions": "메뉴권한"
     },
+    "menu": {
+      "menuName": "메뉴명",
+      "menuType": "메뉴구분",
+      "sortOrder": "정렬순서",
+      "usage": "사용여부",
+      "edit": "메뉴 편집"
+    },
     "code": {
       "codeGroup": "코드그룹",
       "highCode": "상위코드명",
@@ -326,6 +333,21 @@
     "allMenu": "전체 메뉴"
   },
 
+  "menuManagement": {
+    "title": "메뉴 관리",
+    "menuType": "메뉴 유형",
+    "waiDesignMenu": "Wai design 메뉴",
+    "adminMenu": "관리자 메뉴",
+    "menuList": "메뉴 목록",
+    "editMenu": "메뉴 편집",
+    "used": "사용",
+    "unused": "미사용",
+    "menuTypes": {
+      "list": "목록",
+      "menu": "메뉴"
+    }
+  },
+
   "process": {
     "search": "검색",
     "processType": "공정구분",
@@ -446,7 +468,9 @@
     "noDataDescription": "표시할 데이터가 없습니다.",
     "addNew": "새로 추가",
     "enterRoleName": "역할 이름을 입력하세요",
-    "enterDescription": "역할에 대한 설명을 입력하세요"
+    "enterDescription": "역할에 대한 설명을 입력하세요",
+    "enterMenuName": "메뉴명을 입력하세요",
+    "enterSortOrder": "정렬순서를 입력하세요"
   },
   "datatable": {
     "loading": "데이터를 불러오는 중...",
@@ -616,7 +640,8 @@
       "processRegisteredSuccessfully": "공정이 성공적으로 등록되었습니다.",
       "idAvailable": "사용 가능한 아이디입니다.",
       "roleGroupRegistered": "역할 그룹이 등록되었습니다.",
-      "roleGroupUpdated": "역할 그룹이 수정되었습니다."
+      "roleGroupUpdated": "역할 그룹이 수정되었습니다.",
+      "menuUpdated": "메뉴가 수정되었습니다."
     },
     "error": {
       "loginFail": "로그인에 실패했습니다.",

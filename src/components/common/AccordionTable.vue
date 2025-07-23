@@ -21,6 +21,7 @@
           <td :colspan="columns.length" class="loading-message">
             <div class="loading-spinner"></div>
             <span>{{ $t("datatable.loading") }}</span>
+            <!-- 데이터를 불러오는 중... -->
           </td>
         </tr>
         <tr v-else-if="sortedData.length === 0" class="empty-row">
@@ -29,6 +30,7 @@
               <div class="empty-state">
                 <span class="empty-icon">📂</span>
                 <p>{{ $t("datatable.noData") }}</p>
+                <!-- 등록된 데이터가 없습니다 -->
               </div>
             </slot>
           </td>
@@ -308,18 +310,25 @@ const isSelected = (item: any) => {
       &.loading-row {
         .loading-message {
           text-align: center;
-          padding: 40px;
+          padding: 60px 20px;
           color: #6b7280;
+          font-size: 14px;
+          background-color: #f9fafb;
 
           .loading-spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e5e7eb;
-            border-top: 2px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 8px;
+            margin-right: 12px;
+            vertical-align: middle;
+          }
+
+          span {
+            vertical-align: middle;
           }
         }
       }
@@ -327,8 +336,9 @@ const isSelected = (item: any) => {
       &.empty-row {
         .empty-message {
           text-align: center;
-          padding: 40px;
+          padding: 60px 20px;
           color: #6b7280;
+          background-color: #f9fafb;
 
           .empty-state {
             .empty-icon {
@@ -340,6 +350,7 @@ const isSelected = (item: any) => {
             p {
               margin: 0;
               font-size: 16px;
+              color: #6b7280;
             }
           }
         }

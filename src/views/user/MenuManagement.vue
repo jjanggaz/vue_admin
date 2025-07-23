@@ -151,7 +151,7 @@ interface MenuItem {
 const selectedMenuType = ref("wai");
 const expandedMenus = ref<MenuItem[]>([]);
 const isEditModalOpen = ref(false);
-const loading = ref(false);
+const loading = ref(true); // 초기 로딩 상태를 true로 설정
 const editingMenu = ref<MenuItem>({
   id: 0,
   name: "",
@@ -359,12 +359,27 @@ const saveMenu = async () => {
   }
 };
 
+// 데이터 로딩 함수
+const loadData = async () => {
+  try {
+    loading.value = true;
+    // 실제로는 API 호출
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연으로 로딩 시뮬레이션
+
+    // 기본적으로 첫 번째 메뉴는 펼쳐진 상태로 시작
+    if (menuList.value.length > 0) {
+      expandedMenus.value.push(menuList.value[0]);
+    }
+  } catch (error) {
+    console.error("데이터 로딩 실패:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 컴포넌트 마운트 시 초기화
 onMounted(() => {
-  // 기본적으로 첫 번째 메뉴는 펼쳐진 상태로 시작
-  if (menuList.value.length > 0) {
-    expandedMenus.value.push(menuList.value[0]);
-  }
+  loadData();
 });
 </script>
 

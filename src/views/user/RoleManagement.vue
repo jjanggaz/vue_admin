@@ -3,7 +3,7 @@
     <!-- Action Buttons -->
     <div class="action-bar">
       <div class="title-section">
-        <h2 class="page-title">역할 그룹 목록</h2>
+        <h2 class="page-title">{{ t("roleGroup.title") }}</h2>
       </div>
       <div class="btns">
         <button
@@ -11,17 +11,17 @@
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
         <button
           class="btn btn-primary btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
-          수정
+          {{ t("common.edit") }}
         </button>
         <button class="btn btn-primary btn-regist" @click="handleRegist">
-          등록
+          {{ t("common.register") }}
         </button>
       </div>
     </div>
@@ -57,7 +57,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>
-            {{ isEditMode ? "역할 그룹 수정" : "역할 그룹 등록" }}
+            {{ isEditMode ? t("roleGroup.edit") : t("roleGroup.register") }}
           </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
             ×
@@ -65,25 +65,25 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>역할 이름</dt>
+            <dt>{{ t("columns.roleGroup.roleName") }}</dt>
             <dd>
               <input
                 id="role-name"
                 v-model="newRole.role_name"
                 type="text"
-                placeholder="역할 이름을 입력하세요"
+                :placeholder="t('placeholder.enterRoleName')"
               />
             </dd>
-            <dt>설명</dt>
+            <dt>{{ t("columns.roleGroup.description") }}</dt>
             <dd>
               <textarea
                 id="role-description"
                 v-model="newRole.description"
-                placeholder="역할에 대한 설명을 입력하세요"
+                :placeholder="t('placeholder.enterDescription')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>메뉴권한</dt>
+            <dt>{{ t("columns.roleGroup.menuPermissions") }}</dt>
             <dd>
               <div class="menu-permissions">
                 <div class="permission-group">
@@ -92,7 +92,7 @@
                       type="checkbox"
                       v-model="newRole.permissions.basic_menu"
                     />
-                    기본 메뉴
+                    {{ t("roleGroup.basicMenu") }}
                   </label>
                 </div>
                 <div class="permission-group">
@@ -101,7 +101,7 @@
                       type="checkbox"
                       v-model="newRole.permissions.approval_menu"
                     />
-                    승인 메뉴
+                    {{ t("roleGroup.approvalMenu") }}
                   </label>
                 </div>
                 <div class="permission-group">
@@ -110,7 +110,7 @@
                       type="checkbox"
                       v-model="newRole.permissions.admin_menu"
                     />
-                    관리자 메뉴
+                    {{ t("roleGroup.adminMenu") }}
                   </label>
                 </div>
                 <div class="permission-group">
@@ -119,7 +119,7 @@
                       type="checkbox"
                       v-model="newRole.permissions.all_menu"
                     />
-                    전체 메뉴
+                    {{ t("roleGroup.allMenu") }}
                   </label>
                 </div>
               </div>
@@ -128,9 +128,11 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            취소
+            {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-primary" @click="saveRole">저장</button>
+          <button class="btn btn-primary" @click="saveRole">
+            {{ t("common.save") }}
+          </button>
         </div>
       </div>
     </div>
@@ -141,6 +143,9 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 // 역할 그룹 인터페이스
 interface RoleGroup {
@@ -176,22 +181,27 @@ const roleStore = ref({
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "role_id", title: "ID", width: "0px", sortable: false, hidden: true },
-  { key: "index", title: "순번", width: "60px", sortable: false },
+  {
+    key: "index",
+    title: t("columns.roleGroup.no"),
+    width: "60px",
+    sortable: false,
+  },
   {
     key: "role_name",
-    title: "역할 이름",
+    title: t("columns.roleGroup.roleName"),
     width: "150px",
     sortable: true,
   },
   {
     key: "description",
-    title: "설명",
+    title: t("columns.roleGroup.description"),
     width: "300px",
     sortable: true,
   },
   {
     key: "menu_permissions",
-    title: "메뉴권한",
+    title: t("columns.roleGroup.menuPermissions"),
     width: "200px",
     sortable: true,
   },
@@ -215,10 +225,11 @@ const newRole = ref<RoleForm>({
 // 메뉴 권한 텍스트 생성
 const getMenuPermissionsText = (permissions: RoleForm["permissions"]) => {
   const permissionTexts = [];
-  if (permissions.basic_menu) permissionTexts.push("기본 메뉴");
-  if (permissions.approval_menu) permissionTexts.push("승인 메뉴");
-  if (permissions.admin_menu) permissionTexts.push("관리자 메뉴");
-  if (permissions.all_menu) permissionTexts.push("ALL 메뉴");
+  if (permissions.basic_menu) permissionTexts.push(t("roleGroup.basicMenu"));
+  if (permissions.approval_menu)
+    permissionTexts.push(t("roleGroup.approvalMenu"));
+  if (permissions.admin_menu) permissionTexts.push(t("roleGroup.adminMenu"));
+  if (permissions.all_menu) permissionTexts.push(t("roleGroup.allMenu"));
 
   return permissionTexts.length > 0 ? permissionTexts.join("+") : "-";
 };
@@ -232,10 +243,14 @@ const parseMenuPermissions = (permissionsText: string) => {
     all_menu: false,
   };
 
-  if (permissionsText.includes("기본 메뉴")) permissions.basic_menu = true;
-  if (permissionsText.includes("승인 메뉴")) permissions.approval_menu = true;
-  if (permissionsText.includes("관리자 메뉴")) permissions.admin_menu = true;
-  if (permissionsText.includes("ALL 메뉴")) permissions.all_menu = true;
+  if (permissionsText.includes(t("roleGroup.basicMenu")))
+    permissions.basic_menu = true;
+  if (permissionsText.includes(t("roleGroup.approvalMenu")))
+    permissions.approval_menu = true;
+  if (permissionsText.includes(t("roleGroup.adminMenu")))
+    permissions.admin_menu = true;
+  if (permissionsText.includes(t("roleGroup.allMenu")))
+    permissions.all_menu = true;
 
   return permissions;
 };
@@ -246,19 +261,21 @@ const sampleRoles: RoleGroup[] = [
     role_id: 1,
     role_name: "일반 사용자",
     description: "기본 메뉴 접근만 허용됨",
-    menu_permissions: "기본 메뉴",
+    menu_permissions: t("roleGroup.basicMenu"),
   },
   {
     role_id: 2,
     role_name: "승인자",
     description: "도면 승인 및 검토 가능",
-    menu_permissions: "기본 메뉴+승인 메뉴",
+    menu_permissions: `${t("roleGroup.basicMenu")}+${t(
+      "roleGroup.approvalMenu"
+    )}`,
   },
   {
     role_id: 3,
     role_name: "ADMIN",
     description: "전체 시스템 접근 가능",
-    menu_permissions: "ALL 메뉴",
+    menu_permissions: t("roleGroup.allMenu"),
   },
 ];
 
@@ -332,7 +349,7 @@ const handleRegist = () => {
 
 const handleEdit = () => {
   if (selectedItems.value.length !== 1) {
-    alert("수정할 항목을 하나만 선택해주세요.");
+    alert(t("messages.warning.selectOneItemToEdit"));
     return;
   }
   const itemToEdit = selectedItems.value[0];
@@ -347,28 +364,32 @@ const handleEdit = () => {
 
 const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
-    alert("삭제할 항목을 선택해주세요.");
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
   if (
-    confirm(`선택한 ${selectedItems.value.length}개 항목을 삭제하시겠습니까?`)
+    confirm(
+      t("messages.confirm.deleteItems", {
+        count: selectedItems.value.length,
+      })
+    )
   ) {
     try {
       // 실제로는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 500));
       selectedItems.value = [];
       await loadData();
-      alert("삭제되었습니다.");
+      alert(t("messages.success.deleted"));
     } catch (error) {
       console.error("삭제 실패:", error);
-      alert("삭제에 실패했습니다.");
+      alert(t("messages.error.deleteFailed"));
     }
   }
 };
 
 const saveRole = async () => {
   if (!newRole.value.role_name || !newRole.value.description) {
-    alert("모든 필수 항목을 입력해주세요.");
+    alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
   }
 
@@ -396,7 +417,7 @@ const saveRole = async () => {
       if (index !== -1) {
         roleStore.value.roles[index] = updatedRole;
       }
-      alert("역할 그룹이 수정되었습니다.");
+      alert(t("messages.success.roleGroupUpdated"));
     } else {
       // 등록 모드
       const newRoleGroup: RoleGroup = {
@@ -407,7 +428,7 @@ const saveRole = async () => {
       };
 
       roleStore.value.roles.push(newRoleGroup);
-      alert("역할 그룹이 등록되었습니다.");
+      alert(t("messages.success.roleGroupRegistered"));
     }
 
     isRegistModalOpen.value = false;
@@ -424,7 +445,7 @@ const saveRole = async () => {
     isEditMode.value = false;
   } catch (error) {
     console.error("저장 실패:", error);
-    alert("저장에 실패했습니다.");
+    alert(t("messages.error.saveFailed"));
   }
 };
 

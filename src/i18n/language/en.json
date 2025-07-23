@@ -160,6 +160,12 @@
       "role": "Role",
       "lastLogin": "Last Login"
     },
+    "roleGroup": {
+      "no": "No",
+      "roleName": "Role Name",
+      "description": "Description",
+      "menuPermissions": "Menu Permissions"
+    },
     "code": {
       "codeGroup": "Code Group",
       "highCode": "High Code",
@@ -250,6 +256,7 @@
       "admin": "Admin",
       "user": "User"
     },
+
     "userStatus": {
       "active": "Active",
       "inactive": "Inactive"
@@ -360,8 +367,21 @@
     "standardDrawingNumber": "Enter drawing number",
     "noData": "No data available",
     "noDataDescription": "No data to display",
-    "addNew": "Add New"
+    "addNew": "Add New",
+    "enterRoleName": "Enter role name",
+    "enterDescription": "Enter role description"
   },
+
+  "roleGroup": {
+    "title": "Role Group List",
+    "register": "Register Role Group",
+    "edit": "Edit Role Group",
+    "basicMenu": "Basic Menu",
+    "approvalMenu": "Approval Menu",
+    "adminMenu": "Admin Menu",
+    "allMenu": "All Menu"
+  },
+
   "process": {
     "search": "Search",
     "processType": "Process Type",
@@ -593,7 +613,9 @@
       "electricDrawingItemDeleted": "Electric drawing item deleted.",
       "mccDiagramItemDeleted": "MCC diagram item deleted.",
       "processRegisteredSuccessfully": "Process registered successfully.",
-      "idAvailable": "ID is available."
+      "idAvailable": "ID is available.",
+      "roleGroupRegistered": "Role group has been registered.",
+      "roleGroupUpdated": "Role group has been updated."
     },
     "error": {
       "loginFail": "Login failed.",

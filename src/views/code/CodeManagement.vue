@@ -74,46 +74,7 @@
       <!-- Left Section - Category Table -->
       <div class="category-sidebar">
         <div class="category-table-container">
-          <table class="category-table">
-            <thead>
-              <tr>
-                <th rowspan="2">{{ t("columns.code.codeGroupKorean") }}</th>
-              </tr>
-              <tr>
-                <th rowspan="2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>공정</td>
-                <td>공정구분</td>
-              </tr>
-              <tr>
-                <td>기계</td>
-                <td>유형</td>
-              </tr>
-              <tr>
-                <td>유입종류</td>
-                <td>유입항목</td>
-              </tr>
-              <tr>
-                <td>-</td>
-                <td>-</td>
-              </tr>
-              <tr>
-                <td>국가</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>단위</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>언어</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
+          <VerticalDataTable :data="categoryData" :loading="false" />
         </div>
       </div>
 
@@ -261,6 +222,7 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import CodeRegistrationModal from "./CodeRegistrationModal.vue";
 import { useI18n } from "vue-i18n";
 
@@ -327,6 +289,17 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
 ];
+
+// 카테고리 데이터 (2열 구조용)
+const categoryData = ref([
+  { columnName: "공정", value: "공정구분" },
+  { columnName: "기계", value: "유형" },
+  { columnName: "유입종류", value: "유입항목" },
+  { columnName: "-", value: "-" },
+  { columnName: "국가", value: "" },
+  { columnName: "단위", value: "" },
+  { columnName: "언어", value: "" },
+]);
 
 const codeList = ref<CodeItem[]>([]);
 const loading = ref(false);
@@ -760,7 +733,7 @@ const handleEdit = () => {
 
 // Left Section - Category Sidebar
 .category-sidebar {
-  width: 180px;
+  width: 220px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -771,29 +744,6 @@ const handleEdit = () => {
 .category-table-container {
   height: 100%;
   overflow-y: auto;
-}
-
-.category-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    background-color: #f9fafb;
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-    text-align: center;
-  }
-
-  td {
-    padding: 6px 12px;
-    font-size: 13px;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-    text-align: center;
-  }
 }
 
 // Right Section - Table Section

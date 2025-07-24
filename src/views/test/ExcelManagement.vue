@@ -147,6 +147,18 @@ const handleSortChange = (sortInfo: {
 
 const handleRowClick = (item: CodeItem) => {
   console.log("행 클릭:", item);
+
+  // 행 클릭 시 체크박스 토글
+  const index = selectedItems.value.findIndex(
+    (selected) => selected.id === item.id
+  );
+  if (index > -1) {
+    // 이미 선택된 경우 제거
+    selectedItems.value.splice(index, 1);
+  } else {
+    // 선택되지 않은 경우 추가
+    selectedItems.value.push(item);
+  }
 };
 
 const handlePageChange = (page: number) => {

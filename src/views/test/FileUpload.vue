@@ -136,7 +136,7 @@
           class="uploaded-item"
         >
           <div class="file-details">
-            <span class="file-name">{{ file.originalName }}</span>
+            <span class="file-name">{{ file.name }}</span>
             <span class="file-date">{{ formatDate(file.uploadDate) }}</span>
             <span class="file-path">{{ file.filepath }}</span>
           </div>

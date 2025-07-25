@@ -538,13 +538,23 @@ export const useFileUploadStore = defineStore("fileUpload", {
       this.allowedFileTypes = types;
     },
 
-    // 파일명에서 원본 파일명 추출 (20250718_133352_Data_20250715114331.xlsx -> Data_20250715114331.xlsx)
+    // 파일명에서 원본 파일명 추출 (text (1)_20250725_145952.dwg -> text (1).dwg)
     extractOriginalFilename(serverFilename: string): string {
-      // 서버에서 생성한 파일명 패턴: YYYYMMDD_HHMMSS_원본파일명
-      const match = serverFilename.match(/^\d{8}_\d{6}_(.+)$/);
-      const originalName = match ? match[1] : serverFilename;
+      // 서버에서 생성한 파일명 패턴: 원본파일명_YYYYMMDD_HHMMSS.확장자
+      // 원본파일명에 공백, 괄호 등이 포함될 수 있음
+      const match = serverFilename.match(/^(.+)_\d{8}_\d{6}\.([^.]+)$/);
+      if (match) {
+        return `${match[1]}.${match[2]}`;
+      }
 
-      return originalName;
+      // 기존 패턴도 시도: YYYYMMDD_HHMMSS_원본파일명
+      const match2 = serverFilename.match(/^\d{8}_\d{6}_(.+)$/);
+      if (match2) {
+        return match2[1];
+      }
+
+      // 패턴이 맞지 않으면 원본 파일명 그대로 반환
+      return serverFilename;
     },
 
     // 전체 초기화

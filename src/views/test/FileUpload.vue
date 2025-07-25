@@ -142,7 +142,7 @@
           </div>
           <div class="file-actions">
             <button
-              @click="fileUploadStore.downloadFile(file)"
+              @click="fileUploadStore.downloadFile(file, selectedViewFolder)"
               class="btn btn-sm"
             >
               다운로드

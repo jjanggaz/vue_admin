@@ -331,11 +331,14 @@ export const useFileUploadStore = defineStore("fileUpload", {
     },
 
     // 업로드된 파일 다운로드
-    async downloadFile(file: UploadedFile) {
+    async downloadFile(file: UploadedFile, uploadFolder?: string) {
+      const folderToUse = uploadFolder || this.defaultUploadFolder;
       try {
         // 새로운 API 스펙에 맞춘 다운로드 URL 생성
         const downloadUrl = getFileApiUrl(
-          `/api/download?filename=${encodeURIComponent(file.filename)}`
+          `/api/download?filename=${encodeURIComponent(
+            file.filename
+          )}&upload_folder=${encodeURIComponent(folderToUse)}`
         );
 
         // 서버 응답을 Blob으로 받아서 강제로 원본 파일명으로 다운로드

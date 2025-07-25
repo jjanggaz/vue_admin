@@ -546,7 +546,10 @@ const saveUser = async () => {
         is_active: newUser.value.is_active,
         is_superuser: newUser.value.is_superuser,
       });
+
       alert(t("messages.success.userInfoUpdated"));
+      await loadData(); // 사용자 목록 새로고침
+      selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     } else {
       // 등록 모드: 새 사용자 추가
       await userStore.createUser({

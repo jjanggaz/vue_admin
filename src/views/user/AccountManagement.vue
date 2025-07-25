@@ -564,6 +564,8 @@ const saveUser = async () => {
         is_superuser: newUser.value.is_superuser,
       });
       alert(t("messages.success.userRegistered"));
+      await loadData(); // 사용자 목록 새로고침
+      selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     }
 
     isRegistModalOpen.value = false;
@@ -634,6 +636,8 @@ const handleDelete = async () => {
       await userStore.deleteUsers(userIds);
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
+      await loadData(); // 사용자 목록 새로고침
+      selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     } catch (error) {
       console.error("삭제 실패:", error);
       alert(t("messages.error.deleteFailed"));

@@ -233,6 +233,7 @@
                 v-model="newUser.contact_info"
                 type="text"
                 :placeholder="t('placeholder.userContactInfo')"
+                @input="handleContactInput"
               />
             </dd>
             <dt>{{ t("columns.user.status") }}</dt>
@@ -387,6 +388,29 @@ const cancelPasswordChange = () => {
   showPasswordChange.value = false;
   newUser.value.password = "";
   newUser.value.passwordConfirm = "";
+};
+
+// 연락처 입력 필드 숫자만 허용하고 하이픈 자동 추가
+const handleContactInput = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const value = target.value;
+  // 숫자가 아닌 문자 제거
+  const numericValue = value.replace(/[^0-9]/g, "");
+
+  // 하이픈 자동 추가 (010-0000-0000 형식)
+  let formattedValue = numericValue;
+  if (numericValue.length > 3 && numericValue.length <= 7) {
+    formattedValue = numericValue.slice(0, 3) + "-" + numericValue.slice(3);
+  } else if (numericValue.length > 7) {
+    formattedValue =
+      numericValue.slice(0, 3) +
+      "-" +
+      numericValue.slice(3, 7) +
+      "-" +
+      numericValue.slice(7, 11);
+  }
+
+  newUser.value.contact_info = formattedValue;
 };
 
 // --- computed로 페이징 및 필터 처리 ---

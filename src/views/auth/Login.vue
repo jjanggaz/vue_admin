@@ -45,9 +45,6 @@
             <input type="checkbox" v-model="rememberUsername" />
             {{ t("login.rememberId") }}
           </label>
-          <a href="/forgot-password" class="forgot-password">{{
-            t("login.forgotPassword")
-          }}</a>
         </div>
 
         <button type="submit" class="btn btn-primary login-btn">

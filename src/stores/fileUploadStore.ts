@@ -169,6 +169,7 @@ export const useFileUploadStore = defineStore("fileUpload", {
     // 설정
     maxFileSize: 10 * 1024 * 1024, // 10MB (바이트 단위)
     allowedFileTypes: [] as string[], // 허용할 파일 확장자 (빈 배열이면 모든 타입 허용)
+    defaultUploadFolder: "excel", // 기본 업로드 폴더명
   }),
 
   getters: {
@@ -250,7 +251,8 @@ export const useFileUploadStore = defineStore("fileUpload", {
     },
 
     // 파일 업로드 (단일 파일 업로드)
-    async uploadFiles() {
+    async uploadFiles(uploadFolder?: string, onSuccess?: () => void) {
+      const folderToUse = uploadFolder || this.defaultUploadFolder;
       if (this.selectedFiles.length === 0) {
         alert("업로드할 파일을 선택해주세요.");
         return;
@@ -263,6 +265,7 @@ export const useFileUploadStore = defineStore("fileUpload", {
         const file = this.selectedFiles[0]; // 단일 파일만 업로드
         const formData = new FormData();
         formData.append("file", file); // 서버 스펙에 맞춰 'file' 파라미터 사용
+        formData.append("upload_folder", folderToUse); // 폴더명 추가
 
         // 파일 업로드
         const response = await fileUploadRequest(
@@ -275,17 +278,6 @@ export const useFileUploadStore = defineStore("fileUpload", {
 
         // API 스펙에 맞는 응답 처리
         if (response && response.message) {
-          // 업로드된 파일을 상태에 추가
-          this.uploadedFiles.push({
-            id: this.uploadedFiles.length + 1,
-            name: response.original_filename || file.name,
-            originalName: response.original_filename || file.name,
-            uploadDate: new Date(response.upload_time || new Date()),
-            size: file.size,
-            filepath: response.filepath || "",
-            filename: response.filename || file.name,
-          });
-
           // 성공 메시지
           alert(
             `파일 "${
@@ -300,6 +292,11 @@ export const useFileUploadStore = defineStore("fileUpload", {
           setTimeout(() => {
             this.uploadProgress = 0;
           }, 1500); // 1.5초 후 프로그래스바 숨김
+
+          // 성공 콜백 호출 (파일 목록 새로고침용)
+          if (onSuccess) {
+            onSuccess();
+          }
         } else {
           throw new Error("서버 응답이 올바르지 않습니다.");
         }
@@ -374,7 +371,8 @@ export const useFileUploadStore = defineStore("fileUpload", {
     },
 
     // 업로드된 파일 삭제
-    async deleteUploadedFile(fileId: number) {
+    async deleteUploadedFile(fileId: number, uploadFolder?: string) {
+      const folderToUse = uploadFolder || this.defaultUploadFolder;
       const file = this.uploadedFiles.find((f) => f.id === fileId);
       if (!file) {
         alert("삭제할 파일을 찾을 수 없습니다.");
@@ -388,6 +386,7 @@ export const useFileUploadStore = defineStore("fileUpload", {
       try {
         const requestBody = {
           filename: file.filename, // 서버 파일명 사용
+          upload_folder: folderToUse, // 폴더명 추가
         };
 
         // 여러 가지 API 방식을 시도해보기
@@ -409,7 +408,9 @@ export const useFileUploadStore = defineStore("fileUpload", {
           // 방법 2: DELETE with query parameter
           try {
             response = await fileApiRequest(
-              `/api/delete?filename=${encodeURIComponent(file.filename)}`,
+              `/api/delete?filename=${encodeURIComponent(
+                file.filename
+              )}&upload_folder=${encodeURIComponent(folderToUse)}`,
               {
                 method: "DELETE",
               }
@@ -418,7 +419,9 @@ export const useFileUploadStore = defineStore("fileUpload", {
             // 방법 3: DELETE /api/files/{filename}
             try {
               response = await fileApiRequest(
-                `/api/files/${encodeURIComponent(file.filename)}`,
+                `/api/files/${encodeURIComponent(
+                  file.filename
+                )}?upload_folder=${encodeURIComponent(folderToUse)}`,
                 {
                   method: "DELETE",
                 }
@@ -428,6 +431,7 @@ export const useFileUploadStore = defineStore("fileUpload", {
               try {
                 const formData = new FormData();
                 formData.append("filename", file.filename);
+                formData.append("upload_folder", folderToUse);
 
                 const url = getFileApiUrl("/api/delete");
                 const deleteResponse = await fetch(url, {
@@ -478,10 +482,13 @@ export const useFileUploadStore = defineStore("fileUpload", {
     },
 
     // 업로드된 파일 목록 불러오기
-    async loadUploadedFiles() {
+    async loadUploadedFiles(uploadFolder?: string) {
+      const folderToUse = uploadFolder || this.defaultUploadFolder;
       try {
         // request 함수 패턴을 사용한 GET 요청
-        const data = await fileApiRequest("/api/files");
+        const data = await fileApiRequest(
+          `/api/files?upload_folder=${encodeURIComponent(folderToUse)}`
+        );
 
         // 서버에서 받은 파일 목록을 상태에 저장 (새로운 API 스펙에 맞춤)
         if (data && Array.isArray(data.files)) {

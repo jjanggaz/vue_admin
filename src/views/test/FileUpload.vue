@@ -56,16 +56,37 @@
       </div>
 
       <div class="upload-actions">
-        <button
-          @click="fileUploadStore.uploadFiles"
-          :disabled="
-            !fileUploadStore.hasSelectedFiles || fileUploadStore.uploading
-          "
-          class="btn btn-primary"
-        >
-          {{ fileUploadStore.uploading ? "업로드 중..." : "파일 업로드" }}
-        </button>
-        <button @click="clearFiles" class="btn btn-secondary">파일 삭제</button>
+        <div class="folder-selector">
+          <label for="uploadFolder">업로드 폴더:</label>
+          <select
+            id="uploadFolder"
+            v-model="selectedUploadFolder"
+            class="folder-select"
+          >
+            <option value="excel">엑셀</option>
+            <option value="dwg">도면</option>
+            <option value="etc">기타</option>
+          </select>
+        </div>
+        <div class="action-buttons">
+          <button
+            @click="
+              () =>
+                fileUploadStore.uploadFiles(selectedUploadFolder, () =>
+                  handleFolderChange()
+                )
+            "
+            :disabled="
+              !fileUploadStore.hasSelectedFiles || fileUploadStore.uploading
+            "
+            class="btn btn-primary"
+          >
+            {{ fileUploadStore.uploading ? "업로드 중..." : "파일 업로드" }}
+          </button>
+          <button @click="clearFiles" class="btn btn-secondary">
+            파일 삭제
+          </button>
+        </div>
       </div>
 
       <div
@@ -89,7 +110,22 @@
     </div>
 
     <div class="uploaded-files-section">
-      <h2>업로드된 파일 목록</h2>
+      <div class="section-header">
+        <h2>업로드된 파일 목록</h2>
+        <div class="folder-selector">
+          <label for="viewFolder">조회 폴더:</label>
+          <select
+            id="viewFolder"
+            v-model="selectedViewFolder"
+            @change="handleFolderChange"
+            class="folder-select"
+          >
+            <option value="excel">엑셀</option>
+            <option value="dwg">도면</option>
+            <option value="etc">기타</option>
+          </select>
+        </div>
+      </div>
       <div v-if="!fileUploadStore.hasUploadedFiles" class="no-files">
         업로드된 파일이 없습니다.
       </div>
@@ -112,7 +148,9 @@
               다운로드
             </button>
             <button
-              @click="fileUploadStore.deleteUploadedFile(file.id)"
+              @click="
+                fileUploadStore.deleteUploadedFile(file.id, selectedViewFolder)
+              "
               class="btn btn-sm btn-danger"
             >
               삭제
@@ -130,13 +168,26 @@ import { useFileUploadStore } from "@/stores/fileUploadStore";
 
 const fileUploadStore = useFileUploadStore();
 
+// 폴더 선택 상태
+const selectedUploadFolder = ref("excel");
+const selectedViewFolder = ref("excel");
+
 // 파일 input 참조
 const fileInput = ref<HTMLInputElement>();
+
+// 폴더 변경 핸들러
+const handleFolderChange = async () => {
+  try {
+    await fileUploadStore.loadUploadedFiles(selectedViewFolder.value);
+  } catch (error) {
+    console.error("폴더 변경 시 파일 목록 불러오기 실패:", error);
+  }
+};
 
 // 컴포넌트 마운트 시 업로드된 파일 목록 불러오기
 onMounted(async () => {
   try {
-    await fileUploadStore.loadUploadedFiles();
+    await fileUploadStore.loadUploadedFiles(selectedViewFolder.value);
   } catch (error) {
     console.error("파일 목록 불러오기 실패:", error);
     console.warn("서버가 실행중이 아니거나 CORS 설정이 필요할 수 있습니다");
@@ -236,6 +287,38 @@ const formatDate = (date: Date): string => {
     color: $text-color;
     margin-bottom: $spacing-lg;
     font-size: $font-size-lg;
+  }
+}
+
+.uploaded-files-section {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+
+    h2 {
+      margin: 0;
+    }
+
+    .folder-selector {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+
+      label {
+        font-weight: $font-weight-md;
+        color: $text-color;
+      }
+
+      .folder-select {
+        padding: $spacing-xs $spacing-sm;
+        border: 1px solid $border-color;
+        border-radius: $border-radius-sm;
+        background: white;
+        font-size: $font-size-sm;
+      }
+    }
   }
 }
 
@@ -357,8 +440,34 @@ const formatDate = (date: Date): string => {
 
 .upload-actions {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: $spacing-md;
   margin-bottom: $spacing-lg;
+
+  .folder-selector {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    label {
+      font-weight: $font-weight-md;
+      color: $text-color;
+    }
+
+    .folder-select {
+      padding: $spacing-xs $spacing-sm;
+      border: 1px solid $border-color;
+      border-radius: $border-radius-sm;
+      background: white;
+      font-size: $font-size-sm;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: $spacing-sm;
+  }
 }
 
 .upload-progress {

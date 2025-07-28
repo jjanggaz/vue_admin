@@ -42,7 +42,7 @@ const router = useRouter();
 const route = useRoute();
 
 const authStore = useAuthStore();
-const userName = authStore.user?.username;
+const userName = authStore.user?.fullName;
 
 console.log("[AppHeader.vue] store/authStore.ts > authStore.user : ", userName);
 

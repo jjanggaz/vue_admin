@@ -15,6 +15,7 @@ export const useAuthStore = defineStore("auth", {
     isLoggedIn: false,
     user: null as null | {
       username: string;
+      fullName: string;
       codes: string[]; // 사용자 접근 가능한 화면 코드 배열
     },
   }),
@@ -23,7 +24,7 @@ export const useAuthStore = defineStore("auth", {
     async login(username: string, password: string) {
       try {
         // 로그인 API 호출 (request 함수 사용)
-        const result = await request("/api/v1/auth/auth/login", undefined, {
+        const result = await request("/api/v1/auth/login", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -45,49 +46,31 @@ export const useAuthStore = defineStore("auth", {
           };
           setTokenInfo(tokenInfo);
 
-          // 토큰으로 사용자 정보 조회
-          await this.fetchUserInfo();
+          // 로그인 응답에서 사용자 정보 처리
+          if (result.user_info) {
+            const userInfo = {
+              username: result.user_info.username,
+              fullName: result.user_info.full_name,
+              codes: result.codes || [], // 서버에서 받은 코드 배열
+            };
+
+            // SessionStorage에 사용자 정보 저장
+            sessionStorage.setItem("authName", userInfo.fullName);
+            sessionStorage.setItem("authUsername", userInfo.username);
+            sessionStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
+
+            // 스토어 상태 업데이트
+            this.isLoggedIn = true;
+            this.user = userInfo;
+
+            // 코드 기반 라우트 동적 추가
+            addRoleBasedRoutes(userInfo.codes);
+          }
         } else {
           throw new Error("로그인 응답이 올바르지 않습니다.");
         }
       } catch (error) {
         console.error("로그인 실패:", error);
-        throw error;
-      }
-    },
-
-    // 사용자 정보 조회
-    async fetchUserInfo() {
-      try {
-        // request 함수 사용 (JWT 토큰 자동 포함)
-        const result = await request("/api/v1/auth/auth/me", undefined, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (result) {
-          const userInfo = {
-            username: result.username,
-            codes: result.codes || [], // 서버에서 받은 코드 배열
-          };
-
-          // SessionStorage에 사용자 정보 저장
-          sessionStorage.setItem("authName", userInfo.username);
-          sessionStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
-
-          // 스토어 상태 업데이트
-          this.isLoggedIn = true;
-          this.user = userInfo;
-
-          // 코드 기반 라우트 동적 추가
-          addRoleBasedRoutes(userInfo.codes);
-        } else {
-          throw new Error("사용자 정보 응답이 올바르지 않습니다.");
-        }
-      } catch (error) {
-        console.error("사용자 정보 조회 실패:", error);
         throw error;
       }
     },
@@ -99,7 +82,7 @@ export const useAuthStore = defineStore("auth", {
         const tokenInfo = getTokenInfo();
         if (tokenInfo && tokenInfo.access_token) {
           console.log("서버에 토큰 무효화 요청 중...");
-          await request("/api/v1/auth/auth/logout", undefined, {
+          await request("/api/v1/auth/logout", undefined, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -126,6 +109,7 @@ export const useAuthStore = defineStore("auth", {
 
         // SessionStorage에서 사용자 정보 제거
         sessionStorage.removeItem("authName");
+        sessionStorage.removeItem("authUsername");
         sessionStorage.removeItem("authCodes");
 
         console.log("클라이언트 측 로그아웃 정리 완료");
@@ -144,7 +128,8 @@ export const useAuthStore = defineStore("auth", {
 
         this.isLoggedIn = true;
         this.user = {
-          username: authName,
+          username: sessionStorage.getItem("authUsername") || authName,
+          fullName: authName,
           codes: authCodes,
         };
 

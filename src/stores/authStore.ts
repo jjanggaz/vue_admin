@@ -8,11 +8,15 @@ import {
 } from "../utils/cookies";
 import { request } from "../utils/request";
 import { isCurrentTokenValid } from "../utils/tokenManager";
+import { addRoleBasedRoutes } from "../router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     isLoggedIn: false,
-    user: null as null | { username: string; role: string },
+    user: null as null | {
+      username: string;
+      codes: string[]; // 사용자 접근 가능한 화면 코드 배열
+    },
   }),
   actions: {
     // 로그인 처리
@@ -66,16 +70,19 @@ export const useAuthStore = defineStore("auth", {
         if (result) {
           const userInfo = {
             username: result.username,
-            role: result.role,
+            codes: result.codes || [], // 서버에서 받은 코드 배열
           };
 
           // SessionStorage에 사용자 정보 저장
           sessionStorage.setItem("authName", userInfo.username);
-          sessionStorage.setItem("authRole", userInfo.role);
+          sessionStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
 
           // 스토어 상태 업데이트
           this.isLoggedIn = true;
           this.user = userInfo;
+
+          // 코드 기반 라우트 동적 추가
+          addRoleBasedRoutes(userInfo.codes);
         } else {
           throw new Error("사용자 정보 응답이 올바르지 않습니다.");
         }
@@ -119,7 +126,7 @@ export const useAuthStore = defineStore("auth", {
 
         // SessionStorage에서 사용자 정보 제거
         sessionStorage.removeItem("authName");
-        sessionStorage.removeItem("authRole");
+        sessionStorage.removeItem("authCodes");
 
         console.log("클라이언트 측 로그아웃 정리 완료");
       }
@@ -129,15 +136,21 @@ export const useAuthStore = defineStore("auth", {
     async loadStoredToken() {
       const tokenInfo = getTokenInfo();
       const authName = sessionStorage.getItem("authName");
-      const authRole = sessionStorage.getItem("authRole");
+      const authCodesStr = sessionStorage.getItem("authCodes");
 
       // 토큰이 있고 유효하며 사용자 정보도 있는 경우에만 로그인 상태 복구
-      if (tokenInfo && authName && authRole && isCurrentTokenValid()) {
+      if (tokenInfo && authName && authCodesStr && isCurrentTokenValid()) {
+        const authCodes = JSON.parse(authCodesStr);
+
         this.isLoggedIn = true;
         this.user = {
           username: authName,
-          role: authRole,
+          codes: authCodes,
         };
+
+        // 코드 기반 라우트 동적 추가
+        addRoleBasedRoutes(authCodes);
+
         console.log("저장된 토큰으로 로그인 상태 복구 성공");
       } else {
         // 토큰이 유효하지 않으면 모든 정보 삭제

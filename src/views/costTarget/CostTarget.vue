@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="cost-target-page">
     <!-- 검색 바 -->
     <div class="action-bar">
@@ -192,6 +192,8 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { request } from "@/utils/request";
+
 const { t } = useI18n();
 
 interface CostItem {
@@ -324,6 +326,39 @@ const isFormValid = computed(() => {
   );
 });
 
+// 데이터 로드
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await request("/api/cost-targets");
+    costList.value = response.data || [];
+  } catch (error) {
+    console.error("단가표 데이터 로드 실패:", error);
+    // API 실패 시 샘플 데이터 사용
+    loadSampleData();
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 샘플 데이터 로드 (API 실패 시 사용)
+const loadSampleData = () => {
+  costList.value = Array.from({ length: 18 }, (_, i) => ({
+    id: (i + 1).toString(),
+    name: `목표 ${i + 1}`,
+    machineName: ["펌프1", "모터1", "컨베이어1"][i % 3],
+    targetCost: 1000000 + i * 500000,
+    unit: ["원", "달러", "엔"][i % 3],
+    targetPeriod: `2024.${String(Math.floor(i / 3) + 1).padStart(
+      2,
+      "0"
+    )}-2024.${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
+    description: `목표 ${i + 1}에 대한 설명입니다`,
+    status: ["진행중", "완료", "지연", "취소"][i % 4],
+    createdAt: `2023-01-${(i % 28) + 1}`,
+  }));
+};
+
 const handleSelectionChange = (selected: CostItem[]) => {
   selectedItems.value = selected;
 };
@@ -372,67 +407,84 @@ const editItem = (item: CostItem) => {
   isRegistModalOpen.value = true;
 };
 
-const handleSave = () => {
-  if (isEditMode.value) {
-    // 수정 로직
-    const index = costList.value.findIndex(
-      (item) => item.id === selectedItems.value[0]?.id
-    );
-    if (index !== -1) {
-      costList.value[index] = {
-        ...costList.value[index],
-        ...newCost.value,
-      };
-    }
-  } else {
-    // 등록 로직
-    const newItem: CostItem = {
-      id: Date.now().toString(),
-      ...newCost.value,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    costList.value.unshift(newItem);
-  }
+const handleSave = async () => {
+  try {
+    if (isEditMode.value) {
+      // 수정 로직
+      const selectedItem = selectedItems.value[0];
+      if (selectedItem) {
+        await request(`/api/cost-targets/${selectedItem.id}`, undefined, {
+          method: "PUT",
+          body: JSON.stringify(newCost.value),
+        });
 
-  closeRegistModal();
-  selectedItems.value = [];
+        // 로컬 데이터 업데이트
+        const index = costList.value.findIndex(
+          (item) => item.id === selectedItem.id
+        );
+        if (index !== -1) {
+          costList.value[index] = {
+            ...costList.value[index],
+            ...newCost.value,
+          };
+        }
+      }
+    } else {
+      // 등록 로직
+      const response = await request("/api/cost-targets", undefined, {
+        method: "POST",
+        body: JSON.stringify(newCost.value),
+      });
+
+      // 로컬 데이터에 추가
+      const newItem: CostItem = {
+        id: response.data?.id || Date.now().toString(),
+        ...newCost.value,
+        createdAt: new Date().toISOString().split("T")[0],
+      };
+      costList.value.unshift(newItem);
+    }
+
+    closeRegistModal();
+    selectedItems.value = [];
+  } catch (error) {
+    console.error("저장 실패:", error);
+    alert(t("messages.error.saveFailed"));
+  }
 };
 
-const handleDelete = () => {
+const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
+
   if (
     confirm(
       t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
-    const selectedIds = selectedItems.value.map((item) => item.id);
-    costList.value = costList.value.filter(
-      (item) => !selectedIds.includes(item.id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
-  }
-};
+    try {
+      const selectedIds = selectedItems.value.map((item) => item.id);
 
-// 샘플 데이터 로드 함수
-const loadData = () => {
-  costList.value = Array.from({ length: 18 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `목표 ${i + 1}`,
-    machineName: ["펌프1", "모터1", "컨베이어1"][i % 3],
-    targetCost: 1000000 + i * 500000,
-    unit: ["원", "달러", "엔"][i % 3],
-    targetPeriod: `2024.${String(Math.floor(i / 3) + 1).padStart(
-      2,
-      "0"
-    )}-2024.${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
-    description: `목표 ${i + 1}에 대한 설명입니다`,
-    status: ["진행중", "완료", "지연", "취소"][i % 4],
-    createdAt: `2023-01-${(i % 28) + 1}`,
-  }));
+      // API 호출
+      for (const id of selectedIds) {
+        await request(`/api/cost-targets/${id}`, undefined, {
+          method: "DELETE",
+        });
+      }
+
+      // 로컬 데이터에서 제거
+      costList.value = costList.value.filter(
+        (item) => !selectedIds.includes(item.id)
+      );
+      selectedItems.value = [];
+      alert(t("messages.success.deleted"));
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      alert(t("messages.error.deleteFailed"));
+    }
+  }
 };
 
 // 기계명 매핑 (한글 → 영문 키)

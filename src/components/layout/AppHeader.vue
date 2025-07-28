@@ -35,6 +35,7 @@ import TabNavigation from "@/components/common/TabNavigation.vue";
 import type { TabItem } from "@/components/common/TabNavigation.vue";
 import Date from "../../utils/headerDate.vue";
 import { useI18n } from "vue-i18n";
+
 const { t } = useI18n();
 
 const router = useRouter();
@@ -42,14 +43,8 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 const userName = authStore.user?.username;
-const userRole = authStore.user?.role;
 
-console.log(
-  "[AppHeader.vue] store/authStore.ts > authStore.user : ",
-  userName,
-  ", userRole : ",
-  userRole
-);
+console.log("[AppHeader.vue] store/authStore.ts > authStore.user : ", userName);
 
 const handleLogout = async () => {
   console.log("[AppHeader.vue] handleLogout()");
@@ -116,11 +111,6 @@ const sectionTabs = {
       name: "MachineCodeManagement",
       label: t("tabs.machine.machineCodeManagement"),
       to: "/machine/codeMng",
-    },
-    {
-      name: "CostTarget",
-      label: t("tabs.machine.costTarget"),
-      to: "/machine/costTarget",
     },
   ],
   user: [
@@ -202,95 +192,89 @@ const currentPageTitle = computed<string>(() => {
   background-color: $background-color;
   border-bottom: 1px solid $border-color;
   z-index: 90;
+}
 
-  .header-content {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 $spacing-xl;
-    gap: $spacing-xl;
+.header-content {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $spacing-xl;
+  gap: $spacing-xl;
+}
+
+.page-title-section {
+  .page-title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-color;
+    margin: 0;
+    white-space: nowrap;
   }
+}
 
-  .page-title-section {
-    .page-title {
-      font-size: $font-size-xl;
-      font-weight: $font-weight-bold;
-      color: $text-color;
-      margin: 0;
-      white-space: nowrap;
-    }
-  }
+.navigation-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
 
-  .navigation-section {
-    flex: 1;
-    display: flex;
-    align-items: center;
+  :deep(.tab-navigation) {
+    border-bottom: none;
+    background: transparent;
+    width: 100%;
 
-    :deep(.tab-navigation) {
-      border-bottom: none;
-      background: transparent;
-      width: 100%;
+    .tab-item {
+      height: 70px;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+      padding: 0 $spacing-lg;
+      font-size: $font-size-sm;
+      color: $text-light;
 
-      .tab-item {
-        height: 70px;
-        border-bottom: 3px solid transparent;
-        border-radius: 0;
-        padding: 0 $spacing-lg;
-        font-size: $font-size-sm;
-        color: $text-light;
-
-        &:hover:not(.disabled) {
-          background: $background-light;
-        }
-
-        &.active {
-          border-bottom-color: $primary-color;
-          background: transparent;
-          color: $primary-color;
-          font-weight: $font-weight-md;
-        }
-
-        &:not(.active) {
-          color: $text-light;
-          border-bottom-color: transparent;
-        }
+      &:hover:not(.disabled) {
+        background: $background-light;
       }
-    }
-  }
 
-  .user-section {
-    display: flex;
-    align-items: center;
-    gap: $spacing-lg;
-
-    .user-id {
-      color: $text-light;
-      font-size: $font-size-sm;
-    }
-
-    .logout-btn {
-      padding: $spacing-xs $spacing-md;
-      background-color: transparent;
-      border: 1px solid $border-color;
-      border-radius: $border-radius-sm;
-      color: $text-light;
-      font-size: $font-size-sm;
-      cursor: pointer;
-      transition: $transition-base;
-
-      &:hover {
-        background-color: $background-light;
-        border-color: $primary-color;
+      &.active {
+        border-bottom-color: $primary-color;
+        background: transparent;
         color: $primary-color;
+        font-weight: $font-weight-md;
+      }
+
+      &:not(.active) {
+        color: $text-light;
+        border-bottom-color: transparent;
       }
     }
   }
 }
 
-@media (max-width: $breakpoint-lg) {
-  .app-header {
-    left: 0;
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+
+  .user-id {
+    color: $text-light;
+    font-size: $font-size-sm;
+  }
+
+  .logout-btn {
+    padding: $spacing-xs $spacing-md;
+    background-color: transparent;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
+    color: $text-light;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      background-color: $background-light;
+      border-color: $primary-color;
+      color: $primary-color;
+    }
   }
 }
 </style>

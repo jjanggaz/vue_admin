@@ -40,7 +40,7 @@
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
-          :disabled="selectedItems.length === 0"
+          :disabled="selectedItems.length !== 1"
         >
           {{ t("common.delete") }}
         </button>
@@ -60,13 +60,21 @@
       :columns="tableColumns"
       :data="paginatedUserList"
       :loading="userStore.loading"
-      :selectable="true"
+      :selectable="false"
       :selected-items="selectedItems"
       row-key="user_id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
     >
+      <template #cell-selection="{ item }">
+        <input
+          type="checkbox"
+          :checked="isSelected(item)"
+          @change="handleCheckboxChange(item)"
+          style="cursor: pointer"
+        />
+      </template>
       <template #cell-index="{ index }">
         {{ index + 1 }}
       </template>
@@ -78,10 +86,6 @@
               : t("common.userStatus.inactive")
           }}
         </span>
-      </template>
-      <template #cell-last_login="{ value }">
-        <span v-if="value">{{ formatDate(value) }}</span>
-        <span v-else class="no-data">-</span>
       </template>
     </DataTable>
     <!-- Pagination -->
@@ -236,16 +240,14 @@
                 @input="handleContactInput"
               />
             </dd>
-            <dt>{{ t("columns.user.status") }}</dt>
+            <dt>{{ t("columns.user.description") }}</dt>
             <dd>
-              <select id="user-status" v-model="newUser.is_active">
-                <option :value="true">
-                  {{ t("common.userStatus.active") }}
-                </option>
-                <option :value="false">
-                  {{ t("common.userStatus.inactive") }}
-                </option>
-              </select>
+              <textarea
+                id="user-description"
+                v-model="newUser.description"
+                :placeholder="t('placeholder.userDescription')"
+                rows="3"
+              />
             </dd>
             <dt>{{ t("columns.user.role") }}</dt>
             <dd>
@@ -279,26 +281,29 @@ import { useUserStore, type User, type UserFormData } from "@/stores/userStore";
 const { t } = useI18n();
 const userStore = useUserStore();
 
-// 날짜 포맷 함수
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "-";
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "-";
-    return date.toISOString().split("T")[0]; // yyyy-mm-dd 형식
-  } catch (error) {
-    return "-";
-  }
-};
-
 // 폼용 사용자 인터페이스 (UI 전용)
-interface UserForm extends UserFormData {
-  passwordConfirm?: string;
+interface UserForm {
+  username: string;
+  password: string;
+  passwordConfirm: string;
+  full_name: string;
+  email: string;
+  organization: string;
+  dept_id: string;
+  contact_info: string;
+  description: string;
+  is_superuser: boolean;
 }
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "user_id", title: "ID", width: "0px", sortable: false, hidden: true },
+  {
+    key: "selection",
+    title: t("common.selectColumn"),
+    width: "80px",
+    sortable: false,
+  },
   { key: "index", title: t("columns.user.no"), width: "60px", sortable: false },
   {
     key: "username",
@@ -351,9 +356,9 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "last_login",
-    title: t("columns.user.lastLogin"),
-    width: "120px",
+    key: "description",
+    title: t("columns.user.description"),
+    width: "200px",
     sortable: true,
   },
 ];
@@ -372,9 +377,9 @@ const newUser = ref<UserForm>({
   full_name: "",
   email: "",
   organization: "",
-  dept_id: null,
-  contact_info: null,
-  is_active: true,
+  dept_id: "",
+  contact_info: "",
+  description: "",
   is_superuser: false,
 });
 const isIdChecked = ref(false);
@@ -457,6 +462,13 @@ const handleSelectionChange = (selected: User[]) => {
   selectedItems.value = selected;
 };
 
+// 선택 상태 확인 함수
+const isSelected = (item: User) => {
+  return selectedItems.value.some(
+    (selected) => selected.user_id === item.user_id
+  );
+};
+
 // 페이지 변경 핸들러
 const handlePageChange = async (page: number) => {
   await userStore.changePage(page);
@@ -475,15 +487,15 @@ const handleSortChange = (sortInfo: {
 // 행 클릭 핸들러
 const handleRowClick = (item: User) => {
   console.log("Row clicked:", item);
-  // row 클릭 시 해당 항목 선택 토글
-  const index = selectedItems.value.findIndex(
-    (selected) => selected.user_id === item.user_id
-  );
-  if (index > -1) {
-    selectedItems.value.splice(index, 1);
-  } else {
-    selectedItems.value.push(item);
-  }
+  // row 클릭 시 해당 항목만 선택 (단일 선택)
+  selectedItems.value = [item];
+};
+
+// 체크박스 변경 핸들러
+const handleCheckboxChange = (item: User) => {
+  console.log("Checkbox changed:", item);
+  // 체크박스 클릭 시 해당 항목만 선택 (단일 선택)
+  selectedItems.value = [item];
 };
 
 // 컴포넌트 마운트 시 데이터 로드
@@ -513,9 +525,9 @@ const handleRegist = () => {
     full_name: "",
     email: "",
     organization: "",
-    dept_id: null,
-    contact_info: null,
-    is_active: true,
+    dept_id: "",
+    contact_info: "",
+    description: "",
     is_superuser: false,
   };
   isIdChecked.value = false;
@@ -567,7 +579,7 @@ const saveUser = async () => {
         organization: newUser.value.organization,
         dept_id: newUser.value.dept_id,
         contact_info: newUser.value.contact_info,
-        is_active: newUser.value.is_active,
+        description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
       });
 
@@ -576,15 +588,29 @@ const saveUser = async () => {
       selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     } else {
       // 등록 모드: 새 사용자 추가
-      await userStore.createUser({
+      console.log("전송할 사용자 데이터:", {
         username: newUser.value.username,
         password: newUser.value.password,
+        confirm_password: newUser.value.passwordConfirm,
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
         dept_id: newUser.value.dept_id,
         contact_info: newUser.value.contact_info,
-        is_active: newUser.value.is_active,
+        description: newUser.value.description,
+        is_superuser: newUser.value.is_superuser,
+      });
+
+      await userStore.createUser({
+        username: newUser.value.username,
+        password: newUser.value.password,
+        confirm_password: newUser.value.passwordConfirm,
+        full_name: newUser.value.full_name,
+        email: newUser.value.email,
+        organization: newUser.value.organization,
+        dept_id: newUser.value.dept_id,
+        contact_info: newUser.value.contact_info,
+        description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
       });
       alert(t("messages.success.userRegistered"));
@@ -600,16 +626,21 @@ const saveUser = async () => {
       full_name: "",
       email: "",
       organization: "",
-      dept_id: null,
-      contact_info: null,
-      is_active: true,
+      dept_id: "",
+      contact_info: "",
+      description: "",
       is_superuser: false,
     };
     isEditMode.value = false;
     isIdChecked.value = false;
   } catch (error) {
     console.error("사용자 저장 실패:", error);
-    alert(t("messages.error.saveFailed"));
+    // 서버에서 반환한 상세한 에러 메시지를 사용자에게 표시
+    if (error instanceof Error) {
+      alert(error.message);
+    } else {
+      alert(t("messages.error.saveFailed"));
+    }
   }
 };
 
@@ -646,18 +677,14 @@ const handleCheckId = async () => {
 
 // 선택된 항목 삭제
 const handleDelete = async () => {
-  if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
+  if (selectedItems.value.length !== 1) {
+    alert(t("messages.warning.pleaseSelectOneItemToDelete"));
     return;
   }
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
-    )
-  ) {
+  if (confirm(t("messages.confirm.deleteItem"))) {
     try {
-      const userIds = selectedItems.value.map((user) => user.user_id);
-      await userStore.deleteUsers(userIds);
+      const userId = selectedItems.value[0].user_id;
+      await userStore.deleteUser(userId);
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
       await loadData(); // 사용자 목록 새로고침
@@ -686,9 +713,9 @@ const handleEdit = () => {
     full_name: itemToEdit.full_name,
     email: itemToEdit.email,
     organization: itemToEdit.organization,
-    dept_id: itemToEdit.dept_id,
-    contact_info: itemToEdit.contact_info,
-    is_active: itemToEdit.is_active,
+    dept_id: itemToEdit.dept_id || "",
+    contact_info: itemToEdit.contact_info || "",
+    description: itemToEdit.description || "",
     is_superuser: itemToEdit.is_superuser,
   };
 };

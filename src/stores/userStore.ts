@@ -13,7 +13,7 @@ export interface User {
   is_superuser: boolean;
   created_at: string;
   updated_at: string | null;
-  last_login: string | null;
+
   dept_id: string | null;
   contact_info: string | null;
   description: string | null;
@@ -22,19 +22,17 @@ export interface User {
 }
 
 // 사용자 등록/수정용 인터페이스
-export interface UserFormData
-  extends Omit<
-    User,
-    | "user_id"
-    | "hashed_password"
-    | "created_at"
-    | "updated_at"
-    | "last_login"
-    | "description"
-    | "created_by"
-    | "updated_by"
-  > {
+export interface UserFormData {
+  email: string;
+  username: string;
+  is_superuser: boolean;
+  full_name: string;
+  organization: string;
+  dept_id: string;
+  contact_info: string;
+  description: string;
   password?: string;
+  confirm_password?: string;
 }
 
 export interface UserListResponse {
@@ -140,20 +138,32 @@ export const useUserStore = defineStore("user", {
       this.error = null;
 
       try {
-        // API 스펙에 맞게 데이터 변환
-        const requestData = {
+        // 새로운 API 스펙에 맞게 데이터 변환
+        const requestData: any = {
           email: userData.email,
           username: userData.username,
-          hashed_password: userData.password, // 비밀번호를 hashed_password로 전송
+          is_superuser: userData.is_superuser,
           full_name: userData.full_name,
           organization: userData.organization,
-          dept_id: userData.dept_id,
-          contact_info: userData.contact_info,
-          is_active: userData.is_active,
-          is_superuser: userData.is_superuser,
+          password: userData.password,
+          confirm_password: userData.confirm_password,
         };
 
-        console.log("사용자 등록 요청 데이터:", requestData);
+        // 빈 문자열이 아닌 경우에만 추가
+        if (userData.dept_id && userData.dept_id.trim() !== "") {
+          requestData.dept_id = userData.dept_id;
+        }
+        if (userData.contact_info && userData.contact_info.trim() !== "") {
+          requestData.contact_info = userData.contact_info;
+        }
+        if (userData.description && userData.description.trim() !== "") {
+          requestData.description = userData.description;
+        }
+
+        console.log(
+          "사용자 등록 요청 데이터:",
+          JSON.stringify(requestData, null, 2)
+        );
 
         const response = await request("/api/v1/auth/users/", undefined, {
           method: "POST",
@@ -189,21 +199,30 @@ export const useUserStore = defineStore("user", {
       this.error = null;
 
       try {
-        // API 스펙에 맞게 데이터 변환 (비밀번호가 있는 경우만 포함)
+        // 새로운 API 스펙에 맞게 데이터 변환
         const requestData: any = {
           email: userData.email,
           username: userData.username,
           full_name: userData.full_name,
           organization: userData.organization,
-          dept_id: userData.dept_id,
-          contact_info: userData.contact_info,
-          is_active: userData.is_active,
           is_superuser: userData.is_superuser,
         };
 
+        // 빈 문자열이 아닌 경우에만 추가
+        if (userData.dept_id && userData.dept_id.trim() !== "") {
+          requestData.dept_id = userData.dept_id;
+        }
+        if (userData.contact_info && userData.contact_info.trim() !== "") {
+          requestData.contact_info = userData.contact_info;
+        }
+        if (userData.description && userData.description.trim() !== "") {
+          requestData.description = userData.description;
+        }
+
         // 비밀번호가 있는 경우에만 추가
         if (userData.password) {
-          requestData.hashed_password = userData.password;
+          requestData.password = userData.password;
+          requestData.confirm_password = userData.confirm_password;
         }
 
         const response = await request(
@@ -238,21 +257,20 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    // 사용자 삭제 (단일 또는 다건)
-    async deleteUsers(userIds: string[]) {
+    // 사용자 삭제 (단건)
+    async deleteUser(userId: string) {
       this.loading = true;
       this.error = null;
 
       try {
         const response = await request(
-          `/api/v1/auth/users/${userIds}`,
+          `/api/v1/auth/users/${userId}`,
           undefined,
           {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ user_id: userIds }),
           }
         );
 

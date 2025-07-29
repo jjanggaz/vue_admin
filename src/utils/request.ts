@@ -1,9 +1,5 @@
 import { getTokenInfo } from "./cookies";
-import {
-  refreshAccessToken,
-  isCurrentTokenValid,
-  shouldRefreshToken,
-} from "./tokenManager";
+import { refreshAccessToken, shouldRefreshToken } from "./tokenManager";
 
 export const request = async (
   path: string,
@@ -87,7 +83,28 @@ export const request = async (
     }
 
     if (!res.ok) {
-      throw new Error(`API Call Fail: ${res.statusText}`);
+      // 422 오류 등 상세한 에러 정보를 위해 응답 본문도 포함
+      let errorMessage = `API Call Fail: ${res.status} ${res.statusText}`;
+      try {
+        const errorData = await res.json();
+        if (errorData.detail) {
+          // detail이 배열인 경우 (422 validation error)
+          if (Array.isArray(errorData.detail)) {
+            const messages = errorData.detail
+              .map((item: any) => item.msg)
+              .filter(Boolean);
+            if (messages.length > 0) {
+              errorMessage = messages.join("\n");
+            }
+          } else {
+            // detail이 문자열인 경우
+            errorMessage = errorData.detail;
+          }
+        }
+      } catch (e) {
+        // JSON 파싱 실패 시 기본 메시지 사용
+      }
+      throw new Error(errorMessage);
     }
     return await res.json();
   } catch (e) {

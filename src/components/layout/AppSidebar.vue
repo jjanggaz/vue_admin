@@ -9,7 +9,14 @@
         <!-- 권한에 따른 메뉴 동적 표시 -->
         <template v-for="menuItem in availableMenus" :key="menuItem.path">
           <router-link :to="menuItem.path" class="nav-item">
-            <span class="nav-icon">{{ menuItem.icon }}</span>
+            <span class="nav-icon">
+              <img
+                :src="menuItem.icon"
+                alt="menu icon"
+                width="16"
+                height="16"
+              />
+            </span>
             <span class="nav-text">{{ t(menuItem.titleKey) }}</span>
           </router-link>
         </template>
@@ -36,15 +43,51 @@ const authStore = useAuthStore();
 
 // 코드 기반 메뉴 정의
 const codeBasedMenus = {
-  WEB01: { path: "/dashboard", icon: "📊", titleKey: "sidebar.dashboard" },
-  WEB02: { path: "/code", icon: "🔑", titleKey: "sidebar.code" },
-  WEB03: { path: "/project", icon: "📁", titleKey: "sidebar.project" },
-  WEB04: { path: "/asset", icon: "⚙️", titleKey: "sidebar.asset" },
-  WEB05: { path: "/process", icon: "🏗️", titleKey: "sidebar.process" },
-  WEB06: { path: "/machine", icon: "🏭", titleKey: "sidebar.machine" },
-  WEB07: { path: "/cost", icon: "💰", titleKey: "sidebar.cost" },
-  WEB08: { path: "/model", icon: "📦", titleKey: "sidebar.model" },
-  WEB09: { path: "/user", icon: "👥", titleKey: "sidebar.user" },
+  WEB01: {
+    path: "/dashboard",
+    icon: "/images/icons/WEB01.svg",
+    titleKey: "sidebar.dashboard",
+  },
+  WEB02: {
+    path: "/code",
+    icon: "/images/icons/WEB02.svg",
+    titleKey: "sidebar.code",
+  },
+  WEB03: {
+    path: "/project",
+    icon: "/images/icons/WEB03.svg",
+    titleKey: "sidebar.project",
+  },
+  WEB04: {
+    path: "/asset",
+    icon: "/images/icons/WEB04.svg",
+    titleKey: "sidebar.asset",
+  },
+  WEB05: {
+    path: "/process",
+    icon: "/images/icons/WEB05.svg",
+    titleKey: "sidebar.process",
+  },
+  WEB06: {
+    path: "/machine",
+    icon: "/images/icons/WEB06.svg",
+    titleKey: "sidebar.machine",
+  },
+  WEB07: {
+    path: "/cost",
+    icon: "/images/icons/WEB07.svg",
+    titleKey: "sidebar.cost",
+  },
+  WEB08: {
+    path: "/model",
+    icon: "/images/icons/WEB08.svg",
+    titleKey: "sidebar.model",
+  },
+  WEB09: {
+    path: "/user",
+    icon: "/images/icons/WEB09.svg",
+    titleKey: "sidebar.user",
+  },
 };
 
 // 현재 사용자 코드에 따른 메뉴 계산
@@ -71,7 +114,7 @@ const availableMenus = computed(() => {
   position: fixed;
   left: 0;
   top: 0;
-  width: 250px;
+  width: 280px;
   height: 100vh;
   background-color: $primary-color;
   color: white;
@@ -107,6 +150,8 @@ const availableMenus = computed(() => {
   color: white;
   border-radius: $border-radius-md;
   transition: background-color 0.2s ease;
+  min-height: 44px;
+  gap: $spacing-sm;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -119,12 +164,30 @@ const availableMenus = computed(() => {
 }
 
 .nav-icon {
-  margin-right: $spacing-md;
-  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-icon img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .nav-text {
   font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: $breakpoint-lg) {

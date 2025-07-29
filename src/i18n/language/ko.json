@@ -155,7 +155,7 @@
       "isActive": "사용여부",
       "createdAt": "생성일"
     },
-    "costTarget": {
+    "cost": {
       "id": "순번",
       "name": "목표명",
       "machineName": "기계명",
@@ -211,7 +211,7 @@
     "itemManagement": "항목관리",
     "machine": "기계",
     "codeManagement": "코드관리",
-    "costTarget": "단가표",
+    "cost": "단가 관리",
     "machineManagement": "기기리스트 관리"
   },
   "common": {
@@ -251,18 +251,18 @@
       "active": "사용",
       "inactive": "미사용"
     },
-    "costTargetStatus": {
+    "costStatus": {
       "inProgress": "진행중",
       "completed": "완료",
       "delayed": "지연",
       "cancelled": "취소"
     },
-    "costTargetUnit": {
+    "costUnit": {
       "won": "원",
       "dollar": "달러",
       "yen": "엔"
     },
-    "costTargetMachine": {
+    "costMachine": {
       "pump1": "펌프1",
       "motor1": "모터1",
       "conveyor1": "컨베이어1"
@@ -473,10 +473,10 @@
     "machineCodeValue": "코드값을 입력하세요",
     "machineCodeOrder": "순서를 입력하세요",
     "machineCodeDescription": "설명을 입력하세요",
-    "costTargetName": "목표명을 입력하세요",
-    "costTargetCost": "목표비용을 입력하세요",
-    "costTargetPeriod": "목표기간을 입력하세요 (예: 2025.01-2025.12)",
-    "costTargetDescription": "설명을 입력하세요",
+    "costName": "목표명을 입력하세요",
+    "costCost": "목표비용을 입력하세요",
+    "costPeriod": "목표기간을 입력하세요 (예: 2025.01-2025.12)",
+    "costDescription": "설명을 입력하세요",
     "codeGroup": "코드그룹을 입력하세요",
     "codeHighCode": "상위코드명을 입력하세요",
     "codeCodeName": "코드명을 입력하세요",
@@ -609,6 +609,7 @@
     "machine": "기기리스트 관리",
     "user": "사용자 관리",
     "code": "코드 관리",
+    "cost": "단가 관리",
     "test": "테스트"
   },
   "pageTitles": {
@@ -620,6 +621,7 @@
     "machineManagement": "기기리스트 관리",
     "userManagement": "사용자 관리",
     "codeManagement": "코드 관리",
+    "cost": "단가 관리",
     "test": "테스트",
     "default": "WAI DESIGN"
   },
@@ -646,7 +648,7 @@
     "machine": {
       "machine": "기계",
       "machineCodeManagement": "코드관리",
-      "costTarget": "단가표"
+      "cost": "단가 관리"
     },
     "user": {
       "account": "계정관리",

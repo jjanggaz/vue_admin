@@ -155,7 +155,7 @@
       "isActive": "Active",
       "createdAt": "Created At"
     },
-    "costTarget": {
+    "cost": {
       "id": "ID",
       "name": "Target Name",
       "machineName": "Machine Name",
@@ -211,7 +211,7 @@
     "itemManagement": "Item Management",
     "machine": "Machine",
     "codeManagement": "Code Management",
-    "costTarget": "Cost Target",
+    "cost": "Cost Management",
     "machineManagement": "Machine Management"
   },
   "common": {
@@ -251,18 +251,18 @@
       "active": "Active",
       "inactive": "Inactive"
     },
-    "costTargetStatus": {
+    "costStatus": {
       "inProgress": "In Progress",
       "completed": "Completed",
       "delayed": "Delayed",
       "cancelled": "Cancelled"
     },
-    "costTargetUnit": {
+    "costUnit": {
       "won": "Won",
       "dollar": "Dollar",
       "yen": "Yen"
     },
-    "costTargetMachine": {
+    "costMachine": {
       "pump1": "Pump1",
       "motor1": "Motor1",
       "conveyor1": "Conveyor1"
@@ -364,10 +364,10 @@
     "machineCodeValue": "Enter code value",
     "machineCodeOrder": "Enter order",
     "machineCodeDescription": "Enter description",
-    "costTargetName": "Enter target name",
-    "costTargetCost": "Enter target cost",
-    "costTargetPeriod": "Enter target period (e.g. 2025.01-2025.12)",
-    "costTargetDescription": "Enter description",
+    "costName": "Enter target name",
+    "costCost": "Enter target cost",
+    "costPeriod": "Enter target period (e.g. 2025.01-2025.12)",
+    "costDescription": "Enter description",
     "codeGroup": "Enter code group",
     "codeHighCode": "Enter high code",
     "codeCodeName": "Enter code name",
@@ -609,6 +609,7 @@
     "machine": "Machine Management",
     "user": "User Management",
     "code": "Code Management",
+    "cost": "Cost Management",
     "test": "Test"
   },
   "pageTitles": {
@@ -620,6 +621,7 @@
     "machineManagement": "Machine Management",
     "userManagement": "User Management",
     "codeManagement": "Code Management",
+    "cost": "Cost Management",
     "test": "Test",
     "default": "WAI DESIGN"
   },
@@ -645,7 +647,7 @@
     "machine": {
       "machine": "Machine",
       "machineCodeManagement": "Code Management",
-      "costTarget": "Cost Target"
+      "cost": "Cost Management"
     },
     "user": {
       "account": "Account Management",

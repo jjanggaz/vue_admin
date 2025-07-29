@@ -6,16 +6,6 @@
 
       <!-- Navigation Menu -->
       <nav class="nav-menu">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-text">{{ t("sidebar.dashboard") }}</span>
-        </router-link>
-
-        <router-link to="/test" class="nav-item">
-          <span class="nav-icon">🧪</span>
-          <span class="nav-text">{{ t("sidebar.test") }}</span>
-        </router-link>
-
         <!-- 권한에 따른 메뉴 동적 표시 -->
         <template v-for="menuItem in availableMenus" :key="menuItem.path">
           <router-link :to="menuItem.path" class="nav-item">
@@ -23,6 +13,11 @@
             <span class="nav-text">{{ t(menuItem.titleKey) }}</span>
           </router-link>
         </template>
+
+        <router-link to="/test" class="nav-item">
+          <span class="nav-icon">🧪</span>
+          <span class="nav-text">{{ t("sidebar.test") }}</span>
+        </router-link>
       </nav>
     </div>
   </aside>
@@ -47,7 +42,7 @@ const codeBasedMenus = {
   WEB04: { path: "/asset", icon: "⚙️", titleKey: "sidebar.asset" },
   WEB05: { path: "/process", icon: "🏗️", titleKey: "sidebar.process" },
   WEB06: { path: "/machine", icon: "🏭", titleKey: "sidebar.machine" },
-  WEB07: { path: "/costTarget", icon: "💰", titleKey: "sidebar.costTarget" },
+  WEB07: { path: "/cost", icon: "💰", titleKey: "sidebar.cost" },
   WEB08: { path: "/model", icon: "📦", titleKey: "sidebar.model" },
   WEB09: { path: "/user", icon: "👥", titleKey: "sidebar.user" },
 };
@@ -63,10 +58,11 @@ const availableMenus = computed(() => {
   // 코드 기반으로 메뉴 필터링
   return userCodes
     .map((code) => codeBasedMenus[code as keyof typeof codeBasedMenus])
-    .filter(Boolean)
-    .filter((menu) => {
-      return router.hasRoute(menu.path.substring(1)); // '/' 제거
-    });
+    .filter(Boolean);
+  // 라우트 확인 로직 비활성화 (타이밍 이슈로 인해)
+  // .filter((menu) => {
+  //   return router.hasRoute(menu.path.substring(1)); // '/' 제거
+  // });
 });
 </script>
 

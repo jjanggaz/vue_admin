@@ -23,7 +23,7 @@ import { machineRoute } from "./routes/machine";
 import { userRoute } from "./routes/user";
 import { codeRoute } from "./routes/code";
 import { testRoute } from "./routes/test";
-import { costTargetRoute } from "./routes/costTarget";
+import { costRoute } from "./routes/cost";
 
 import { useAuthStore } from "../stores/authStore";
 
@@ -68,7 +68,7 @@ const codeBasedRoutes = {
   WEB04: assetRoute,
   WEB05: processRoute,
   WEB06: machineRoute,
-  WEB07: costTargetRoute,
+  WEB07: costRoute,
   WEB08: modelRoute,
   WEB09: userRoute,
 };
@@ -128,7 +128,6 @@ export const addRoleBasedRoutes = (userCodes: string[]) => {
     console.log(
       `[Router] 사용자 코드 기반 라우트 추가 완료 (${roleRoutes.length}개)`
     );
-    console.log(`[Router] 사용자 코드: ${userCodes.join(", ")}`);
   } else {
     console.warn(
       `[Router] 유효한 라우트 코드가 없습니다: ${userCodes.join(", ")}`

@@ -51,7 +51,17 @@ export const useAuthStore = defineStore("auth", {
             const userInfo = {
               username: result.user_info.username,
               fullName: result.user_info.full_name,
-              codes: result.codes || [], // 서버에서 받은 코드 배열
+              codes: result.codes || [
+                "WEB01",
+                "WEB02",
+                "WEB03",
+                "WEB04",
+                "WEB05",
+                "WEB06",
+                "WEB07",
+                "WEB08",
+                "WEB09",
+              ], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
             };
 
             // SessionStorage에 사용자 정보 저장

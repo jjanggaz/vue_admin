@@ -1,5 +1,5 @@
-﻿<template>
-  <div class="cost-target-page">
+<template>
+  <div class="cost-management-page">
     <!-- 검색 바 -->
     <div class="action-bar">
       <div class="search-bar">
@@ -46,17 +46,17 @@
     >
       <!-- 기계명 슬롯 -->
       <template #cell-machineName="{ value }">
-        {{ t("common.costTargetMachine." + mapMachineName(value)) }}
+        {{ t("common.costMachine." + mapMachineName(value)) }}
       </template>
 
       <!-- 단위 슬롯 -->
       <template #cell-unit="{ value }">
-        {{ t("common.costTargetUnit." + mapUnit(value)) }}
+        {{ t("common.costUnit." + mapUnit(value)) }}
       </template>
 
       <!-- 상태 슬롯 -->
       <template #cell-status="{ value }">
-        {{ t("common.costTargetStatus." + mapStatus(value)) }}
+        {{ t("common.costStatus." + mapStatus(value)) }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -96,50 +96,50 @@
                 v-model="newCost.name"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.costTargetName')"
+                :placeholder="t('placeholder.costName')"
               />
             </dd>
-            <dt class="essential">{{ t("columns.costTarget.machineName") }}</dt>
+            <dt class="essential">{{ t("columns.cost.machineName") }}</dt>
             <dd>
               <select v-model="newCost.machineName" class="form-input">
                 <option value="">-- {{ t("common.select") }} --</option>
                 <option value="펌프1">
-                  {{ t("common.costTargetMachine.pump1") }}
+                  {{ t("common.costMachine.pump1") }}
                 </option>
                 <option value="모터1">
-                  {{ t("common.costTargetMachine.motor1") }}
+                  {{ t("common.costMachine.motor1") }}
                 </option>
                 <option value="컨베이어1">
-                  {{ t("common.costTargetMachine.conveyor1") }}
+                  {{ t("common.costMachine.conveyor1") }}
                 </option>
               </select>
             </dd>
-            <dt>{{ t("columns.costTarget.targetCost") }}</dt>
+            <dt>{{ t("columns.cost.targetCost") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetCost"
                 type="number"
                 class="form-input"
-                :placeholder="t('placeholder.costTargetCost')"
+                :placeholder="t('placeholder.costCost')"
               />
             </dd>
-            <dt>{{ t("columns.costTarget.unit") }}</dt>
+            <dt>{{ t("columns.cost.unit") }}</dt>
             <dd>
               <select v-model="newCost.unit" class="form-input">
-                <option value="원">{{ t("common.costTargetUnit.won") }}</option>
+                <option value="원">{{ t("common.costUnit.won") }}</option>
                 <option value="달러">
-                  {{ t("common.costTargetUnit.dollar") }}
+                  {{ t("common.costUnit.dollar") }}
                 </option>
-                <option value="엔">{{ t("common.costTargetUnit.yen") }}</option>
+                <option value="엔">{{ t("common.costUnit.yen") }}</option>
               </select>
             </dd>
-            <dt>{{ t("columns.costTarget.targetPeriod") }}</dt>
+            <dt>{{ t("columns.cost.targetPeriod") }}</dt>
             <dd>
               <input
                 v-model="newCost.targetPeriod"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.costTargetPeriod')"
+                :placeholder="t('placeholder.costPeriod')"
               />
             </dd>
             <dt>{{ t("common.description") }}</dt>
@@ -147,24 +147,24 @@
               <textarea
                 v-model="newCost.description"
                 class="form-input"
-                :placeholder="t('placeholder.costTargetDescription')"
+                :placeholder="t('placeholder.costDescription')"
                 rows="3"
               ></textarea>
             </dd>
-            <dt>{{ t("columns.costTarget.status") }}</dt>
+            <dt>{{ t("columns.cost.status") }}</dt>
             <dd>
               <select v-model="newCost.status" class="form-input">
                 <option value="진행중">
-                  {{ t("common.costTargetStatus.inProgress") }}
+                  {{ t("common.costStatus.inProgress") }}
                 </option>
                 <option value="완료">
-                  {{ t("common.costTargetStatus.completed") }}
+                  {{ t("common.costStatus.completed") }}
                 </option>
                 <option value="지연">
-                  {{ t("common.costTargetStatus.delayed") }}
+                  {{ t("common.costStatus.delayed") }}
                 </option>
                 <option value="취소">
-                  {{ t("common.costTargetStatus.cancelled") }}
+                  {{ t("common.costStatus.cancelled") }}
                 </option>
               </select>
             </dd>
@@ -222,55 +222,55 @@ interface RegistForm {
 const tableColumns: TableColumn[] = [
   {
     key: "id",
-    title: t("columns.costTarget.id"),
+    title: t("columns.cost.id"),
     width: "60px",
     sortable: false,
   },
   {
     key: "name",
-    title: t("columns.costTarget.name"),
+    title: t("columns.cost.name"),
     width: "150px",
     sortable: true,
   },
   {
     key: "machineName",
-    title: t("columns.costTarget.machineName"),
+    title: t("columns.cost.machineName"),
     width: "120px",
     sortable: true,
   },
   {
     key: "targetCost",
-    title: t("columns.costTarget.targetCost"),
+    title: t("columns.cost.targetCost"),
     width: "120px",
     sortable: true,
   },
   {
     key: "unit",
-    title: t("columns.costTarget.unit"),
+    title: t("columns.cost.unit"),
     width: "80px",
     sortable: true,
   },
   {
     key: "targetPeriod",
-    title: t("columns.costTarget.targetPeriod"),
+    title: t("columns.cost.targetPeriod"),
     width: "150px",
     sortable: true,
   },
   {
     key: "description",
-    title: t("columns.costTarget.description"),
+    title: t("columns.cost.description"),
     width: "200px",
     sortable: true,
   },
   {
     key: "status",
-    title: t("columns.costTarget.status"),
+    title: t("columns.cost.status"),
     width: "100px",
     sortable: true,
   },
   {
     key: "createdAt",
-    title: t("columns.costTarget.createdAt"),
+    title: t("columns.cost.createdAt"),
     width: "120px",
     sortable: true,
   },
@@ -520,7 +520,7 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "sass:color";
 
-.cost-target-page {
+.cost-management-page {
   padding: $spacing-lg;
 }
 

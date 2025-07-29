@@ -390,9 +390,15 @@ watch(
   }
 
   th.checkbox-cell,
-  td .checkbox-cell {
+  td.checkbox-cell {
     width: 40px;
     text-align: center;
+    vertical-align: middle;
+
+    input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+    }
 
     .select-header-text {
       font-size: 14px;

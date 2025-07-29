@@ -4,12 +4,20 @@
       <thead>
         <tr>
           <th v-if="selectable" class="checkbox-cell">
-            <input
-              type="checkbox"
-              :checked="allSelected"
-              :disabled="data.length === 0"
-              @change="toggleSelectAll"
-            />
+            <template v-if="showSelectAll && selectionMode !== 'none'">
+              <input
+                type="checkbox"
+                :checked="allSelected"
+                :disabled="data.length === 0 || selectionMode === 'single'"
+                @change="toggleSelectAll"
+              />
+            </template>
+            <template v-else-if="selectHeaderText">
+              <span class="select-header-text">{{ selectHeaderText }}</span>
+            </template>
+            <template v-else>
+              <span class="select-header-text">선택</span>
+            </template>
           </th>
           <th
             v-for="column in columns"
@@ -142,6 +150,9 @@ interface Props {
   defaultSort?: { key: string; direction: "asc" | "desc" };
   selectable?: boolean;
   selectedItems?: any[];
+  selectionMode?: "multiple" | "single" | "none"; // 선택 모드: 다중선택, 단일선택, 선택불가
+  showSelectAll?: boolean; // 전체선택 체크박스 표시 여부
+  selectHeaderText?: string; // 선택 컬럼 헤더 텍스트
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -149,6 +160,9 @@ const props = withDefaults(defineProps<Props>(), {
   rowKey: "id",
   selectable: false,
   selectedItems: () => [],
+  selectionMode: "multiple",
+  showSelectAll: true,
+  selectHeaderText: "",
 });
 
 const emit = defineEmits<{
@@ -201,9 +215,17 @@ const toggleSelectRow = (item: any) => {
   );
 
   if (index > -1) {
+    // 이미 선택된 경우 선택 해제
     localSelected.value.splice(index, 1);
   } else {
-    localSelected.value.push(item);
+    // 선택되지 않은 경우 선택
+    if (props.selectionMode === "single") {
+      // 단일 선택 모드: 기존 선택을 모두 해제하고 현재 항목만 선택
+      localSelected.value = [item];
+    } else {
+      // 다중 선택 모드: 현재 항목 추가
+      localSelected.value.push(item);
+    }
   }
   emit("selection-change", [...localSelected.value]);
 };
@@ -211,6 +233,29 @@ const toggleSelectRow = (item: any) => {
 const handleRowClick = (item: any, index: number) => {
   // row 클릭 시 row-click 이벤트 발생
   emit("row-click", item, index);
+
+  // 선택 모드에 따라 row 클릭 시 선택 토글
+  if (props.selectable && props.selectionMode !== "none") {
+    if (props.selectionMode === "single") {
+      // 단일 선택 모드: 이미 선택된 항목이면 해제, 아니면 선택
+      const itemKey = getRowKey(item, -1);
+      const isCurrentlySelected = localSelected.value.some(
+        (selected) => getRowKey(selected, -1) === itemKey
+      );
+
+      if (isCurrentlySelected) {
+        // 이미 선택된 경우 선택 해제
+        localSelected.value = [];
+      } else {
+        // 선택되지 않은 경우 선택
+        localSelected.value = [item];
+      }
+      emit("selection-change", [...localSelected.value]);
+    } else {
+      // 다중 선택 모드: 토글
+      toggleSelectRow(item);
+    }
+  }
 };
 
 // 정렬 상태 관리
@@ -345,9 +390,15 @@ watch(
   }
 
   th.checkbox-cell,
-  td.checkbox-cell {
+  td .checkbox-cell {
     width: 40px;
     text-align: center;
+
+    .select-header-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
   }
 
   thead {

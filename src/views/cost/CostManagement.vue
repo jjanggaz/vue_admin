@@ -43,6 +43,7 @@
       :selectable="true"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
+      @row-click="handleRowClick"
     >
       <!-- 기계명 슬롯 -->
       <template #cell-machineName="{ value }">
@@ -361,6 +362,22 @@ const loadSampleData = () => {
 
 const handleSelectionChange = (selected: CostItem[]) => {
   selectedItems.value = selected;
+};
+
+// 행 클릭 핸들러
+const handleRowClick = (item: CostItem) => {
+  console.log("Row clicked:", item);
+  // row 클릭 시 해당 항목 선택 토글
+  const index = selectedItems.value.findIndex(
+    (selected) => selected.id === item.id
+  );
+  if (index > -1) {
+    // 이미 선택된 경우 선택 해제
+    selectedItems.value.splice(index, 1);
+  } else {
+    // 선택되지 않은 경우 선택
+    selectedItems.value.push(item);
+  }
 };
 
 const handlePageChange = (page: number) => {

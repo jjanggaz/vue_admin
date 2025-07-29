@@ -60,21 +60,16 @@
       :columns="tableColumns"
       :data="paginatedUserList"
       :loading="userStore.loading"
-      :selectable="false"
+      :selectable="true"
       :selected-items="selectedItems"
+      :selection-mode="'single'"
+      :show-select-all="false"
+      :select-header-text="t('common.selectColumn')"
       row-key="user_id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
     >
-      <template #cell-selection="{ item }">
-        <input
-          type="checkbox"
-          :checked="isSelected(item)"
-          @change="handleCheckboxChange(item)"
-          style="cursor: pointer"
-        />
-      </template>
       <template #cell-index="{ index }">
         {{ index + 1 }}
       </template>
@@ -298,12 +293,6 @@ interface UserForm {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "user_id", title: "ID", width: "0px", sortable: false, hidden: true },
-  {
-    key: "selection",
-    title: t("common.selectColumn"),
-    width: "80px",
-    sortable: false,
-  },
   { key: "index", title: t("columns.user.no"), width: "60px", sortable: false },
   {
     key: "username",
@@ -462,13 +451,6 @@ const handleSelectionChange = (selected: User[]) => {
   selectedItems.value = selected;
 };
 
-// 선택 상태 확인 함수
-const isSelected = (item: User) => {
-  return selectedItems.value.some(
-    (selected) => selected.user_id === item.user_id
-  );
-};
-
 // 페이지 변경 핸들러
 const handlePageChange = async (page: number) => {
   await userStore.changePage(page);
@@ -487,15 +469,7 @@ const handleSortChange = (sortInfo: {
 // 행 클릭 핸들러
 const handleRowClick = (item: User) => {
   console.log("Row clicked:", item);
-  // row 클릭 시 해당 항목만 선택 (단일 선택)
-  selectedItems.value = [item];
-};
-
-// 체크박스 변경 핸들러
-const handleCheckboxChange = (item: User) => {
-  console.log("Checkbox changed:", item);
-  // 체크박스 클릭 시 해당 항목만 선택 (단일 선택)
-  selectedItems.value = [item];
+  // DataTable의 내부 선택 기능 사용
 };
 
 // 컴포넌트 마운트 시 데이터 로드

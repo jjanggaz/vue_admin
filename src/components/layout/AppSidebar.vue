@@ -114,80 +114,71 @@ const availableMenus = computed(() => {
   position: fixed;
   left: 0;
   top: 0;
-  width: 280px;
+  width: 250px;
   height: 100vh;
-  background-color: $primary-color;
-  color: white;
-  z-index: 1000;
-  overflow-y: auto;
-}
+  background-color: $background-darker;
+  z-index: 100;
 
-.sidebar-content {
-  padding: $spacing-lg;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+  .sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 
-.sidebar-content img {
-  width: 120px;
-  margin-bottom: $spacing-xl;
-  align-self: center;
-}
-
-.nav-menu {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: $spacing-md;
-  text-decoration: none;
-  color: white;
-  border-radius: $border-radius-md;
-  transition: background-color 0.2s ease;
-  min-height: 44px;
-  gap: $spacing-sm;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    img {
+      width: 220px;
+      height: auto;
+      margin: $spacing-lg auto;
+      padding: 0 $spacing-lg;
+      object-fit: contain;
+    }
   }
 
-  &.router-link-active {
-    background-color: rgba(255, 255, 255, 0.2);
-    font-weight: 600;
+  .nav-menu {
+    flex: 1;
+    padding: $spacing-sm 0;
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0 $spacing-lg;
+      color: rgba($text-white, 0.7);
+      text-decoration: none;
+      cursor: pointer;
+      transition: $transition-base;
+      border-left: 3px solid transparent;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: $text-white;
+      }
+
+      &.router-link-active {
+        background-color: rgba($primary-color, 0.1);
+        color: $text-white;
+        border-left-color: $primary-color;
+
+        .nav-icon {
+          color: $primary-color;
+        }
+      }
+
+      .nav-icon {
+        font-size: 18px;
+        margin-right: $spacing-md;
+        width: 24px;
+        height: 60px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .nav-text {
+        font-size: $font-size-base;
+        font-weight: $font-weight-md;
+      }
+    }
   }
-}
-
-.nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.nav-icon img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.nav-text {
-  font-size: 0.9em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 @media (max-width: $breakpoint-lg) {

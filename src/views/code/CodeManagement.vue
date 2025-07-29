@@ -143,7 +143,7 @@
             <dd>
               <input
                 id="code-group"
-                v-model="newCode.codeGroup"
+                v-model="newCode.code_group"
                 type="text"
                 :placeholder="t('placeholder.codeGroup')"
                 :disabled="isEditMode"
@@ -153,7 +153,7 @@
             <dd>
               <input
                 id="code-high-code"
-                v-model="newCode.highCode"
+                v-model="newCode.parent_key"
                 type="text"
                 :placeholder="t('placeholder.codeHighCode')"
                 :disabled="isEditMode"
@@ -163,7 +163,7 @@
             <dd>
               <input
                 id="code-name"
-                v-model="newCode.codeName"
+                v-model="newCode.code_key"
                 type="text"
                 :placeholder="t('placeholder.codeCodeName')"
               />
@@ -172,12 +172,21 @@
             <dd>
               <input
                 id="code-name-korean"
-                v-model="newCode.codeNameKorean"
+                v-model="newCode.code_name"
                 type="text"
                 :placeholder="t('placeholder.codeCodeName')"
               />
             </dd>
-            <dt>{{ t("columns.code.orderMovement") }}</dt>
+            <dt>{{ t("columns.code.codeNameEnglish") }}</dt>
+            <dd>
+              <input
+                id="code-name-korean"
+                v-model="newCode.code_name_en"
+                type="text"
+                :placeholder="t('placeholder.codeCodeName')"
+              />
+            </dd>
+            <!-- <dt>{{ t("columns.code.orderMovement") }}</dt>
             <dd>
               <input
                 id="code-rank"
@@ -185,11 +194,10 @@
                 type="text"
                 :placeholder="t('placeholder.codeOrder')"
               />
-            </dd>
+            </dd> -->
             <dt>{{ t("columns.code.usageStatus") }}</dt>
             <dd>
-              <select v-model="newCode.usage" class="filter-select">
-                <option value="">{{ t("common.select") }}</option>
+              <select v-model="newCode.is_active" class="filter-select">
                 <option value="Y">{{ t("common.used") }}</option>
                 <option value="N">{{ t("common.unused") }}</option>
               </select>
@@ -198,7 +206,7 @@
             <dd>
               <input
                 id="code-description"
-                v-model="newCode.etc"
+                v-model="newCode.description"
                 type="text"
                 :placeholder="t('placeholder.codeDescription')"
               />
@@ -224,58 +232,61 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import CodeRegistrationModal from "./CodeRegistrationModal.vue";
+import { request } from "../../utils/request";
 import { useI18n } from "vue-i18n";
+
+const SYSTEM_CODE = import.meta.env.VITE_SYSTEM_CODE;
+console.log('SYSTEM_CODE :', SYSTEM_CODE);
 
 const { t } = useI18n();
 
 interface CodeItem {
-  id: string;
-  codeGroup: string;
-  highCode: string;
-  codeName: string;
-  codeNameKorean: string;
-  rank: string;
-  usage: string;
-  etc: string;
-  majorCategory?: string;
-  mediumCategory?: string;
-  minorCategory?: string;
+  code_id: string;
+  code_group: string;
+  code_key: string;
+  code_name: string;
+  code_name_en: string;
+  code_value: string;
+  code_order: string;
+  is_active: string;
+  parent_key: string;
+  description: string;
 }
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   {
-    key: "codeGroup",
+    key: "code_group",
     title: t("columns.code.codeGroupKorean"),
     width: "120px",
     sortable: true,
   },
   {
-    key: "highCode",
+    key: "parent_key",
     title: t("columns.code.parentCode"),
     width: "100px",
     sortable: true,
   },
   {
-    key: "codeName",
+    key: "code_key",
     title: t("columns.code.code"),
     width: "100px",
     sortable: true,
   },
   {
-    key: "codeNameKorean",
+    key: "code_name",
     title: t("columns.code.codeNameKorean"),
     width: "150px",
     sortable: true,
   },
   {
-    key: "rank",
+    key: "code_order",
     title: t("columns.code.orderMovement"),
     width: "100px",
     sortable: true,
   },
   {
-    key: "usage",
+    key: "is_active",
     title: t("columns.code.usageStatus"),
     width: "100px",
     sortable: true,
@@ -283,7 +294,7 @@ const tableColumns: TableColumn[] = [
       value === "Y" ? t("common.used") : t("common.unused"),
   },
   {
-    key: "etc",
+    key: "description",
     title: t("columns.code.codeDescription"),
     width: "150px",
     sortable: true,
@@ -322,15 +333,42 @@ const selectedItems = ref<CodeItem[]>([]);
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newCode = ref<CodeItem>({
-  id: "",
-  codeGroup: "",
-  highCode: "",
-  codeName: "",
-  codeNameKorean: "",
-  rank: "",
-  usage: "",
-  etc: "",
+  // id: "",
+  // codeGroup: "",
+  // highCode: "",
+  // codeName: "",
+  // codeNameKorean: "",
+  // rank: "",
+  // usage: "",
+  // etc: "",
+  code_id: "",
+  code_group: "",
+  code_key: "",
+  code_name: "",
+  code_name_en: "",
+  code_value: "",
+  code_order: "",
+  is_active: "",
+  parent_key: "",
+  description: ""
 });
+
+// 검색조건 (1.코드그룹, 2, 대분류, 3.중분류, 4. 소분류)
+const uniqueCodeGroups = computed(() => {
+  const set = new Set(codeList.value.map((item) => item.code_group));
+  return Array.from(set);
+});
+
+const uniqueMajorCategories = computed(() => {
+  return ["공정", "기계", "유형", "유입종류"];
+});
+const uniqueMediumCategories = computed(() => {
+  return ["전처리", "후처리", "송풍기", "펌프"];
+});
+const uniqueMinorCategories = computed(() => {
+  return ["1차", "2차", "3차"];
+});
+
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredCodeList = computed(() => {
@@ -354,148 +392,175 @@ const paginatedcodeList = computed(() => {
   return filteredCodeList.value.slice(start, end);
 });
 
-// 카테고리별 option용 computed
-const uniqueCodeGroups = computed(() => {
-  const set = new Set(codeList.value.map((item) => item.codeGroup));
-  return Array.from(set);
-});
-
-const uniqueMajorCategories = computed(() => {
-  return ["공정", "기계", "유형", "유입종류"];
-});
-const uniqueMediumCategories = computed(() => {
-  return ["전처리", "후처리", "송풍기", "펌프"];
-});
-const uniqueMinorCategories = computed(() => {
-  return ["1차", "2차", "3차"];
-});
 
 // 데이터 로드 함수
 const loadData = async () => {
+
+  const queryParams: Record<string, string> = {};
+
+  // if (params.offset !== undefined)
+  //   queryParams.offset = params.offset.toString();
+  // if (params.limit !== undefined)
+  //   queryParams.limit = params.limit.toString();
+  // if (params.page !== undefined)
+  //   queryParams.page = params.page.toString();
+  // if (params.itemsPerPage !== undefined)
+  //   queryParams.itemsPerPage = params.itemsPerPage.toString();
+
+  const result = await request("/api/v1/common/common_codes/", queryParams, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  // // API 응답 구조에 따라 처리
+  // if (Array.isArray(response)) {
+  //   // 응답이 배열인 경우
+  //   this.users = response;
+  //   this.totalCount = response.length;
+  //   this.currentPage = 1;
+  //   this.itemsPerPage = response.length;
+  //   this.hasMore = false;
+  // } else {
+  //   // 응답이 객체인 경우 (UserListResponse 형태)
+  //   this.users = response.data;
+  //   this.totalCount = response.total_count;
+  //   this.currentPage = response.page;
+  //   this.itemsPerPage = response.items_per_page;
+  //   this.hasMore = response.has_more;
+  // }
+
+  console.log("사용자 목록 조회 성공:", result);
+
+
+
+
   loading.value = true;
   try {
-    codeList.value = [
-      {
-        id: "1",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "송풍기",
-        rank: "1",
-        usage: "Y",
-        etc: "",
-      },
-      {
-        id: "2",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "AI0101",
-        codeNameKorean: "터보블로워(VVVF)",
-        rank: "1",
-        usage: "Y",
-        etc: "",
-      },
-      {
-        id: "3",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "2",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "4",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "3",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "5",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "4",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "6",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "5",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "7",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "6",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "8",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "7",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "9",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "8",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "10",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "9",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "11",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "10",
-        usage: "N",
-        etc: "",
-      },
-      {
-        id: "12",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "",
-        codeNameKorean: "",
-        rank: "11",
-        usage: "N",
-        etc: "",
-      },
-    ];
+    codeList.value = result
+    // codeList.value = [
+    //   {
+    //     id: "1",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "송풍기",
+    //     rank: "1",
+    //     usage: "Y",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "2",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "AI0101",
+    //     codeNameKorean: "터보블로워(VVVF)",
+    //     rank: "1",
+    //     usage: "Y",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "3",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "2",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "4",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "3",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "5",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "4",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "6",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "5",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "7",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "6",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "8",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "7",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "9",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "8",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "10",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "9",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "11",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "10",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "12",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "11",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    // ];
     totalCount.value = codeList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
   } catch (error) {

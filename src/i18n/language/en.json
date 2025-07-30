@@ -178,6 +178,7 @@
       "description": "Description",
       "status": "Status",
       "role": "Role",
+      "userType": "User Type",
       "lastLogin": "Last Login"
     },
     "roleGroup": {
@@ -271,7 +272,7 @@
       "motor1": "Motor1",
       "conveyor1": "Conveyor1"
     },
-    "userCorpType": {
+    "userType": {
       "internal": "Internal",
       "external": "External"
     },

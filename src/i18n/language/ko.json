@@ -178,6 +178,7 @@
       "description": "설명",
       "status": "상태",
       "role": "권한",
+      "userType": "사용자구분",
       "lastLogin": "최근 로그인"
     },
     "roleGroup": {
@@ -271,7 +272,7 @@
       "motor1": "모터1",
       "conveyor1": "컨베이어1"
     },
-    "userCorpType": {
+    "userType": {
       "internal": "사내",
       "external": "사외"
     },

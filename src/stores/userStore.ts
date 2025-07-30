@@ -11,6 +11,7 @@ export interface User {
   organization: string;
   is_active: boolean;
   is_superuser: boolean;
+  user_type: "INTERNAL" | "EXTERNAL" | null; // 사내/사외 구분 (null 허용)
   created_at: string;
   updated_at: string | null;
 
@@ -28,6 +29,7 @@ export interface UserFormData {
   is_superuser: boolean;
   full_name: string;
   organization: string;
+  user_type: "INTERNAL" | "EXTERNAL"; // 사내/사외 구분
   dept_id: string;
   contact_info: string;
   description: string;
@@ -366,6 +368,15 @@ export const useUserStore = defineStore("user", {
         if (key === "is_active") {
           const statusText = value ? "활성" : "비활성";
           return statusText.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+
+        // 사용자 타입 검색 시 특별 처리
+        if (key === "user_type") {
+          if (value === null || value === undefined) {
+            return false; // null인 경우 검색 결과에서 제외
+          }
+          const typeText = value === "INTERNAL" ? "사내" : "사외";
+          return typeText.toLowerCase().includes(searchQuery.toLowerCase());
         }
 
         return value

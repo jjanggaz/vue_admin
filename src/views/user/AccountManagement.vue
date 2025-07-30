@@ -15,6 +15,9 @@
               <option value="organization">
                 {{ t("columns.user.corpName") }}
               </option>
+              <option value="user_type">
+                {{ t("columns.user.userType") }}
+              </option>
               <option value="email">{{ t("columns.user.email") }}</option>
               <option value="is_superuser">{{ t("columns.user.role") }}</option>
               <option value="is_active">{{ t("columns.user.status") }}</option>
@@ -66,6 +69,8 @@
       :show-select-all="false"
       :select-header-text="t('common.selectColumn')"
       row-key="user_id"
+      maxHeight="500px"
+      :stickyHeader="true"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
@@ -207,6 +212,18 @@
               />
             </dd>
 
+            <dt>{{ t("columns.user.userType") }}</dt>
+            <dd>
+              <select id="user-type" v-model="newUser.user_type">
+                <option value="INTERNAL">
+                  {{ t("common.userType.internal") }}
+                </option>
+                <option value="EXTERNAL">
+                  {{ t("common.userType.external") }}
+                </option>
+              </select>
+            </dd>
+
             <dt>{{ t("columns.user.email") }}</dt>
             <dd>
               <input
@@ -284,6 +301,7 @@ interface UserForm {
   full_name: string;
   email: string;
   organization: string;
+  user_type: "INTERNAL" | "EXTERNAL"; // 사내/사외 구분
   dept_id: string;
   contact_info: string;
   description: string;
@@ -305,6 +323,20 @@ const tableColumns: TableColumn[] = [
     title: t("columns.user.name"),
     width: "120px",
     sortable: true,
+  },
+  {
+    key: "user_type",
+    title: t("columns.user.userType"),
+    width: "100px",
+    sortable: true,
+    formatter: (value) => {
+      if (!value || value === null || value === undefined || value === "") {
+        return "-"; // 데이터가 없는 경우 "-" 표시
+      }
+      return value === "INTERNAL"
+        ? t("common.userType.internal")
+        : t("common.userType.external");
+    },
   },
   {
     key: "organization",
@@ -366,6 +398,7 @@ const newUser = ref<UserForm>({
   full_name: "",
   email: "",
   organization: "",
+  user_type: "INTERNAL",
   dept_id: "",
   contact_info: "",
   description: "",
@@ -499,6 +532,7 @@ const handleRegist = () => {
     full_name: "",
     email: "",
     organization: "",
+    user_type: "INTERNAL",
     dept_id: "",
     contact_info: "",
     description: "",
@@ -555,6 +589,7 @@ const saveUser = async () => {
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
+        user_type: newUser.value.user_type,
       });
 
       alert(t("messages.success.userInfoUpdated"));
@@ -573,6 +608,7 @@ const saveUser = async () => {
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
+        user_type: newUser.value.user_type,
       });
 
       await userStore.createUser({
@@ -586,6 +622,7 @@ const saveUser = async () => {
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
+        user_type: newUser.value.user_type,
       });
       alert(t("messages.success.userRegistered"));
       await loadData(); // 사용자 목록 새로고침
@@ -600,6 +637,7 @@ const saveUser = async () => {
       full_name: "",
       email: "",
       organization: "",
+      user_type: "INTERNAL",
       dept_id: "",
       contact_info: "",
       description: "",
@@ -687,6 +725,7 @@ const handleEdit = () => {
     full_name: itemToEdit.full_name,
     email: itemToEdit.email,
     organization: itemToEdit.organization,
+    user_type: itemToEdit.user_type || "INTERNAL", // null인 경우 기본값 설정
     dept_id: itemToEdit.dept_id || "",
     contact_info: itemToEdit.contact_info || "",
     description: itemToEdit.description || "",

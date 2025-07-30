@@ -1,5 +1,9 @@
 <template>
-  <div class="data-table-container">
+  <div
+    class="data-table-container"
+    :class="{ 'with-scroll': maxHeight !== 'auto' }"
+    :style="maxHeight !== 'auto' ? { maxHeight } : {}"
+  >
     <table class="data-table">
       <thead>
         <tr>
@@ -153,6 +157,8 @@ interface Props {
   selectionMode?: "multiple" | "single" | "none"; // 선택 모드: 다중선택, 단일선택, 선택불가
   showSelectAll?: boolean; // 전체선택 체크박스 표시 여부
   selectHeaderText?: string; // 선택 컬럼 헤더 텍스트
+  maxHeight?: string; // 테이블 최대 높이 (스크롤 적용)
+  stickyHeader?: boolean; // 헤더 고정 여부
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -163,6 +169,8 @@ const props = withDefaults(defineProps<Props>(), {
   selectionMode: "multiple",
   showSelectAll: true,
   selectHeaderText: "",
+  maxHeight: "auto",
+  stickyHeader: false,
 });
 
 const emit = defineEmits<{
@@ -376,6 +384,11 @@ watch(
   overflow: hidden;
   box-shadow: $shadow-sm;
   border: 1px solid $border-color;
+
+  &.with-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .data-table {
@@ -409,12 +422,16 @@ watch(
 
   thead {
     background-color: $background-light;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 
     th {
       font-weight: $font-weight-md;
       color: $text-color;
       font-size: $font-size-sm;
       position: relative;
+      background-color: $background-light; // 스크롤 시 배경색 유지
 
       &.sortable {
         cursor: pointer;
@@ -468,6 +485,11 @@ watch(
         opacity: 1;
       }
     }
+  }
+
+  // stickyHeader가 false일 때 헤더 고정 해제
+  &:not(.with-scroll) thead {
+    position: static;
   }
 
   tbody {

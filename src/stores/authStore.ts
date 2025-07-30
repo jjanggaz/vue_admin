@@ -46,22 +46,22 @@ export const useAuthStore = defineStore("auth", {
           };
           setTokenInfo(tokenInfo);
 
+          // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 START =======================
+          const waiWebAdminMenus =
+            result.menus?.filter(
+              (menu: any) => menu.system_code === "WAI_WEB_ADMIN"
+            ) || []; // WAI_WEB_ADMIN으로 된 코드만 필터
+          const menuCodes = waiWebAdminMenus
+            .map((menu: any) => menu.menu_code)
+            .filter((code: string) => code.startsWith("WEB")); // WEB으로 시작하는 코드만 필터
+          // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 END =======================
+
           // 로그인 응답에서 사용자 정보 처리
           if (result.user_info) {
             const userInfo = {
               username: result.user_info.username,
               fullName: result.user_info.full_name,
-              codes: result.codes || [
-                "WEB01",
-                "WEB02",
-                "WEB03",
-                "WEB04",
-                "WEB05",
-                "WEB06",
-                "WEB07",
-                "WEB08",
-                "WEB09",
-              ], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
+              codes: menuCodes || [], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
             };
 
             // SessionStorage에 사용자 정보 저장

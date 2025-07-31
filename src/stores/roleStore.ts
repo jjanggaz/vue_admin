@@ -117,6 +117,111 @@ export const useRoleStore = defineStore("role", {
       });
     },
 
+    // 역할 등록
+    async createRole(roleData: {
+      role_code: string;
+      role_name: string;
+      description: string;
+    }) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          "/api/v1/auth/roles/",
+          {},
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(roleData),
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("역할 등록 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "역할 등록 중 오류가 발생했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 역할 수정
+    async updateRole(
+      roleId: number,
+      roleData: {
+        role_id: number;
+        role_code: string;
+        role_name: string;
+        description: string;
+        is_active: boolean;
+      }
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/v1/auth/roles/${roleId}`,
+          {},
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(roleData),
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("역할 수정 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "역할 수정 중 오류가 발생했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 역할 삭제
+    async deleteRole(roleId: number) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/v1/auth/roles/${roleId}`,
+          {},
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("역할 삭제 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "역할 삭제 중 오류가 발생했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // 상태 초기화
     resetState() {
       this.roles = [];

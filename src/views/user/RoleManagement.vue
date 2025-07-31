@@ -175,6 +175,7 @@ interface MenuPermissionItem {
 
 // 역할 그룹 폼 인터페이스
 interface RoleForm {
+  role_code: string;
   role_name: string;
   description: string;
   permissions: {
@@ -213,6 +214,7 @@ const selectedItems = ref<RoleGroup[]>([]);
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newRole = ref<RoleForm>({
+  role_code: "",
   role_name: "",
   description: "",
   permissions: {
@@ -331,43 +333,6 @@ const parseMenuPermissions = (permissionsText: string) => {
   return permissions;
 };
 
-// 샘플 데이터 (실제로는 API에서 가져올 데이터)
-const sampleRoles: RoleGroup[] = [
-  {
-    role_id: 1,
-    role_code: "BASIC_USER",
-    role_name: "일반 사용자",
-    description: "기본 메뉴 접근만 허용됨",
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: null,
-    created_by: null,
-    updated_by: null,
-  },
-  {
-    role_id: 2,
-    role_code: "APPROVER",
-    role_name: "승인자",
-    description: "도면 승인 및 검토 가능",
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: null,
-    created_by: null,
-    updated_by: null,
-  },
-  {
-    role_id: 3,
-    role_code: "ADMIN",
-    role_name: "ADMIN",
-    description: "전체 시스템 접근 가능",
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: null,
-    created_by: null,
-    updated_by: null,
-  },
-];
-
 // computed 속성들
 const totalPagesComputed = computed(() => {
   return Math.ceil(roleStore.totalRoles / roleStore.currentPageSize) || 1;
@@ -415,6 +380,7 @@ const handleRegist = () => {
   isRegistModalOpen.value = true;
   isEditMode.value = false;
   newRole.value = {
+    role_code: "",
     role_name: "",
     description: "",
     permissions: {
@@ -424,6 +390,17 @@ const handleRegist = () => {
       all_menu: false,
     },
   };
+
+  // 메뉴 권한 데이터 초기화
+  menuPermissionsData.value.forEach((item) => {
+    item.checked = false;
+    if (item.children) {
+      item.children.forEach((child) => {
+        child.checked = false;
+      });
+    }
+  });
+  selectAllPermissions.value = false;
 };
 
 const handleEdit = () => {
@@ -435,6 +412,7 @@ const handleEdit = () => {
   isRegistModalOpen.value = true;
   isEditMode.value = true;
   newRole.value = {
+    role_code: itemToEdit.role_code,
     role_name: itemToEdit.role_name,
     description: itemToEdit.description || "",
     permissions: {
@@ -464,8 +442,8 @@ const handleDelete = async () => {
   }
   if (confirm(t("messages.confirm.deleteItem"))) {
     try {
-      // 실제로는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const selectedRole = selectedItems.value[0];
+      await roleStore.deleteRole(selectedRole.role_id);
       selectedItems.value = []; // 선택 초기화
       await loadData(); // 재조회
       alert(t("messages.success.deleted"));
@@ -545,61 +523,44 @@ const handleMenuPermissionCheckbox = (item: MenuPermissionItem) => {
 };
 
 const saveRole = async () => {
-  if (!newRole.value.role_name || !newRole.value.description) {
+  if (
+    !newRole.value.role_code ||
+    !newRole.value.role_name ||
+    !newRole.value.description
+  ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
   }
 
   try {
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // 메뉴 권한 데이터를 기존 형식으로 변환
-    const checkedMenus = menuPermissionsData.value.filter(
-      (item) => item.checked
-    );
-    const menuPermissionsText = checkedMenus.map((item) => item.name).join("+");
-
     if (isEditMode.value) {
       // 수정 모드
       const selectedRole = selectedItems.value[0];
-      const updatedRole: RoleGroup = {
-        ...selectedRole,
+      const updateData = {
+        role_id: selectedRole.role_id,
+        role_code: newRole.value.role_code,
         role_name: newRole.value.role_name,
         description: newRole.value.description || "",
-        menu_permissions: menuPermissionsText,
+        is_active: selectedRole.is_active,
       };
 
-      const index = roleStore.roleList.findIndex(
-        (r) => r.role_id === selectedRole.role_id
-      );
-      if (index !== -1) {
-        // 실제로는 API 호출로 수정
-        console.log("역할 수정:", updatedRole);
-      }
+      await roleStore.updateRole(selectedRole.role_id, updateData);
       alert(t("messages.success.roleGroupUpdated"));
     } else {
       // 등록 모드
-      const newRoleGroup: RoleGroup = {
-        role_id: Date.now(), // 임시 ID
-        role_code: "NEW_ROLE",
+      const createData = {
+        role_code: newRole.value.role_code,
         role_name: newRole.value.role_name,
         description: newRole.value.description || "",
-        menu_permissions: menuPermissionsText,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: null,
-        created_by: null,
-        updated_by: null,
       };
 
-      // 실제로는 API 호출로 등록
-      console.log("역할 등록:", newRoleGroup);
+      await roleStore.createRole(createData);
       alert(t("messages.success.roleGroupRegistered"));
     }
 
     isRegistModalOpen.value = false;
     newRole.value = {
+      role_code: "",
       role_name: "",
       description: "",
       permissions: {

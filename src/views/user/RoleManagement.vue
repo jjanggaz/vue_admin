@@ -9,7 +9,7 @@
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
-          :disabled="selectedItems.length === 0"
+          :disabled="selectedItems.length !== 1"
         >
           {{ t("common.delete") }}
         </button>
@@ -30,10 +30,15 @@
     <DataTable
       :columns="tableColumns"
       :data="paginatedRoleList"
-      :loading="roleStore.loading"
+      :loading="roleStore.isLoading"
       :selectable="true"
       :selected-items="selectedItems"
+      :selection-mode="'single'"
+      :show-select-all="false"
+      :select-header-text="t('common.selectColumn')"
       row-key="role_id"
+      maxHeight="500px"
+      :stickyHeader="true"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
@@ -46,7 +51,7 @@
     <!-- Pagination -->
     <div class="pagination-container">
       <Pagination
-        :current-page="roleStore.currentPage"
+        :current-page="roleStore.currentPageNumber"
         :total-pages="totalPagesComputed"
         @page-change="handlePageChange"
       />
@@ -150,17 +155,14 @@ import AccordionTable, {
   type AccordionTableColumn,
 } from "@/components/common/AccordionTable.vue";
 import { useI18n } from "vue-i18n";
+import { useRoleStore, type Role } from "@/stores/roleStore";
 
 const { t } = useI18n();
+const roleStore = useRoleStore();
 
-// 역할 그룹 인터페이스
-interface RoleGroup {
-  role_id: number;
-  role_name: string;
-  description: string;
-  menu_permissions: string;
-  created_at?: string;
-  updated_at?: string;
+// 역할 그룹 인터페이스 (기존 Role 인터페이스와 호환되도록 확장)
+interface RoleGroup extends Role {
+  menu_permissions?: string;
 }
 
 // 메뉴 권한 아이템 인터페이스
@@ -183,15 +185,6 @@ interface RoleForm {
   };
 }
 
-// 역할 스토어 (임시 구현)
-const roleStore = ref({
-  loading: false,
-  currentPage: 1,
-  itemsPerPage: 10,
-  totalPages: 1,
-  roles: [] as RoleGroup[],
-});
-
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "role_id", title: "ID", width: "0px", sortable: false, hidden: true },
@@ -204,19 +197,13 @@ const tableColumns: TableColumn[] = [
   {
     key: "role_name",
     title: t("columns.roleGroup.roleName"),
-    width: "150px",
+    width: "200px",
     sortable: true,
   },
   {
     key: "description",
     title: t("columns.roleGroup.description"),
-    width: "300px",
-    sortable: true,
-  },
-  {
-    key: "menu_permissions",
-    title: t("columns.roleGroup.menuPermissions"),
-    width: "200px",
+    width: "400px",
     sortable: true,
   },
 ];
@@ -348,47 +335,57 @@ const parseMenuPermissions = (permissionsText: string) => {
 const sampleRoles: RoleGroup[] = [
   {
     role_id: 1,
+    role_code: "BASIC_USER",
     role_name: "일반 사용자",
     description: "기본 메뉴 접근만 허용됨",
-    menu_permissions: t("roleGroup.basicMenu"),
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: null,
+    created_by: null,
+    updated_by: null,
   },
   {
     role_id: 2,
+    role_code: "APPROVER",
     role_name: "승인자",
     description: "도면 승인 및 검토 가능",
-    menu_permissions: `${t("roleGroup.basicMenu")}+${t(
-      "roleGroup.approvalMenu"
-    )}`,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: null,
+    created_by: null,
+    updated_by: null,
   },
   {
     role_id: 3,
+    role_code: "ADMIN",
     role_name: "ADMIN",
     description: "전체 시스템 접근 가능",
-    menu_permissions: t("roleGroup.allMenu"),
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: null,
+    created_by: null,
+    updated_by: null,
   },
 ];
 
 // computed 속성들
 const totalPagesComputed = computed(() => {
-  return roleStore.value.totalPages || 1;
+  return Math.ceil(roleStore.totalRoles / roleStore.currentPageSize) || 1;
 });
 
 const paginatedRoleList = computed(() => {
-  return roleStore.value.roles || [];
+  return (roleStore.roleList as RoleGroup[]) || [];
 });
 
 // 데이터 로드 함수
 const loadData = async () => {
   try {
-    roleStore.value.loading = true;
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    roleStore.value.roles = sampleRoles;
-    roleStore.value.totalPages = 1;
+    await roleStore.fetchRoles({
+      page: roleStore.currentPageNumber,
+      page_size: roleStore.currentPageSize,
+    });
   } catch (error) {
     console.error("데이터 로드 실패:", error);
-  } finally {
-    roleStore.value.loading = false;
   }
 };
 
@@ -398,9 +395,8 @@ const handleSelectionChange = (selected: RoleGroup[]) => {
 };
 
 const handlePageChange = async (page: number) => {
-  roleStore.value.currentPage = page;
-  selectedItems.value = [];
-  await loadData();
+  await roleStore.changePage(page);
+  selectedItems.value = []; // 페이지 변경 시 선택 초기화
 };
 
 const handleSortChange = (sortInfo: {
@@ -411,14 +407,8 @@ const handleSortChange = (sortInfo: {
 };
 
 const handleRowClick = (item: RoleGroup) => {
-  const index = selectedItems.value.findIndex(
-    (selected) => selected.role_id === item.role_id
-  );
-  if (index > -1) {
-    selectedItems.value.splice(index, 1);
-  } else {
-    selectedItems.value.push(item);
-  }
+  // 단건선택: 클릭한 항목만 선택
+  selectedItems.value = [item];
 };
 
 const handleRegist = () => {
@@ -446,28 +436,38 @@ const handleEdit = () => {
   isEditMode.value = true;
   newRole.value = {
     role_name: itemToEdit.role_name,
-    description: itemToEdit.description,
-    permissions: parseMenuPermissions(itemToEdit.menu_permissions),
+    description: itemToEdit.description || "",
+    permissions: {
+      basic_menu: false,
+      approval_menu: false,
+      admin_menu: false,
+      all_menu: false,
+    },
   };
+
+  // 메뉴 권한 데이터 초기화
+  menuPermissionsData.value.forEach((item) => {
+    item.checked = false;
+    if (item.children) {
+      item.children.forEach((child) => {
+        child.checked = false;
+      });
+    }
+  });
+  selectAllPermissions.value = false;
 };
 
 const handleDelete = async () => {
-  if (selectedItems.value.length === 0) {
+  if (selectedItems.value.length !== 1) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: selectedItems.value.length,
-      })
-    )
-  ) {
+  if (confirm(t("messages.confirm.deleteItem"))) {
     try {
       // 실제로는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 500));
-      selectedItems.value = [];
-      await loadData();
+      selectedItems.value = []; // 선택 초기화
+      await loadData(); // 재조회
       alert(t("messages.success.deleted"));
     } catch (error) {
       console.error("삭제 실패:", error);
@@ -566,27 +566,35 @@ const saveRole = async () => {
       const updatedRole: RoleGroup = {
         ...selectedRole,
         role_name: newRole.value.role_name,
-        description: newRole.value.description,
+        description: newRole.value.description || "",
         menu_permissions: menuPermissionsText,
       };
 
-      const index = roleStore.value.roles.findIndex(
+      const index = roleStore.roleList.findIndex(
         (r) => r.role_id === selectedRole.role_id
       );
       if (index !== -1) {
-        roleStore.value.roles[index] = updatedRole;
+        // 실제로는 API 호출로 수정
+        console.log("역할 수정:", updatedRole);
       }
       alert(t("messages.success.roleGroupUpdated"));
     } else {
       // 등록 모드
       const newRoleGroup: RoleGroup = {
         role_id: Date.now(), // 임시 ID
+        role_code: "NEW_ROLE",
         role_name: newRole.value.role_name,
-        description: newRole.value.description,
+        description: newRole.value.description || "",
         menu_permissions: menuPermissionsText,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        created_by: null,
+        updated_by: null,
       };
 
-      roleStore.value.roles.push(newRoleGroup);
+      // 실제로는 API 호출로 등록
+      console.log("역할 등록:", newRoleGroup);
       alert(t("messages.success.roleGroupRegistered"));
     }
 
@@ -602,6 +610,9 @@ const saveRole = async () => {
       },
     };
     isEditMode.value = false;
+
+    // 저장 후 재조회
+    await loadData();
   } catch (error) {
     console.error("저장 실패:", error);
     alert(t("messages.error.saveFailed"));

@@ -268,6 +268,17 @@
                 <option :value="true">{{ t("common.userRole.admin") }}</option>
               </select>
             </dd>
+            <dt v-if="isEditMode">{{ t("columns.user.status") }}</dt>
+            <dd v-if="isEditMode">
+              <select id="user-status" v-model="newUser.is_active">
+                <option :value="true">
+                  {{ t("common.userStatus.active") }}
+                </option>
+                <option :value="false">
+                  {{ t("common.userStatus.inactive") }}
+                </option>
+              </select>
+            </dd>
           </dl>
         </div>
         <div class="modal-footer">
@@ -306,6 +317,7 @@ interface UserForm {
   contact_info: string;
   description: string;
   is_superuser: boolean;
+  is_active?: boolean; // 수정 모드에서만 사용
 }
 
 // 테이블 컬럼 설정
@@ -403,6 +415,7 @@ const newUser = ref<UserForm>({
   contact_info: "",
   description: "",
   is_superuser: false,
+  is_active: true, // 기본값은 활성 상태
 });
 const isIdChecked = ref(false);
 const showPasswordChange = ref(false);
@@ -537,6 +550,7 @@ const handleRegist = () => {
     contact_info: "",
     description: "",
     is_superuser: false,
+    is_active: true, // 등록 시 기본값은 활성 상태
   };
   isIdChecked.value = false;
 };
@@ -580,6 +594,26 @@ const saveUser = async () => {
     if (isEditMode.value) {
       // 수정 모드: 기존 사용자 정보 업데이트
       const selectedUser = selectedItems.value[0];
+
+      console.log(
+        "수정 모드 - user_type 값:",
+        newUser.value.user_type,
+        "타입:",
+        typeof newUser.value.user_type
+      );
+      console.log(
+        "수정 모드 - is_active 값:",
+        newUser.value.is_active,
+        "타입:",
+        typeof newUser.value.is_active
+      );
+      console.log(
+        "수정 모드 - password 값:",
+        newUser.value.password,
+        "confirm_password 값:",
+        newUser.value.passwordConfirm
+      );
+
       await userStore.updateUser(selectedUser.user_id, {
         username: newUser.value.username,
         full_name: newUser.value.full_name,
@@ -590,6 +624,9 @@ const saveUser = async () => {
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
         user_type: newUser.value.user_type,
+        is_active: newUser.value.is_active, // 수정 시 상태 포함
+        password: newUser.value.password, // 비밀번호 필드 추가
+        confirm_password: newUser.value.passwordConfirm, // 비밀번호 확인 필드 추가
       });
 
       alert(t("messages.success.userInfoUpdated"));
@@ -611,6 +648,13 @@ const saveUser = async () => {
         user_type: newUser.value.user_type,
       });
 
+      console.log(
+        "user_type 값:",
+        newUser.value.user_type,
+        "타입:",
+        typeof newUser.value.user_type
+      );
+
       await userStore.createUser({
         username: newUser.value.username,
         password: newUser.value.password,
@@ -623,6 +667,7 @@ const saveUser = async () => {
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
         user_type: newUser.value.user_type,
+        // 등록 시에는 is_active를 제외 (서버에서 기본값 처리)
       });
       alert(t("messages.success.userRegistered"));
       await loadData(); // 사용자 목록 새로고침
@@ -642,6 +687,7 @@ const saveUser = async () => {
       contact_info: "",
       description: "",
       is_superuser: false,
+      is_active: true,
     };
     isEditMode.value = false;
     isIdChecked.value = false;
@@ -730,6 +776,7 @@ const handleEdit = () => {
     contact_info: itemToEdit.contact_info || "",
     description: itemToEdit.description || "",
     is_superuser: itemToEdit.is_superuser,
+    is_active: itemToEdit.is_active, // 수정 시 현재 상태 유지
   };
 };
 </script>

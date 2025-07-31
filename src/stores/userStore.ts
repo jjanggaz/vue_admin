@@ -35,6 +35,7 @@ export interface UserFormData {
   description: string;
   password?: string;
   confirm_password?: string;
+  is_active?: boolean; // 수정 시에만 사용
 }
 
 export interface UserListResponse {
@@ -151,6 +152,11 @@ export const useUserStore = defineStore("user", {
           confirm_password: userData.confirm_password,
         };
 
+        // user_type이 있는 경우 추가
+        if (userData.user_type !== undefined) {
+          requestData.user_type = userData.user_type;
+        }
+
         // 빈 문자열이 아닌 경우에만 추가
         if (userData.dept_id && userData.dept_id.trim() !== "") {
           requestData.dept_id = userData.dept_id;
@@ -210,6 +216,16 @@ export const useUserStore = defineStore("user", {
           is_superuser: userData.is_superuser,
         };
 
+        // user_type이 있는 경우 추가
+        if (userData.user_type !== undefined) {
+          requestData.user_type = userData.user_type;
+        }
+
+        // is_active가 있는 경우 추가
+        if (userData.is_active !== undefined) {
+          requestData.is_active = userData.is_active;
+        }
+
         // 빈 문자열이 아닌 경우에만 추가
         if (userData.dept_id && userData.dept_id.trim() !== "") {
           requestData.dept_id = userData.dept_id;
@@ -221,11 +237,28 @@ export const useUserStore = defineStore("user", {
           requestData.description = userData.description;
         }
 
-        // 비밀번호가 있는 경우에만 추가
-        if (userData.password) {
-          requestData.password = userData.password;
-          requestData.confirm_password = userData.confirm_password;
+        // 비밀번호가 있는 경우에만 추가 (비밀번호와 확인 비밀번호 모두 있어야 함)
+        if (userData.password !== undefined && userData.password !== null) {
+          // 비밀번호가 빈 문자열이 아닌 경우에만 validation 체크
+          if (userData.password.trim() !== "") {
+            if (
+              !userData.confirm_password ||
+              userData.confirm_password.trim() === ""
+            ) {
+              throw new Error("비밀번호 확인이 필요합니다.");
+            }
+            if (userData.password !== userData.confirm_password) {
+              throw new Error("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            }
+            requestData.password = userData.password;
+            requestData.confirm_password = userData.confirm_password;
+          }
         }
+
+        console.log(
+          "사용자 수정 요청 데이터:",
+          JSON.stringify(requestData, null, 2)
+        );
 
         const response = await request(
           `/api/v1/auth/users/${userId}`,

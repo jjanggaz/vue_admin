@@ -15,22 +15,49 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       return false;
     }
 
+    // 디버깅을 위한 토큰 정보 로그 (실제 운영에서는 제거)
+    console.log("토큰 갱신 시도:", {
+      refresh_token_length: tokenInfo.refresh_token.length,
+      refresh_token_preview: tokenInfo.refresh_token.substring(0, 20) + "...",
+      token_type: tokenInfo.token_type,
+      expires_in: tokenInfo.expires_in,
+    });
+
+    const requestBody = {
+      refresh_token: tokenInfo.refresh_token,
+    };
+
+    console.log("토큰 갱신 요청 본문:", requestBody);
+
     const response = await fetch("/api/v1/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        refresh_token: tokenInfo.refresh_token,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log("토큰 갱신 응답 상태:", response.status, response.statusText);
+
     if (!response.ok) {
-      console.error("토큰 갱신 실패:", response.statusText);
+      // 상세한 에러 정보 수집
+      let errorMessage = `토큰 갱신 실패: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error("토큰 갱신 에러 상세:", errorData);
+        if (errorData.detail) {
+          errorMessage += ` - ${errorData.detail}`;
+        }
+      } catch (parseError) {
+        console.error("에러 응답 파싱 실패:", parseError);
+      }
+
+      console.error(errorMessage);
       return false;
     }
 
     const result = await response.json();
+    console.log("토큰 갱신 응답:", result);
 
     if (result && result.access_token) {
       // 새로운 토큰 정보 저장 (expires_in은 초 단위)
@@ -46,7 +73,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       console.log("토큰 갱신 성공");
       return true;
     } else {
-      console.error("토큰 갱신 응답이 올바르지 않습니다.");
+      console.error("토큰 갱신 응답이 올바르지 않습니다:", result);
       return false;
     }
   } catch (error) {

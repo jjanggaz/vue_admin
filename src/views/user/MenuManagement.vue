@@ -353,9 +353,10 @@ const saveMenu = async () => {
 
     isEditModalOpen.value = false;
     alert(t("messages.success.menuUpdated"));
-  } catch (error) {
+  } catch (error: any) {
     console.error("메뉴 저장 실패:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = error?.message || t("messages.error.saveFailed");
+    alert(errorMessage);
   }
 };
 
@@ -370,8 +371,10 @@ const loadData = async () => {
     if (menuList.value.length > 0) {
       expandedMenus.value.push(menuList.value[0]);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로딩 실패:", error);
+    const errorMessage = error?.message || "데이터 로딩에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

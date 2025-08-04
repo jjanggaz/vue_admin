@@ -523,9 +523,11 @@ const handleSave = async () => {
 
     alert(t("messages.success.processRegistered"));
     closeRegistModal();
-  } catch (error) {
+  } catch (error: any) {
     console.error("등록 실패:", error);
-    alert(t("messages.error.registrationError"));
+    const errorMessage =
+      error?.message || t("messages.error.registrationError");
+    alert(errorMessage);
   }
 };
 
@@ -711,8 +713,10 @@ const loadProcessList = async (sortInfo?: {
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
 
     console.log("Sort info:", sortInfo);
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

@@ -90,20 +90,20 @@ export const useUserStore = defineStore("user", {
         });
 
         // API 응답 구조에 따라 처리
-        if (Array.isArray(response)) {
+        if (Array.isArray(response.response)) {
           // 응답이 배열인 경우
-          this.users = response;
-          this.totalCount = response.length;
+          this.users = response.response;
+          this.totalCount = response.response.length;
           this.currentPage = 1;
-          this.itemsPerPage = response.length;
+          this.itemsPerPage = response.response.length;
           this.hasMore = false;
         } else {
           // 응답이 객체인 경우 (UserListResponse 형태)
-          this.users = response.data;
-          this.totalCount = response.total_count;
-          this.currentPage = response.page;
-          this.itemsPerPage = response.items_per_page;
-          this.hasMore = response.has_more;
+          this.users = response.response.data;
+          this.totalCount = response.response.total_count;
+          this.currentPage = response.response.page;
+          this.itemsPerPage = response.response.items_per_page;
+          this.hasMore = response.response.has_more;
         }
 
         console.log("사용자 목록 조회 성공:", response);

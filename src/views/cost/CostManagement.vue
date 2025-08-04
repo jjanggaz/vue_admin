@@ -332,9 +332,12 @@ const loadData = async () => {
   loading.value = true;
   try {
     const response = await request("/api/cost-targets");
-    costList.value = response.data || [];
-  } catch (error) {
+    costList.value = response.response?.data || response.response || [];
+  } catch (error: any) {
     console.error("단가표 데이터 로드 실패:", error);
+    // 백엔드 에러 메시지 표시
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
     // API 실패 시 샘플 데이터 사용
     loadSampleData();
   } finally {
@@ -455,7 +458,10 @@ const handleSave = async () => {
 
       // 로컬 데이터에 추가
       const newItem: CostItem = {
-        id: response.data?.id || Date.now().toString(),
+        id:
+          response.response?.data?.id ||
+          response.response?.id ||
+          Date.now().toString(),
         ...newCost.value,
         createdAt: new Date().toISOString().split("T")[0],
       };
@@ -464,9 +470,10 @@ const handleSave = async () => {
 
     closeRegistModal();
     selectedItems.value = [];
-  } catch (error) {
+  } catch (error: any) {
     console.error("저장 실패:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = error?.message || t("messages.error.saveFailed");
+    alert(errorMessage);
   }
 };
 
@@ -497,9 +504,10 @@ const handleDelete = async () => {
       );
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
-    } catch (error) {
+    } catch (error: any) {
       console.error("삭제 실패:", error);
-      alert(t("messages.error.deleteFailed"));
+      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      alert(errorMessage);
     }
   }
 };

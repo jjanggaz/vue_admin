@@ -6,7 +6,6 @@ import { createPinia } from "pinia";
 import i18n from "./i18n";
 
 import { useAuthStore } from "./stores/authStore";
-import { isCurrentTokenValid } from "./utils/tokenManager";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -16,17 +15,30 @@ app.use(i18n);
 // 로그인 정보 체크 (토큰 유효성 검사 포함)
 const authStore = useAuthStore();
 
-// 토큰 상태 복구 및 유효성 검사
+// 사용자 정보 복구 및 기본 정보 확인
 (async () => {
   await authStore.loadStoredToken();
 
-  // 토큰이 유효하지 않으면 로그아웃 처리
-  if (authStore.isLoggedIn && !isCurrentTokenValid()) {
-    console.log("저장된 토큰이 유효하지 않음, 로그아웃 처리");
-    await authStore.logout();
+  // sessionStorage에 사용자 정보가 있는지 확인 (토큰은 httpOnly 쿠키에 저장됨)
+  if (authStore.isLoggedIn) {
+    const authName = sessionStorage.getItem("authName");
+    const authUsername = sessionStorage.getItem("authUsername");
+    const authCodes = sessionStorage.getItem("authCodes");
+
+    if (!authName || !authUsername || !authCodes) {
+      console.log("sessionStorage에 사용자 정보가 없음, 로그아웃 처리");
+      await authStore.logout();
+    }
   }
 })();
 
 app.use(router);
+
+// 토큰 만료 이벤트 리스너 추가
+window.addEventListener("token-expired", async () => {
+  const authStore = useAuthStore();
+  await authStore.logout();
+  router.push("/login");
+});
 
 app.mount("#app");

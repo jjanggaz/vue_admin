@@ -1,136 +1,123 @@
-import {
-  getTokenInfo,
-  setTokenInfo,
-  removeTokenInfo,
-  type TokenInfo,
-} from "./cookies";
+// httpOnly 쿠키를 사용하므로 토큰 관련 로직이 단순화됨
+// 토큰 갱신은 서버에서 자동으로 처리됨
 
-// 토큰 갱신 함수
+// 토큰 갱신 함수 (서버에서 자동 처리되므로 단순화)
 export const refreshAccessToken = async (): Promise<boolean> => {
   try {
-    const tokenInfo = getTokenInfo();
+    console.log("토큰 갱신 시도...");
 
-    if (!tokenInfo || !tokenInfo.refresh_token) {
-      console.error("Refresh token이 없습니다.");
-      return false;
-    }
-
-    // 디버깅을 위한 토큰 정보 로그 (실제 운영에서는 제거)
-    console.log("토큰 갱신 시도:", {
-      refresh_token_length: tokenInfo.refresh_token.length,
-      refresh_token_preview: tokenInfo.refresh_token.substring(0, 20) + "...",
-      token_type: tokenInfo.token_type,
-      expires_in: tokenInfo.expires_in,
-    });
-
-    const requestBody = {
-      refresh_token: tokenInfo.refresh_token,
-    };
-
-    console.log("토큰 갱신 요청 본문:", requestBody);
-
-    const response = await fetch("/api/v1/auth/refresh", {
+    const response = await fetch("/api/main/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
+      credentials: "include", // httpOnly 쿠키 포함
     });
 
     console.log("토큰 갱신 응답 상태:", response.status, response.statusText);
 
     if (!response.ok) {
-      // 상세한 에러 정보 수집
-      let errorMessage = `토큰 갱신 실패: ${response.status} ${response.statusText}`;
+      console.error("토큰 갱신 실패:", response.status, response.statusText);
+
+      // 응답 내용도 확인
       try {
         const errorData = await response.json();
-        console.error("토큰 갱신 에러 상세:", errorData);
-        if (errorData.detail) {
-          errorMessage += ` - ${errorData.detail}`;
-        }
-      } catch (parseError) {
-        console.error("에러 응답 파싱 실패:", parseError);
+        console.error("토큰 갱신 실패 상세:", errorData);
+      } catch (e) {
+        console.error("토큰 갱신 실패 응답 파싱 실패:", e);
       }
 
-      console.error(errorMessage);
       return false;
     }
 
-    const result = await response.json();
-    console.log("토큰 갱신 응답:", result);
-
-    if (result && result.access_token) {
-      // 새로운 토큰 정보 저장 (expires_in은 초 단위)
-      const newTokenInfo: TokenInfo = {
-        access_token: result.access_token,
-        refresh_token: result.refresh_token || tokenInfo.refresh_token, // refresh_token은 30일 유효
-        token_type: result.token_type || tokenInfo.token_type,
-        expires_in: result.expires_in || tokenInfo.expires_in, // 초 단위
-        scope: result.scope || tokenInfo.scope,
-      };
-      setTokenInfo(newTokenInfo);
-
-      console.log("토큰 갱신 성공");
-      return true;
-    } else {
-      console.error("토큰 갱신 응답이 올바르지 않습니다:", result);
-      return false;
+    // 성공 응답 내용도 확인
+    try {
+      const successData = await response.json();
+      console.log("토큰 갱신 성공 응답:", successData);
+    } catch (e) {
+      console.log("토큰 갱신 성공 (응답 내용 없음)");
     }
+
+    console.log("토큰 갱신 성공");
+    return true;
   } catch (error) {
-    console.error("토큰 갱신 중 오류:", error);
+    console.error("토큰 갱신 중 네트워크 오류:", error);
     return false;
   }
 };
 
-// 토큰 유효성 검사 (간단한 JWT 구조 검사)
+// 토큰 유효성 검사 (httpOnly 쿠키는 JavaScript에서 접근 불가)
+// 서버에서 토큰 유효성을 검사하므로 클라이언트에서는 단순히 true 반환
 export const isTokenValid = (token: string): boolean => {
-  if (!token) return false;
+  // httpOnly 쿠키는 JavaScript에서 접근할 수 없으므로
+  // 서버에서 토큰 유효성을 검사함
+  return true;
+};
 
+// 현재 토큰이 유효한지 확인 (sessionStorage 기반)
+export const isCurrentTokenValid = async (): Promise<boolean> => {
   try {
-    // JWT는 3개의 부분으로 구성: header.payload.signature
-    const parts = token.split(".");
-    if (parts.length !== 3) return false;
+    // sessionStorage에 사용자 정보가 있는지 확인
+    const authName = sessionStorage.getItem("authName");
+    const authUsername = sessionStorage.getItem("authUsername");
+    const authCodes = sessionStorage.getItem("authCodes");
 
-    // payload 부분을 디코드하여 만료 시간 확인
-    const payload = JSON.parse(atob(parts[1]));
-    const currentTime = Math.floor(Date.now() / 1000);
+    if (!authName || !authUsername || !authCodes) {
+      console.log("sessionStorage에 사용자 정보가 없음");
+      return false;
+    }
 
-    // exp (만료 시간)가 현재 시간보다 크면 유효
-    return payload.exp > currentTime;
+    // httpOnly 쿠키는 JavaScript에서 접근할 수 없으므로
+    // 실제 토큰 유효성은 API 호출 시 401 에러로 확인됨
+    // 여기서는 sessionStorage에 사용자 정보가 있는지만 확인
+    console.log(
+      "sessionStorage에 사용자 정보 존재 (토큰은 httpOnly 쿠키에 저장됨)"
+    );
+    return true;
   } catch (error) {
     console.error("토큰 유효성 검사 중 오류:", error);
     return false;
   }
 };
 
-// 현재 access_token이 유효한지 확인
-export const isCurrentTokenValid = (): boolean => {
-  const tokenInfo = getTokenInfo();
-  return tokenInfo ? isTokenValid(tokenInfo.access_token) : false;
+// 자동 토큰 갱신 인터벌 ID
+let autoRefreshInterval: number | null = null;
+
+// 자동 토큰 갱신 시작 (23시간마다 갱신)
+export const startAutoRefresh = () => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+
+  console.log("자동 토큰 갱신 시작 (23시간마다)");
+  autoRefreshInterval = setInterval(async () => {
+    console.log("자동 토큰 갱신 실행...");
+    const success = await refreshAccessToken();
+    if (!success) {
+      console.error("자동 토큰 갱신 실패");
+      stopAutoRefresh();
+    }
+  }, 23 * 60 * 60 * 1000); // 23시간마다 갱신 (23 * 60 * 60 * 1000ms)
 };
 
-// 토큰 만료 시간까지 남은 시간 (초)
-export const getTokenExpiryTime = (token: string): number => {
-  try {
-    const parts = token.split(".");
-    const payload = JSON.parse(atob(parts[1]));
-    const currentTime = Math.floor(Date.now() / 1000);
-    return payload.exp - currentTime;
-  } catch (error) {
-    return 0;
+// 자동 토큰 갱신 중지
+export const stopAutoRefresh = () => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+    console.log("자동 토큰 갱신 중지");
   }
 };
 
-// 자동 토큰 갱신 (만료 5분 전에 갱신)
-export const shouldRefreshToken = (): boolean => {
-  const tokenInfo = getTokenInfo();
-  if (!tokenInfo) return false;
-
-  const timeUntilExpiry = getTokenExpiryTime(tokenInfo.access_token);
-  return timeUntilExpiry < 300; // 5분 (300초) 전에 갱신
+// 쿠키 삭제 함수
+export const deleteCookie = (name: string, path: string = "/") => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
 
-// 모든 토큰 제거
+// 모든 토큰 제거 (HttpOnly가 false인 경우 클라이언트에서도 삭제)
 export const clearAllTokens = () => {
-  removeTokenInfo();
+  // access_token과 refresh_token 쿠키 삭제
+  deleteCookie("access_token");
+  deleteCookie("refresh_token");
+  console.log("토큰 쿠키 삭제 완료");
 };

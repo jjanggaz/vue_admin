@@ -237,9 +237,11 @@ const parseExcelFile = (file: File) => {
       codeList.value = parsedData;
 
       alert("Excel 데이터가 성공적으로 가져와졌습니다.");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Excel 파일 파싱 오류:", error);
-      alert("Excel 파일 파싱 중 오류가 발생했습니다.");
+      const errorMessage =
+        error?.message || "Excel 파일 파싱 중 오류가 발생했습니다.";
+      alert(errorMessage);
     }
   };
 
@@ -303,9 +305,11 @@ const exportToExcel = () => {
     XLSX.writeFile(workbook, fileName);
 
     console.log("Excel 파일 다운로드 완료:", fileName);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Excel 내보내기 오류:", error);
-    alert("Excel 파일 생성 중 오류가 발생했습니다.");
+    const errorMessage =
+      error?.message || "Excel 파일 생성 중 오류가 발생했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -338,9 +342,10 @@ const deleteSelectedRows = () => {
 
     console.log(`${selectedIds.length}개의 행이 삭제되었습니다.`);
     alert(`${selectedIds.length}개의 행이 성공적으로 삭제되었습니다.`);
-  } catch (error) {
+  } catch (error: any) {
     console.error("행 삭제 오류:", error);
-    alert("행 삭제 중 오류가 발생했습니다.");
+    const errorMessage = error?.message || "행 삭제 중 오류가 발생했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -380,8 +385,10 @@ const loadData = async () => {
         etc: "",
       },
     ];
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

@@ -488,8 +488,10 @@ const loadData = async () => {
       page: userStore.currentPage,
       itemsPerPage: userStore.itemsPerPage,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -691,14 +693,10 @@ const saveUser = async () => {
     };
     isEditMode.value = false;
     isIdChecked.value = false;
-  } catch (error) {
+  } catch (error: any) {
     console.error("사용자 저장 실패:", error);
-    // 서버에서 반환한 상세한 에러 메시지를 사용자에게 표시
-    if (error instanceof Error) {
-      alert(error.message);
-    } else {
-      alert(t("messages.error.saveFailed"));
-    }
+    const errorMessage = error?.message || t("messages.error.saveFailed");
+    alert(errorMessage);
   }
 };
 
@@ -724,9 +722,11 @@ const handleCheckId = async () => {
       alert(t("messages.error.idAlreadyExists"));
       isIdChecked.value = false;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("중복 체크 실패:", error);
-    alert(t("messages.error.duplicateCheckFailed"));
+    const errorMessage =
+      error?.message || t("messages.error.duplicateCheckFailed");
+    alert(errorMessage);
   } finally {
     // 로딩 상태 복원
     userStore.loading = false;
@@ -747,9 +747,10 @@ const handleDelete = async () => {
       alert(t("messages.success.deleted"));
       await loadData(); // 사용자 목록 새로고침
       selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
-    } catch (error) {
+    } catch (error: any) {
       console.error("삭제 실패:", error);
-      alert(t("messages.error.deleteFailed"));
+      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      alert(errorMessage);
     }
   }
 };

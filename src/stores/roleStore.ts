@@ -68,16 +68,16 @@ export const useRoleStore = defineStore("role", {
         );
 
         // API 응답 구조에 따라 처리
-        if (Array.isArray(response)) {
+        if (Array.isArray(response.response)) {
           // 응답이 배열인 경우
-          this.roles = response;
-          this.totalCount = response.length;
+          this.roles = response.response;
+          this.totalCount = response.response.length;
           this.currentPage = 1;
-          this.pageSize = response.length;
+          this.pageSize = response.response.length;
           this.hasMore = false;
         } else {
           // 응답이 객체인 경우 (페이지네이션 포함)
-          const roleResponse = response as RoleListResponse;
+          const roleResponse = response.response as RoleListResponse;
           this.roles = roleResponse.data || [];
           this.totalCount = roleResponse.total_count || 0;
           this.currentPage = roleResponse.page || 1;

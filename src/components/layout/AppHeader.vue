@@ -14,8 +14,7 @@
       <!-- User Section -->
       <div class="user-section">
         <span class="user-id">
-          {{ userName }}
-          <!--({{ userRole }}) &nbsp;-->
+          {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
         </span>
         <Date />
         <button class="logout-btn" @click="handleLogout">
@@ -43,8 +42,13 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 const userName = authStore.user?.fullName;
+const userRole = authStore.user?.roleName;
 
 console.log("[AppHeader.vue] store/authStore.ts > authStore.user : ", userName);
+console.log(
+  "[AppHeader.vue] store/authStore.ts > authStore.user.roleName : ",
+  userRole
+);
 
 const handleLogout = async () => {
   console.log("[AppHeader.vue] handleLogout()");

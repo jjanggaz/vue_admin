@@ -179,8 +179,10 @@ const fileInput = ref<HTMLInputElement>();
 const handleFolderChange = async () => {
   try {
     await fileUploadStore.loadUploadedFiles(selectedViewFolder.value);
-  } catch (error) {
+  } catch (error: any) {
     console.error("폴더 변경 시 파일 목록 불러오기 실패:", error);
+    const errorMessage = error?.message || "파일 목록 불러오기에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -188,10 +190,11 @@ const handleFolderChange = async () => {
 onMounted(async () => {
   try {
     await fileUploadStore.loadUploadedFiles(selectedViewFolder.value);
-  } catch (error) {
+  } catch (error: any) {
     console.error("파일 목록 불러오기 실패:", error);
+    const errorMessage = error?.message || "파일 목록 불러오기에 실패했습니다.";
+    alert(errorMessage);
     console.warn("서버가 실행중이 아니거나 CORS 설정이 필요할 수 있습니다");
-    // loadUploadedFiles에서 이미 alert 처리됨
   }
 });
 

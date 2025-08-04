@@ -1,5 +1,4 @@
-import { getTokenInfo } from "./cookies";
-import { refreshAccessToken, shouldRefreshToken } from "./tokenManager";
+import { refreshAccessToken } from "./tokenManager";
 
 export const request = async (
   path: string,
@@ -25,96 +24,152 @@ export const request = async (
       }
     }
 
-    // JWT 토큰을 헤더에 자동으로 추가
-    let tokenInfo = getTokenInfo();
     const headers: Record<string, string> = {
       ...options.headers,
     } as Record<string, string>;
 
-    // 토큰이 있고 만료가 임박하면 자동 갱신
-    if (tokenInfo && shouldRefreshToken()) {
-      console.log("토큰 만료 임박, 자동 갱신 시도...");
-      const refreshSuccess = await refreshAccessToken();
-      if (refreshSuccess) {
-        tokenInfo = getTokenInfo(); // 갱신된 토큰 정보 가져오기
-      }
-    }
-
-    if (tokenInfo) {
-      headers[
-        "Authorization"
-      ] = `${tokenInfo.token_type} ${tokenInfo.access_token}`;
-    }
+    // httpOnly 쿠키를 사용하므로 브라우저에서 토큰을 헤더에 추가하지 않음
+    // 서버에서 자동으로 쿠키를 포함하도록 credentials 설정
 
     const requestOptions = {
       ...options,
       headers,
+      credentials: "include" as RequestCredentials, // httpOnly 쿠키를 포함하도록 설정
     };
 
     const res = await fetch(url.toString(), requestOptions);
 
     // 401 에러 시 토큰 갱신 시도
-    if (res.status === 401 && tokenInfo) {
+    if (res.status === 401) {
       console.log("401 에러 발생, 토큰 갱신 시도...");
       const refreshSuccess = await refreshAccessToken();
 
       if (refreshSuccess) {
+        console.log("토큰 갱신 성공, 원본 요청 재시도...");
         // 갱신된 토큰으로 재요청
-        const newTokenInfo = getTokenInfo();
-        if (newTokenInfo) {
-          headers[
-            "Authorization"
-          ] = `${newTokenInfo.token_type} ${newTokenInfo.access_token}`;
-          const retryOptions = {
-            ...options,
-            headers,
-          };
+        const retryOptions = {
+          ...options,
+          headers,
+          credentials: "include" as RequestCredentials,
+        };
 
-          const retryRes = await fetch(url.toString(), retryOptions);
-          if (!retryRes.ok) {
-            throw new Error(`API Call Fail: ${retryRes.statusText}`);
+        const retryRes = await fetch(url.toString(), retryOptions);
+        console.log("재요청 결과:", retryRes.status, retryRes.statusText);
+        if (!retryRes.ok) {
+          let errorData;
+          try {
+            errorData = await retryRes.json();
+          } catch (e) {
+            const errorResponse = {
+              success: false,
+              statusCode: retryRes.status,
+              message: retryRes.statusText,
+              response: `{"detail":"${retryRes.statusText}"}`,
+            };
+            throw errorResponse;
           }
-          return await retryRes.json();
+
+          const errorResponse = {
+            success: false,
+            statusCode: retryRes.status,
+            message:
+              errorData.message || errorData.detail || retryRes.statusText,
+            response: `{"detail":"${
+              errorData.message || errorData.detail || retryRes.statusText
+            }"}`,
+          };
+          throw errorResponse;
         }
+
+        // 성공 시 표준화된 응답 형식으로 반환
+        const successData = await retryRes.json();
+        return {
+          success: true,
+          statusCode: retryRes.status,
+          message: successData.message || "Success",
+          response: successData.response || successData,
+        };
       }
 
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
-      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+      console.log("토큰 갱신 실패, 로그인 페이지로 리다이렉트");
+
+      // 사용자에게 알림
+      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+
+      // Vue Router를 사용하여 로그인 페이지로 리다이렉트
+      // window.location.href 대신 router.push 사용
+      if (typeof window !== "undefined") {
+        // 현재 라우터 인스턴스에 접근하기 위해 전역 변수나 이벤트를 사용
+        window.dispatchEvent(new CustomEvent("token-expired"));
+      }
+
+      const errorResponse = {
+        success: false,
+        statusCode: 401,
+        message: "인증이 만료되었습니다. 다시 로그인해주세요.",
+        response: '{"detail":"인증이 만료되었습니다. 다시 로그인해주세요."}',
+      };
+      throw errorResponse;
     }
 
     if (!res.ok) {
-      // 422 오류 등 상세한 에러 정보를 위해 응답 본문도 포함
-      let errorMessage = `API Call Fail: ${res.status} ${res.statusText}`;
+      // 백엔드 에러 응답 구조에 맞게 처리
+      let errorData;
       try {
-        const errorData = await res.json();
-        if (errorData.detail) {
-          // detail이 배열인 경우 (422 validation error)
-          if (Array.isArray(errorData.detail)) {
-            const messages = errorData.detail
-              .map((item: any) => item.msg)
-              .filter(Boolean);
-            if (messages.length > 0) {
-              errorMessage = messages.join("\n");
-            }
-          } else {
-            // detail이 문자열인 경우
-            errorMessage = errorData.detail;
-          }
-        }
+        errorData = await res.json();
       } catch (e) {
-        // JSON 파싱 실패 시 기본 메시지 사용
+        console.log(`${res.status} 에러 - JSON 파싱 실패:`, e);
+        const errorResponse = {
+          success: false,
+          statusCode: res.status,
+          message: res.statusText,
+          response: `{"detail":"${res.statusText}"}`,
+        };
+        throw errorResponse;
       }
-      throw new Error(errorMessage);
+
+      console.log(`${res.status} 에러 - 서버 응답 데이터:`, errorData);
+      console.log(`${res.status} 에러 - errorData.detail:`, errorData.detail);
+      console.log(`${res.status} 에러 - errorData.message:`, errorData.message);
+      console.log(`${res.status} 에러 - res.statusText:`, res.statusText);
+
+      // 백엔드 응답 구조를 그대로 반환
+      const errorResponse = {
+        success: false,
+        statusCode: res.status,
+        message: errorData.message || errorData.detail || res.statusText,
+        response: `{"detail":"${
+          errorData.message || errorData.detail || res.statusText
+        }"}`,
+      };
+      console.log(`${res.status} 에러 - 최종 errorResponse:`, errorResponse);
+      throw errorResponse;
     }
-    return await res.json();
+
+    // 성공 시 표준화된 응답 형식으로 반환
+    const successData = await res.json();
+    return {
+      success: true,
+      statusCode: res.status,
+      message: successData.message || "Success",
+      response: successData.response || successData,
+    };
   } catch (e) {
     if (e instanceof Error) {
       console.error(e.message);
-      throw e; // 에러를 다시 throw해서 호출하는 곳에서 처리할 수 있도록
+      // Error 객체인 경우 백엔드 응답 구조로 변환
+      const errorResponse = {
+        success: false,
+        statusCode: 500,
+        message: e.message,
+        response: `{"detail":"${e.message}"}`,
+      };
+      throw errorResponse;
     } else {
-      const error = new Error("An unexpected error occurred");
-      console.error(error.message);
-      throw error;
+      // 이미 백엔드 응답 구조인 경우 그대로 throw
+      console.error(e);
+      throw e;
     }
   }
 };

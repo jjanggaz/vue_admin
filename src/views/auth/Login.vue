@@ -110,8 +110,15 @@ const handleLogin = async () => {
       localStorage.removeItem("rememberedUsername");
     }
     router.push("/dashboard");
-  } catch (error) {
-    alert(t("messages.error.loginFail"));
+  } catch (error: any) {
+    // 백엔드 에러 응답 구조에 맞게 처리
+    console.log("로그인 에러 객체:", error);
+    console.log("에러 타입:", typeof error);
+    console.log("에러 message:", error?.message);
+    console.log("에러 전체 구조:", JSON.stringify(error, null, 2));
+
+    const errorMessage = error?.message || t("messages.error.loginFail");
+    alert(errorMessage);
   }
 };
 </script>

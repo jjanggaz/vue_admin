@@ -236,7 +236,7 @@ import { request } from "../../utils/request";
 import { useI18n } from "vue-i18n";
 
 const SYSTEM_CODE = import.meta.env.VITE_SYSTEM_CODE;
-console.log('SYSTEM_CODE :', SYSTEM_CODE);
+console.log("SYSTEM_CODE :", SYSTEM_CODE);
 
 const { t } = useI18n();
 
@@ -350,7 +350,7 @@ const newCode = ref<CodeItem>({
   code_order: "",
   is_active: "",
   parent_key: "",
-  description: ""
+  description: "",
 });
 
 // 검색조건 (1.코드그룹, 2, 대분류, 3.중분류, 4. 소분류)
@@ -368,7 +368,6 @@ const uniqueMediumCategories = computed(() => {
 const uniqueMinorCategories = computed(() => {
   return ["1차", "2차", "3차"];
 });
-
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredCodeList = computed(() => {
@@ -392,10 +391,8 @@ const paginatedcodeList = computed(() => {
   return filteredCodeList.value.slice(start, end);
 });
 
-
 // 데이터 로드 함수
 const loadData = async () => {
-
   const queryParams: Record<string, string> = {};
 
   // if (params.offset !== undefined)
@@ -433,12 +430,9 @@ const loadData = async () => {
 
   console.log("사용자 목록 조회 성공:", result);
 
-
-
-
   loading.value = true;
   try {
-    codeList.value = result
+    codeList.value = result.response || result;
     // codeList.value = [
     //   {
     //     id: "1",
@@ -563,8 +557,10 @@ const loadData = async () => {
     // ];
     totalCount.value = codeList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

@@ -36,7 +36,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5430,
+    port: parseInt(process.env.VITE_VIEW_PORT || "5430"),
     open: true,
     cors: true,
     hmr: {
@@ -45,7 +45,7 @@ export default defineConfig({
     proxy: {
       // 인증 API 프록시
       "/api": {
-        target: "http://192.168.233.128:8000",
+        target: process.env.VITE_API_PROXY_TARGET || "http://localhost:8080",
         changeOrigin: true,
         secure: false,
       },

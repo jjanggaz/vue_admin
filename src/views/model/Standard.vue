@@ -566,8 +566,10 @@ const loadStandardList = async (sortInfo?: {
     ];
 
     console.log("Sort info:", sortInfo);
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

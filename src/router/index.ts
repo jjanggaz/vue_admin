@@ -136,7 +136,7 @@ export const addRoleBasedRoutes = (userCodes: string[]) => {
 };
 
 // 네비게이션 가드
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
   const isLoggedIn = authStore.isLoggedIn;
   const userName = authStore.user?.username;
@@ -156,6 +156,22 @@ router.beforeEach((to, _from, next) => {
   if (requiresAuth && !isLoggedIn) {
     console.log("인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로 >> ");
     return next("/login");
+  }
+
+  // ✅ 로그인된 사용자의 기본 정보 확인
+  if (requiresAuth && isLoggedIn) {
+    // sessionStorage에 사용자 정보가 있는지 확인 (토큰은 httpOnly 쿠키에 저장됨)
+    const authName = sessionStorage.getItem("authName");
+    const authUsername = sessionStorage.getItem("authUsername");
+    const authCodes = sessionStorage.getItem("authCodes");
+
+    if (!authName || !authUsername || !authCodes) {
+      console.log(
+        "sessionStorage에 사용자 정보가 없음, 로그아웃 처리 후 로그인 페이지로 >> "
+      );
+      await authStore.logout();
+      return next("/login");
+    }
   }
 
   // ✅ 이미 로그인된 사용자가 로그인 페이지 접근 시 → 대시보드로

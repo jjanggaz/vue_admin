@@ -353,9 +353,11 @@ const parseExcelFile = (file: File) => {
       codeList.value = parsedData;
 
       alert(t("messages.success.excelDataImported"));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Excel 파일 파싱 오류:", error);
-      alert(t("messages.error.excelParseError"));
+      const errorMessage =
+        error?.message || t("messages.error.excelParseError");
+      alert(errorMessage);
     }
   };
 
@@ -388,8 +390,10 @@ const loadData = async () => {
         etc: "",
       },
     ];
-  } catch (error) {
+  } catch (error: any) {
     console.error("모달 데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

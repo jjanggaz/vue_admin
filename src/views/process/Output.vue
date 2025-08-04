@@ -277,8 +277,10 @@ const loadOutputList = async () => {
     // API 호출 또는 데이터 로딩 로직
     // 예시: outputList.value = await fetchOutputData();
     console.log("Output data loaded");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error loading output data:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

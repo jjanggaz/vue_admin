@@ -349,8 +349,10 @@ const loadData = async () => {
       page: roleStore.currentPageNumber,
       page_size: roleStore.currentPageSize,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -447,9 +449,10 @@ const handleDelete = async () => {
       selectedItems.value = []; // 선택 초기화
       await loadData(); // 재조회
       alert(t("messages.success.deleted"));
-    } catch (error) {
+    } catch (error: any) {
       console.error("삭제 실패:", error);
-      alert(t("messages.error.deleteFailed"));
+      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      alert(errorMessage);
     }
   }
 };
@@ -574,9 +577,10 @@ const saveRole = async () => {
 
     // 저장 후 재조회
     await loadData();
-  } catch (error) {
+  } catch (error: any) {
     console.error("저장 실패:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = error?.message || t("messages.error.saveFailed");
+    alert(errorMessage);
   }
 };
 

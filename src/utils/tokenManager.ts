@@ -116,8 +116,8 @@ export const deleteCookie = (name: string, path: string = "/") => {
 
 // 모든 토큰 제거 (HttpOnly가 false인 경우 클라이언트에서도 삭제)
 export const clearAllTokens = () => {
-  // access_token과 refresh_token 쿠키 삭제
-  deleteCookie("access_token");
-  deleteCookie("refresh_token");
+  // wai_access과 wai_refresh 쿠키 삭제
+  deleteCookie("wai_access");
+  deleteCookie("wai_refresh");
   console.log("토큰 쿠키 삭제 완료");
 };

@@ -82,7 +82,7 @@ export const useUserStore = defineStore("user", {
         if (params.itemsPerPage !== undefined)
           queryParams.itemsPerPage = params.itemsPerPage.toString();
 
-        const response = await request("/api/v1/auth/users/", queryParams, {
+        const response = await request("/api/users/", queryParams, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -173,7 +173,7 @@ export const useUserStore = defineStore("user", {
           JSON.stringify(requestData, null, 2)
         );
 
-        const response = await request("/api/v1/auth/users/", undefined, {
+        const response = await request("/api/users/", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -260,17 +260,13 @@ export const useUserStore = defineStore("user", {
           JSON.stringify(requestData, null, 2)
         );
 
-        const response = await request(
-          `/api/v1/auth/users/${userId}`,
-          undefined,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestData),
-          }
-        );
+        const response = await request(`/api/users/${userId}`, undefined, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
 
         // 수정 후 목록 새로고침
         await this.fetchUsers({
@@ -298,16 +294,12 @@ export const useUserStore = defineStore("user", {
       this.error = null;
 
       try {
-        const response = await request(
-          `/api/v1/auth/users/${userId}`,
-          undefined,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await request(`/api/users/${userId}`, undefined, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         // 삭제 후 목록 새로고침
         await this.fetchUsers({
@@ -341,8 +333,8 @@ export const useUserStore = defineStore("user", {
         }
 
         // 데이터가 없는 경우에만 API 호출
-        const allUsersResponse = (await request(
-          "/api/v1/auth/users/",
+        const allUsersResponse = await request(
+          "/api/users/",
           {
             page: "1",
             itemsPerPage: "100000", // 아이디 중복체크 해야하므로 최대치로 설정
@@ -353,11 +345,11 @@ export const useUserStore = defineStore("user", {
               "Content-Type": "application/json",
             },
           }
-        )) as UserListResponse;
+        );
 
         // 중복 체크
-        const existingUser = allUsersResponse.data.find(
-          (user) => user.username === username
+        const existingUser = allUsersResponse.response.data.find(
+          (user: User) => user.username === username
         );
         return !existingUser; // 중복되지 않으면 true 반환
       } catch (error) {

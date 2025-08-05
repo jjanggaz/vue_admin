@@ -60,13 +60,7 @@ export const useAuthStore = defineStore("auth", {
               codes: menuCodes || [], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
             };
 
-            // SessionStorage와 LocalStorage에 사용자 정보 저장 (새창 공유용)
-            sessionStorage.setItem("authName", userInfo.fullName);
-            sessionStorage.setItem("authUsername", userInfo.username);
-            sessionStorage.setItem("authRoleName", userInfo.roleName);
-            sessionStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
-
-            // LocalStorage에도 저장 (새창에서 공유)
+            // LocalStorage에 사용자 정보 저장 (새창 공유용)
             localStorage.setItem("authName", userInfo.fullName);
             localStorage.setItem("authUsername", userInfo.username);
             localStorage.setItem("authRoleName", userInfo.roleName);
@@ -117,12 +111,7 @@ export const useAuthStore = defineStore("auth", {
         // 사용자 정보 쿠키 제거
         removeUserInfo();
 
-        // SessionStorage와 LocalStorage에서 사용자 정보 제거
-        sessionStorage.removeItem("authName");
-        sessionStorage.removeItem("authUsername");
-        sessionStorage.removeItem("authRoleName");
-        sessionStorage.removeItem("authCodes");
-
+        // LocalStorage에서 사용자 정보 제거
         localStorage.removeItem("authName");
         localStorage.removeItem("authUsername");
         localStorage.removeItem("authRoleName");
@@ -137,19 +126,11 @@ export const useAuthStore = defineStore("auth", {
 
     // 새로고침 대비: 저장된 사용자 정보로 로그인 상태 복구
     async loadStoredToken() {
-      // sessionStorage에서 먼저 확인, 없으면 localStorage에서 확인
-      let authName = sessionStorage.getItem("authName");
-      let authCodesStr = sessionStorage.getItem("authCodes");
-      let authRoleName = sessionStorage.getItem("authRoleName");
-      let authUsername = sessionStorage.getItem("authUsername");
-
-      // sessionStorage에 없으면 localStorage에서 확인
-      if (!authName || !authCodesStr) {
-        authName = localStorage.getItem("authName");
-        authCodesStr = localStorage.getItem("authCodes");
-        authRoleName = localStorage.getItem("authRoleName");
-        authUsername = localStorage.getItem("authUsername");
-      }
+      // localStorage에서 사용자 정보 확인
+      const authName = localStorage.getItem("authName");
+      const authCodesStr = localStorage.getItem("authCodes");
+      const authRoleName = localStorage.getItem("authRoleName");
+      const authUsername = localStorage.getItem("authUsername");
 
       // 사용자 정보가 있는 경우에만 로그인 상태 복구
       if (authName && authCodesStr) {

@@ -168,21 +168,14 @@ router.beforeEach(async (to, _from, next) => {
 
   // ✅ 로그인된 사용자의 기본 정보 확인
   if (requiresAuth && isLoggedIn) {
-    // sessionStorage에서 먼저 확인, 없으면 localStorage에서 확인
-    let authName = sessionStorage.getItem("authName");
-    let authUsername = sessionStorage.getItem("authUsername");
-    let authCodes = sessionStorage.getItem("authCodes");
-
-    // sessionStorage에 없으면 localStorage에서 확인
-    if (!authName || !authUsername || !authCodes) {
-      authName = localStorage.getItem("authName");
-      authUsername = localStorage.getItem("authUsername");
-      authCodes = localStorage.getItem("authCodes");
-    }
+    // localStorage에서 사용자 정보 확인
+    const authName = localStorage.getItem("authName");
+    const authUsername = localStorage.getItem("authUsername");
+    const authCodes = localStorage.getItem("authCodes");
 
     if (!authName || !authUsername || !authCodes) {
       console.log(
-        "sessionStorage/localStorage에 사용자 정보가 없음, 로그아웃 처리 후 로그인 페이지로 >> "
+        "localStorage에 사용자 정보가 없음, 로그아웃 처리 후 로그인 페이지로 >> "
       );
       await authStore.logout();
       return next("/login");

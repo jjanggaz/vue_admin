@@ -141,13 +141,13 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
 // 자동 토큰 갱신 인터벌 ID
 let autoRefreshInterval: number | null = null;
 
-// 자동 토큰 갱신 시작 (23시간마다 갱신)
+// 자동 토큰 갱신 시작 (4시간마다 갱신)
 export const startAutoRefresh = () => {
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
   }
 
-  console.log("자동 토큰 갱신 시작 (23시간마다)");
+  console.log("자동 토큰 갱신 시작 (4시간마다)");
   autoRefreshInterval = setInterval(async () => {
     console.log("자동 토큰 갱신 실행...");
     const success = await refreshAccessToken();
@@ -165,7 +165,7 @@ export const startAutoRefresh = () => {
       // 페이지 새로고침하여 로그인 화면으로 이동
       window.location.href = "/login";
     }
-  }, 23 * 60 * 60 * 1000); // 23시간마다 갱신 (23 * 60 * 60 * 1000ms)
+  }, 4 * 60 * 60 * 1000); // 4시간마다 갱신 (4 * 60 * 60 * 1000ms)
 };
 
 // 자동 토큰 갱신 중지

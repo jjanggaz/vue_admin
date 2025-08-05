@@ -14,6 +14,7 @@ export interface User {
   user_type: "INTERNAL" | "EXTERNAL" | null; // 사내/사외 구분 (null 허용)
   created_at: string;
   updated_at: string | null;
+  last_login: string | null; // 마지막 로그인 시간 추가
 
   dept_id: string | null;
   contact_info: string | null;
@@ -39,18 +40,20 @@ export interface UserFormData {
 }
 
 export interface UserListResponse {
-  data: User[];
-  total_count: number;
-  has_more: boolean;
+  items: User[];
+  total: number;
   page: number;
-  items_per_page: number;
+  page_size: number;
+  total_pages: number;
+  search_info: any | null;
 }
 
 export interface UserQueryParams {
-  offset?: number;
-  limit?: number;
+  search_field?: string;
+  search_value?: string;
   page?: number;
-  itemsPerPage?: number;
+  page_size?: number;
+  order_direction?: "asc" | "desc";
 }
 
 export const useUserStore = defineStore("user", {
@@ -58,8 +61,8 @@ export const useUserStore = defineStore("user", {
     users: [] as User[],
     loading: false,
     totalCount: 0,
-    currentPage: 1,
-    itemsPerPage: 10,
+    page: 1,
+    page_size: 10,
     hasMore: false,
     error: null as string | null,
   }),
@@ -73,37 +76,41 @@ export const useUserStore = defineStore("user", {
       try {
         const queryParams: Record<string, string> = {};
 
-        if (params.offset !== undefined)
-          queryParams.offset = params.offset.toString();
-        if (params.limit !== undefined)
-          queryParams.limit = params.limit.toString();
-        if (params.page !== undefined)
-          queryParams.page = params.page.toString();
-        if (params.itemsPerPage !== undefined)
-          queryParams.itemsPerPage = params.itemsPerPage.toString();
+        // 검색 조건 설정
+        if (params.search_field !== undefined)
+          queryParams.search_field = params.search_field;
+        if (params.search_value !== undefined)
+          queryParams.search_value = params.search_value;
 
-        const response = await request("/api/users/list", queryParams, {
-          method: "GET",
+        // 페이지네이션 설정
+        queryParams.page = (params.page || this.page).toString();
+        queryParams.page_size = (params.page_size || this.page_size).toString();
+
+        // 정렬 설정
+        if (params.order_direction !== undefined)
+          queryParams.order_direction = params.order_direction;
+
+        const response = await request("/api/users/list", undefined, {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(queryParams),
         });
 
-        // API 응답 구조에 따라 처리
-        if (Array.isArray(response.response)) {
-          // 응답이 배열인 경우
-          this.users = response.response;
-          this.totalCount = response.response.length;
-          this.currentPage = 1;
-          this.itemsPerPage = response.response.length;
-          this.hasMore = false;
+        // API 응답 처리
+        if (response.response && response.response.items) {
+          this.users = response.response.items;
+          this.totalCount = response.response.total;
+          this.page = response.response.page;
+          this.page_size = response.response.page_size;
+          this.hasMore = response.response.page < response.response.total_pages;
         } else {
-          // 응답이 객체인 경우 (UserListResponse 형태)
-          this.users = response.response.data;
-          this.totalCount = response.response.total_count;
-          this.currentPage = response.response.page;
-          this.itemsPerPage = response.response.items_per_page;
-          this.hasMore = response.response.has_more;
+          this.users = [];
+          this.totalCount = 0;
+          this.page = 1;
+          this.page_size = 10;
+          this.hasMore = false;
         }
 
         console.log("사용자 목록 조회 성공:", response);
@@ -119,19 +126,23 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    // 페이지 변경
-    async changePage(page: number) {
+    // 페이지 변경 (검색 조건 유지)
+    async changePage(
+      page: number,
+      searchParams?: { search_field?: string; search_value?: string }
+    ) {
       await this.fetchUsers({
         page,
-        itemsPerPage: this.itemsPerPage,
+        page_size: this.page_size,
+        ...searchParams,
       });
     },
 
     // 페이지 크기 변경
-    async changePageSize(itemsPerPage: number) {
+    async changePageSize(pageSize: number) {
       await this.fetchUsers({
         page: 1, // 페이지 크기 변경 시 첫 페이지로
-        itemsPerPage,
+        page_size: pageSize,
       });
     },
 
@@ -183,8 +194,8 @@ export const useUserStore = defineStore("user", {
 
         // 등록 후 목록 새로고침
         await this.fetchUsers({
-          page: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
+          page: this.page,
+          page_size: this.page_size,
         });
 
         console.log("사용자 등록 성공:", response);
@@ -274,8 +285,8 @@ export const useUserStore = defineStore("user", {
 
         // 수정 후 목록 새로고침
         await this.fetchUsers({
-          page: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
+          page: this.page,
+          page_size: this.page_size,
         });
 
         console.log("사용자 수정 성공:", response);
@@ -311,8 +322,8 @@ export const useUserStore = defineStore("user", {
 
         // 삭제 후 목록 새로고침
         await this.fetchUsers({
-          page: this.currentPage,
-          itemsPerPage: this.itemsPerPage,
+          page: this.page,
+          page_size: this.page_size,
         });
 
         console.log("사용자 삭제 성공:", response);
@@ -332,21 +343,9 @@ export const useUserStore = defineStore("user", {
     // 사용자 ID 중복 체크
     async checkUserIdDuplicate(username: string): Promise<boolean> {
       try {
-        // 이미 조회된 데이터가 있으면 그것을 사용
-        if (this.users.length > 0) {
-          const existingUser = this.users.find(
-            (user) => user.username === username
-          );
-          return !existingUser; // 중복되지 않으면 true 반환
-        }
-
-        // 데이터가 없는 경우에만 API 호출
-        const allUsersResponse = await request(
-          "/api/users/list",
-          {
-            page: "1",
-            itemsPerPage: "100000", // 아이디 중복체크 해야하므로 최대치로 설정
-          },
+        const response = await request(
+          `/api/users/check/${username}`,
+          undefined,
           {
             method: "GET",
             headers: {
@@ -355,11 +354,9 @@ export const useUserStore = defineStore("user", {
           }
         );
 
-        // 중복 체크
-        const existingUser = allUsersResponse.response.data.find(
-          (user: User) => user.username === username
-        );
-        return !existingUser; // 중복되지 않으면 true 반환
+        // exists가 true면 중복, false면 중복되지 않음
+        // 중복되지 않으면 true 반환 (사용 가능)
+        return !response.response.exists;
       } catch (error) {
         console.error("사용자 ID 중복 체크 실패:", error);
         return false;
@@ -371,8 +368,8 @@ export const useUserStore = defineStore("user", {
       this.users = [];
       this.loading = false;
       this.totalCount = 0;
-      this.currentPage = 1;
-      this.itemsPerPage = 10;
+      this.page = 1;
+      this.page_size = 10;
       this.hasMore = false;
       this.error = null;
     },
@@ -421,7 +418,7 @@ export const useUserStore = defineStore("user", {
 
     // 총 페이지 수 계산
     totalPages: (state) => {
-      return Math.ceil(state.totalCount / state.itemsPerPage);
+      return Math.ceil(state.totalCount / state.page_size);
     },
   },
 });

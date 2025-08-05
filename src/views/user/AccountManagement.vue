@@ -15,12 +15,7 @@
               <option value="organization">
                 {{ t("columns.user.corpName") }}
               </option>
-              <option value="user_type">
-                {{ t("columns.user.userType") }}
-              </option>
               <option value="email">{{ t("columns.user.email") }}</option>
-              <option value="is_superuser">{{ t("columns.user.role") }}</option>
-              <option value="is_active">{{ t("columns.user.status") }}</option>
             </select>
           </div>
         </div>
@@ -91,7 +86,7 @@
     <!-- Pagination -->
     <div class="pagination-container">
       <Pagination
-        :current-page="userStore.currentPage"
+        :current-page="userStore.page"
         :total-pages="totalPagesComputed"
         @page-change="handlePageChange"
       />
@@ -455,25 +450,17 @@ const handleContactInput = (event: Event) => {
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredUserList = computed(() => {
-  if (searchOption.value && searchQuery.value) {
-    return userStore.filteredUsers(searchOption.value, searchQuery.value);
-  }
+  // 서버 측 검색을 사용하므로 항상 서버 데이터 반환
   return userStore.users || [];
 });
 
 const totalCountComputed = computed(() => {
-  // 검색 조건이 있으면 필터링된 결과의 개수, 없으면 서버의 전체 개수
-  if (searchOption.value && searchQuery.value) {
-    return filteredUserList.value.length;
-  }
+  // 서버 측 검색을 사용하므로 항상 서버의 전체 개수 반환
   return userStore.totalCount || 0;
 });
 
 const totalPagesComputed = computed(() => {
-  // 검색 조건이 있으면 필터링된 결과 기반으로 페이지 계산
-  if (searchOption.value && searchQuery.value) {
-    return Math.ceil(totalCountComputed.value / userStore.itemsPerPage) || 1;
-  }
+  // 항상 서버의 totalPages를 사용하여 일관성 유지
   return userStore.totalPages || 1;
 });
 
@@ -485,8 +472,8 @@ const paginatedUserList = computed(() => {
 const loadData = async () => {
   try {
     await userStore.fetchUsers({
-      page: userStore.currentPage,
-      itemsPerPage: userStore.itemsPerPage,
+      page: userStore.page,
+      page_size: userStore.page_size,
     });
   } catch (error: any) {
     console.error("데이터 로드 실패:", error);
@@ -501,8 +488,18 @@ const handleSelectionChange = (selected: User[]) => {
 
 // 페이지 변경 핸들러
 const handlePageChange = async (page: number) => {
-  await userStore.changePage(page);
-  selectedItems.value = [];
+  // 현재 검색 조건을 유지하면서 페이지 변경
+  try {
+    await userStore.changePage(page, {
+      search_field: searchOptionInput.value,
+      search_value: searchQueryInput.value,
+    });
+    selectedItems.value = [];
+  } catch (error: any) {
+    console.error("페이지 변경 실패:", error);
+    const errorMessage = error?.message || "페이지 변경에 실패했습니다.";
+    alert(errorMessage);
+  }
 };
 
 // 정렬 변경 핸들러
@@ -526,13 +523,43 @@ onMounted(() => {
 });
 
 // 검색 기능 구현
-const handleSearch = () => {
-  //검색시 선택된 항목 초기화
+const handleSearch = async () => {
+  // 검색시 선택된 항목 초기화
   selectedItems.value = [];
-  searchOption.value = searchOptionInput.value;
-  searchQuery.value = searchQueryInput.value;
-  // 검색 시 첫 페이지로 이동
-  userStore.changePage(1);
+
+  // 서버 측 검색 실행
+  try {
+    await userStore.fetchUsers({
+      page: 1, // 검색 시 첫 페이지로 이동
+      page_size: userStore.page_size,
+      search_field: searchOptionInput.value,
+      search_value: searchQueryInput.value,
+    });
+  } catch (error: any) {
+    console.error("검색 실패:", error);
+    const errorMessage = error?.message || "검색에 실패했습니다.";
+    alert(errorMessage);
+  }
+};
+
+// 검색 초기화 기능
+const handleSearchReset = async () => {
+  // 검색 조건 초기화
+  searchOptionInput.value = "";
+  searchQueryInput.value = "";
+  selectedItems.value = [];
+
+  // 전체 목록 조회
+  try {
+    await userStore.fetchUsers({
+      page: 1,
+      page_size: userStore.page_size,
+    });
+  } catch (error: any) {
+    console.error("검색 초기화 실패:", error);
+    const errorMessage = error?.message || "검색 초기화에 실패했습니다.";
+    alert(errorMessage);
+  }
 };
 
 // 등록 버튼 핸들러

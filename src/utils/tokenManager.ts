@@ -119,5 +119,6 @@ export const clearAllTokens = () => {
   // wai_access과 wai_refresh 쿠키 삭제
   deleteCookie("wai_access");
   deleteCookie("wai_refresh");
+  deleteCookie("wai_session");
   console.log("토큰 쿠키 삭제 완료");
 };

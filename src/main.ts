@@ -19,14 +19,23 @@ const authStore = useAuthStore();
 (async () => {
   await authStore.loadStoredToken();
 
-  // sessionStorage에 사용자 정보가 있는지 확인 (토큰은 httpOnly 쿠키에 저장됨)
+  // sessionStorage/localStorage에 사용자 정보가 있는지 확인 (토큰은 httpOnly 쿠키에 저장됨)
   if (authStore.isLoggedIn) {
-    const authName = sessionStorage.getItem("authName");
-    const authUsername = sessionStorage.getItem("authUsername");
-    const authCodes = sessionStorage.getItem("authCodes");
+    let authName = sessionStorage.getItem("authName");
+    let authUsername = sessionStorage.getItem("authUsername");
+    let authCodes = sessionStorage.getItem("authCodes");
+
+    // sessionStorage에 없으면 localStorage에서 확인
+    if (!authName || !authUsername || !authCodes) {
+      authName = localStorage.getItem("authName");
+      authUsername = localStorage.getItem("authUsername");
+      authCodes = localStorage.getItem("authCodes");
+    }
 
     if (!authName || !authUsername || !authCodes) {
-      console.log("sessionStorage에 사용자 정보가 없음, 로그아웃 처리");
+      console.log(
+        "sessionStorage/localStorage에 사용자 정보가 없음, 로그아웃 처리"
+      );
       await authStore.logout();
     }
   }

@@ -54,24 +54,31 @@ export const isTokenValid = (token: string): boolean => {
   return true;
 };
 
-// 현재 토큰이 유효한지 확인 (sessionStorage 기반)
+// 현재 토큰이 유효한지 확인 (sessionStorage/localStorage 기반)
 export const isCurrentTokenValid = async (): Promise<boolean> => {
   try {
-    // sessionStorage에 사용자 정보가 있는지 확인
-    const authName = sessionStorage.getItem("authName");
-    const authUsername = sessionStorage.getItem("authUsername");
-    const authCodes = sessionStorage.getItem("authCodes");
+    // sessionStorage에서 먼저 확인, 없으면 localStorage에서 확인
+    let authName = sessionStorage.getItem("authName");
+    let authUsername = sessionStorage.getItem("authUsername");
+    let authCodes = sessionStorage.getItem("authCodes");
+
+    // sessionStorage에 없으면 localStorage에서 확인
+    if (!authName || !authUsername || !authCodes) {
+      authName = localStorage.getItem("authName");
+      authUsername = localStorage.getItem("authUsername");
+      authCodes = localStorage.getItem("authCodes");
+    }
 
     if (!authName || !authUsername || !authCodes) {
-      console.log("sessionStorage에 사용자 정보가 없음");
+      console.log("sessionStorage/localStorage에 사용자 정보가 없음");
       return false;
     }
 
     // httpOnly 쿠키는 JavaScript에서 접근할 수 없으므로
     // 실제 토큰 유효성은 API 호출 시 401 에러로 확인됨
-    // 여기서는 sessionStorage에 사용자 정보가 있는지만 확인
+    // 여기서는 저장소에 사용자 정보가 있는지만 확인
     console.log(
-      "sessionStorage에 사용자 정보 존재 (토큰은 httpOnly 쿠키에 저장됨)"
+      "sessionStorage/localStorage에 사용자 정보 존재 (토큰은 httpOnly 쿠키에 저장됨)"
     );
     return true;
   } catch (error) {

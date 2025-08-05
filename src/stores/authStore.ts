@@ -6,6 +6,7 @@ import {
   startAutoRefresh,
   stopAutoRefresh,
   clearAllTokens,
+  isCurrentTokenValid,
 } from "../utils/tokenManager";
 
 export const useAuthStore = defineStore("auth", {
@@ -59,11 +60,17 @@ export const useAuthStore = defineStore("auth", {
               codes: menuCodes || [], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
             };
 
-            // SessionStorage에 사용자 정보 저장
+            // SessionStorage와 LocalStorage에 사용자 정보 저장 (새창 공유용)
             sessionStorage.setItem("authName", userInfo.fullName);
             sessionStorage.setItem("authUsername", userInfo.username);
             sessionStorage.setItem("authRoleName", userInfo.roleName);
             sessionStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
+
+            // LocalStorage에도 저장 (새창에서 공유)
+            localStorage.setItem("authName", userInfo.fullName);
+            localStorage.setItem("authUsername", userInfo.username);
+            localStorage.setItem("authRoleName", userInfo.roleName);
+            localStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
 
             // 스토어 상태 업데이트
             this.isLoggedIn = true;
@@ -110,11 +117,16 @@ export const useAuthStore = defineStore("auth", {
         // 사용자 정보 쿠키 제거
         removeUserInfo();
 
-        // SessionStorage에서 사용자 정보 제거
+        // SessionStorage와 LocalStorage에서 사용자 정보 제거
         sessionStorage.removeItem("authName");
         sessionStorage.removeItem("authUsername");
         sessionStorage.removeItem("authRoleName");
         sessionStorage.removeItem("authCodes");
+
+        localStorage.removeItem("authName");
+        localStorage.removeItem("authUsername");
+        localStorage.removeItem("authRoleName");
+        localStorage.removeItem("authCodes");
 
         // 자동 토큰 갱신 중지
         stopAutoRefresh();
@@ -125,9 +137,19 @@ export const useAuthStore = defineStore("auth", {
 
     // 새로고침 대비: 저장된 사용자 정보로 로그인 상태 복구
     async loadStoredToken() {
-      const authName = sessionStorage.getItem("authName");
-      const authCodesStr = sessionStorage.getItem("authCodes");
-      const authRoleName = sessionStorage.getItem("authRoleName");
+      // sessionStorage에서 먼저 확인, 없으면 localStorage에서 확인
+      let authName = sessionStorage.getItem("authName");
+      let authCodesStr = sessionStorage.getItem("authCodes");
+      let authRoleName = sessionStorage.getItem("authRoleName");
+      let authUsername = sessionStorage.getItem("authUsername");
+
+      // sessionStorage에 없으면 localStorage에서 확인
+      if (!authName || !authCodesStr) {
+        authName = localStorage.getItem("authName");
+        authCodesStr = localStorage.getItem("authCodes");
+        authRoleName = localStorage.getItem("authRoleName");
+        authUsername = localStorage.getItem("authUsername");
+      }
 
       // 사용자 정보가 있는 경우에만 로그인 상태 복구
       if (authName && authCodesStr) {
@@ -135,7 +157,7 @@ export const useAuthStore = defineStore("auth", {
 
         this.isLoggedIn = true;
         this.user = {
-          username: sessionStorage.getItem("authUsername") || authName,
+          username: authUsername || authName,
           fullName: authName,
           roleName: authRoleName || "",
           codes: authCodes,
@@ -148,6 +170,26 @@ export const useAuthStore = defineStore("auth", {
         startAutoRefresh();
 
         console.log("저장된 사용자 정보로 로그인 상태 복구 성공");
+      }
+    },
+
+    // 토큰 유효성 확인 (새창에서 로그인 상태 확인용)
+    async checkTokenValidity(): Promise<boolean> {
+      try {
+        console.log("토큰 유효성 확인 시작...");
+        const isValid = await isCurrentTokenValid();
+        console.log("토큰 유효성 확인 결과:", isValid);
+
+        if (isValid) {
+          // 토큰이 유효하면 sessionStorage에서 사용자 정보 복구
+          console.log("토큰이 유효하므로 사용자 정보 복구 시도...");
+          await this.loadStoredToken();
+          console.log("사용자 정보 복구 완료, isLoggedIn:", this.isLoggedIn);
+        }
+        return this.isLoggedIn; // 실제 스토어 상태를 반환
+      } catch (error) {
+        console.error("토큰 유효성 확인 실패:", error);
+        return false;
       }
     },
   },

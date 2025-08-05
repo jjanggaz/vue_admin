@@ -138,7 +138,7 @@ export const addRoleBasedRoutes = (userCodes: string[]) => {
 // 네비게이션 가드
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
-  const isLoggedIn = authStore.isLoggedIn;
+  let isLoggedIn = authStore.isLoggedIn;
   const userName = authStore.user?.username;
 
   const requiresAuth = to.meta.requiresAuth ?? true;
@@ -152,6 +152,14 @@ router.beforeEach(async (to, _from, next) => {
     requiresAuth
   );
 
+  // ✅ 새창에서 로그인 상태 확인 (sessionStorage가 비어있을 수 있음)
+  if (!isLoggedIn) {
+    console.log("로그인 상태가 false, 토큰 유효성 확인 시도...");
+    await authStore.checkTokenValidity();
+    isLoggedIn = authStore.isLoggedIn; // 스토어 상태를 다시 가져옴
+    console.log("토큰 유효성 확인 후 authStore.isLoggedIn 상태:", isLoggedIn);
+  }
+
   // ✅ 인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로
   if (requiresAuth && !isLoggedIn) {
     console.log("인증 필요하지만 로그인 안 한 경우 → 로그인 페이지로 >> ");
@@ -160,14 +168,21 @@ router.beforeEach(async (to, _from, next) => {
 
   // ✅ 로그인된 사용자의 기본 정보 확인
   if (requiresAuth && isLoggedIn) {
-    // sessionStorage에 사용자 정보가 있는지 확인 (토큰은 httpOnly 쿠키에 저장됨)
-    const authName = sessionStorage.getItem("authName");
-    const authUsername = sessionStorage.getItem("authUsername");
-    const authCodes = sessionStorage.getItem("authCodes");
+    // sessionStorage에서 먼저 확인, 없으면 localStorage에서 확인
+    let authName = sessionStorage.getItem("authName");
+    let authUsername = sessionStorage.getItem("authUsername");
+    let authCodes = sessionStorage.getItem("authCodes");
+
+    // sessionStorage에 없으면 localStorage에서 확인
+    if (!authName || !authUsername || !authCodes) {
+      authName = localStorage.getItem("authName");
+      authUsername = localStorage.getItem("authUsername");
+      authCodes = localStorage.getItem("authCodes");
+    }
 
     if (!authName || !authUsername || !authCodes) {
       console.log(
-        "sessionStorage에 사용자 정보가 없음, 로그아웃 처리 후 로그인 페이지로 >> "
+        "sessionStorage/localStorage에 사용자 정보가 없음, 로그아웃 처리 후 로그인 페이지로 >> "
       );
       await authStore.logout();
       return next("/login");

@@ -54,10 +54,10 @@ export const isTokenValid = (token: string): boolean => {
   return true;
 };
 
-// 현재 토큰이 유효한지 확인 (localStorage 기반)
+// 현재 토큰이 유효한지 확인 (토큰 갱신 로직 포함)
 export const isCurrentTokenValid = async (): Promise<boolean> => {
   try {
-    // localStorage에서 사용자 정보 확인
+    // 1단계: localStorage에서 사용자 정보 확인
     const authName = localStorage.getItem("authName");
     const authUsername = localStorage.getItem("authUsername");
     const authCodes = localStorage.getItem("authCodes");
@@ -67,13 +67,71 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
       return false;
     }
 
-    // httpOnly 쿠키는 JavaScript에서 접근할 수 없으므로
-    // 실제 토큰 유효성은 API 호출 시 401 에러로 확인됨
-    // 여기서는 localStorage에 사용자 정보가 있는지만 확인
-    console.log(
-      "localStorage에 사용자 정보 존재 (토큰은 httpOnly 쿠키에 저장됨)"
-    );
-    return true;
+    // 2단계: 쿠키 존재 여부 확인 (wai_refresh, wai_session)
+    const hasRefreshToken = document.cookie.includes("wai_refresh");
+    const hasSessionToken = document.cookie.includes("wai_session");
+
+    if (!hasRefreshToken || !hasSessionToken) {
+      console.log("wai_refresh 또는 wai_session 쿠키가 없음");
+      return false;
+    }
+
+    // 3단계: wai_access 토큰 존재 여부 확인
+    const hasAccessToken = document.cookie.includes("wai_access");
+
+    if (!hasAccessToken) {
+      console.log("wai_access 토큰이 없음, 토큰 갱신 시도...");
+      // 토큰 갱신 시도
+      const refreshSuccess = await refreshAccessToken();
+
+      if (refreshSuccess) {
+        console.log("토큰 갱신 성공, 기존 내용 유지");
+        return true;
+      } else {
+        console.log("토큰 갱신 실패, 로그인 화면으로 이동");
+        // 사용자에게 알림
+        alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        // localStorage 초기화
+        localStorage.removeItem("authName");
+        localStorage.removeItem("authUsername");
+        localStorage.removeItem("authRoleName");
+        localStorage.removeItem("authCodes");
+        return false;
+      }
+    }
+
+    // 4단계: wai_access 토큰이 있으면 유효성 확인
+    const verifyResponse = await fetch("/api/main/verify", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // httpOnly 쿠키 포함
+    });
+
+    if (verifyResponse.ok) {
+      console.log("JWT 쿠키 유효성 확인 성공");
+      return true;
+    } else {
+      console.log("wai_access 토큰이 유효하지 않음, 토큰 갱신 시도...");
+      // 토큰 갱신 시도
+      const refreshSuccess = await refreshAccessToken();
+
+      if (refreshSuccess) {
+        console.log("토큰 갱신 성공, 기존 내용 유지");
+        return true;
+      } else {
+        console.log("토큰 갱신 실패, 로그인 화면으로 이동");
+        // 사용자에게 알림
+        alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        // localStorage 초기화
+        localStorage.removeItem("authName");
+        localStorage.removeItem("authUsername");
+        localStorage.removeItem("authRoleName");
+        localStorage.removeItem("authCodes");
+        return false;
+      }
+    }
   } catch (error) {
     console.error("토큰 유효성 검사 중 오류:", error);
     return false;
@@ -95,7 +153,17 @@ export const startAutoRefresh = () => {
     const success = await refreshAccessToken();
     if (!success) {
       console.error("자동 토큰 갱신 실패");
+      // 사용자에게 알림
+      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+      // localStorage 초기화
+      localStorage.removeItem("authName");
+      localStorage.removeItem("authUsername");
+      localStorage.removeItem("authRoleName");
+      localStorage.removeItem("authCodes");
+      // 자동 갱신 중지
       stopAutoRefresh();
+      // 페이지 새로고침하여 로그인 화면으로 이동
+      window.location.href = "/login";
     }
   }, 23 * 60 * 60 * 1000); // 23시간마다 갱신 (23 * 60 * 60 * 1000ms)
 };

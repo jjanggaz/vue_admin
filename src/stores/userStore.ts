@@ -31,7 +31,6 @@ export interface UserFormData {
   full_name: string;
   organization: string;
   user_type: "INTERNAL" | "EXTERNAL"; // 사내/사외 구분
-  dept_id: string;
   contact_info: string;
   description: string;
   password?: string;
@@ -172,9 +171,6 @@ export const useUserStore = defineStore("user", {
         }
 
         // 빈 문자열이 아닌 경우에만 추가
-        if (userData.dept_id && userData.dept_id.trim() !== "") {
-          requestData.dept_id = userData.dept_id;
-        }
         if (userData.contact_info && userData.contact_info.trim() !== "") {
           requestData.contact_info = userData.contact_info;
         }
@@ -241,9 +237,6 @@ export const useUserStore = defineStore("user", {
         }
 
         // 빈 문자열이 아닌 경우에만 추가
-        if (userData.dept_id && userData.dept_id.trim() !== "") {
-          requestData.dept_id = userData.dept_id;
-        }
         if (userData.contact_info && userData.contact_info.trim() !== "") {
           requestData.contact_info = userData.contact_info;
         }

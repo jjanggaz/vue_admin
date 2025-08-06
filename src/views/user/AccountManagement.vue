@@ -228,15 +228,7 @@
                 :placeholder="t('placeholder.userEmail')"
               />
             </dd>
-            <dt>{{ t("columns.user.deptId") }}</dt>
-            <dd>
-              <input
-                id="user-dept"
-                v-model="newUser.dept_id"
-                type="text"
-                :placeholder="t('placeholder.userDeptId')"
-              />
-            </dd>
+
             <dt>{{ t("columns.user.contactInfo") }}</dt>
             <dd>
               <input
@@ -308,7 +300,6 @@ interface UserForm {
   email: string;
   organization: string;
   user_type: "INTERNAL" | "EXTERNAL"; // 사내/사외 구분
-  dept_id: string;
   contact_info: string;
   description: string;
   is_superuser: boolean;
@@ -351,12 +342,7 @@ const tableColumns: TableColumn[] = [
     width: "150px",
     sortable: true,
   },
-  {
-    key: "dept_id",
-    title: t("columns.user.deptId"),
-    width: "100px",
-    sortable: true,
-  },
+
   {
     key: "contact_info",
     title: t("columns.user.contactInfo"),
@@ -406,7 +392,6 @@ const newUser = ref<UserForm>({
   email: "",
   organization: "",
   user_type: "INTERNAL",
-  dept_id: "",
   contact_info: "",
   description: "",
   is_superuser: false,
@@ -589,7 +574,6 @@ const handleRegist = () => {
     email: "",
     organization: "",
     user_type: "INTERNAL",
-    dept_id: "",
     contact_info: "",
     description: "",
     is_superuser: false,
@@ -662,7 +646,6 @@ const saveUser = async () => {
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
-        dept_id: newUser.value.dept_id,
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
@@ -684,7 +667,6 @@ const saveUser = async () => {
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
-        dept_id: newUser.value.dept_id,
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
@@ -705,7 +687,6 @@ const saveUser = async () => {
         full_name: newUser.value.full_name,
         email: newUser.value.email,
         organization: newUser.value.organization,
-        dept_id: newUser.value.dept_id,
         contact_info: newUser.value.contact_info,
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
@@ -814,7 +795,6 @@ const handleEdit = () => {
     email: itemToEdit.email,
     organization: itemToEdit.organization,
     user_type: itemToEdit.user_type || "INTERNAL", // null인 경우 기본값 설정
-    dept_id: itemToEdit.dept_id || "",
     contact_info: itemToEdit.contact_info || "",
     description: itemToEdit.description || "",
     is_superuser: itemToEdit.is_superuser,

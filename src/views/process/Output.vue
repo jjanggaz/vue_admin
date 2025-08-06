@@ -145,7 +145,6 @@
 import { ref, onMounted, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
-import { formatDate } from "@/utils/dateUtils";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
@@ -155,6 +154,12 @@ interface OutputItem {
   type: string;
   createdAt: string;
   status: string;
+  num: string;
+  column: string;
+  influent: string;
+  unit: string;
+  etc: string;
+  index?: number;
 }
 
 // 테이블 컬럼 설정
@@ -165,7 +170,7 @@ const tableColumns: TableColumn[] = [
     key: "num",
     title: t("common.number"),
     sortable: true,
-    formatter: (value, item, index) => String((index || 0) + 1),
+    formatter: (value: any, item: any) => String((item?.index || 0) + 1),
   },
   { key: "column", title: t("common.item"), sortable: true },
   { key: "influent", title: t("common.influent"), sortable: true },
@@ -175,6 +180,11 @@ const tableColumns: TableColumn[] = [
 
 const outputList = ref<OutputItem[]>([
   {
+    id: "1",
+    name: "Output A",
+    type: "Type A",
+    createdAt: "2024-01-01",
+    status: "Active",
     num: "1",
     column: "Column A",
     influent: "Influent A",
@@ -204,8 +214,11 @@ const activeTab = ref(0);
 let touchStartX = 0;
 let touchEndX = 0;
 
-const handleSortChange = (column: string, direction: "asc" | "desc") => {
-  console.log(`Sorting by ${column} in ${direction} order`);
+const handleSortChange = (sortInfo: {
+  key: string;
+  direction: "asc" | "desc";
+}) => {
+  console.log(`Sorting by ${sortInfo.key} in ${sortInfo.direction} order`);
   // 정렬 로직 구현
 };
 

@@ -174,7 +174,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  "sort-change": [{ key: string; direction: "asc" | "desc" }];
+  "sort-change": [{ key: string | null; direction: "asc" | "desc" | null }];
   "row-click": [item: any, index: number];
   "selection-change": [selectedItems: any[]];
 }>();
@@ -282,29 +282,52 @@ const sortedData = computed(() => {
 const handleSort = (column: TableColumn) => {
   if (!column.sortable) return;
 
+  let shouldEmitEvent = false;
+  let eventData: { key: string | null; direction: "asc" | "desc" | null } = {
+    key: null,
+    direction: null,
+  };
+
   if (sortConfig.value.key === column.key) {
     // 같은 컬럼 클릭 시 방향 변경
     if (sortConfig.value.direction === "asc") {
       sortConfig.value.direction = "desc";
+      eventData = { key: column.key, direction: "desc" };
+      shouldEmitEvent = true;
     } else if (sortConfig.value.direction === "desc") {
+      // 정렬 초기화 - 서버에 정렬 없음을 알림
       sortConfig.value.key = null;
       sortConfig.value.direction = null;
+      eventData = { key: null, direction: null };
+      shouldEmitEvent = true;
     } else {
       sortConfig.value.direction = "asc";
+      eventData = { key: column.key, direction: "asc" };
+      shouldEmitEvent = true;
     }
   } else {
     // 다른 컬럼 클릭 시 새로운 정렬
     sortConfig.value.key = column.key;
     sortConfig.value.direction = "asc";
+    eventData = { key: column.key, direction: "asc" };
+    shouldEmitEvent = true;
   }
 
-  if (sortConfig.value.key && sortConfig.value.direction) {
-    emit("sort-change", {
-      key: sortConfig.value.key,
-      direction: sortConfig.value.direction,
-    });
+  if (shouldEmitEvent) {
+    emit("sort-change", eventData);
   }
 };
+
+// 정렬 초기화 함수
+const resetSort = () => {
+  sortConfig.value.key = null;
+  sortConfig.value.direction = null;
+};
+
+// 컴포넌트 외부에서 접근할 수 있도록 노출
+defineExpose({
+  resetSort,
+});
 
 // 유틸리티 함수들
 const getColumnValue = (item: any, key: string) => {

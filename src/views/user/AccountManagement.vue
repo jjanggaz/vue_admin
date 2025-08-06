@@ -8,7 +8,7 @@
             t("common.search")
           }}</label>
           <div class="form-item">
-            <select id="role" v-model="searchOptionInput">
+            <select id="role" v-model="searchOption">
               <option value="">{{ t("common.selectItem") }}</option>
               <option value="username">{{ t("columns.user.id") }}</option>
               <option value="full_name">{{ t("columns.user.name") }}</option>
@@ -16,6 +16,9 @@
                 {{ t("columns.user.corpName") }}
               </option>
               <option value="email">{{ t("columns.user.email") }}</option>
+              <option value="contact_info">
+                {{ t("columns.user.contactInfo") }}
+              </option>
             </select>
           </div>
         </div>
@@ -25,7 +28,7 @@
               type="text"
               id="search"
               :placeholder="t('placeholder.searchQuery')"
-              v-model="searchQueryInput"
+              v-model="searchQuery"
               @keyup.enter="handleSearch"
             />
           </div>
@@ -55,6 +58,7 @@
       </div>
     </div>
     <DataTable
+      ref="dataTableRef"
       :columns="tableColumns"
       :data="paginatedUserList"
       :loading="userStore.loading"
@@ -70,9 +74,6 @@
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
     >
-      <template #cell-index="{ index }">
-        {{ index + 1 }}
-      </template>
       <template #cell-is_active="{ value }">
         <span :class="value ? 'status-active' : 'status-inactive'">
           {{
@@ -309,7 +310,6 @@ interface UserForm {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "user_id", title: "ID", width: "0px", sortable: false, hidden: true },
-  { key: "index", title: t("columns.user.no"), width: "60px", sortable: false },
   {
     key: "username",
     title: t("columns.user.id"),
@@ -359,7 +359,7 @@ const tableColumns: TableColumn[] = [
     key: "is_superuser",
     title: t("columns.user.role"),
     width: "100px",
-    sortable: true,
+    sortable: false,
     formatter: (value) =>
       value ? t("common.userRole.admin") : t("common.userRole.user"),
   },
@@ -367,7 +367,7 @@ const tableColumns: TableColumn[] = [
     key: "is_active",
     title: t("columns.user.status"),
     width: "100px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "description",
@@ -384,6 +384,7 @@ const searchQuery = ref("");
 const selectedItems = ref<User[]>([]);
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
+const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
 const newUser = ref<UserForm>({
   username: "",
   password: "",
@@ -489,20 +490,26 @@ const handlePageChange = async (page: number) => {
 
 // 정렬 변경 핸들러
 const handleSortChange = async (sortInfo: {
-  key: string;
-  direction: "asc" | "desc";
+  key: string | null;
+  direction: "asc" | "desc" | null;
 }) => {
   console.log("정렬 변경:", sortInfo);
 
   try {
-    await userStore.fetchUsers({
+    const params: any = {
       page: userStore.page,
       page_size: userStore.page_size,
       search_field: searchOptionInput.value,
       search_value: searchQueryInput.value,
-      order_by: sortInfo.key,
-      order_direction: sortInfo.direction,
-    });
+    };
+
+    // 정렬 조건이 있을 때만 추가
+    if (sortInfo.key && sortInfo.direction) {
+      params.order_by = sortInfo.key;
+      params.order_direction = sortInfo.direction;
+    }
+
+    await userStore.fetchUsers(params);
   } catch (error: any) {
     console.error("정렬 실패:", error);
     const errorMessage = error?.message || "정렬에 실패했습니다.";
@@ -523,8 +530,17 @@ onMounted(() => {
 
 // 검색 기능 구현
 const handleSearch = async () => {
+  // 검색 조건을 실제 검색값에 복사
+  searchOptionInput.value = searchOption.value;
+  searchQueryInput.value = searchQuery.value;
+
   // 검색시 선택된 항목 초기화
   selectedItems.value = [];
+
+  // 검색시 정렬 상태 초기화
+  if (dataTableRef.value) {
+    dataTableRef.value.resetSort();
+  }
 
   // 서버 측 검색 실행
   try {
@@ -533,6 +549,7 @@ const handleSearch = async () => {
       page_size: userStore.page_size,
       search_field: searchOptionInput.value,
       search_value: searchQueryInput.value,
+      // 정렬 조건 제거 (초기화)
     });
   } catch (error: any) {
     console.error("검색 실패:", error);
@@ -543,16 +560,26 @@ const handleSearch = async () => {
 
 // 검색 초기화 기능
 const handleSearchReset = async () => {
+  // 입력 필드 초기화
+  searchOption.value = "";
+  searchQuery.value = "";
+
   // 검색 조건 초기화
   searchOptionInput.value = "";
   searchQueryInput.value = "";
   selectedItems.value = [];
+
+  // 정렬 상태 초기화
+  if (dataTableRef.value) {
+    dataTableRef.value.resetSort();
+  }
 
   // 전체 목록 조회
   try {
     await userStore.fetchUsers({
       page: 1,
       page_size: userStore.page_size,
+      // 정렬 조건 제거 (초기화)
     });
   } catch (error: any) {
     console.error("검색 초기화 실패:", error);

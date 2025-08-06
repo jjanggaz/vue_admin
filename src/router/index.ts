@@ -153,7 +153,8 @@ router.beforeEach(async (to, _from, next) => {
   );
 
   // ✅ 새창에서 로그인 상태 확인 (sessionStorage가 비어있을 수 있음)
-  if (!isLoggedIn) {
+  // 단, 로그인 페이지에서는 토큰 검증 스킵
+  if (!isLoggedIn && to.path !== "/login") {
     console.log("로그인 상태가 false, 토큰 유효성 확인 시도...");
     await authStore.checkTokenValidity();
     isLoggedIn = authStore.isLoggedIn; // 스토어 상태를 다시 가져옴

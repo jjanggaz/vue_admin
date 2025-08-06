@@ -39,8 +39,8 @@ export const request = async (
 
     const res = await fetch(url.toString(), requestOptions);
 
-    // 401 에러 시 토큰 갱신 시도
-    if (res.status === 401) {
+    // 401 에러 시 토큰 갱신 시도 (단, 로그인 API는 제외)
+    if (res.status === 401 && !path.includes("/api/main/login")) {
       console.log("401 에러 발생, 토큰 갱신 시도...");
       const refreshSuccess = await refreshAccessToken();
 

@@ -35,58 +35,72 @@ export const useAuthStore = defineStore("auth", {
           }),
         });
 
-        if (result && result.success && result.response) {
-          const responseData = result.response;
+        if (result) {
+          // 로그인 성공 시
+          if (result.success && result.response) {
+            const responseData = result.response;
 
-          // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 START =======================
-          const waiWebAdminMenus =
-            responseData.menus?.filter(
-              (menu: any) => menu.system_code === "WAI_WEB_ADMIN"
-            ) || []; // WAI_WEB_ADMIN으로 된 코드만 필터
-          const menuCodes = waiWebAdminMenus
-            .map((menu: any) => menu.menu_code)
-            .filter((code: string) => code.startsWith("WEB")); // WEB으로 시작하는 코드만 필터
-          // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 END =======================
+            // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 START =======================
+            const waiWebAdminMenus =
+              responseData.menus?.filter(
+                (menu: any) => menu.system_code === "WAI_WEB_ADMIN"
+              ) || []; // WAI_WEB_ADMIN으로 된 코드만 필터
+            const menuCodes = waiWebAdminMenus
+              .map((menu: any) => menu.menu_code)
+              .filter((code: string) => code.startsWith("WEB")); // WEB으로 시작하는 코드만 필터
+            // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 END =======================
 
-          // 메뉴 접근 권한 확인
-          if (!responseData.menus || responseData.menus.length === 0) {
-            throw new Error("메뉴 접근 권한이 없습니다.");
-          }
+            // 메뉴 접근 권한 확인
+            if (!responseData.menus || responseData.menus.length === 0) {
+              throw new Error("메뉴 접근 권한이 없습니다.");
+            }
 
-          // 로그인 응답에서 사용자 정보 처리
-          if (responseData.user_info) {
-            // 역할 정보 추출
-            const roleName = responseData.user_info.roles?.[0]?.role_name || "";
+            // 로그인 응답에서 사용자 정보 처리
+            if (responseData.user_info) {
+              // 역할 정보 추출
+              const roleName =
+                responseData.user_info.roles?.[0]?.role_name || "";
 
-            const userInfo = {
-              username: responseData.user_info.username,
-              fullName: responseData.user_info.full_name,
-              roleName: roleName,
-              codes: menuCodes || [], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
-            };
+              const userInfo = {
+                username: responseData.user_info.username,
+                fullName: responseData.user_info.full_name,
+                roleName: roleName,
+                codes: menuCodes || [], // 서버에서 받은 코드 배열 (테스트 하기 위해서 모든 코드 추가)
+              };
 
-            // LocalStorage에 사용자 정보 저장 (새창 공유용)
-            localStorage.setItem("authName", userInfo.fullName);
-            localStorage.setItem("authUsername", userInfo.username);
-            localStorage.setItem("authRoleName", userInfo.roleName);
-            localStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
+              // LocalStorage에 사용자 정보 저장 (새창 공유용)
+              localStorage.setItem("authName", userInfo.fullName);
+              localStorage.setItem("authUsername", userInfo.username);
+              localStorage.setItem("authRoleName", userInfo.roleName);
+              localStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
 
-            // 스토어 상태 업데이트
-            this.isLoggedIn = true;
-            this.user = userInfo;
+              // 스토어 상태 업데이트
+              this.isLoggedIn = true;
+              this.user = userInfo;
 
-            // 코드 기반 라우트 동적 추가
-            addRoleBasedRoutes(userInfo.codes);
+              // 코드 기반 라우트 동적 추가
+              addRoleBasedRoutes(userInfo.codes);
 
-            // 자동 토큰 갱신 시작
-            startAutoRefresh();
+              // 자동 토큰 갱신 시작
+              startAutoRefresh();
+            }
+          } else {
+            // 로그인 실패 시 - 상태 코드별 에러 처리
+            if (result.statusCode === 401) {
+              // 인증 실패 (아이디/비밀번호 오류)
+              throw new Error(
+                result.message || "아이디 또는 비밀번호가 올바르지 않습니다."
+              );
+            } else if (result.statusCode === 403) {
+              // 메뉴 접근 권한 없음
+              throw new Error(result.message || "메뉴 접근 권한이 없습니다.");
+            } else {
+              // 기타 오류
+              throw new Error(result.message || "로그인에 실패했습니다.");
+            }
           }
         } else {
-          // 백엔드에서 메뉴 접근 권한 없음 에러 처리
-          if (result && result.statusCode === 403) {
-            throw new Error(result.message || "메뉴 접근 권한이 없습니다.");
-          }
-          throw new Error("로그인 응답이 올바르지 않습니다.");
+          throw new Error("서버 응답이 없습니다.");
         }
       } catch (error) {
         console.error("로그인 실패:", error);

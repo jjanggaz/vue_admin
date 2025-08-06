@@ -39,6 +39,7 @@ export default defineConfig({
     port: parseInt(process.env.VITE_VIEW_PORT || "5430"),
     open: true,
     cors: true,
+    sourcemapIgnoreList: false,
     hmr: {
       overlay: true,
     },
@@ -50,5 +51,9 @@ export default defineConfig({
         secure: false,
       },
     },
+  },
+  // 개발 모드에서 소스맵 활성화
+  esbuild: {
+    sourcemap: true,
   },
 });

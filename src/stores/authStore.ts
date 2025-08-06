@@ -48,6 +48,11 @@ export const useAuthStore = defineStore("auth", {
             .filter((code: string) => code.startsWith("WEB")); // WEB으로 시작하는 코드만 필터
           // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 END =======================
 
+          // 메뉴 접근 권한 확인
+          if (!responseData.menus || responseData.menus.length === 0) {
+            throw new Error("메뉴 접근 권한이 없습니다.");
+          }
+
           // 로그인 응답에서 사용자 정보 처리
           if (responseData.user_info) {
             // 역할 정보 추출
@@ -77,6 +82,10 @@ export const useAuthStore = defineStore("auth", {
             startAutoRefresh();
           }
         } else {
+          // 백엔드에서 메뉴 접근 권한 없음 에러 처리
+          if (result && result.statusCode === 403) {
+            throw new Error(result.message || "메뉴 접근 권한이 없습니다.");
+          }
           throw new Error("로그인 응답이 올바르지 않습니다.");
         }
       } catch (error) {

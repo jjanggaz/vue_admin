@@ -272,49 +272,10 @@ const sortConfig = ref<SortConfig>({
   direction: props.defaultSort?.direction || null,
 });
 
-// 정렬된 데이터 계산
+// 정렬된 데이터 계산 (서버 측 정렬 사용)
 const sortedData = computed(() => {
-  if (!sortConfig.value.key || !sortConfig.value.direction) {
-    return props.data;
-  }
-
-  const sorted = [...props.data].sort((a, b) => {
-    const aValue = getColumnValue(a, sortConfig.value.key!);
-    const bValue = getColumnValue(b, sortConfig.value.key!);
-
-    // null/undefined 처리
-    if (aValue == null && bValue == null) return 0;
-    if (aValue == null) return 1;
-    if (bValue == null) return -1;
-
-    // 숫자 비교
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortConfig.value.direction === "asc"
-        ? aValue - bValue
-        : bValue - aValue;
-    }
-
-    // 날짜 비교
-    const aDate = new Date(aValue);
-    const bDate = new Date(bValue);
-    if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
-      return sortConfig.value.direction === "asc"
-        ? aDate.getTime() - bDate.getTime()
-        : bDate.getTime() - aDate.getTime();
-    }
-
-    // 문자열 비교
-    const aStr = String(aValue).toLowerCase();
-    const bStr = String(bValue).toLowerCase();
-
-    if (sortConfig.value.direction === "asc") {
-      return aStr.localeCompare(bStr, "ko-KR");
-    } else {
-      return bStr.localeCompare(aStr, "ko-KR");
-    }
-  });
-
-  return sorted;
+  // 서버에서 정렬된 데이터를 받아오므로 클라이언트 측 정렬 불필요
+  return props.data;
 });
 
 // 정렬 처리

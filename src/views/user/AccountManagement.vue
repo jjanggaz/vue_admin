@@ -503,12 +503,26 @@ const handlePageChange = async (page: number) => {
 };
 
 // 정렬 변경 핸들러
-const handleSortChange = (sortInfo: {
+const handleSortChange = async (sortInfo: {
   key: string;
   direction: "asc" | "desc";
 }) => {
   console.log("정렬 변경:", sortInfo);
-  // 서버 측 정렬이 필요하다면 여기에 API 호출 추가
+
+  try {
+    await userStore.fetchUsers({
+      page: userStore.page,
+      page_size: userStore.page_size,
+      search_field: searchOptionInput.value,
+      search_value: searchQueryInput.value,
+      order_by: sortInfo.key,
+      order_direction: sortInfo.direction,
+    });
+  } catch (error: any) {
+    console.error("정렬 실패:", error);
+    const errorMessage = error?.message || "정렬에 실패했습니다.";
+    alert(errorMessage);
+  }
 };
 
 // 행 클릭 핸들러

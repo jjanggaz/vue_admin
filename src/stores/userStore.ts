@@ -53,6 +53,7 @@ export interface UserQueryParams {
   search_value?: string;
   page?: number;
   page_size?: number;
+  order_by?: string;
   order_direction?: "asc" | "desc";
 }
 
@@ -87,6 +88,8 @@ export const useUserStore = defineStore("user", {
         queryParams.page_size = (params.page_size || this.page_size).toString();
 
         // 정렬 설정
+        if (params.order_by !== undefined)
+          queryParams.order_by = params.order_by;
         if (params.order_direction !== undefined)
           queryParams.order_direction = params.order_direction;
 

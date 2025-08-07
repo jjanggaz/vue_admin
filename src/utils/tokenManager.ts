@@ -11,6 +11,9 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+      }),
       credentials: "include", // httpOnly 쿠키 포함
     });
 
@@ -106,6 +109,9 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+      }),
       credentials: "include", // httpOnly 쿠키 포함
     });
 

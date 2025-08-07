@@ -32,6 +32,7 @@ export const useAuthStore = defineStore("auth", {
           body: JSON.stringify({
             username: username,
             password: password,
+            system_code: import.meta.env.VITE_SYSTEM_CODE,
           }),
         });
 
@@ -118,6 +119,9 @@ export const useAuthStore = defineStore("auth", {
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            system_code: import.meta.env.VITE_SYSTEM_CODE,
+          }),
         });
         console.log("서버 토큰 무효화 완료");
       } catch (error) {

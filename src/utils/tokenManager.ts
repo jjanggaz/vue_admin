@@ -71,8 +71,8 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
     }
 
     // 2단계: 쿠키 존재 여부 확인 (wai_refresh, wai_session)
-    const hasRefreshToken = document.cookie.includes("wai_refresh");
-    const hasSessionToken = document.cookie.includes("wai_session");
+    const hasRefreshToken = document.cookie.includes("admin_refresh");
+    const hasSessionToken = document.cookie.includes("admin_session");
 
     if (!hasRefreshToken || !hasSessionToken) {
       console.log("wai_refresh 또는 wai_session 쿠키가 없음");
@@ -80,7 +80,7 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
     }
 
     // 3단계: wai_access 토큰 존재 여부 확인
-    const hasAccessToken = document.cookie.includes("wai_access");
+    const hasAccessToken = document.cookie.includes("admin_access");
 
     if (!hasAccessToken) {
       console.log("wai_access 토큰이 없음, 토큰 갱신 시도...");

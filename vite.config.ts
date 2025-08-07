@@ -56,4 +56,13 @@ export default defineConfig({
   esbuild: {
     sourcemap: true,
   },
+  // 디버깅을 위한 설정
+  define: {
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false,
+  },
+  // 디버깅을 위한 추가 설정
+  optimizeDeps: {
+    include: ["vue", "vue-router", "pinia"],
+  },
 });

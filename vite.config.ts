@@ -5,22 +5,22 @@ import { fileURLToPath, URL } from "node:url";
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
-  // build: {
-  //   outDir: "dist",
-  // },
-
   build: {
     outDir: "dist",
-    sourcemap: true,
-    minify: "terser",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["vue"],
-        },
-      },
-    },
   },
+
+  // build: {
+  //   outDir: "dist",
+  //   sourcemap: true,
+  //   minify: "terser",
+  //   rollupOptions: {
+  //     output: {
+  //       manualChunks: {
+  //         vendor: ["vue"],
+  //       },
+  //     },
+  //   },
+  // },
 
   plugins: [vue()],
   css: {

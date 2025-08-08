@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/
+*.min.js
+*.bundle.js
+coverage/
+.vscode/
+.git/
+*.log

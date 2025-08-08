@@ -59,7 +59,7 @@ export const request = async (
           let errorData;
           try {
             errorData = await retryRes.json();
-          } catch (e) {
+          } catch {
             const errorResponse = {
               success: false,
               statusCode: retryRes.status,

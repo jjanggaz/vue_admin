@@ -57,6 +57,9 @@
         >
           {{ t("process.deleteSelected") }}
         </button>
+        <button class="btn btn-secondary btn-test" @click="handleTestApi">
+          API 테스트
+        </button>
       </div>
     </div>
 
@@ -366,6 +369,31 @@ import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { request } from "../../utils/request";
+import { isCurrentTokenValid } from "../../utils/tokenManager";
+import { useAuthStore } from "../../stores/authStore";
+
+// 쿠키 확인 유틸리티 함수
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+};
+
+const hasCookie = (name: string): boolean => {
+  return getCookie(name) !== null;
+};
+
+// 실제 쿠키 이름을 찾는 함수
+const findCookieByName = (patterns: string[]): string | null => {
+  for (const pattern of patterns) {
+    if (hasCookie(pattern)) {
+      return pattern;
+    }
+  }
+  return null;
+};
 
 const { t } = useI18n();
 
@@ -735,6 +763,49 @@ const handleSearch = () => {
   searchOption.value = searchOptionInput.value;
   searchQuery.value = searchQueryInput.value;
   currentPage.value = 1;
+};
+
+// API 테스트 함수
+const handleTestApi = async () => {
+  try {
+    loading.value = true;
+    console.log("API 테스트 시작: /api/process/search/master");
+    
+    // API 호출 - UserController 패턴을 참조하여 POST 방식으로 변경
+    const requestData: any = {
+      keyword: "1",
+      search_field: "process_code",
+      search_value: "PST-001",
+      page: 1,
+      page_size: 10,
+      order_by: "updated_at",
+      order_direction: "asc",
+      limit: 10
+    };
+
+    const result = await request("/api/process/search/master", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    console.log("API 응답:", result);
+    
+    if (result.success) {
+      alert(`API 테스트 성공!\n응답 데이터: ${JSON.stringify(result.response, null, 2)}`);
+    } else {
+      alert(`API 테스트 실패: ${result.message}`);
+    }
+    
+  } catch (error: any) {
+    console.error("API 테스트 실패:", error);
+    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
+    alert(`API 테스트 실패: ${errorMessage}`);
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(() => {

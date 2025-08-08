@@ -104,16 +104,16 @@ export const isCurrentTokenValid = async (): Promise<boolean> => {
     }
 
     // 4단계: wai_access 토큰이 있으면 유효성 확인
-    const verifyResponse = await fetch("/api/main/verify", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        system_code: import.meta.env.VITE_SYSTEM_CODE,
-      }),
-      credentials: "include", // httpOnly 쿠키 포함
-    });
+    const verifyResponse = await fetch(
+      `/api/main/verify?system_code=${import.meta.env.VITE_SYSTEM_CODE}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // httpOnly 쿠키 포함
+      }
+    );
 
     if (verifyResponse.ok) {
       console.log("JWT 쿠키 유효성 확인 성공");

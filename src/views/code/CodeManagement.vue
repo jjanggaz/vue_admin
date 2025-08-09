@@ -98,6 +98,10 @@
           :data="paginatedcodeList"
           :loading="loading"
           :selectable="true"
+          :selection-mode="'single'"
+          :show-select-all="false"
+          row-key="code_id"
+          :select-header-text="t('common.selectColumn')"
           :selected-items="selectedItems"
           @selection-change="handleSelectionChange"
           @sort-change="handleSortChange"
@@ -108,7 +112,8 @@
         <div class="pagination-container">
           <Pagination
             :current-page="currentPage"
-            :total-pages="totalPagesComputed"
+            :total-count="totalCount"
+            :page-size="pageSize"
             @page-change="handlePageChange"
           />
         </div>
@@ -221,12 +226,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import CodeRegistrationModal from "./CodeRegistrationModal.vue";
+import Pagination from "./Pagination.vue";
 import { request } from "../../utils/request";
 import { useI18n } from "vue-i18n";
+import { resolveTotalPages, clampPage } from "./Pagination";
 
 const SYSTEM_CODE = import.meta.env.VITE_SYSTEM_CODE;
 console.log("SYSTEM_CODE :", SYSTEM_CODE);
@@ -246,14 +251,14 @@ interface CodeItem {
   description: string;
 }
 
-interface QueryParams {
-  search_field?: string;
-  search_value?: string;
-  page?: number;
-  page_size?: number;
-  order_by?: string;
-  order_direction?: "asc" | "desc";
-}
+// interface QueryParams {
+//   search_field?: string;
+//   search_value?: string;
+//   page?: number;
+//   page_size?: number;
+//   order_by?: string;
+//   order_direction?: "asc" | "desc";
+// }
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
@@ -374,16 +379,11 @@ const filteredCodeList = computed(() => {
   });
 });
 
-const totalCountComputed = computed(() => filteredCodeList.value.length);
-const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
-);
+// 서버 페이징: API가 내려준 totalCount를 하단 카운터로 사용
+// totalCount는 API 응답의 result.response.total로 설정됨
 
-const paginatedcodeList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredCodeList.value.slice(start, end);
-});
+// 서버 페이징: 현재 페이지에 해당하는 데이터만 API에서 내려옴
+const paginatedcodeList = computed(() => filteredCodeList.value);
 
 // 데이터 로드 함수
 const loadData = async () => {
@@ -395,9 +395,9 @@ const loadData = async () => {
   queryParams.search_field = "";
   queryParams.search_value = "";
 
-  // 페이지네이션 설정
-  queryParams.page = 1;
-  queryParams.page_size = 10;
+  // 페이지네이션 설정 (서버 페이징)
+  queryParams.page = currentPage.value;
+  queryParams.page_size = pageSize.value;
 
   // 정렬 설정
   // if (params.order_by !== undefined)
@@ -452,7 +452,7 @@ const loadData = async () => {
     codeList.value = result.response.items || result;
     
     totalCount.value = result.response.total;
-    totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+    totalPages.value = resolveTotalPages(totalCount.value, pageSize.value);
 
     
     console.log("totalCount.value :", totalCount.value);
@@ -474,36 +474,31 @@ const loadData = async () => {
 };
 
 const handleSelectionChange = (selected: CodeItem[]) => {
-  selectedItems.value = selected;
+  // 단일 선택 보장
+  selectedItems.value = selected.slice(0, 1);
 };
 
 // 페이지 변경 핸들러
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
+const handlePageChange = async (page: number) => {
+  currentPage.value = clampPage(page, totalPages.value);
   selectedItems.value = [];
+  await loadData();
 };
 
 // 정렬 변경 핸들러
 const handleSortChange = (sortInfo: {
-  key: string;
-  direction: "asc" | "desc";
+  key: string | null;
+  direction: "asc" | "desc" | null;
 }) => {
-  sortColumn.value = sortInfo.key;
-  sortOrder.value = sortInfo.direction;
+  sortColumn.value = sortInfo.key ?? null;
+  sortOrder.value = sortInfo.direction ?? null;
 };
 
 // 행 클릭 핸들러
 const handleRowClick = (item: CodeItem) => {
-  console.log("Row clicked:", item);
-  // 행 클릭 시 해당 항목을 선택 상태로 토글 (다중선택)
-  const index = selectedItems.value.findIndex(
-    (selected) => selected.id === item.id
-  );
-  if (index > -1) {
-    selectedItems.value.splice(index, 1);
-  } else {
-    selectedItems.value.push(item);
-  }
+  // 단일 선택: 클릭 시 해당 항목만 선택/해제
+  const isSelected = selectedItems.value.length === 1 && selectedItems.value[0].code_id === item.code_id;
+  selectedItems.value = isSelected ? [] : [item];
 };
 
 // 컴포넌트 마운트 시 데이터 로드
@@ -520,7 +515,7 @@ const handleSearch = () => {
 };
 
 // 모달 저장 핸들러
-const handleModalSave = (data: CodeItem[]) => {
+const handleModalSave = (data: any[]) => {
   console.log("모달에서 저장된 데이터:", data);
   // 여기서 데이터를 메인 테이블에 추가하거나 처리
   alert(t("messages.success.codeRegistered"));
@@ -532,14 +527,16 @@ const handleRegist = () => {
   isRegistModalOpen.value = true;
   isEditMode.value = false;
   newCode.value = {
-    id: "",
-    codeGroup: "",
-    highCode: "",
-    codeName: "",
-    codeNameKorean: "",
-    rank: "",
-    usage: "",
-    etc: "",
+    code_id: "",
+    code_group: "",
+    code_key: "",
+    code_name: "",
+    code_name_en: "",
+    code_value: "",
+    code_order: "",
+    is_active: "Y",
+    parent_key: "",
+    description: "",
   };
 };
 
@@ -547,10 +544,8 @@ const handleRegist = () => {
 const saveCode = () => {
   if (
     !newCode.value.code_group ||
-    !newCode.value.highCode ||
-    !newCode.value.codeName ||
-    !newCode.value.codeNameKorean ||
-    !newCode.value.rank
+    !newCode.value.code_key ||
+    !newCode.value.code_name
   ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
@@ -558,31 +553,32 @@ const saveCode = () => {
 
   if (isEditMode.value) {
     // 수정 모드: 기존 정보 업데이트
-    const idx = codeList.value.findIndex((u) => u.id === newCode.value.id);
+    const idx = codeList.value.findIndex((u) => u.code_id === newCode.value.code_id);
     if (idx !== -1) {
       codeList.value[idx] = { ...newCode.value };
       alert(t("messages.success.codeInfoUpdated"));
     }
   } else {
     // 등록 모드: 새 코드 추가
-    const nextId = (codeList.value.length + 1).toString();
     codeList.value.push({
       ...newCode.value,
-      id: nextId,
+      code_id: newCode.value.code_id || String(Date.now()),
     });
     alert(t("messages.success.codeRegistered"));
   }
 
   isRegistModalOpen.value = false;
   newCode.value = {
-    id: "",
+    code_id: "",
     code_group: "",
-    highCode: "",
-    codeName: "",
-    codeNameKorean: "",
-    rank: "",
-    usage: "",
-    etc: "",
+    code_key: "",
+    code_name: "",
+    code_name_en: "",
+    code_value: "",
+    code_order: "",
+    is_active: "Y",
+    parent_key: "",
+    description: "",
   };
   isEditMode.value = false;
 };
@@ -599,9 +595,9 @@ const handleDelete = () => {
     )
   ) {
     console.log("삭제할 항목:", selectedItems.value);
-    const selectedIds = selectedItems.value.map((item) => item.id);
+    const selectedIds = selectedItems.value.map((item) => item.code_id);
     codeList.value = codeList.value.filter(
-      (item) => !selectedIds.includes(item.id)
+      (item) => !selectedIds.includes(item.code_id)
     );
     selectedItems.value = [];
     alert(t("messages.success.deleted"));

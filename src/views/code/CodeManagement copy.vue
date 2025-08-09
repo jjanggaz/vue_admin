@@ -71,7 +71,14 @@
 
     <!-- Main Content Section -->
     <div class="main-content">
-      <!-- Main Data Table & Actions -->
+      <!-- Left Section - Category Table -->
+      <!-- <div class="category-sidebar">
+        <div class="category-table-container">
+          <VerticalDataTable :data="categoryData" :loading="false" />
+        </div>
+      </div> -->
+
+      <!-- Right Section - Main Data Table & Actions -->
       <div class="table-section">
         <div class="action-buttons">
           <button class="btn btn-secondary btn-register" @click="handleRegist">
@@ -246,7 +253,7 @@ interface CodeItem {
   description: string;
 }
 
-interface QueryParams {
+interface queryParams {
   search_field?: string;
   search_value?: string;
   page?: number;
@@ -302,6 +309,17 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
 ];
+
+// 카테고리 데이터 (2열 구조용)
+const categoryData = ref([
+  { columnName: "공정", value: "공정구분" },
+  { columnName: "기계", value: "유형" },
+  { columnName: "유입종류", value: "유입항목" },
+  { columnName: "-", value: "-" },
+  { columnName: "국가", value: "" },
+  { columnName: "단위", value: "" },
+  { columnName: "언어", value: "" },
+]);
 
 const codeList = ref<CodeItem[]>([]);
 const loading = ref(false);
@@ -397,7 +415,7 @@ const loadData = async () => {
 
   // 페이지네이션 설정
   queryParams.page = 1;
-  queryParams.page_size = 10;
+  queryParams.page_size = 20;
 
   // 정렬 설정
   // if (params.order_by !== undefined)
@@ -450,20 +468,134 @@ const loadData = async () => {
   loading.value = true;
   try {
     codeList.value = result.response.items || result;
-    
-    totalCount.value = result.response.total;
+    // this.totalCount = response.response.total;
+    // this.page = response.response.page;
+    // this.page_size = response.response.page_size;
+    // this.hasMore = response.response.page < response.response.total_pages;
+    // codeList.value = [
+    //   {
+    //     id: "1",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "송풍기",
+    //     rank: "1",
+    //     usage: "Y",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "2",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "AI0101",
+    //     codeNameKorean: "터보블로워(VVVF)",
+    //     rank: "1",
+    //     usage: "Y",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "3",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "2",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "4",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "3",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "5",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "4",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "6",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "5",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "7",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "6",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "8",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "7",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "9",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "8",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "10",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "9",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "11",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "10",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    //   {
+    //     id: "12",
+    //     codeGroup: "equipment",
+    //     highCode: "ME02",
+    //     codeName: "",
+    //     codeNameKorean: "",
+    //     rank: "11",
+    //     usage: "N",
+    //     etc: "",
+    //   },
+    // ];
+    totalCount.value = codeList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-
-    
-    console.log("totalCount.value :", totalCount.value);
-    console.log("totalPages.value :", totalPages.value);
-
-    // this.page = result.response.page;
-    // this.page_size = result.response.page_size;
-    
-    // this.hasMore = result.response.page < result.response.total_pages;
-
-    // totalCount.value = result.response.total;
   } catch (error: any) {
     console.error("데이터 로드 실패:", error);
     const errorMessage = error?.message || "데이터 로드에 실패했습니다.";

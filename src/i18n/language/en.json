@@ -120,6 +120,7 @@
       "codeNameEnglish": "Code Name English",
       "order": "Order",
       "orderMovement": "Order Movement",
+      "code_level": "level",
       "description": "Description",
       "codeDescription": "Code Description",
       "usageStatus": "Usage Status",

@@ -122,10 +122,10 @@
     <!-- 등록 모달 컴포넌트 -->
     <CodeRegistrationModal
       :visible="isRegistModalOpen && !isEditMode"
-      :selected-code-group="searchCodeGroupInput"
-      :selected-category1="searchCategory1Input"
-      :selected-category2="searchCategory2Input"
-      :selected-category3="searchCategory3Input"
+      :selected-code-group="modalCodeGroup"
+      :selected-category1="modalCategory1"
+      :selected-category2="modalCategory2"
+      :selected-category3="modalCategory3"
       @close="isRegistModalOpen = false"
       @save="handleModalSave"
     />
@@ -280,6 +280,12 @@ const searchCategory2 = ref("");
 const searchCategory3 = ref("");
 
 const selectedItems = ref<CodeItem[]>([]);
+
+// 모달용 변수들
+const modalCodeGroup = ref<{ key: string; value: string }>({ key: "", value: "" });
+const modalCategory1 = ref<{ key: string; value: string }>({ key: "", value: "" });
+const modalCategory2 = ref<{ key: string; value: string }>({ key: "", value: "" });
+const modalCategory3 = ref<{ key: string; value: string }>({ key: "", value: "" });
 
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
@@ -604,10 +610,10 @@ const handleRegist = () => {
   const selectedCategory3 = searchCategory3Input.value ? uniqueCategories3.value.find(cat => cat === searchCategory3Input.value) : null;
 
   // 모달에 전달할 props 값들을 설정 (key와 value 모두 전달)
-  const modalCodeGroup = { key: selectedGroup.key, value: selectedGroup.value };
-  const modalCategory1 = selectedCategory1 ? { key: selectedCategory1.key, value: selectedCategory1.value } : { key: "", value: "" };
-  const modalCategory2 = selectedCategory2 ? { key: selectedCategory2.key, value: selectedCategory2.value } : { key: "", value: "" };
-  const modalCategory3 = selectedCategory3 ? { key: selectedCategory3, value: selectedCategory3 } : { key: "", value: "" };
+  modalCodeGroup.value = { key: selectedGroup.key, value: selectedGroup.value };
+  modalCategory1.value = selectedCategory1 ? { key: selectedCategory1.key, value: selectedCategory1.value } : { key: "", value: "" };
+  modalCategory2.value = selectedCategory2 ? { key: selectedCategory2.key, value: selectedCategory2.value } : { key: "", value: "" };
+  modalCategory3.value = selectedCategory3 ? { key: selectedCategory3, value: selectedCategory3 } : { key: "", value: "" };
 
   isRegistModalOpen.value = true;
   isEditMode.value = false;
@@ -615,14 +621,14 @@ const handleRegist = () => {
   // newCode는 수정 모달용이므로 등록 모달에서는 사용하지 않음
   newCode.value = {
     code_id: "",
-    code_group: modalCodeGroup.key,
-    code_key: modalCategory1.key,
-    code_value: modalCategory2.key,
-    code_value_en: modalCategory3.key,
+    code_group: modalCodeGroup.value.key,
+    code_key: modalCategory1.value.key,
+    code_value: modalCategory2.value.key,
+    code_value_en: modalCategory3.value.key,
     code_order: "",
     is_active: true,
-    parent_key: modalCategory1.key,
-    code_level: modalCategory2.key,
+    parent_key: modalCategory1.value.key,
+    code_level: modalCategory2.value.key,
     description: "",
   };
 

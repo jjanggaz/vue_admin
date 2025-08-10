@@ -106,14 +106,7 @@
            />
         </div>
 
-        <!-- Pagination -->
-        <div class="modal-pagination">
-          <Pagination
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="handlePageChange"
-          />
-        </div>
+        
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" @click="handleClose">
@@ -131,7 +124,6 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
 import * as XLSX from "xlsx";
 
 const { t } = useI18n();
@@ -160,7 +152,7 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-// 검색 변수들
+// 검색 변수들 (CodeManagement.vue와 동일한 변수명 사용)
 const searchCodeGroupInput = ref(props.selectedCodeGroup?.key || "");
 const searchCategory1Input = ref(props.selectedCategory1?.key || "");
 const searchCategory2Input = ref(props.selectedCategory2?.key || "");
@@ -170,9 +162,7 @@ const searchCategory3Input = ref(props.selectedCategory3?.key || "");
 const codeList = ref<CodeItem[]>([]);
 const loading = ref(false);
 
-// 페이지네이션 변수들
-const currentPage = ref(1);
-const totalPages = ref(1);
+
 
 // Excel 파일 input
 const excelFileInput = ref<HTMLInputElement>();
@@ -212,6 +202,7 @@ const handleClose = () => {
   emit("close");
 };
 
+// CodeManagement.vue의 handleModalSave와 일치하는 함수명
 const handleSave = () => {
   emit("save", codeList.value);
 };
@@ -231,9 +222,7 @@ const handleRowClick = (item: CodeItem) => {
   console.log("모달 행 클릭:", item);
 };
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-};
+
 
 // Excel 관련 함수들
 const downloadExcelForm = () => {
@@ -314,34 +303,17 @@ const parseExcelFile = (file: File) => {
   reader.readAsArrayBuffer(file);
 };
 
-// 데이터 로드 함수
+// 데이터 로드 함수 (CodeManagement.vue와 동일한 구조)
 const loadData = async () => {
   loading.value = true;
   try {
-    // // CodeItem 인터페이스에 맞는 테스트 데이터
-    // codeList.value = [
-    //   {
-    //     code_id: "modal1",
-    //     code_key: "E_VAV01",
-    //     code_value: "전동식 게이트 밸브(슬루스 밸브)",
-    //     code_value_en: "Electric Gate Valve",
-    //     description: "EQUIP_E_VALV_1차",
-    //   },
-    //   {
-    //     code_id: "modal2",
-    //     code_key: "E_VAV02",
-    //     code_value: "전동식 버터플라이밸브",
-    //     code_value_en: "Electric Butterfly Valve",
-    //     description: "EQUIP_E_VALV_2차",
-    //   },
-    //   {
-    //     code_id: "modal3",
-    //     code_key: "E_VAV03",
-    //     code_value: "전동식 체크밸브",
-    //     code_value_en: "Electric Check Valve",
-    //     description: "MATER_PUMP_3차",
-    //   },
-    // ];
+    // 모달에서는 별도 데이터 로드 없이 props로 받은 값만 사용
+    console.log("모달 데이터 로드 완료 - props로 받은 값들:", {
+      selectedCodeGroup: props.selectedCodeGroup,
+      selectedCategory1: props.selectedCategory1,
+      selectedCategory2: props.selectedCategory2,
+      selectedCategory3: props.selectedCategory3
+    });
   } catch (error: any) {
     console.error("모달 데이터 로드 실패:", error);
     const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
@@ -351,7 +323,7 @@ const loadData = async () => {
   }
 };
 
-// props 변경 감지하여 selectbox 값 업데이트
+// props 변경 감지하여 selectbox 값 업데이트 (CodeManagement.vue와 동일한 로직)
 watch(
   () => [
     props.selectedCodeGroup,
@@ -518,11 +490,7 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.modal-pagination {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
+
 
 // 버튼 스타일
 .btn {

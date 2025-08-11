@@ -12,7 +12,7 @@
             <input
               type="radio"
               v-model="selectedMenuType"
-              value="wai"
+              value="WAI_WEB_VIEW"
               name="menuType"
             />
             <span class="radio-text">{{
@@ -23,7 +23,7 @@
             <input
               type="radio"
               v-model="selectedMenuType"
-              value="admin"
+              value="WAI_WEB_ADMIN"
               name="menuType"
             />
             <span class="radio-text">{{ t("menuManagement.adminMenu") }}</span>
@@ -37,29 +37,31 @@
     <!-- Menu List Table -->
     <AccordionTable
       :columns="tableColumns"
-      :data="menuList"
-      :loading="loading"
-      expand-column="name"
+      :data="menuStore.menus"
+      :loading="menuStore.loading"
+      expand-column="menu_name"
       children-key="children"
-      row-key="id"
+      row-key="menu_id"
       :expanded-items="expandedMenus"
       @row-click="handleRowClick"
       @child-row-click="handleChildRowClick"
       @expand="handleExpand"
     >
-      <template #cell-name="{ item, isChild }">
-        <span class="menu-name">{{ item.name }}</span>
+      <template #cell-menu_name="{ item }">
+        <span class="menu-name">{{ item.menu_name }}</span>
       </template>
 
-      <template #cell-type="{ item }">
-        {{ t(`menuManagement.menuTypes.${item.type}`) }}
+      <template #cell-menu_type="{ item }">
+        {{ item.menu_type }}
       </template>
 
-      <template #cell-usage="{ item }">
-        <span :class="['usage-status', item.usage ? 'used' : 'unused']">
-          {{
-            item.usage ? t("menuManagement.used") : t("menuManagement.unused")
-          }}
+      <template #cell-menu_order="{ item }">
+        {{ item.menu_order }}
+      </template>
+
+      <template #cell-is_active="{ item }">
+        <span :class="['usage-status', item.is_active ? 'used' : 'unused']">
+          {{ item.is_active ? "사용" : "미사용" }}
         </span>
       </template>
 
@@ -79,38 +81,28 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("columns.menu.menuName") }}</dt>
+            <dt>메뉴명</dt>
             <dd>
               <input
-                v-model="editingMenu.name"
+                v-model="editingMenu.menu_name"
                 type="text"
-                :placeholder="t('placeholder.enterMenuName')"
+                placeholder="메뉴명을 입력하세요"
+                disabled
               />
             </dd>
-            <dt>{{ t("columns.menu.menuType") }}</dt>
-            <dd>
-              <select v-model="editingMenu.type">
-                <option value="list">
-                  {{ t("menuManagement.menuTypes.list") }}
-                </option>
-                <option value="menu">
-                  {{ t("menuManagement.menuTypes.menu") }}
-                </option>
-              </select>
-            </dd>
-            <dt>{{ t("columns.menu.sortOrder") }}</dt>
+            <dt>정렬순서</dt>
             <dd>
               <input
-                v-model="editingMenu.sortOrder"
-                type="text"
-                :placeholder="t('placeholder.enterSortOrder')"
+                v-model="editingMenu.menu_order"
+                type="number"
+                placeholder="정렬순서를 입력하세요"
               />
             </dd>
-            <dt>{{ t("columns.menu.usage") }}</dt>
+            <dt>사용여부</dt>
             <dd>
-              <select v-model="editingMenu.usage">
-                <option :value="true">{{ t("menuManagement.used") }}</option>
-                <option :value="false">{{ t("menuManagement.unused") }}</option>
+              <select v-model="editingMenu.is_active">
+                <option :value="true">사용</option>
+                <option :value="false">미사용</option>
               </select>
             </dd>
           </dl>
@@ -129,174 +121,77 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useMenuStore } from "@/stores/menuStore";
+import type { MenuItem } from "@/stores/menuStore";
 import AccordionTable, {
   type AccordionTableColumn,
 } from "@/components/common/AccordionTable.vue";
 
 const { t } = useI18n();
-
-// 메뉴 인터페이스
-interface MenuItem {
-  id: number;
-  name: string;
-  type: "list" | "menu";
-  sortOrder: string;
-  usage: boolean;
-  children?: MenuItem[];
-}
+const menuStore = useMenuStore();
 
 // 상태 관리
-const selectedMenuType = ref("wai");
+const selectedMenuType = ref("WAI_WEB_VIEW");
 const expandedMenus = ref<MenuItem[]>([]);
 const isEditModalOpen = ref(false);
 const loading = ref(true); // 초기 로딩 상태를 true로 설정
 const editingMenu = ref<MenuItem>({
-  id: 0,
-  name: "",
-  type: "menu",
-  sortOrder: "",
-  usage: true,
+  menu_id: "",
+  menu_name: "",
+  menu_type: "ROOT",
+  menu_order: 0,
+  is_active: true,
+  system_code: "WAI_WEB_ADMIN",
+  menu_code: "",
+  route_path: "",
+  icon: "",
+  is_hide: false,
+  created_at: "",
+  updated_at: null,
+  created_by: "",
+  updated_by: null,
+  parent_menu_id: null,
+  component_path: null,
+  api_endpoint: null,
+  term_id: 0,
+  children: [],
 });
 
 // 테이블 컬럼 설정
 const tableColumns: AccordionTableColumn[] = [
   {
-    key: "name",
-    title: t("columns.menu.menuName"),
-    width: "40%",
+    key: "menu_name",
+    title: "메뉴명",
+    width: "30%",
   },
   {
-    key: "type",
-    title: t("columns.menu.menuType"),
+    key: "menu_type",
+    title: "메뉴구분",
     width: "15%",
   },
   {
-    key: "sortOrder",
-    title: t("columns.menu.sortOrder"),
+    key: "menu_order",
+    title: "정렬순서",
     width: "15%",
   },
   {
-    key: "usage",
-    title: t("columns.menu.usage"),
+    key: "is_active",
+    title: "사용여부",
     width: "15%",
   },
   {
     key: "edit",
-    title: t("columns.menu.edit"),
+    title: "수정",
     width: "15%",
   },
 ];
 
-// 샘플 메뉴 데이터
-const menuList = ref<MenuItem[]>([
-  {
-    id: 1,
-    name: "프로젝트",
-    type: "list",
-    sortOrder: "1",
-    usage: true,
-    children: [
-      {
-        id: 11,
-        name: "신규 생성",
-        type: "menu",
-        sortOrder: "1-1",
-        usage: true,
-      },
-      {
-        id: 12,
-        name: "기존 프로젝트 불러오기",
-        type: "menu",
-        sortOrder: "1-2",
-        usage: true,
-      },
-      {
-        id: 13,
-        name: "추천 프로젝트 불러오기",
-        type: "menu",
-        sortOrder: "1-3",
-        usage: true,
-      },
-      {
-        id: 14,
-        name: "프로젝트 승인",
-        type: "menu",
-        sortOrder: "1-4",
-        usage: true,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "공정계획",
-    type: "list",
-    sortOrder: "2",
-    usage: false,
-    children: [
-      {
-        id: 21,
-        name: "프로세스",
-        type: "list",
-        sortOrder: "2-1",
-        usage: false,
-      },
-      {
-        id: 22,
-        name: "공정시나리오",
-        type: "menu",
-        sortOrder: "2-2",
-        usage: false,
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "검토",
-    type: "menu",
-    sortOrder: "3",
-    usage: true,
-  },
-  {
-    id: 4,
-    name: "기기리스트",
-    type: "list",
-    sortOrder: "4",
-    usage: true,
-  },
-  {
-    id: 5,
-    name: "P&ID",
-    type: "menu",
-    sortOrder: "5",
-    usage: true,
-  },
-  {
-    id: 6,
-    name: "PFD",
-    type: "menu",
-    sortOrder: "6",
-    usage: true,
-  },
-  {
-    id: 7,
-    name: "물질수지 및 계산서",
-    type: "menu",
-    sortOrder: "7",
-    usage: true,
-  },
-  {
-    id: 8,
-    name: "구조물 리스트",
-    type: "menu",
-    sortOrder: "8",
-    usage: true,
-  },
-]);
+// 샘플 메뉴 데이터는 이제 menuStore에서 관리
 
 // 행 클릭 핸들러
-const handleRowClick = (item: MenuItem, index: number) => {
+const handleRowClick = (item: MenuItem, _index: number) => {
   console.log("Row clicked:", item);
 };
 
@@ -304,7 +199,7 @@ const handleRowClick = (item: MenuItem, index: number) => {
 const handleChildRowClick = (
   child: MenuItem,
   parent: MenuItem,
-  childIndex: number
+  _childIndex: number
 ) => {
   console.log("Child row clicked:", child, parent);
 };
@@ -314,7 +209,9 @@ const handleExpand = (item: MenuItem, expanded: boolean) => {
   if (expanded) {
     expandedMenus.value.push(item);
   } else {
-    const index = expandedMenus.value.findIndex((menu) => menu.id === item.id);
+    const index = expandedMenus.value.findIndex(
+      (menu) => menu.menu_id === item.menu_id
+    );
     if (index > -1) {
       expandedMenus.value.splice(index, 1);
     }
@@ -330,26 +227,12 @@ const editMenu = (menu: MenuItem) => {
 // 메뉴 저장 함수
 const saveMenu = async () => {
   try {
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // 메뉴 목록에서 해당 메뉴 찾아서 업데이트
-    const updateMenuInList = (menus: MenuItem[], targetId: number): boolean => {
-      for (let i = 0; i < menus.length; i++) {
-        if (menus[i].id === targetId) {
-          menus[i] = { ...editingMenu.value };
-          return true;
-        }
-        if (menus[i].children) {
-          if (updateMenuInList(menus[i].children!, targetId)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
-
-    updateMenuInList(menuList.value, editingMenu.value.id);
+    // menuStore를 사용하여 메뉴 수정
+    await menuStore.updateMenu(editingMenu.value.menu_id, {
+      menu_order: editingMenu.value.menu_order,
+      is_active: editingMenu.value.is_active,
+      system_code: selectedMenuType.value as "WAI_WEB_VIEW" | "WAI_WEB_ADMIN",
+    });
 
     isEditModalOpen.value = false;
     alert(t("messages.success.menuUpdated"));
@@ -364,12 +247,20 @@ const saveMenu = async () => {
 const loadData = async () => {
   try {
     loading.value = true;
-    // 실제로는 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연으로 로딩 시뮬레이션
+
+    // menuStore를 사용하여 메뉴 타입별로 데이터 조회
+    console.log("메뉴 타입으로 데이터 조회:", selectedMenuType.value);
+    await menuStore.fetchMenus({
+      menu_type: selectedMenuType.value as "WAI_WEB_VIEW" | "WAI_WEB_ADMIN",
+      search_field: "",
+      search_value: "",
+      page: 1,
+      page_size: 10,
+    });
 
     // 기본적으로 첫 번째 메뉴는 펼쳐진 상태로 시작
-    if (menuList.value.length > 0) {
-      expandedMenus.value.push(menuList.value[0]);
+    if (menuStore.menus.length > 0) {
+      expandedMenus.value.push(menuStore.menus[0]);
     }
   } catch (error: any) {
     console.error("데이터 로딩 실패:", error);
@@ -379,6 +270,11 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+// selectedMenuType 변경 감지하여 데이터 자동 로드
+watch(selectedMenuType, () => {
+  loadData();
+});
 
 // 컴포넌트 마운트 시 초기화
 onMounted(() => {

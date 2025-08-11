@@ -1,30 +1,45 @@
 import { defineStore } from "pinia";
 import { request } from "../utils/request";
 
-// API 응답 구조에 맞는 인터페이스
-export interface Role {
-  role_id: number;
-  role_code: string;
-  role_name: string;
-  description: string | null;
+// 메뉴 인터페이스
+export interface MenuItem {
+  menu_id: string;
+  menu_name: string;
+  menu_type: "ROOT" | "ITEM";
+  menu_order: number;
   is_active: boolean;
+  children?: MenuItem[];
+  system_code: "WAI_WEB_VIEW" | "WAI_WEB_ADMIN";
+  menu_code: string;
+  route_path: string;
+  icon: string;
+  is_hide: boolean;
   created_at: string;
   updated_at: string | null;
-  created_by: string | null;
+  created_by: string;
   updated_by: string | null;
-  menu_permissions?: string;
+  parent_menu_id: string | null;
+  component_path: string | null;
+  api_endpoint: string | null;
+  term_id: number;
 }
 
-// 권한 등록/수정용 인터페이스
-export interface RoleFormData {
-  role_code: string;
-  role_name: string;
-  description: string | null;
+// 메뉴 등록/수정용 인터페이스
+export interface MenuFormData {
+  menu_name: string;
+  menu_type: "ROOT" | "ITEM";
+  menu_order: number;
   is_active: boolean;
+  system_code: "WAI_WEB_VIEW" | "WAI_WEB_ADMIN";
+  parent_menu_id?: string | null;
+  menu_code: string;
+  route_path: string;
+  icon: string;
+  is_hide: boolean;
 }
 
-export interface RoleListResponse {
-  items: Role[];
+export interface MenuListResponse {
+  items: MenuItem[];
   total: number;
   page: number;
   page_size: number;
@@ -32,18 +47,18 @@ export interface RoleListResponse {
   search_info: any | null;
 }
 
-export interface RoleQueryParams {
+export interface MenuQueryParams {
+  menu_type?: "WAI_WEB_VIEW" | "WAI_WEB_ADMIN";
   search_field?: string;
   search_value?: string;
   page?: number;
   page_size?: number;
-  order_by?: string;
-  order_direction?: "asc" | "desc";
+  // order_by는 menu_order로 고정, order_direction은 asc로 고정 (정렬 기능 없음)
 }
 
-export const useRoleStore = defineStore("role", {
+export const useMenuStore = defineStore("menu", {
   state: () => ({
-    roles: [] as Role[],
+    menus: [] as MenuItem[],
     loading: false,
     totalCount: 0,
     page: 1,
@@ -53,13 +68,17 @@ export const useRoleStore = defineStore("role", {
   }),
 
   actions: {
-    // 권한 목록 조회
-    async fetchRoles(params: RoleQueryParams = {}) {
+    // 메뉴 목록 조회
+    async fetchMenus(params: MenuQueryParams = {}) {
       this.loading = true;
       this.error = null;
 
       try {
         const queryParams: Record<string, string> = {};
+
+        // 메뉴 타입 설정
+        if (params.menu_type !== undefined)
+          queryParams.menu_type = params.menu_type;
 
         // 검색 조건 설정
         if (params.search_field !== undefined)
@@ -71,13 +90,12 @@ export const useRoleStore = defineStore("role", {
         queryParams.page = (params.page || this.page).toString();
         queryParams.page_size = (params.page_size || this.page_size).toString();
 
-        // 정렬 설정
-        if (params.order_by !== undefined)
-          queryParams.order_by = params.order_by;
-        if (params.order_direction !== undefined)
-          queryParams.order_direction = params.order_direction;
+        // 정렬 설정 - roleStore와 동일한 구조
+        // order_by는 menu_order로 고정, order_direction은 asc로 고정 (정렬 기능 없음)
+        queryParams.order_by = "menu_order";
+        queryParams.order_direction = "asc";
 
-        const response = await request("/api/roles/list", undefined, {
+        const response = await request("/api/menus/list", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -87,26 +105,26 @@ export const useRoleStore = defineStore("role", {
 
         // API 응답 처리
         if (response.response && response.response.items) {
-          this.roles = response.response.items;
+          this.menus = response.response.items;
           this.totalCount = response.response.total;
           this.page = response.response.page;
           this.page_size = response.response.page_size;
           this.hasMore = response.response.page < response.response.total_pages;
         } else {
-          this.roles = [];
+          this.menus = [];
           this.totalCount = 0;
           this.page = 1;
           this.page_size = 10;
           this.hasMore = false;
         }
 
-        console.log("권한 목록 조회 성공:", response);
+        console.log("메뉴 목록 조회 성공:", response);
       } catch (error) {
-        console.error("권한 목록 조회 실패:", error);
+        console.error("메뉴 목록 조회 실패:", error);
         this.error =
           error instanceof Error
             ? error.message
-            : "알 수 없는 오류가 발생했습니다.";
+            : "메뉴 목록 조회에 실패했습니다.";
         throw error;
       } finally {
         this.loading = false;
@@ -116,9 +134,13 @@ export const useRoleStore = defineStore("role", {
     // 페이지 변경 (검색 조건 유지)
     async changePage(
       page: number,
-      searchParams?: { search_field?: string; search_value?: string }
+      searchParams?: {
+        menu_type?: "WAI_WEB_VIEW" | "WAI_WEB_ADMIN";
+        search_field?: string;
+        search_value?: string;
+      }
     ) {
-      await this.fetchRoles({
+      await this.fetchMenus({
         page,
         page_size: this.page_size,
         ...searchParams,
@@ -127,27 +149,33 @@ export const useRoleStore = defineStore("role", {
 
     // 페이지 크기 변경
     async changePageSize(pageSize: number) {
-      await this.fetchRoles({
+      await this.fetchMenus({
         page: 1, // 페이지 크기 변경 시 첫 페이지로
         page_size: pageSize,
       });
     },
 
-    // 권한 등록
-    async createRole(roleData: RoleFormData) {
+    // 메뉴 등록
+    async createMenu(menuData: MenuFormData) {
       this.loading = true;
       this.error = null;
 
       try {
         // API 요청 형식에 맞게 데이터 변환
         const requestData = {
-          role_code: roleData.role_code,
-          role_name: roleData.role_name,
-          description: roleData.description || "",
-          is_active: roleData.is_active,
+          menu_name: menuData.menu_name,
+          menu_type: menuData.menu_type,
+          menu_order: menuData.menu_order,
+          is_active: menuData.is_active,
+          system_code: menuData.system_code,
+          parent_menu_id: menuData.parent_menu_id || null,
+          menu_code: menuData.menu_code,
+          route_path: menuData.route_path,
+          icon: menuData.icon,
+          is_hide: menuData.is_hide,
         };
 
-        const response = await request("/api/roles/create", undefined, {
+        const response = await request("/api/menus/create", undefined, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -156,15 +184,15 @@ export const useRoleStore = defineStore("role", {
         });
 
         // 등록 후 목록 새로고침
-        await this.fetchRoles({
+        await this.fetchMenus({
           page: this.page,
           page_size: this.page_size,
         });
 
-        console.log("권한 등록 성공:", response);
+        console.log("메뉴 등록 성공:", response);
         return response.response;
       } catch (error) {
-        console.error("권한 등록 실패:", error);
+        console.error("메뉴 등록 실패:", error);
         this.error =
           error instanceof Error
             ? error.message
@@ -175,25 +203,36 @@ export const useRoleStore = defineStore("role", {
       }
     },
 
-    // 권한 수정
-    async updateRole(roleId: number, roleData: Partial<RoleFormData>) {
+    // 메뉴 수정
+    async updateMenu(menuId: string, menuData: Partial<MenuFormData>) {
       this.loading = true;
       this.error = null;
 
       try {
         // API 요청 형식에 맞게 데이터 변환
         const requestData: any = {};
-        if (roleData.role_code !== undefined)
-          requestData.role_code = roleData.role_code;
-        if (roleData.role_name !== undefined)
-          requestData.role_name = roleData.role_name;
-        if (roleData.description !== undefined)
-          requestData.description = roleData.description || "";
-        if (roleData.is_active !== undefined)
-          requestData.is_active = roleData.is_active;
+        if (menuData.menu_name !== undefined)
+          requestData.menu_name = menuData.menu_name;
+        if (menuData.menu_type !== undefined)
+          requestData.menu_type = menuData.menu_type;
+        if (menuData.menu_order !== undefined)
+          requestData.menu_order = menuData.menu_order;
+        if (menuData.is_active !== undefined)
+          requestData.is_active = menuData.is_active;
+        if (menuData.system_code !== undefined)
+          requestData.system_code = menuData.system_code;
+        if (menuData.parent_menu_id !== undefined)
+          requestData.parent_menu_id = menuData.parent_menu_id;
+        if (menuData.menu_code !== undefined)
+          requestData.menu_code = menuData.menu_code;
+        if (menuData.route_path !== undefined)
+          requestData.route_path = menuData.route_path;
+        if (menuData.icon !== undefined) requestData.icon = menuData.icon;
+        if (menuData.is_hide !== undefined)
+          requestData.is_hide = menuData.is_hide;
 
         const response = await request(
-          `/api/roles/update/${roleId}`,
+          `/api/menus/update/${menuId}`,
           undefined,
           {
             method: "PATCH",
@@ -205,15 +244,15 @@ export const useRoleStore = defineStore("role", {
         );
 
         // 수정 후 목록 새로고침
-        await this.fetchRoles({
+        await this.fetchMenus({
           page: this.page,
           page_size: this.page_size,
         });
 
-        console.log("권한 수정 성공:", response);
+        console.log("메뉴 수정 성공:", response);
         return response.response;
       } catch (error) {
-        console.error("권한 수정 실패:", error);
+        console.error("메뉴 수정 실패:", error);
         this.error =
           error instanceof Error
             ? error.message
@@ -224,14 +263,14 @@ export const useRoleStore = defineStore("role", {
       }
     },
 
-    // 권한 삭제
-    async deleteRole(roleId: number) {
+    // 메뉴 삭제
+    async deleteMenu(menuId: string) {
       this.loading = true;
       this.error = null;
 
       try {
         const response = await request(
-          `/api/roles/delete/${roleId}`,
+          `/api/menus/delete/${menuId}`,
           undefined,
           {
             method: "DELETE",
@@ -239,15 +278,15 @@ export const useRoleStore = defineStore("role", {
         );
 
         // 삭제 후 목록 새로고침
-        await this.fetchRoles({
+        await this.fetchMenus({
           page: this.page,
           page_size: this.page_size,
         });
 
-        console.log("권한 삭제 성공:", response);
+        console.log("메뉴 삭제 성공:", response);
         return response.response;
       } catch (error) {
-        console.error("권한 삭제 실패:", error);
+        console.error("메뉴 삭제 실패:", error);
         this.error =
           error instanceof Error
             ? error.message
@@ -260,7 +299,7 @@ export const useRoleStore = defineStore("role", {
 
     // 상태 초기화
     resetState() {
-      this.roles = [];
+      this.menus = [];
       this.loading = false;
       this.totalCount = 0;
       this.page = 1;

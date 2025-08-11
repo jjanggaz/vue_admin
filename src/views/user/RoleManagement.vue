@@ -252,10 +252,6 @@ const loadRoles = async () => {
 
 // 검색 처리
 const handleSearch = async () => {
-  if (!searchField.value) {
-    alert(t("placeholder.selectItem"));
-    return;
-  }
   roleStore.page = 1;
   await loadRoles();
 };

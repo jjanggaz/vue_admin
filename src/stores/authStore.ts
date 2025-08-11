@@ -87,12 +87,12 @@ export const useAuthStore = defineStore("auth", {
             }
           } else {
             // 로그인 실패 시 - 상태 코드별 에러 처리
-            if (result.statusCode === 401) {
+            if (result.status === 401) {
               // 인증 실패 (아이디/비밀번호 오류)
               throw new Error(
                 result.message || "아이디 또는 비밀번호가 올바르지 않습니다."
               );
-            } else if (result.statusCode === 403) {
+            } else if (result.status === 403) {
               // 메뉴 접근 권한 없음
               throw new Error(result.message || "메뉴 접근 권한이 없습니다.");
             } else {

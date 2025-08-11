@@ -40,9 +40,13 @@ export const request = async (
     const res = await fetch(url.toString(), requestOptions);
 
     // 401 에러 시 토큰 갱신 시도 (단, 로그인 API는 제외)
-    if (res.status === 401 && !path.includes("/api/main/login")) {
-      console.log("401 에러 발생, 토큰 갱신 시도...");
+    if (
+      (res.status === 401 || res.status === 400) &&
+      !path.includes("/api/main/login")
+    ) {
+      console.log("401/400 에러 발생, 토큰 갱신 시도...");
       const refreshSuccess = await refreshAccessToken();
+      console.log("토큰 갱신 실패시 기존 토큰의 유효시간이 만료돼서안되는것");
 
       if (refreshSuccess) {
         console.log("토큰 갱신 성공, 원본 요청 재시도...");
@@ -62,7 +66,7 @@ export const request = async (
           } catch {
             const errorResponse = {
               success: false,
-              statusCode: retryRes.status,
+              status: retryRes.status,
               message: retryRes.statusText,
               response: `{"detail":"${retryRes.statusText}"}`,
             };
@@ -71,7 +75,7 @@ export const request = async (
 
           const errorResponse = {
             success: false,
-            statusCode: retryRes.status,
+            status: retryRes.status,
             message:
               errorData.message || errorData.detail || retryRes.statusText,
             response: `{"detail":"${
@@ -85,7 +89,7 @@ export const request = async (
         const successData = await retryRes.json();
         return {
           success: true,
-          statusCode: retryRes.status,
+          status: retryRes.status,
           message: successData.message || "Success",
           response: successData.response || successData,
         };
@@ -93,9 +97,6 @@ export const request = async (
 
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
       console.log("토큰 갱신 실패, 로그인 페이지로 리다이렉트");
-
-      // 사용자에게 알림
-      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
 
       // Vue Router를 사용하여 로그인 페이지로 리다이렉트
       // window.location.href 대신 router.push 사용
@@ -106,7 +107,7 @@ export const request = async (
 
       const errorResponse = {
         success: false,
-        statusCode: 401,
+        status: 401,
         message: "인증이 만료되었습니다. 다시 로그인해주세요.",
         response: '{"detail":"인증이 만료되었습니다. 다시 로그인해주세요."}',
       };
@@ -122,7 +123,7 @@ export const request = async (
         console.log(`${res.status} 에러 - JSON 파싱 실패:`, e);
         const errorResponse = {
           success: false,
-          statusCode: res.status,
+          status: res.status,
           message: res.statusText,
           response: `{"detail":"${res.statusText}"}`,
         };
@@ -137,7 +138,7 @@ export const request = async (
       // 백엔드 응답 구조를 그대로 반환
       const errorResponse = {
         success: false,
-        statusCode: res.status,
+        status: res.status,
         message: errorData.message || errorData.detail || res.statusText,
         response: `{"detail":"${
           errorData.message || errorData.detail || res.statusText
@@ -151,7 +152,7 @@ export const request = async (
     const successData = await res.json();
     return {
       success: true,
-      statusCode: res.status,
+      status: res.status,
       message: successData.message || "Success",
       response: successData.response || successData,
     };
@@ -161,7 +162,7 @@ export const request = async (
       // Error 객체인 경우 백엔드 응답 구조로 변환
       const errorResponse = {
         success: false,
-        statusCode: 500,
+        status: 500,
         message: e.message,
         response: `{"detail":"${e.message}"}`,
       };

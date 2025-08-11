@@ -9,86 +9,71 @@
         <!-- Top Section - Search/Filter Controls -->
         <div class="search-section">
           <div class="search-filters">
-            <div class="filter-group">
-              <label class="filter-label"
-                >⊙ {{ t("columns.code.codeGroup") }}</label
-              >
-              <select v-model="searchCodeGroup" class="filter-select">
-                <option value="">{{ t("placeholder.selectGroupName") }}</option>
-                <option
-                  v-for="group in uniqueCodeGroups"
-                  :key="group"
-                  :value="group"
-                >
-                  {{ group }}
-                </option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label class="filter-label"
-                >⊙ {{ t("columns.code.majorCategory") }}</label
-              >
-              <select v-model="searchMajorCategory" class="filter-select">
-                <option value="">{{ t("common.select") }}</option>
-                <option
-                  v-for="category in uniqueMajorCategories"
-                  :key="category"
-                  :value="category"
-                >
-                  {{ category }}
-                </option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label class="filter-label"
-                >⊙ {{ t("columns.code.mediumCategory") }}</label
-              >
-              <select v-model="searchMediumCategory" class="filter-select">
-                <option value="">{{ t("common.select") }}</option>
-                <option
-                  v-for="category in uniqueMediumCategories"
-                  :key="category"
-                  :value="category"
-                >
-                  {{ category }}
-                </option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label class="filter-label"
-                >⊙ {{ t("columns.code.minorCategory") }}</label
-              >
-              <select v-model="searchMinorCategory" class="filter-select">
-                <option value="">{{ t("common.select") }}</option>
-                <option
-                  v-for="category in uniqueMinorCategories"
-                  :key="category"
-                  :value="category"
-                >
-                  {{ category }}
-                </option>
-              </select>
-            </div>
-            <button class="btn-search" @click="handleSearch">
-              {{ t("common.search") }}
-            </button>
+                         <div class="filter-group">
+               <label class="filter-label"
+                 >⊙ {{ t("columns.code.codeGroup") }}</label
+               >
+                              <select v-model="searchCodeGroupInput" class="filter-select" disabled>
+                  <option value="">{{ props.selectedCodeGroup?.value || "내용없음" }}</option>
+                  <option
+                    v-if="props.selectedCodeGroup"
+                    :key="props.selectedCodeGroup.key"
+                    :value="props.selectedCodeGroup.key"
+                  >
+                    {{ props.selectedCodeGroup.value }} [{{ props.selectedCodeGroup.key }}]
+                  </option>
+                </select>
+             </div>
+                         <div class="filter-group">
+               <label class="filter-label"
+                 >⊙ {{ t("columns.code.majorCategory") }}</label
+               >
+                              <select v-model="searchCategory1Input" class="filter-select" disabled>
+                  <option value="">{{ props.selectedCategory1?.value || "내용없음" }}</option>
+                  <option
+                    v-if="props.selectedCategory1"
+                    :key="props.selectedCategory1.key"
+                    :value="props.selectedCategory1.key"
+                  >
+                    {{ props.selectedCategory1.value }} [{{ props.selectedCategory1.key }}]
+                  </option>
+                </select>
+             </div>
+                         <div class="filter-group">
+               <label class="filter-label"
+                 >⊙ {{ t("columns.code.mediumCategory") }}</label
+               >
+                              <select v-model="searchCategory2Input" class="filter-select" disabled>
+                  <option value="">{{ props.selectedCategory2?.value || "내용없음" }}</option>
+                  <option
+                    v-if="props.selectedCategory2"
+                    :key="props.selectedCategory2.key"
+                    :value="props.selectedCategory2.key"
+                  >
+                    {{ props.selectedCategory2.value }} [{{ props.selectedCategory2.key }}]
+                  </option>
+                </select>
+             </div>
+                         <div class="filter-group">
+               <label class="filter-label"
+                 >⊙ {{ t("columns.code.minorCategory") }}</label
+               >
+                              <select v-model="searchCategory3Input" class="filter-select" disabled>
+                  <option value="">{{ props.selectedCategory3?.value || "내용없음" }}</option>
+                  <option
+                    v-if="props.selectedCategory3"
+                    :key="props.selectedCategory3.key"
+                    :value="props.selectedCategory3.key"
+                  >
+                    {{ props.selectedCategory3.value }} [{{ props.selectedCategory3.key }}]
+                  </option>
+                </select>
+             </div>
+            
           </div>
         </div>
 
-        <!-- 설명 입력 필드 -->
-        <div class="description-section">
-          <div class="description-group">
-            <label class="description-label">{{
-              t("columns.code.description")
-            }}</label>
-            <input
-              v-model="description"
-              type="text"
-              class="description-input"
-              :placeholder="t('placeholder.codeDescription')"
-            />
-          </div>
-        </div>
+        
 
         <!-- Action Buttons -->
         <div class="modal-action-buttons">
@@ -111,26 +96,17 @@
 
         <!-- Data Table -->
         <div class="modal-table-section">
-          <DataTable
-            :columns="tableColumns"
-            :data="codeList"
-            :loading="loading"
-            :selectable="true"
-            :selected-items="selectedItems"
-            @selection-change="handleSelectionChange"
-            @sort-change="handleSortChange"
-            @row-click="handleRowClick"
-          />
+                     <DataTable
+             :columns="tableColumns"
+             :data="codeList"
+             :loading="loading"
+             :selectable="false"
+             @sort-change="handleSortChange"
+             @row-click="handleRowClick"
+           />
         </div>
 
-        <!-- Pagination -->
-        <div class="modal-pagination">
-          <Pagination
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="handlePageChange"
-          />
-        </div>
+        
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" @click="handleClose">
@@ -145,30 +121,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
 import * as XLSX from "xlsx";
 
 const { t } = useI18n();
 
 interface CodeItem {
-  id: string;
-  codeGroup: string;
-  highCode: string;
-  codeName: string;
-  codeNameKorean: string;
-  rank: string;
-  usage: string;
-  etc: string;
-  majorCategory?: string;
-  mediumCategory?: string;
-  minorCategory?: string;
+  code_id: string;
+  code_key: string;
+  code_value: string;
+  code_value_en: string;
+  description: string;
 }
 
 interface Props {
   visible: boolean;
+  selectedCodeGroup?: { key: string; value: string };
+  selectedCategory1?: { key: string; value: string };
+  selectedCategory2?: { key: string; value: string };
+  selectedCategory3?: { key: string; value: string };
 }
 
 interface Emits {
@@ -179,21 +152,17 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-// 검색 변수들
-const searchCodeGroup = ref("");
-const searchMajorCategory = ref("");
-const searchMediumCategory = ref("");
-const searchMinorCategory = ref("");
-const description = ref("");
+// 검색 변수들 (CodeManagement.vue와 동일한 변수명 사용)
+const searchCodeGroupInput = ref(props.selectedCodeGroup?.key || "");
+const searchCategory1Input = ref(props.selectedCategory1?.key || "");
+const searchCategory2Input = ref(props.selectedCategory2?.key || "");
+const searchCategory3Input = ref(props.selectedCategory3?.key || "");
 
 // 데이터 변수들
 const codeList = ref<CodeItem[]>([]);
 const loading = ref(false);
-const selectedItems = ref<CodeItem[]>([]);
 
-// 페이지네이션 변수들
-const currentPage = ref(1);
-const totalPages = ref(1);
+
 
 // Excel 파일 input
 const excelFileInput = ref<HTMLInputElement>();
@@ -201,74 +170,50 @@ const excelFileInput = ref<HTMLInputElement>();
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   {
-    key: "codeGroup",
-    title: t("columns.code.codeGroupName"),
-    width: "120px",
-    sortable: true,
-  },
-  {
-    key: "highCode",
-    title: t("columns.code.parentCode"),
-    width: "100px",
-    sortable: true,
-  },
-  {
-    key: "codeNameKorean",
-    title: t("columns.code.codeName"),
-    width: "150px",
-    sortable: true,
-  },
-  {
-    key: "codeName",
+    key: "code_key",
     title: t("columns.code.code"),
     width: "100px",
     sortable: true,
   },
+  {
+    key: "code_value",
+    title: t("columns.code.codeNameKorean"),
+    width: "150px",
+    sortable: true,
+  },
+  {
+    key: "code_value_en",
+    title: t("columns.code.codeNameEnglish"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "description",
+    title: t("columns.code.codeDescription"),
+    width: "120px",
+    sortable: true,
+  },
 ];
 
-// 카테고리별 option용 computed
-const uniqueCodeGroups = computed(() => {
-  const set = new Set(codeList.value.map((item) => item.codeGroup));
-  return Array.from(set);
-});
 
-const uniqueMajorCategories = computed(() => {
-  return ["공정", "기계", "유형", "유입종류"];
-});
-
-const uniqueMediumCategories = computed(() => {
-  return ["전처리", "후처리", "송풍기", "펌프"];
-});
-
-const uniqueMinorCategories = computed(() => {
-  return ["1차", "2차", "3차"];
-});
 
 // 이벤트 핸들러들
 const handleClose = () => {
   emit("close");
 };
 
+// CodeManagement.vue의 handleModalSave와 일치하는 함수명
 const handleSave = () => {
   emit("save", codeList.value);
 };
 
-const handleSearch = () => {
-  console.log("모달 검색:", {
-    codeGroup: searchCodeGroup.value,
-    majorCategory: searchMajorCategory.value,
-    mediumCategory: searchMediumCategory.value,
-    minorCategory: searchMinorCategory.value,
-  });
-};
 
-const handleSelectionChange = (selected: CodeItem[]) => {
-  selectedItems.value = selected;
-};
+
+
 
 const handleSortChange = (sortInfo: {
-  key: string;
-  direction: "asc" | "desc";
+  key: string | null;
+  direction: "asc" | "desc" | null;
 }) => {
   console.log("모달 정렬 변경:", sortInfo);
 };
@@ -277,10 +222,7 @@ const handleRowClick = (item: CodeItem) => {
   console.log("모달 행 클릭:", item);
 };
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  selectedItems.value = [];
-};
+
 
 // Excel 관련 함수들
 const downloadExcelForm = () => {
@@ -333,17 +275,14 @@ const parseExcelFile = (file: File) => {
           row.some((cell) => cell !== undefined && cell !== null && cell !== "")
         )
         .map((row, index) => {
-          const id = `excel_${Date.now()}_${index}`;
+          const code_id = `excel_${Date.now()}_${index}`;
 
           return {
-            id,
-            codeGroup: row[0] || "",
-            highCode: row[1] || "",
-            codeName: row[2] || "",
-            codeNameKorean: row[3] || "",
-            rank: row[4]?.toString() || "",
-            usage: row[5] || "",
-            etc: row[6] || "",
+            code_id,
+            code_key: row[0] || "",
+            code_value: row[1] || "",
+            code_value_en: row[2] || "",
+            description: row[3] || "",
           };
         });
 
@@ -364,32 +303,17 @@ const parseExcelFile = (file: File) => {
   reader.readAsArrayBuffer(file);
 };
 
-// 데이터 로드 함수
+// 데이터 로드 함수 (CodeManagement.vue와 동일한 구조)
 const loadData = async () => {
   loading.value = true;
   try {
-    codeList.value = [
-      {
-        id: "modal1",
-        codeGroup: "equipment",
-        highCode: "",
-        codeName: "ME02",
-        codeNameKorean: "송풍기",
-        rank: "1",
-        usage: "Y",
-        etc: "",
-      },
-      {
-        id: "modal2",
-        codeGroup: "equipment",
-        highCode: "ME02",
-        codeName: "AI0101",
-        codeNameKorean: "터보블로워(VVVF)",
-        rank: "1",
-        usage: "Y",
-        etc: "",
-      },
-    ];
+    // 모달에서는 별도 데이터 로드 없이 props로 받은 값만 사용
+    console.log("모달 데이터 로드 완료 - props로 받은 값들:", {
+      selectedCodeGroup: props.selectedCodeGroup,
+      selectedCategory1: props.selectedCategory1,
+      selectedCategory2: props.selectedCategory2,
+      selectedCategory3: props.selectedCategory3
+    });
   } catch (error: any) {
     console.error("모달 데이터 로드 실패:", error);
     const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
@@ -398,6 +322,31 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+// props 변경 감지하여 selectbox 값 업데이트 (CodeManagement.vue와 동일한 로직)
+watch(
+  () => [
+    props.selectedCodeGroup,
+    props.selectedCategory1,
+    props.selectedCategory2,
+    props.selectedCategory3
+  ],
+  ([newCodeGroup, newCategory1, newCategory2, newCategory3]) => {
+    if (newCodeGroup !== undefined) {
+      searchCodeGroupInput.value = newCodeGroup.key;
+    }
+    if (newCategory1 !== undefined) {
+      searchCategory1Input.value = newCategory1.key;
+    }
+    if (newCategory2 !== undefined) {
+      searchCategory2Input.value = newCategory2.key;
+    }
+    if (newCategory3 !== undefined) {
+      searchCategory3Input.value = newCategory3.key;
+    }
+  },
+  { immediate: true }
+);
 
 // 컴포넌트 마운트 시 데이터 로드
 onMounted(() => {
@@ -511,57 +460,18 @@ onMounted(() => {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-}
 
-.btn-search {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: auto;
-
-  &:hover {
-    background-color: #2563eb;
+  &:disabled {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+    border-color: #d1d5db;
   }
 }
 
-// 설명 섹션 스타일
-.description-section {
-  background: #f9fafb;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
 
-.description-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
-.description-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-}
 
-.description-input {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 14px;
-  background: white;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-}
 
 // 액션 버튼 스타일
 .modal-action-buttons {
@@ -580,11 +490,7 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.modal-pagination {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
+
 
 // 버튼 스타일
 .btn {
@@ -634,3 +540,4 @@ onMounted(() => {
   }
 }
 </style>
+

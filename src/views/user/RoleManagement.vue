@@ -284,7 +284,9 @@ const handleSelectionChange = (items: Role[]) => {
 
 // 행 클릭
 const handleRowClick = (row: Role) => {
+  console.log("행 클릭된 데이터:", row); // 디버깅용 로그
   selectedItems.value = [row];
+  console.log("선택된 아이템:", selectedItems.value); // 디버깅용 로그
 };
 
 // 등록 모달 열기
@@ -299,12 +301,22 @@ const handleRegist = () => {
 const handleEdit = () => {
   if (selectedItems.value.length === 1) {
     const role = selectedItems.value[0];
+    console.log("수정할 권한 데이터:", role); // 디버깅용 로그
+    console.log("role.role_code:", role.role_code);
+    console.log("role.role_name:", role.role_name);
+    console.log("role.description:", role.description);
+    console.log("role.is_active:", role.is_active);
+
     isEditMode.value = true;
     editingRoleId.value = role.role_id;
-    roleForm.role_code = role.role_code;
-    roleForm.role_name = role.role_name;
+
+    // roleForm에 데이터 바인딩
+    roleForm.role_code = role.role_code || "";
+    roleForm.role_name = role.role_name || "";
     roleForm.description = role.description || "";
-    roleForm.is_active = role.is_active;
+    roleForm.is_active = role.is_active !== undefined ? role.is_active : true;
+
+    console.log("바인딩된 roleForm:", roleForm); // 디버깅용 로그
     isRegistModalOpen.value = true;
   }
 };
@@ -359,6 +371,7 @@ const resetForm = () => {
   roleForm.role_name = "";
   roleForm.description = "";
   roleForm.is_active = true;
+  console.log("폼 초기화 완료:", roleForm); // 디버깅용 로그
 };
 </script>
 

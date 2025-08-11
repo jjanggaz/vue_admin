@@ -255,7 +255,7 @@ const loadData = async () => {
       search_field: "",
       search_value: "",
       page: 1,
-      page_size: 10,
+      page_size: 100, // 페이징 처리가 없는 화면이므로 충분한 크기로 설정
     });
 
     // 기본적으로 첫 번째 메뉴는 펼쳐진 상태로 시작

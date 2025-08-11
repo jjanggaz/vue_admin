@@ -62,7 +62,7 @@ export const useMenuStore = defineStore("menu", {
     loading: false,
     totalCount: 0,
     page: 1,
-    page_size: 10,
+    page_size: 100, // 페이징 처리가 없는 화면이므로 충분한 크기로 설정
     hasMore: false,
     error: null as string | null,
   }),
@@ -303,7 +303,7 @@ export const useMenuStore = defineStore("menu", {
       this.loading = false;
       this.totalCount = 0;
       this.page = 1;
-      this.page_size = 10;
+      this.page_size = 100; // 페이징 처리가 없는 화면이므로 충분한 크기로 설정
       this.hasMore = false;
       this.error = null;
     },

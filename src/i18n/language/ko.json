@@ -183,9 +183,16 @@
       "lastLogin": "최근 로그인"
     },
     "roleGroup": {
+      "title": "권한 관리",
+      "edit": "권한 수정",
+      "register": "권한 등록",
       "no": "순번",
-      "roleName": "역할 이름",
+      "roleCode": "권한 코드",
+      "roleName": "권한명",
       "description": "설명",
+      "status": "상태",
+      "createdAt": "생성일",
+      "updatedAt": "수정일",
       "menuPermissions": "메뉴권한"
     },
     "menu": {
@@ -219,8 +226,8 @@
     "machineManagement": "기기리스트 관리"
   },
   "common": {
+    "no": "순번",
     "search": "검색",
-    "selectItem": "항목을 선택해주세요",
     "delete": "삭제",
     "edit": "수정",
     "register": "등록",
@@ -277,6 +284,10 @@
       "internal": "사내",
       "external": "사외"
     },
+    "active": "활성",
+    "inactive": "비활성",
+    "update": "수정",
+    "duplicateRoleCode": "이미 존재하는 권한 코드입니다.",
     "userRole": {
       "admin": "관리자",
       "user": "사용자"
@@ -344,16 +355,6 @@
     "approvalStatusLabel": "승인상태",
     "items": "개 항목을",
     "deleteConfirm": "삭제하시겠습니까?"
-  },
-
-  "roleGroup": {
-    "title": "역할 그룹 목록",
-    "register": "역할 그룹 등록",
-    "edit": "역할 그룹 수정",
-    "basicMenu": "기본 메뉴",
-    "approvalMenu": "승인 메뉴",
-    "adminMenu": "관리자 메뉴",
-    "allMenu": "전체 메뉴"
   },
 
   "menuManagement": {
@@ -455,6 +456,8 @@
     "goDashboard": "대시보드로 돌아가기"
   },
   "placeholder": {
+    "search": "검색어를 입력하세요",
+    "selectItem": "항목을 선택해주세요",
     "loginUsername": "아이디",
     "loginPassword": "비밀번호",
     "searchQuery": "검색어를 입력하세요.",
@@ -508,8 +511,9 @@
     "noData": "데이터가 없습니다",
     "noDataDescription": "표시할 데이터가 없습니다.",
     "addNew": "새로 추가",
-    "enterRoleName": "역할 이름을 입력하세요",
-    "enterDescription": "역할에 대한 설명을 입력하세요",
+    "enterRoleName": "권한명을 입력하세요",
+    "enterRoleCode": "권한 코드를 입력하세요",
+    "enterDescription": "권한에 대한 설명을 입력하세요",
     "enterMenuName": "메뉴명을 입력하세요",
     "enterSortOrder": "정렬순서를 입력하세요",
     "selectGroupName": "그룹명 선택"
@@ -683,7 +687,11 @@
       "idAvailable": "사용 가능한 아이디입니다.",
       "roleGroupRegistered": "역할 그룹이 등록되었습니다.",
       "roleGroupUpdated": "역할 그룹이 수정되었습니다.",
-      "menuUpdated": "메뉴가 수정되었습니다."
+      "menuUpdated": "메뉴가 수정되었습니다.",
+      "deleteSuccess": "삭제되었습니다.",
+      "saveFailed": "저장에 실패했습니다.",
+      "updateSuccess": "수정되었습니다.",
+      "registerSuccess": "등록되었습니다."
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
@@ -697,7 +705,8 @@
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
-      "deleteItem": "선택된 항목을 삭제하시겠습니까?"
+      "deleteItem": "선택된 항목을 삭제하시겠습니까?",
+      "confirmDelete": "다음 항목을 삭제하시겠습니까?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",

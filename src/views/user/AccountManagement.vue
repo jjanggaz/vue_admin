@@ -9,7 +9,7 @@
           }}</label>
           <div class="form-item">
             <select id="role" v-model="searchOption">
-              <option value="">{{ t("common.selectItem") }}</option>
+              <option value="">{{ t("placeholder.selectItem") }}</option>
               <option value="username">{{ t("columns.user.id") }}</option>
               <option value="full_name">{{ t("columns.user.name") }}</option>
               <option value="organization">

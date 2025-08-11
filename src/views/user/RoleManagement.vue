@@ -220,7 +220,7 @@ const tableColumns = [
     key: "is_active",
     title: t("columns.roleGroup.status"),
     width: "100px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "menu_permissions",
@@ -272,13 +272,12 @@ const handlePageChange = async (page: number) => {
 // 정렬 변경
 const handleSortChange = async (sortInfo: any) => {
   await roleStore.fetchRoles({
-    search_field:
-      searchField.value && searchValue.value ? searchField.value : undefined,
+    search_field: searchField.value || undefined,
     search_value: searchValue.value || undefined,
     page: roleStore.page,
     page_size: roleStore.page_size,
-    order_by: sortInfo.key,
-    order_direction: sortInfo.order,
+    order_by: sortInfo.key || undefined,
+    order_direction: sortInfo.direction || undefined,
   });
 };
 

@@ -349,16 +349,16 @@ const formatCellValue = (item: any, column: TableColumn) => {
   return String(value);
 };
 
-// 정렬 변경 감지
-watch(
-  sortConfig,
-  (newSort) => {
-    if (newSort.key && newSort.direction) {
-      emit("sort-change", { key: newSort.key, direction: newSort.direction });
-    }
-  },
-  { deep: true }
-);
+// 정렬 변경 감지 - 중복 emit 방지를 위해 제거
+// watch(
+//   sortConfig,
+//   (newSort) => {
+//     if (newSort.key && newSort.direction) {
+//       emit("sort-change", { key: newSort.key, direction: newSort.direction });
+//     }
+//   },
+//   { deep: true }
+// );
 </script>
 
 <style scoped lang="scss">

@@ -85,17 +85,22 @@ export const useRoleStore = defineStore("role", {
           body: JSON.stringify(queryParams),
         });
 
-        if (response.success) {
-          this.roles = response.response.items || [];
-          this.totalCount = response.response.total || 0;
-          this.page = response.response.page || 1;
-          this.page_size = response.response.page_size || 10;
-          this.hasMore = response.response.total_pages > this.page;
+        // API 응답 처리
+        if (response.response && response.response.items) {
+          this.roles = response.response.items;
+          this.totalCount = response.response.total;
+          this.page = response.response.page;
+          this.page_size = response.response.page_size;
+          this.hasMore = response.response.page < response.response.total_pages;
         } else {
-          throw new Error(
-            response.message || "권한 목록을 불러오는데 실패했습니다."
-          );
+          this.roles = [];
+          this.totalCount = 0;
+          this.page = 1;
+          this.page_size = 10;
+          this.hasMore = false;
         }
+
+        console.log("권한 목록 조회 성공:", response);
       } catch (error) {
         console.error("권한 목록 조회 실패:", error);
         this.error =
@@ -108,24 +113,24 @@ export const useRoleStore = defineStore("role", {
       }
     },
 
-    // 페이지 변경
+    // 페이지 변경 (검색 조건 유지)
     async changePage(
       page: number,
       searchParams?: { search_field?: string; search_value?: string }
     ) {
-      this.page = page;
       await this.fetchRoles({
         page,
-        search_field: searchParams?.search_field,
-        search_value: searchParams?.search_value,
+        page_size: this.page_size,
+        ...searchParams,
       });
     },
 
     // 페이지 크기 변경
     async changePageSize(pageSize: number) {
-      this.page_size = pageSize;
-      this.page = 1; // 페이지 크기 변경 시 첫 페이지로 이동
-      await this.fetchRoles({ page: 1, page_size: pageSize });
+      await this.fetchRoles({
+        page: 1, // 페이지 크기 변경 시 첫 페이지로
+        page_size: pageSize,
+      });
     },
 
     // 권한 등록
@@ -142,27 +147,14 @@ export const useRoleStore = defineStore("role", {
           body: JSON.stringify(roleData),
         });
 
-        if (response.success) {
-          // 새로 등록된 권한을 목록에 추가
-          const newRole: Role = {
-            role_id: response.response.role_id || Date.now(), // 임시 ID 생성
-            role_code: roleData.role_code,
-            role_name: roleData.role_name,
-            description: roleData.description,
-            is_active: roleData.is_active ?? true,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-            created_by: null,
-            updated_by: null,
-          };
+        // 등록 후 목록 새로고침
+        await this.fetchRoles({
+          page: this.page,
+          page_size: this.page_size,
+        });
 
-          this.roles.unshift(newRole);
-          this.totalCount += 1;
-
-          return response.response;
-        } else {
-          throw new Error(response.message || "권한 등록에 실패했습니다.");
-        }
+        console.log("권한 등록 성공:", response);
+        return response.response;
       } catch (error) {
         console.error("권한 등록 실패:", error);
         this.error =
@@ -193,23 +185,14 @@ export const useRoleStore = defineStore("role", {
           }
         );
 
-        if (response.success) {
-          // 로컬 상태 업데이트
-          const roleIndex = this.roles.findIndex(
-            (role) => role.role_id === roleId
-          );
-          if (roleIndex !== -1) {
-            this.roles[roleIndex] = {
-              ...this.roles[roleIndex],
-              ...roleData,
-              updated_at: new Date().toISOString(),
-            };
-          }
+        // 수정 후 목록 새로고침
+        await this.fetchRoles({
+          page: this.page,
+          page_size: this.page_size,
+        });
 
-          return response.response;
-        } else {
-          throw new Error(response.message || "권한 수정에 실패했습니다.");
-        }
+        console.log("권한 수정 성공:", response);
+        return response.response;
       } catch (error) {
         console.error("권한 수정 실패:", error);
         this.error =
@@ -236,20 +219,14 @@ export const useRoleStore = defineStore("role", {
           }
         );
 
-        if (response.success) {
-          // 로컬 상태에서 제거
-          const roleIndex = this.roles.findIndex(
-            (role) => role.role_id === roleId
-          );
-          if (roleIndex !== -1) {
-            this.roles.splice(roleIndex, 1);
-            this.totalCount -= 1;
-          }
+        // 삭제 후 목록 새로고침
+        await this.fetchRoles({
+          page: this.page,
+          page_size: this.page_size,
+        });
 
-          return response.response;
-        } else {
-          throw new Error(response.message || "권한 삭제에 실패했습니다.");
-        }
+        console.log("권한 삭제 성공:", response);
+        return response.response;
       } catch (error) {
         console.error("권한 삭제 실패:", error);
         this.error =

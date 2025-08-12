@@ -179,6 +179,7 @@
       "description": "Description",
       "status": "Status",
       "role": "Role",
+      "roleGroup": "Role Group",
       "userType": "User Type",
       "lastLogin": "Last Login"
     },

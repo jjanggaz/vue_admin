@@ -256,6 +256,19 @@
                 <option :value="true">{{ t("common.userRole.admin") }}</option>
               </select>
             </dd>
+            <dt>{{ t("columns.user.roleGroup") }}</dt>
+            <dd>
+              <select id="user-role-group" v-model="newUser.role_id">
+                <option value="">{{ t("placeholder.selectItem") }}</option>
+                <option
+                  v-for="role in userStore.roles"
+                  :key="role.role_id"
+                  :value="role.role_id"
+                >
+                  {{ role.role_name }}
+                </option>
+              </select>
+            </dd>
             <dt v-if="isEditMode">{{ t("columns.user.status") }}</dt>
             <dd v-if="isEditMode">
               <select id="user-status" v-model="newUser.is_active">
@@ -287,7 +300,7 @@ import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
-import { useUserStore, type User, type UserFormData } from "@/stores/userStore";
+import { useUserStore, type User } from "@/stores/userStore";
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -305,6 +318,7 @@ interface UserForm {
   description: string;
   is_superuser: boolean;
   is_active?: boolean; // 수정 모드에서만 사용
+  role_id?: string | number | undefined; // 역할 ID 추가 (빈 문자열도 허용)
 }
 
 // 테이블 컬럼 설정
@@ -364,6 +378,20 @@ const tableColumns: TableColumn[] = [
       value ? t("common.userRole.admin") : t("common.userRole.user"),
   },
   {
+    key: "role_name",
+    title: t("columns.user.roleGroup"),
+    width: "120px",
+    sortable: false,
+    formatter: (value, row) => {
+      // role_id가 있으면 해당 역할의 이름을 찾아서 반환
+      if (row.role_id && userStore.roles.length > 0) {
+        const role = userStore.roles.find((r) => r.role_id === row.role_id);
+        return role ? role.role_name : "-";
+      }
+      return "-";
+    },
+  },
+  {
     key: "is_active",
     title: t("columns.user.status"),
     width: "100px",
@@ -397,6 +425,7 @@ const newUser = ref<UserForm>({
   description: "",
   is_superuser: false,
   is_active: true, // 기본값은 활성 상태
+  role_id: undefined, // 역할 ID 초기값
 });
 const isIdChecked = ref(false);
 const showPasswordChange = ref(false);
@@ -440,11 +469,6 @@ const filteredUserList = computed(() => {
   return userStore.users || [];
 });
 
-const totalCountComputed = computed(() => {
-  // 서버 측 검색을 사용하므로 항상 서버의 전체 개수 반환
-  return userStore.totalCount || 0;
-});
-
 const totalPagesComputed = computed(() => {
   // 항상 서버의 totalPages를 사용하여 일관성 유지
   return userStore.totalPages || 1;
@@ -457,10 +481,14 @@ const paginatedUserList = computed(() => {
 // 데이터 로드 함수
 const loadData = async () => {
   try {
-    await userStore.fetchUsers({
-      page: userStore.page,
-      page_size: userStore.page_size,
-    });
+    // 사용자 목록과 역할 목록을 동시에 로드
+    await Promise.all([
+      userStore.fetchUsers({
+        page: userStore.page,
+        page_size: userStore.page_size,
+      }),
+      userStore.fetchRoles(), // 역할 목록 로드
+    ]);
   } catch (error: any) {
     console.error("데이터 로드 실패:", error);
     const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
@@ -558,36 +586,6 @@ const handleSearch = async () => {
   }
 };
 
-// 검색 초기화 기능
-const handleSearchReset = async () => {
-  // 입력 필드 초기화
-  searchOption.value = "";
-  searchQuery.value = "";
-
-  // 검색 조건 초기화
-  searchOptionInput.value = "";
-  searchQueryInput.value = "";
-  selectedItems.value = [];
-
-  // 정렬 상태 초기화
-  if (dataTableRef.value) {
-    dataTableRef.value.resetSort();
-  }
-
-  // 전체 목록 조회
-  try {
-    await userStore.fetchUsers({
-      page: 1,
-      page_size: userStore.page_size,
-      // 정렬 조건 제거 (초기화)
-    });
-  } catch (error: any) {
-    console.error("검색 초기화 실패:", error);
-    const errorMessage = error?.message || "검색 초기화에 실패했습니다.";
-    alert(errorMessage);
-  }
-};
-
 // 등록 버튼 핸들러
 const handleRegist = () => {
   isRegistModalOpen.value = true;
@@ -605,6 +603,7 @@ const handleRegist = () => {
     description: "",
     is_superuser: false,
     is_active: true, // 등록 시 기본값은 활성 상태
+    role_id: "", // 역할 ID 초기화 (선택 안함 - 빈 문자열로 설정)
   };
   isIdChecked.value = false;
 };
@@ -617,7 +616,9 @@ const saveUser = async () => {
     (!isEditMode.value && !newUser.value.passwordConfirm) ||
     !newUser.value.full_name ||
     !newUser.value.organization ||
-    !newUser.value.email
+    !newUser.value.email ||
+    !newUser.value.role_id ||
+    newUser.value.role_id === "" // 역할그룹 선택 필수
   ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
@@ -680,6 +681,7 @@ const saveUser = async () => {
         is_active: newUser.value.is_active, // 수정 시 상태 포함
         password: newUser.value.password, // 비밀번호 필드 추가
         confirm_password: newUser.value.passwordConfirm, // 비밀번호 확인 필드 추가
+        role_id: newUser.value.role_id, // 역할 ID 그대로 전송
       });
 
       alert(t("messages.success.userInfoUpdated"));
@@ -718,6 +720,7 @@ const saveUser = async () => {
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
         user_type: newUser.value.user_type,
+        role_id: newUser.value.role_id, // 역할 ID 그대로 전송
         // 등록 시에는 is_active를 제외 (서버에서 기본값 처리)
       });
       alert(t("messages.success.userRegistered"));
@@ -734,11 +737,11 @@ const saveUser = async () => {
       email: "",
       organization: "",
       user_type: "INTERNAL",
-      dept_id: "",
       contact_info: "",
       description: "",
       is_superuser: false,
       is_active: true,
+      role_id: undefined,
     };
     isEditMode.value = false;
     isIdChecked.value = false;
@@ -826,6 +829,11 @@ const handleEdit = () => {
     description: itemToEdit.description || "",
     is_superuser: itemToEdit.is_superuser,
     is_active: itemToEdit.is_active, // 수정 시 현재 상태 유지
+    role_id:
+      itemToEdit.role_id &&
+      userStore.roles.some((role) => role.role_id === itemToEdit.role_id)
+        ? itemToEdit.role_id
+        : "", // 역할 ID가 null이거나 현재 목록에 없으면 빈 문자열로 설정
   };
 };
 </script>

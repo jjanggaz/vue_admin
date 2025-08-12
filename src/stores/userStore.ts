@@ -21,6 +21,30 @@ export interface User {
   description: string | null;
   created_by: string | null;
   updated_by: string | null;
+  role_id?: number | null; // 역할 ID 추가
+}
+
+// 역할 인터페이스
+export interface Role {
+  role_id: number;
+  role_code: string;
+  role_name: string;
+  is_active: boolean;
+  description: string;
+  created_at: string;
+  updated_at: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+}
+
+// 역할 목록 응답 인터페이스
+export interface RoleListResponse {
+  items: Role[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  search_info: any | null;
 }
 
 // 사용자 등록/수정용 인터페이스
@@ -36,6 +60,7 @@ export interface UserFormData {
   password?: string;
   confirm_password?: string;
   is_active?: boolean; // 수정 시에만 사용
+  role_id?: string | number | undefined; // 역할 ID 추가 (빈 문자열도 허용)
 }
 
 export interface UserListResponse {
@@ -59,6 +84,7 @@ export interface UserQueryParams {
 export const useUserStore = defineStore("user", {
   state: () => ({
     users: [] as User[],
+    roles: [] as Role[], // 역할 목록 추가
     loading: false,
     totalCount: 0,
     page: 1,
@@ -170,6 +196,11 @@ export const useUserStore = defineStore("user", {
           requestData.user_type = userData.user_type;
         }
 
+        // role_id가 있는 경우 추가
+        if (userData.role_id !== undefined) {
+          requestData.role_id = userData.role_id;
+        }
+
         // 빈 문자열이 아닌 경우에만 추가
         if (userData.contact_info && userData.contact_info.trim() !== "") {
           requestData.contact_info = userData.contact_info;
@@ -234,6 +265,11 @@ export const useUserStore = defineStore("user", {
         // is_active가 있는 경우 추가
         if (userData.is_active !== undefined) {
           requestData.is_active = userData.is_active;
+        }
+
+        // role_id가 있는 경우 추가
+        if (userData.role_id !== undefined) {
+          requestData.role_id = userData.role_id;
         }
 
         // 빈 문자열이 아닌 경우에만 추가
@@ -359,9 +395,40 @@ export const useUserStore = defineStore("user", {
       }
     },
 
+    // 역할 목록 조회
+    async fetchRoles() {
+      try {
+        const response = await request("/api/users/common/roles", undefined, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        });
+
+        if (response.response && response.response.items) {
+          this.roles = response.response.items;
+          console.log("역할 목록 조회 성공:", this.roles);
+        } else {
+          this.roles = [];
+          console.log("역할 목록이 비어있습니다.");
+        }
+
+        return response.response;
+      } catch (error) {
+        console.error("역할 목록 조회 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "역할 목록 조회에 실패했습니다.";
+        throw error;
+      }
+    },
+
     // 상태 초기화
     resetState() {
       this.users = [];
+      this.roles = []; // 역할 목록도 초기화
       this.loading = false;
       this.totalCount = 0;
       this.page = 1;

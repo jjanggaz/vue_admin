@@ -179,6 +179,7 @@
       "description": "설명",
       "status": "상태",
       "role": "권한",
+      "roleGroup": "역할그룹",
       "userType": "사용자구분",
       "lastLogin": "최근 로그인"
     },

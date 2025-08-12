@@ -81,28 +81,28 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>메뉴명</dt>
+            <dt>{{ t("menuManagement.columns.menuName") }}</dt>
             <dd>
               <input
                 v-model="editingMenu.menu_name"
                 type="text"
-                placeholder="메뉴명을 입력하세요"
+                :placeholder="t('placeholder.enterMenuName')"
                 disabled
               />
             </dd>
-            <dt>정렬순서</dt>
+            <dt>{{ t("menuManagement.columns.menuOrder") }}</dt>
             <dd>
               <input
                 v-model="editingMenu.menu_order"
                 type="number"
-                placeholder="정렬순서를 입력하세요"
+                :placeholder="t('placeholder.enterMenuOrder')"
               />
             </dd>
-            <dt>사용여부</dt>
+            <dt>{{ t("menuManagement.columns.isActive") }}</dt>
             <dd>
               <select v-model="editingMenu.is_active">
-                <option :value="true">사용</option>
-                <option :value="false">미사용</option>
+                <option :value="true">{{ t("menuManagement.used") }}</option>
+                <option :value="false">{{ t("menuManagement.unused") }}</option>
               </select>
             </dd>
           </dl>
@@ -163,27 +163,27 @@ const editingMenu = ref<MenuItem>({
 const tableColumns: AccordionTableColumn[] = [
   {
     key: "menu_name",
-    title: "메뉴명",
+    title: t("menuManagement.columns.menuName"),
     width: "30%",
   },
   {
     key: "menu_type",
-    title: "메뉴구분",
+    title: t("menuManagement.columns.menuType"),
     width: "15%",
   },
   {
     key: "menu_order",
-    title: "정렬순서",
+    title: t("menuManagement.columns.menuOrder"),
     width: "15%",
   },
   {
     key: "is_active",
-    title: "사용여부",
+    title: t("menuManagement.columns.isActive"),
     width: "15%",
   },
   {
     key: "edit",
-    title: "수정",
+    title: t("menuManagement.columns.edit"),
     width: "15%",
   },
 ];
@@ -191,17 +191,17 @@ const tableColumns: AccordionTableColumn[] = [
 // 샘플 메뉴 데이터는 이제 menuStore에서 관리
 
 // 행 클릭 핸들러
-const handleRowClick = (item: MenuItem, _index: number) => {
-  console.log("Row clicked:", item);
+const handleRowClick = (_item: MenuItem, _index: number) => {
+  // 행 클릭 처리
 };
 
 // 자식 행 클릭 핸들러
 const handleChildRowClick = (
-  child: MenuItem,
-  parent: MenuItem,
+  _child: MenuItem,
+  _parent: MenuItem,
   _childIndex: number
 ) => {
-  console.log("Child row clicked:", child, parent);
+  // 자식 행 클릭 처리
 };
 
 // 확장/축소 핸들러
@@ -236,6 +236,9 @@ const saveMenu = async () => {
 
     isEditModalOpen.value = false;
     alert(t("messages.success.menuUpdated"));
+
+    // 수정 후 현재 선택된 메뉴 타입으로 데이터 재조회
+    await loadData();
   } catch (error: any) {
     console.error("메뉴 저장 실패:", error);
     const errorMessage = error?.message || t("messages.error.saveFailed");
@@ -249,7 +252,6 @@ const loadData = async () => {
     loading.value = true;
 
     // menuStore를 사용하여 메뉴 타입별로 데이터 조회
-    console.log("메뉴 타입으로 데이터 조회:", selectedMenuType.value);
     await menuStore.fetchMenus({
       menu_type: selectedMenuType.value as "WAI_WEB_VIEW" | "WAI_WEB_ADMIN",
       search_field: "",
@@ -264,7 +266,7 @@ const loadData = async () => {
     }
   } catch (error: any) {
     console.error("데이터 로딩 실패:", error);
-    const errorMessage = error?.message || "데이터 로딩에 실패했습니다.";
+    const errorMessage = error?.message || t("messages.error.loadFailed");
     alert(errorMessage);
   } finally {
     loading.value = false;

@@ -142,10 +142,10 @@
               </dd>
               <dt>{{ t("columns.roleGroup.status") }}</dt>
               <dd>
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="roleForm.is_active" />
-                  {{ t("common.active") }}
-                </label>
+                <select v-model="roleForm.is_active" required>
+                  <option :value="true">{{ t("common.active") }}</option>
+                  <option :value="false">{{ t("common.inactive") }}</option>
+                </select>
               </dd>
             </dl>
             <div class="modal-footer">
@@ -185,7 +185,7 @@ const isEditMode = ref(false);
 const editingRoleId = ref<number | null>(null);
 
 // 검색 관련
-const searchField = ref("role_name");
+const searchField = ref("");
 const searchValue = ref("");
 
 // 폼 데이터
@@ -332,6 +332,7 @@ const handleDelete = async () => {
         await roleStore.deleteRole(role.role_id);
         selectedItems.value = [];
         alert(t("messages.success.deleteSuccess"));
+        // roleStore에서 자동으로 목록을 새로고침하므로 loadRoles() 호출 불필요
       } catch (error) {
         console.error("권한 삭제 실패:", error);
         alert(t("messages.error.deleteFailed"));
@@ -352,7 +353,7 @@ const handleSubmit = async () => {
     }
 
     closeModal();
-    await loadRoles();
+    // roleStore에서 자동으로 목록을 새로고침하므로 loadRoles() 호출 불필요
   } catch (error) {
     console.error("권한 저장 실패:", error);
     alert(t("messages.error.saveFailed"));

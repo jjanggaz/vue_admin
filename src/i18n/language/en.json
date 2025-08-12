@@ -353,22 +353,22 @@
     "deleteConfirm": "Are you sure you want to delete?"
   },
   "placeholder": {
-    "search": "Search",
+    "search": "Enter search term",
+    "searchQuery": "Enter search term",
     "selectItem": "Please select an item",
     "loginUsername": "Username",
     "loginPassword": "Password",
-    "searchQuery": "Enter search term",
     "selectFile": "Please select a file",
-    "userId": "Enter ID",
+    "userId": "Enter user ID",
     "userPassword": "Enter password",
-    "userPasswordChange": "Enter new password (leave blank if no change)",
-    "userPasswordConfirm": "Confirm your password",
-    "userName": "Enter name",
+    "userPasswordChange": "Enter new password",
+    "userPasswordConfirm": "Confirm password",
+    "userName": "Enter user name",
     "userCorpName": "Enter company name",
     "userPhone": "Enter phone number",
     "userEmail": "Enter email",
     "userDeptId": "Enter department ID",
-    "userContactInfo": "Enter contact info",
+    "userContactInfo": "Enter contact information",
     "userDescription": "Enter description",
     "processMode": "Enter mode",
     "processPidInfo": "Enter P&ID info overview",
@@ -412,7 +412,7 @@
     "enterRoleCode": "Enter role code",
     "enterDescription": "Enter role description",
     "enterMenuName": "Enter menu name",
-    "enterSortOrder": "Enter sort order",
+    "enterMenuOrder": "Enter sort order",
     "selectGroupName": "Select Group Name"
   },
 
@@ -428,6 +428,13 @@
     "menuTypes": {
       "list": "List",
       "menu": "Menu"
+    },
+    "columns": {
+      "menuName": "Menu Name",
+      "menuType": "Menu Type",
+      "menuOrder": "Sort Order",
+      "isActive": "Usage Status",
+      "edit": "Edit"
     }
   },
   "menuPermissions": {
@@ -696,7 +703,8 @@
       "registrationError": "Registration error occurred.",
       "deleteFailed": "Delete failed.",
       "saveFailed": "Save failed.",
-      "duplicateCheckFailed": "Duplicate check failed."
+      "duplicateCheckFailed": "Duplicate check failed.",
+      "loadFailed": "Failed to load data"
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",

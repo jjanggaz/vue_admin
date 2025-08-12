@@ -61,7 +61,7 @@
 
       <template #cell-is_active="{ item }">
         <span :class="['usage-status', item.is_active ? 'used' : 'unused']">
-          {{ item.is_active ? "사용" : "미사용" }}
+          {{ item.is_active ? t("common.used") : t("common.unused") }}
         </span>
       </template>
 
@@ -254,10 +254,6 @@ const loadData = async () => {
     // menuStore를 사용하여 메뉴 타입별로 데이터 조회
     await menuStore.fetchMenus({
       menu_type: selectedMenuType.value as "WAI_WEB_VIEW" | "WAI_WEB_ADMIN",
-      search_field: "",
-      search_value: "",
-      page: 1,
-      page_size: 100, // 페이징 처리가 없는 화면이므로 충분한 크기로 설정
     });
 
     // 기본적으로 첫 번째 메뉴는 펼쳐진 상태로 시작

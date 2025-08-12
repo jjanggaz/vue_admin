@@ -293,6 +293,10 @@
       "admin": "Admin",
       "user": "User"
     },
+    "userStatus": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "duplicateCheck": "Duplicate Check",
     "checking": "Checking...",
     "changePassword": "Change Password",

@@ -467,6 +467,8 @@
     "search": "검색어를 입력하세요",
     "searchQuery": "검색어를 입력하세요",
     "selectItem": "항목을 선택해주세요",
+    "loginUsername": "사용자명을 입력하세요",
+    "loginPassword": "비밀번호를 입력하세요",
     "userId": "사용자 ID를 입력하세요",
     "userPassword": "비밀번호를 입력하세요",
     "userPasswordConfirm": "비밀번호를 다시 입력하세요",

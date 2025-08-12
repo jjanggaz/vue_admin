@@ -178,18 +178,6 @@
                     <template #cell-menu_order="{ item }">
                       {{ item.menu_order }}
                     </template>
-                    <template #cell-is_active="{ item }">
-                      <span
-                        :class="[
-                          'usage-status',
-                          item.is_active ? 'used' : 'unused',
-                        ]"
-                      >
-                        {{
-                          item.is_active ? t("common.used") : t("common.unused")
-                        }}
-                      </span>
-                    </template>
                   </AccordionTable>
                 </div>
 
@@ -216,18 +204,6 @@
                     </template>
                     <template #cell-menu_order="{ item }">
                       {{ item.menu_order }}
-                    </template>
-                    <template #cell-is_active="{ item }">
-                      <span
-                        :class="[
-                          'usage-status',
-                          item.is_active ? 'used' : 'unused',
-                        ]"
-                      >
-                        {{
-                          item.is_active ? t("common.used") : t("common.unused")
-                        }}
-                      </span>
                     </template>
                   </AccordionTable>
                 </div>
@@ -419,24 +395,18 @@ const viewMenuColumns: TableColumn[] = [
   {
     key: "menu_name",
     title: t("menuManagement.columns.menuName"),
-    width: "200px",
+    width: "250px",
     sortable: false,
   },
   {
     key: "menu_type",
     title: t("menuManagement.columns.menuType"),
-    width: "120px",
+    width: "150px",
     sortable: false,
   },
   {
     key: "menu_order",
     title: t("menuManagement.columns.menuOrder"),
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "is_active",
-    title: t("menuManagement.columns.isActive"),
     width: "100px",
     sortable: false,
   },
@@ -453,24 +423,18 @@ const adminMenuColumns: TableColumn[] = [
   {
     key: "menu_name",
     title: t("menuManagement.columns.menuName"),
-    width: "200px",
+    width: "250px",
     sortable: false,
   },
   {
     key: "menu_type",
     title: t("menuManagement.columns.menuType"),
-    width: "120px",
+    width: "150px",
     sortable: false,
   },
   {
     key: "menu_order",
     title: t("menuManagement.columns.menuOrder"),
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "is_active",
-    title: t("menuManagement.columns.isActive"),
     width: "100px",
     sortable: false,
   },

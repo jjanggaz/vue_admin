@@ -68,7 +68,6 @@
       :show-select-all="false"
       :select-header-text="t('common.selectColumn')"
       row-key="user_id"
-      maxHeight="500px"
       :stickyHeader="true"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"

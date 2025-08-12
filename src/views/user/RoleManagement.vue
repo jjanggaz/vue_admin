@@ -67,7 +67,6 @@
       :show-select-all="false"
       :select-header-text="t('common.selectColumn')"
       row-key="role_id"
-      maxHeight="500px"
       :stickyHeader="true"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"

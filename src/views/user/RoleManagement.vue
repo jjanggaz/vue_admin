@@ -79,9 +79,9 @@
         </span>
       </template>
       <template #cell-menu_permissions="{ item }">
-        <span class="menu-permissions">
-          {{ item.menu_permissions ? item.menu_permissions : "-" }}
-        </span>
+        <button class="btn-view" @click.stop="viewMenuPermissions(item)">
+          {{ t("common.view") }}
+        </button>
       </template>
     </DataTable>
 
@@ -133,12 +133,12 @@
               </dd>
               <dt>{{ t("columns.roleGroup.description") }}</dt>
               <dd>
-                <textarea
+                <input
                   id="role-description"
                   v-model="roleForm.description"
+                  type="text"
                   :placeholder="t('placeholder.enterDescription')"
-                  rows="3"
-                ></textarea>
+                />
               </dd>
               <dt>{{ t("columns.roleGroup.status") }}</dt>
               <dd>
@@ -148,6 +148,93 @@
                 </select>
               </dd>
             </dl>
+
+            <!-- 메뉴 권한 선택 섹션 -->
+            <div class="menu-permissions-section">
+              <h4>{{ t("columns.roleGroup.menuPermissions") }}</h4>
+
+              <div class="menu-tables-container">
+                <!-- WAI_WEB_VIEW 메뉴 테이블 -->
+                <div class="menu-table-wrapper">
+                  <h5>{{ t("menuManagement.waiDesignMenu") }}</h5>
+                  <AccordionTable
+                    :columns="viewMenuColumns"
+                    :data="viewMenus"
+                    :loading="false"
+                    expand-column="menu_name"
+                    children-key="children"
+                    row-key="menu_id"
+                    :expanded-items="[]"
+                    :selectable="true"
+                    :selection-mode="'multiple'"
+                    :selected-items="selectedViewMenus"
+                    @selection-change="handleViewMenuSelection"
+                  >
+                    <template #cell-menu_name="{ item }">
+                      <span class="menu-name">{{ item.menu_name }}</span>
+                    </template>
+                    <template #cell-menu_type="{ item }">
+                      {{ item.menu_type }}
+                    </template>
+                    <template #cell-menu_order="{ item }">
+                      {{ item.menu_order }}
+                    </template>
+                    <template #cell-is_active="{ item }">
+                      <span
+                        :class="[
+                          'usage-status',
+                          item.is_active ? 'used' : 'unused',
+                        ]"
+                      >
+                        {{
+                          item.is_active ? t("common.used") : t("common.unused")
+                        }}
+                      </span>
+                    </template>
+                  </AccordionTable>
+                </div>
+
+                <!-- WAI_WEB_ADMIN 메뉴 테이블 -->
+                <div class="menu-table-wrapper">
+                  <h5>{{ t("menuManagement.adminMenu") }}</h5>
+                  <AccordionTable
+                    :columns="adminMenuColumns"
+                    :data="adminMenus"
+                    :loading="false"
+                    expand-column="menu_name"
+                    children-key="children"
+                    row-key="menu_id"
+                    :expanded-items="[]"
+                    :selectable="true"
+                    :selection-mode="'multiple'"
+                    :selected-items="selectedAdminMenus"
+                    @selection-change="handleAdminMenuSelection"
+                  >
+                    <template #cell-menu_name="{ item }">
+                      <span class="menu-name">{{ item.menu_name }}</span>
+                    </template>
+                    <template #cell-menu_type="{ item }">
+                      {{ item.menu_type }}
+                    </template>
+                    <template #cell-menu_order="{ item }">
+                      {{ item.menu_order }}
+                    </template>
+                    <template #cell-is_active="{ item }">
+                      <span
+                        :class="[
+                          'usage-status',
+                          item.is_active ? 'used' : 'unused',
+                        ]"
+                      >
+                        {{
+                          item.is_active ? t("common.used") : t("common.unused")
+                        }}
+                      </span>
+                    </template>
+                  </AccordionTable>
+                </div>
+              </div>
+            </div>
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary">
                 {{ isEditMode ? t("common.update") : t("common.register") }}
@@ -164,25 +251,100 @@
         </div>
       </div>
     </div>
+
+    <!-- 메뉴권한 상세 모달 -->
+    <div v-if="isMenuPermissionsModalOpen" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>
+            {{ selectedRoleDetail?.role_name }} ({{
+              selectedRoleDetail?.description
+            }})
+          </h3>
+          <button class="btn-close" @click="closeMenuPermissionsModal">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <AccordionTable
+            :columns="menuPermissionsColumns"
+            :data="selectedRoleDetail?.menus || []"
+            :loading="roleStore.loading"
+            expand-column="menu_name"
+            children-key="children"
+            row-key="menu_id"
+            :expanded-items="[]"
+          >
+            <template #cell-menu_name="{ item }">
+              <span class="menu-name">{{ item.menu_name }}</span>
+            </template>
+            <template #cell-menu_type="{ item }">
+              {{ item.menu_type }}
+            </template>
+            <template #cell-menu_order="{ item }">
+              {{ item.menu_order }}
+            </template>
+            <template #cell-menu_is_active="{ item }">
+              <span
+                :class="[
+                  'status-badge',
+                  item.menu_is_active ? 'active' : 'inactive',
+                ]"
+              >
+                {{
+                  item.menu_is_active
+                    ? t("common.active")
+                    : t("common.inactive")
+                }}
+              </span>
+            </template>
+          </AccordionTable>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeMenuPermissionsModal">
+            {{ t("common.close") }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRoleStore } from "@/stores/roleStore";
+import { useMenuStore } from "@/stores/menuStore";
 import { useI18n } from "vue-i18n";
-import DataTable from "@/components/common/DataTable.vue";
+import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
-import type { Role, RoleFormData } from "@/stores/roleStore";
+import AccordionTable, {
+  type AccordionTableColumn,
+} from "@/components/common/AccordionTable.vue";
+import type {
+  Role,
+  RoleFormData,
+  RoleDetail,
+  RoleMenuRequest,
+} from "@/stores/roleStore";
+import type { MenuItem } from "@/stores/menuStore";
 
 const { t } = useI18n();
 const roleStore = useRoleStore();
+const menuStore = useMenuStore();
 
 // 상태 관리
 const selectedItems = ref<Role[]>([]);
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const editingRoleId = ref<number | null>(null);
+const isMenuPermissionsModalOpen = ref(false);
+const selectedRoleDetail = ref<RoleDetail | null>(null);
+
+// 메뉴 데이터 상태
+const viewMenus = ref<MenuItem[]>([]);
+const adminMenus = ref<MenuItem[]>([]);
+const selectedViewMenus = ref<MenuItem[]>([]);
+const selectedAdminMenus = ref<MenuItem[]>([]);
 
 // 검색 관련
 const searchField = ref("");
@@ -198,12 +360,6 @@ const roleForm = reactive<RoleFormData>({
 
 // 테이블 컬럼 정의
 const tableColumns = [
-  {
-    key: "role_code",
-    title: t("columns.roleGroup.roleCode"),
-    width: "120px",
-    sortable: true,
-  },
   {
     key: "role_name",
     title: t("columns.roleGroup.roleName"),
@@ -230,9 +386,102 @@ const tableColumns = [
   },
 ];
 
+// 메뉴권한 테이블 컬럼 정의
+const menuPermissionsColumns: AccordionTableColumn[] = [
+  {
+    key: "menu_name",
+    title: t("menuManagement.columns.menuName"),
+    width: "45%",
+  },
+  {
+    key: "menu_type",
+    title: t("menuManagement.columns.menuType"),
+    width: "20%",
+  },
+  {
+    key: "menu_order",
+    title: t("menuManagement.columns.menuOrder"),
+    width: "20%",
+  },
+  {
+    key: "menu_is_active",
+    title: t("menuManagement.columns.isActive"),
+    width: "15%",
+  },
+];
+
+// WAI_WEB_VIEW 메뉴 테이블 컬럼 정의
+const viewMenuColumns: TableColumn[] = [
+  {
+    key: "selection",
+    title: "",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "menu_name",
+    title: t("menuManagement.columns.menuName"),
+    width: "200px",
+    sortable: false,
+  },
+  {
+    key: "menu_type",
+    title: t("menuManagement.columns.menuType"),
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "menu_order",
+    title: t("menuManagement.columns.menuOrder"),
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "is_active",
+    title: t("menuManagement.columns.isActive"),
+    width: "100px",
+    sortable: false,
+  },
+];
+
+// WAI_WEB_ADMIN 메뉴 테이블 컬럼 정의
+const adminMenuColumns: TableColumn[] = [
+  {
+    key: "selection",
+    title: "",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "menu_name",
+    title: t("menuManagement.columns.menuName"),
+    width: "200px",
+    sortable: false,
+  },
+  {
+    key: "menu_type",
+    title: t("menuManagement.columns.menuType"),
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "menu_order",
+    title: t("menuManagement.columns.menuOrder"),
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "is_active",
+    title: t("menuManagement.columns.isActive"),
+    width: "100px",
+    sortable: false,
+  },
+];
+
 // 컴포넌트 마운트 시 권한 목록 로드
 onMounted(async () => {
   await loadRoles();
+  await loadMenuData();
 });
 
 // 권한 목록 로드
@@ -248,6 +497,32 @@ const loadRoles = async () => {
   } catch (error) {
     console.error("권한 목록 로드 실패:", error);
   }
+};
+
+// 메뉴 데이터 로드
+const loadMenuData = async () => {
+  try {
+    // WAI_WEB_VIEW 메뉴 데이터 로드
+    await menuStore.fetchMenus({ menu_type: "WAI_WEB_VIEW" });
+    viewMenus.value = [...menuStore.menus];
+
+    // WAI_WEB_ADMIN 메뉴 데이터 로드
+    await menuStore.fetchMenus({ menu_type: "WAI_WEB_ADMIN" });
+    adminMenus.value = [...menuStore.menus];
+  } catch (error: any) {
+    console.error("메뉴 데이터 로드 실패:", error);
+  }
+};
+
+// 메뉴 선택 처리
+const handleViewMenuSelection = (selectedItems: MenuItem[]) => {
+  selectedViewMenus.value = [...selectedItems];
+  console.log("WAI_WEB_VIEW 선택된 메뉴:", selectedItems);
+};
+
+const handleAdminMenuSelection = (selectedItems: MenuItem[]) => {
+  selectedAdminMenus.value = [...selectedItems];
+  console.log("WAI_WEB_ADMIN 선택된 메뉴:", selectedItems);
 };
 
 // 검색 처리
@@ -298,7 +573,7 @@ const handleRegist = () => {
 };
 
 // 수정 모달 열기
-const handleEdit = () => {
+const handleEdit = async () => {
   if (selectedItems.value.length === 1) {
     const role = selectedItems.value[0];
     console.log("수정할 권한 데이터:", role); // 디버깅용 로그
@@ -315,6 +590,34 @@ const handleEdit = () => {
     roleForm.role_name = role.role_name || "";
     roleForm.description = role.description || "";
     roleForm.is_active = role.is_active !== undefined ? role.is_active : true;
+
+    // 기존 권한의 메뉴 정보를 가져와서 선택 상태 복원
+    try {
+      const roleDetail = await roleStore.fetchRoleDetail(role.role_id);
+      if (roleDetail && roleDetail.menus) {
+        // 기존 메뉴들을 찾아서 선택 상태로 설정
+        const existingMenuIds = roleDetail.menus.map(
+          (menu: any) => menu.menu_id
+        );
+
+        // WAI_WEB_VIEW 메뉴들에서 기존 선택된 것들 찾기
+        selectedViewMenus.value = viewMenus.value.filter((menu: MenuItem) =>
+          existingMenuIds.includes(menu.menu_id)
+        );
+
+        // WAI_WEB_ADMIN 메뉴들에서 기존 선택된 것들 찾기
+        selectedAdminMenus.value = adminMenus.value.filter((menu: MenuItem) =>
+          existingMenuIds.includes(menu.menu_id)
+        );
+
+        console.log("기존 선택된 메뉴 복원:", {
+          view: selectedViewMenus.value,
+          admin: selectedAdminMenus.value,
+        });
+      }
+    } catch (error) {
+      console.error("기존 메뉴 정보 로드 실패:", error);
+    }
 
     console.log("바인딩된 roleForm:", roleForm); // 디버깅용 로그
     isRegistModalOpen.value = true;
@@ -344,11 +647,34 @@ const handleDelete = async () => {
 // 폼 제출
 const handleSubmit = async () => {
   try {
+    // 선택된 메뉴들을 합쳐서 menus 배열 생성
+    const selectedMenus = [
+      ...selectedViewMenus.value,
+      ...selectedAdminMenus.value,
+    ];
+
+    // roleForm에 menus 추가 - 필요한 모든 메뉴 정보 포함
+    const formDataWithMenus = {
+      ...roleForm,
+      menus: selectedMenus.map(
+        (menu): RoleMenuRequest => ({
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          parent_menu_id: menu.parent_menu_id || null,
+          system_code: menu.system_code || null,
+          menu_type: menu.menu_type,
+        })
+      ),
+    };
+
+    console.log("전송할 데이터:", formDataWithMenus);
+    console.log("선택된 메뉴 개수:", selectedMenus.length);
+
     if (isEditMode.value && editingRoleId.value) {
-      await roleStore.updateRole(editingRoleId.value, roleForm);
+      await roleStore.updateRole(editingRoleId.value, formDataWithMenus);
       alert(t("messages.success.updateSuccess"));
     } else {
-      await roleStore.createRole(roleForm);
+      await roleStore.createRole(formDataWithMenus);
       alert(t("messages.success.registerSuccess"));
     }
 
@@ -372,7 +698,30 @@ const resetForm = () => {
   roleForm.role_name = "";
   roleForm.description = "";
   roleForm.is_active = true;
+
+  // 선택된 메뉴들도 초기화
+  selectedViewMenus.value = [];
+  selectedAdminMenus.value = [];
+
   console.log("폼 초기화 완료:", roleForm); // 디버깅용 로그
+};
+
+// 메뉴권한 상세 보기
+const viewMenuPermissions = async (role: Role) => {
+  try {
+    const roleDetail = await roleStore.fetchRoleDetail(role.role_id);
+    selectedRoleDetail.value = roleDetail;
+    isMenuPermissionsModalOpen.value = true;
+  } catch (error) {
+    console.error("메뉴권한 조회 실패:", error);
+    alert(t("messages.error.loadFailed"));
+  }
+};
+
+// 메뉴권한 모달 닫기
+const closeMenuPermissionsModal = () => {
+  isMenuPermissionsModalOpen.value = false;
+  selectedRoleDetail.value = null;
 };
 </script>
 
@@ -453,8 +802,8 @@ const resetForm = () => {
 .modal-container {
   background: white;
   border-radius: 8px;
-  min-width: 500px;
-  max-width: 600px;
+  min-width: 900px;
+  max-width: 1300px;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -542,8 +891,53 @@ const resetForm = () => {
 }
 
 .menu-permissions {
-  color: #666;
+  margin-top: 20px;
+}
+
+.menu-permissions-section {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.menu-permissions-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.menu-tables-container {
+  display: flex;
+  gap: 20px;
+}
+
+.menu-table-wrapper {
+  flex: 1;
+}
+
+.menu-table-wrapper h5 {
+  margin: 0 0 10px 0;
   font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+.usage-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.used {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  &.unused {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
 }
 
 .btn {
@@ -589,5 +983,21 @@ const resetForm = () => {
 
 .btn-delete:disabled {
   background-color: #6c757d;
+}
+
+.btn-view {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-view:hover {
+  background-color: #059669;
 }
 </style>

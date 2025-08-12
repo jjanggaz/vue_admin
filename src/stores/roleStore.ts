@@ -15,12 +15,45 @@ export interface Role {
   menu_permissions?: string;
 }
 
+// 권한 상세 조회용 인터페이스
+export interface RoleDetail {
+  role_id: number;
+  role_code: string;
+  role_name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+  menus: RoleMenu[];
+}
+
+// 권한 메뉴 인터페이스
+export interface RoleMenu {
+  menu_id: string;
+  menu_name: string;
+  menu_type: "ROOT" | "ITEM";
+  menu_order: number;
+  menu_is_active: boolean;
+}
+
+// 권한 등록/수정 시 전달할 메뉴 인터페이스
+export interface RoleMenuRequest {
+  menu_id: string;
+  menu_name: string;
+  parent_menu_id: string | null;
+  system_code: string | null;
+  menu_type: "ROOT" | "ITEM";
+}
+
 // 권한 등록/수정용 인터페이스
 export interface RoleFormData {
   role_code: string;
   role_name: string;
   description: string | null;
   is_active: boolean;
+  menus?: RoleMenuRequest[]; // 메뉴 요청 객체 배열로 변경
 }
 
 export interface RoleListResponse {
@@ -140,12 +173,17 @@ export const useRoleStore = defineStore("role", {
 
       try {
         // API 요청 형식에 맞게 데이터 변환
-        const requestData = {
+        const requestData: any = {
           role_code: roleData.role_code,
           role_name: roleData.role_name,
           description: roleData.description || "",
           is_active: roleData.is_active,
         };
+
+        // menus 필드가 있으면 추가
+        if (roleData.menus && roleData.menus.length > 0) {
+          requestData.menus = roleData.menus;
+        }
 
         const response = await request("/api/roles/create", undefined, {
           method: "POST",
@@ -191,6 +229,7 @@ export const useRoleStore = defineStore("role", {
           requestData.description = roleData.description || "";
         if (roleData.is_active !== undefined)
           requestData.is_active = roleData.is_active;
+        if (roleData.menus !== undefined) requestData.menus = roleData.menus;
 
         const response = await request(
           `/api/roles/update/${roleId}`,
@@ -214,6 +253,30 @@ export const useRoleStore = defineStore("role", {
         return response.response;
       } catch (error) {
         console.error("권한 수정 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "알 수 없는 오류가 발생했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 권한 상세 조회
+    async fetchRoleDetail(roleId: number) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(`/api/roles/${roleId}`, undefined, {
+          method: "GET",
+        });
+
+        console.log("권한 상세 조회 성공:", response);
+        return response.response;
+      } catch (error) {
+        console.error("권한 상세 조회 실패:", error);
         this.error =
           error instanceof Error
             ? error.message

@@ -75,7 +75,7 @@ export const useMenuStore = defineStore("menu", {
         queryParams.order_by = "menu_order";
         queryParams.order_direction = "asc";
 
-        // get_all은 항상 true로 설정
+        // 전체 값을 받아야하므로 get_all은 true로 보내주기로 하기로함
         queryParams.get_all = true;
 
         const response = await request("/api/menus/list", undefined, {

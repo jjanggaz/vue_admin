@@ -603,7 +603,7 @@ const handleRegist = () => {
     description: "",
     is_superuser: false,
     is_active: true, // 등록 시 기본값은 활성 상태
-    role_id: "", // 역할 ID 초기화 (선택 안함 - 빈 문자열로 설정)
+    role_id: "", // 메뉴권한 ID 초기화 (선택 안함 - 빈 문자열로 설정)
   };
   isIdChecked.value = false;
 };
@@ -618,7 +618,7 @@ const saveUser = async () => {
     !newUser.value.organization ||
     !newUser.value.email ||
     !newUser.value.role_id ||
-    newUser.value.role_id === "" // 역할그룹 선택 필수
+    newUser.value.role_id === "" // 메뉴권한 선택 필수
   ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
@@ -681,7 +681,7 @@ const saveUser = async () => {
         is_active: newUser.value.is_active, // 수정 시 상태 포함
         password: newUser.value.password, // 비밀번호 필드 추가
         confirm_password: newUser.value.passwordConfirm, // 비밀번호 확인 필드 추가
-        role_id: newUser.value.role_id, // 역할 ID 그대로 전송
+        role_id: newUser.value.role_id, // 메뉴권한 ID 그대로 전송
       });
 
       alert(t("messages.success.userInfoUpdated"));
@@ -720,7 +720,7 @@ const saveUser = async () => {
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
         user_type: newUser.value.user_type,
-        role_id: newUser.value.role_id, // 역할 ID 그대로 전송
+        role_id: newUser.value.role_id, // 메뉴권한 ID 그대로 전송
         // 등록 시에는 is_active를 제외 (서버에서 기본값 처리)
       });
       alert(t("messages.success.userRegistered"));
@@ -833,7 +833,7 @@ const handleEdit = () => {
       itemToEdit.role_id &&
       userStore.roles.some((role) => role.role_id === itemToEdit.role_id)
         ? itemToEdit.role_id
-        : "", // 역할 ID가 null이거나 현재 목록에 없으면 빈 문자열로 설정
+        : "", // 메뉴권한 ID가 null이거나 현재 목록에 없으면 빈 문자열로 설정
   };
 };
 </script>

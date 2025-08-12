@@ -195,7 +195,6 @@ interface Props {
   expandColumn?: string; // 확장/축소 버튼이 표시될 컬럼 키
   childrenKey?: string; // 자식 데이터가 저장된 키 이름
   rowKey?: string; // 각 행을 식별하는 키
-  expandedItems?: any[]; // 초기에 펼쳐진 아이템들
   selectable?: boolean; // 체크박스 선택 가능 여부
   selectedItems?: any[]; // 선택된 아이템들
   selectionMode?: "multiple" | "single" | "none"; // 선택 모드: 다중선택, 단일선택, 선택불가
@@ -208,7 +207,6 @@ const props = withDefaults(defineProps<Props>(), {
   expandColumn: "",
   childrenKey: "children",
   rowKey: "id",
-  expandedItems: () => [],
   selectable: false,
   selectedItems: () => [],
   selectionMode: "multiple",
@@ -228,15 +226,6 @@ const expandedItems = ref<any[]>([]);
 
 // 선택 상태 관리
 const localSelected = ref<any[]>([...props.selectedItems]);
-
-// 초기 확장된 아이템들 설정
-watch(
-  () => props.expandedItems,
-  (newItems) => {
-    expandedItems.value = [...newItems];
-  },
-  { immediate: true }
-);
 
 // 선택된 아이템들 동기화
 watch(
@@ -410,6 +399,7 @@ const toggleSelectRow = (item: any) => {
       localSelected.value.push(item);
     }
   }
+  // 선택 상태 변경 이벤트 발생 시 확장 상태 유지
   emit("selection-change", [...localSelected.value]);
 };
 </script>

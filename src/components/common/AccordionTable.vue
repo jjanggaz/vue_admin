@@ -3,6 +3,22 @@
     <table class="accordion-table">
       <thead>
         <tr>
+          <th v-if="selectable" class="checkbox-cell">
+            <template v-if="showSelectAll && selectionMode !== 'none'">
+              <input
+                type="checkbox"
+                :checked="allSelected"
+                :disabled="data.length === 0 || selectionMode === 'single'"
+                @change="toggleSelectAll"
+              />
+            </template>
+            <template v-else-if="selectHeaderText">
+              <span class="select-header-text">{{ selectHeaderText }}</span>
+            </template>
+            <template v-else>
+              <span class="select-header-text">선택</span>
+            </template>
+          </th>
           <th
             v-for="column in columns"
             :key="column.key"
@@ -18,14 +34,20 @@
       </thead>
       <tbody>
         <tr v-if="loading" class="loading-row">
-          <td :colspan="columns.length" class="loading-message">
+          <td
+            :colspan="selectable ? columns.length + 1 : columns.length"
+            class="loading-message"
+          >
             <div class="loading-spinner"></div>
             <span>{{ $t("datatable.loading") }}</span>
             <!-- 데이터를 불러오는 중... -->
           </td>
         </tr>
         <tr v-else-if="sortedData.length === 0" class="empty-row">
-          <td :colspan="columns.length" class="empty-message">
+          <td
+            :colspan="selectable ? columns.length + 1 : columns.length"
+            class="empty-message"
+          >
             <slot name="empty">
               <div class="empty-state">
                 <span class="empty-icon">📂</span>
@@ -45,6 +67,13 @@
               :class="['data-row', { selected: isSelected(item) }]"
               @click="handleRowClick(item, index)"
             >
+              <td v-if="selectable" class="checkbox-cell" @click.stop>
+                <input
+                  type="checkbox"
+                  :checked="isSelected(item)"
+                  @change="toggleSelectRow(item)"
+                />
+              </td>
               <td
                 v-for="column in columns"
                 :key="column.key"
@@ -96,6 +125,13 @@
                 class="child-row"
                 @click="handleChildRowClick(child, item, childIndex)"
               >
+                <td v-if="selectable" class="checkbox-cell" @click.stop>
+                  <input
+                    type="checkbox"
+                    :checked="isSelected(child)"
+                    @change="toggleSelectRow(child)"
+                  />
+                </td>
                 <td
                   v-for="column in columns"
                   :key="column.key"
@@ -160,6 +196,11 @@ interface Props {
   childrenKey?: string; // 자식 데이터가 저장된 키 이름
   rowKey?: string; // 각 행을 식별하는 키
   expandedItems?: any[]; // 초기에 펼쳐진 아이템들
+  selectable?: boolean; // 체크박스 선택 가능 여부
+  selectedItems?: any[]; // 선택된 아이템들
+  selectionMode?: "multiple" | "single" | "none"; // 선택 모드: 다중선택, 단일선택, 선택불가
+  showSelectAll?: boolean; // 전체선택 체크박스 표시 여부
+  selectHeaderText?: string; // 선택 컬럼 헤더 텍스트
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -168,16 +209,25 @@ const props = withDefaults(defineProps<Props>(), {
   childrenKey: "children",
   rowKey: "id",
   expandedItems: () => [],
+  selectable: false,
+  selectedItems: () => [],
+  selectionMode: "multiple",
+  showSelectAll: true,
+  selectHeaderText: "",
 });
 
 const emit = defineEmits<{
   "row-click": [item: any, index: number];
   "child-row-click": [child: any, parent: any, childIndex: number];
   expand: [item: any, expanded: boolean];
+  "selection-change": [selectedItems: any[]];
 }>();
 
 // 확장된 아이템들 관리
 const expandedItems = ref<any[]>([]);
+
+// 선택 상태 관리
+const localSelected = ref<any[]>([...props.selectedItems]);
 
 // 초기 확장된 아이템들 설정
 watch(
@@ -186,6 +236,17 @@ watch(
     expandedItems.value = [...newItems];
   },
   { immediate: true }
+);
+
+// 선택된 아이템들 동기화
+watch(
+  () => props.selectedItems,
+  (newSelected) => {
+    if (JSON.stringify(newSelected) !== JSON.stringify(localSelected.value)) {
+      localSelected.value = [...newSelected];
+    }
+  },
+  { deep: true, immediate: true }
 );
 
 // 정렬된 데이터 (필요시 정렬 로직 추가)
@@ -251,9 +312,105 @@ const handleChildRowClick = (child: any, parent: any, childIndex: number) => {
   emit("child-row-click", child, parent, childIndex);
 };
 
-// 선택 상태 확인 (필요시 구현)
-const isSelected = (item: any) => {
-  return false; // 선택 기능이 필요한 경우 props로 받아서 처리
+// 선택 상태 확인
+const isSelected = (item: any): boolean => {
+  const itemKey = getRowKey(item, -1);
+  return localSelected.value.some(
+    (selected) => getRowKey(selected, -1) === itemKey
+  );
+};
+
+// 전체 선택 상태
+const allSelected = computed<boolean>({
+  get() {
+    // 모든 항목(부모 + 자식)의 총 개수 계산
+    let totalItems = 0;
+    props.data.forEach((item) => {
+      totalItems += 1; // 부모 항목
+      if (hasChildren(item)) {
+        totalItems += getChildren(item).length; // 자식 항목들
+      }
+    });
+
+    return totalItems > 0 && localSelected.value.length === totalItems;
+  },
+  set(value: boolean) {
+    if (value) {
+      // 전체 선택: 모든 부모와 자식 항목 선택
+      const allItems: any[] = [];
+      props.data.forEach((item) => {
+        allItems.push(item);
+        if (hasChildren(item)) {
+          const children = getChildren(item);
+          children.forEach((child: any) => {
+            allItems.push(child);
+          });
+        }
+      });
+      localSelected.value = allItems;
+    } else {
+      // 전체 해제
+      localSelected.value = [];
+    }
+    emit("selection-change", localSelected.value);
+  },
+});
+
+// 전체 선택 토글
+const toggleSelectAll = () => {
+  allSelected.value = !allSelected.value;
+};
+
+// 행 선택 토글
+const toggleSelectRow = (item: any) => {
+  const itemKey = getRowKey(item, -1);
+  const index = localSelected.value.findIndex(
+    (selected) => getRowKey(selected, -1) === itemKey
+  );
+
+  if (index > -1) {
+    // 이미 선택된 경우 선택 해제
+    localSelected.value.splice(index, 1);
+
+    // 부모 항목인 경우 자식들도 모두 선택 해제
+    if (hasChildren(item)) {
+      const children = getChildren(item);
+      children.forEach((child: any) => {
+        const childKey = getRowKey(child, -1);
+        const childIndex = localSelected.value.findIndex(
+          (selected) => getRowKey(selected, -1) === childKey
+        );
+        if (childIndex > -1) {
+          localSelected.value.splice(childIndex, 1);
+        }
+      });
+    }
+  } else {
+    // 선택되지 않은 경우 선택
+    if (props.selectionMode === "single") {
+      // 단일 선택 모드: 기존 선택을 모두 해제하고 현재 항목만 선택
+      localSelected.value = [item];
+    } else {
+      // 다중 선택 모드: 현재 항목 추가
+
+      // 부모 항목인 경우 자식들도 모두 선택
+      if (hasChildren(item)) {
+        const children = getChildren(item);
+        children.forEach((child: any) => {
+          const childKey = getRowKey(child, -1);
+          const isChildSelected = localSelected.value.some(
+            (selected) => getRowKey(selected, -1) === childKey
+          );
+          if (!isChildSelected) {
+            localSelected.value.push(child);
+          }
+        });
+      }
+
+      localSelected.value.push(item);
+    }
+  }
+  emit("selection-change", [...localSelected.value]);
 };
 </script>
 
@@ -268,6 +425,25 @@ const isSelected = (item: any) => {
 .accordion-table {
   width: 100%;
   border-collapse: collapse;
+
+  .checkbox-cell {
+    width: 50px;
+    text-align: center;
+    padding: 8px 4px;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .select-header-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+  }
 
   thead {
     background-color: #4a5568;

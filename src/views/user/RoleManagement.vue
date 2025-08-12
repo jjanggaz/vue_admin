@@ -150,7 +150,7 @@
             </dl>
 
             <!-- 메뉴 권한 선택 섹션 -->
-            <div class="menu-permissions-section">
+            <div class="menu-permissions-section first-section">
               <h4>{{ t("columns.roleGroup.menuPermissions") }}</h4>
 
               <div class="menu-tables-container">
@@ -240,39 +240,53 @@
           </button>
         </div>
         <div class="modal-body">
-          <AccordionTable
-            :columns="menuPermissionsColumns"
-            :data="selectedRoleDetail?.menus || []"
-            :loading="roleStore.loading"
-            expand-column="menu_name"
-            children-key="children"
-            row-key="menu_id"
-            :expanded-items="[]"
-          >
-            <template #cell-menu_name="{ item }">
-              <span class="menu-name">{{ item.menu_name }}</span>
-            </template>
-            <template #cell-menu_type="{ item }">
-              {{ item.menu_type }}
-            </template>
-            <template #cell-menu_order="{ item }">
-              {{ item.menu_order }}
-            </template>
-            <template #cell-menu_is_active="{ item }">
-              <span
-                :class="[
-                  'status-badge',
-                  item.menu_is_active ? 'active' : 'inactive',
-                ]"
-              >
-                {{
-                  item.menu_is_active
-                    ? t("common.active")
-                    : t("common.inactive")
-                }}
-              </span>
-            </template>
-          </AccordionTable>
+          <!-- WAI_WEB_VIEW 메뉴 테이블 -->
+          <div class="menu-permissions-section">
+            <h4>{{ t("menuManagement.waiDesignMenu") }}</h4>
+            <AccordionTable
+              :columns="menuPermissionsColumns"
+              :data="getViewMenus(selectedRoleDetail?.menus || [])"
+              :loading="roleStore.loading"
+              expand-column="menu_name"
+              children-key="children"
+              row-key="menu_id"
+              :expanded-items="[]"
+            >
+              <template #cell-menu_name="{ item }">
+                <span class="menu-name">{{ item.menu_name }}</span>
+              </template>
+              <template #cell-menu_type="{ item }">
+                {{ item.menu_type }}
+              </template>
+              <template #cell-menu_order="{ item }">
+                {{ item.menu_order }}
+              </template>
+            </AccordionTable>
+          </div>
+
+          <!-- WAI_WEB_ADMIN 메뉴 테이블 -->
+          <div class="menu-permissions-section">
+            <h4>{{ t("menuManagement.adminMenu") }}</h4>
+            <AccordionTable
+              :columns="menuPermissionsColumns"
+              :data="getAdminMenus(selectedRoleDetail?.menus || [])"
+              :loading="roleStore.loading"
+              expand-column="menu_name"
+              children-key="children"
+              row-key="menu_id"
+              :expanded-items="[]"
+            >
+              <template #cell-menu_name="{ item }">
+                <span class="menu_name">{{ item.menu_name }}</span>
+              </template>
+              <template #cell-menu_type="{ item }">
+                {{ item.menu_type }}
+              </template>
+              <template #cell-menu_order="{ item }">
+                {{ item.menu_order }}
+              </template>
+            </AccordionTable>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeMenuPermissionsModal">
@@ -289,7 +303,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRoleStore } from "@/stores/roleStore";
 import { useMenuStore } from "@/stores/menuStore";
 import { useI18n } from "vue-i18n";
-import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import DataTable from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import AccordionTable, {
   type AccordionTableColumn,
@@ -365,78 +379,65 @@ const menuPermissionsColumns: AccordionTableColumn[] = [
   {
     key: "menu_name",
     title: t("menuManagement.columns.menuName"),
-    width: "45%",
+    width: "60%",
   },
   {
     key: "menu_type",
     title: t("menuManagement.columns.menuType"),
-    width: "20%",
+    width: "25%",
   },
   {
     key: "menu_order",
     title: t("menuManagement.columns.menuOrder"),
-    width: "20%",
-  },
-  {
-    key: "menu_is_active",
-    title: t("menuManagement.columns.isActive"),
     width: "15%",
   },
 ];
 
 // WAI_WEB_VIEW 메뉴 테이블 컬럼 정의
-const viewMenuColumns: TableColumn[] = [
+const viewMenuColumns: AccordionTableColumn[] = [
   {
     key: "selection",
     title: "",
-    width: "50px",
-    sortable: false,
+    width: "40px",
   },
   {
     key: "menu_name",
     title: t("menuManagement.columns.menuName"),
-    width: "250px",
-    sortable: false,
+    width: "200px",
   },
   {
     key: "menu_type",
     title: t("menuManagement.columns.menuType"),
-    width: "150px",
-    sortable: false,
+    width: "120px",
   },
   {
     key: "menu_order",
     title: t("menuManagement.columns.menuOrder"),
-    width: "100px",
-    sortable: false,
+    width: "80px",
   },
 ];
 
 // WAI_WEB_ADMIN 메뉴 테이블 컬럼 정의
-const adminMenuColumns: TableColumn[] = [
+const adminMenuColumns: AccordionTableColumn[] = [
   {
     key: "selection",
     title: "",
-    width: "50px",
-    sortable: false,
+    width: "40px",
   },
   {
     key: "menu_name",
     title: t("menuManagement.columns.menuName"),
-    width: "250px",
-    sortable: false,
+    width: "200px",
   },
   {
     key: "menu_type",
     title: t("menuManagement.columns.menuType"),
-    width: "150px",
-    sortable: false,
+    width: "120px",
   },
   {
     key: "menu_order",
     title: t("menuManagement.columns.menuOrder"),
-    width: "100px",
-    sortable: false,
+    width: "80px",
   },
 ];
 
@@ -479,12 +480,19 @@ const loadMenuData = async () => {
 // 메뉴 선택 처리
 const handleViewMenuSelection = (selectedItems: MenuItem[]) => {
   selectedViewMenus.value = [...selectedItems];
-  console.log("WAI_WEB_VIEW 선택된 메뉴:", selectedItems);
 };
 
 const handleAdminMenuSelection = (selectedItems: MenuItem[]) => {
   selectedAdminMenus.value = [...selectedItems];
-  console.log("WAI_WEB_ADMIN 선택된 메뉴:", selectedItems);
+};
+
+// 메뉴권한 상세 모달에서 메뉴 분리 함수
+const getViewMenus = (menus: any[]) => {
+  return menus.filter((menu: any) => menu.system_code === "WAI_WEB_VIEW");
+};
+
+const getAdminMenus = (menus: any[]) => {
+  return menus.filter((menu: any) => menu.system_code === "WAI_WEB_ADMIN");
 };
 
 // 검색 처리
@@ -629,9 +637,6 @@ const handleSubmit = async () => {
       ),
     };
 
-    console.log("전송할 데이터:", formDataWithMenus);
-    console.log("선택된 메뉴 개수:", selectedMenus.length);
-
     if (isEditMode.value && editingRoleId.value) {
       await roleStore.updateRole(editingRoleId.value, formDataWithMenus);
       alert(t("messages.success.updateSuccess"));
@@ -765,7 +770,7 @@ const closeMenuPermissionsModal = () => {
   background: white;
   border-radius: 8px;
   min-width: 900px;
-  max-width: 1300px;
+  max-width: 1200px;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -856,10 +861,15 @@ const closeMenuPermissionsModal = () => {
   margin-top: 20px;
 }
 
-.menu-permissions-section {
-  margin-top: 20px;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
+.menu-permissions-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.menu-permissions-section + .menu-permissions-section {
+  margin-top: 30px;
 }
 
 .menu-permissions-section h4 {

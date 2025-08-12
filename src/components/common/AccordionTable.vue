@@ -89,7 +89,8 @@
                   <button
                     v-if="hasChildren(item)"
                     class="expand-btn"
-                    @click.stop="toggleExpand(item)"
+                    @click.stop="toggleExpand(item, $event)"
+                    @click.prevent
                     :class="{ expanded: isExpanded(item) }"
                   >
                     ▼
@@ -204,7 +205,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
-  expandColumn: "",
+  expandColumn: "menu_name",
   childrenKey: "children",
   rowKey: "id",
   selectable: false,
@@ -276,7 +277,13 @@ const isExpanded = (item: any) => {
 };
 
 // 확장/축소 토글
-const toggleExpand = (item: any) => {
+const toggleExpand = (item: any, event?: Event) => {
+  // 이벤트 전파와 기본 동작 모두 방지
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
   const itemKey = getRowKey(item, 0);
   const isCurrentlyExpanded = isExpanded(item);
 

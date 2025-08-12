@@ -21,7 +21,7 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     // 로그인 처리
-    async login(username: string, password: string) {
+    async login(username: string, password: string, selectedLang?: string) {
       try {
         // 로그인 API 호출 (request 함수 사용)
         const result = await request("/api/main/login", undefined, {
@@ -33,6 +33,7 @@ export const useAuthStore = defineStore("auth", {
             username: username,
             password: password,
             system_code: import.meta.env.VITE_SYSTEM_CODE,
+            language: selectedLang || "ko", // 선택된 언어 전송
           }),
         });
 

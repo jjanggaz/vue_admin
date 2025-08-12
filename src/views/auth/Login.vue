@@ -103,7 +103,11 @@ const handleLogin = async () => {
       await authStore.logout();
     }
 
-    await authStore.login(loginForm.value.username, loginForm.value.password);
+    await authStore.login(
+      loginForm.value.username,
+      loginForm.value.password,
+      selectedLang.value
+    );
     if (rememberUsername.value) {
       localStorage.setItem("rememberedUsername", loginForm.value.username);
     } else {

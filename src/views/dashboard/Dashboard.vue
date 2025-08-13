@@ -1,5 +1,22 @@
 <template>
   <div class="dashboard">
+    <!-- 자동새로고침 스위치 -->
+    <div class="auto-refresh-section">
+      <div class="auto-refresh-label">
+        <span class="auto-refresh-text">자동 새로고침</span>
+        <button
+          type="button"
+          @click="toggleAutoRefresh"
+          :class="['toggle-switch', { active: autoRefreshEnabled }]"
+          :aria-label="
+            autoRefreshEnabled ? '자동새로고침 비활성화' : '자동새로고침 활성화'
+          "
+        >
+          <span class="toggle-slider"></span>
+        </button>
+      </div>
+    </div>
+
     <!-- 통계 요약 카드들 -->
     <div class="stats-grid">
       <StatsSummaryCard
@@ -185,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import StatsSummaryCard from "@/components/dashboard/StatsSummaryCard.vue";
 import ProjectStatusChart from "@/components/dashboard/ProjectStatusChart.vue";
@@ -194,6 +211,37 @@ import ServerStatusCard from "@/components/dashboard/ServerStatusCard.vue";
 import CategoryChart from "@/components/dashboard/CategoryChart.vue";
 
 const dashboardStore = useDashboardStore();
+
+// 자동새로고침 관련 상태
+const autoRefreshEnabled = ref(false);
+let autoRefreshInterval: number | null = null;
+
+// 자동새로고침 토글
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value;
+
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh();
+  } else {
+    stopAutoRefresh();
+  }
+};
+
+// 자동새로고침 시작
+const startAutoRefresh = () => {
+  stopAutoRefresh(); // 기존 타이머 정리
+  autoRefreshInterval = setInterval(async () => {
+    await dashboardStore.fetchDashboardData();
+  }, 5000); // 5초마다
+};
+
+// 자동새로고침 중지
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+};
 
 onMounted(async () => {
   // 대시보드 진입 시 한 번만 새로고침
@@ -206,6 +254,11 @@ onMounted(async () => {
 
   await dashboardStore.fetchDashboardData();
 });
+
+// 컴포넌트 언마운트 시 자동새로고침 중지
+onUnmounted(() => {
+  stopAutoRefresh();
+});
 </script>
 
 <style scoped lang="scss">
@@ -213,6 +266,77 @@ onMounted(async () => {
   padding: $spacing-lg;
   background-color: #f9fafb;
   min-height: 100vh;
+
+  .auto-refresh-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: $spacing-lg;
+
+    .auto-refresh-control {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      background-color: #e0e7ff;
+      border-radius: 8px;
+      padding: $spacing-sm $spacing-md;
+      border: 1px solid #d1d5db;
+    }
+
+    .auto-refresh-label {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      background-color: #d1d5db;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      padding: 0;
+
+      &.active {
+        background-color: #3b82f6;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      &.active .toggle-slider {
+        transform: translateX(24px);
+      }
+
+      &:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+    }
+
+    .auto-refresh-status {
+      background-color: #f3f4f6;
+      border-radius: 6px;
+      padding: $spacing-sm $spacing-md;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
 
   .stats-grid {
     display: grid;
@@ -378,6 +502,12 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .dashboard {
     padding: $spacing-md;
+
+    .auto-refresh-section {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-sm;
+    }
 
     .stats-grid {
       grid-template-columns: 1fr;

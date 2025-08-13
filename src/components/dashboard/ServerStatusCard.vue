@@ -106,7 +106,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, onDeactivated, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  onDeactivated,
+  ref,
+  watch,
+} from "vue";
 import { useI18n } from "vue-i18n";
 import type { ServerStatus } from "@/stores/dashboardStore";
 import {
@@ -457,7 +465,7 @@ const createCharts = () => {
     ) {
       return;
     }
-    
+
     createCapacityChart();
     createCpuChart();
     createRamChart();

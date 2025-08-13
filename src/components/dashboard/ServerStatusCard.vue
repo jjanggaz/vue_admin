@@ -106,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, onDeactivated, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { ServerStatus } from "@/stores/dashboardStore";
 import {
@@ -119,6 +119,7 @@ import {
   PointElement,
   LineElement,
   Title,
+  Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -129,7 +130,8 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  Title
+  Title,
+  Filler
 );
 
 const { t } = useI18n();
@@ -147,6 +149,14 @@ const capacityChart = ref<HTMLCanvasElement>();
 const cpuChart = ref<HTMLCanvasElement>();
 const ramChart = ref<HTMLCanvasElement>();
 const systemChart = ref<HTMLCanvasElement>();
+
+// 차트 인스턴스 저장
+const chartInstances = ref<{
+  capacity?: any;
+  cpu?: any;
+  ram?: any;
+  system?: any;
+}>({});
 
 // 서버 온라인 상태 확인 (uptime이 있으면 온라인으로 간주)
 const isOnline = computed(() => {
@@ -183,7 +193,21 @@ const formatLoadAverage = (loads: number[]): string => {
 
 // 용량 차트 생성
 const createCapacityChart = () => {
-  if (!capacityChart.value || !props.serverStatus) return;
+  if (
+    !capacityChart.value ||
+    !props.serverStatus ||
+    !capacityChart.value.isConnected
+  )
+    return;
+
+  // 기존 차트가 있으면 제거
+  if (chartInstances.value.capacity) {
+    try {
+      chartInstances.value.capacity.destroy();
+    } catch (error) {
+      console.warn("용량 차트 정리 중 오류:", error);
+    }
+  }
 
   const ctx = capacityChart.value.getContext("2d");
   if (!ctx) return;
@@ -192,7 +216,7 @@ const createCapacityChart = () => {
   const free = props.serverStatus.capacity.free;
   const total = props.serverStatus.capacity.total;
 
-  new ChartJS(ctx, {
+  chartInstances.value.capacity = new ChartJS(ctx, {
     type: "doughnut",
     data: {
       labels: ["사용", "여유"],
@@ -207,6 +231,7 @@ const createCapacityChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       plugins: {
         legend: {
           position: "bottom",
@@ -232,14 +257,24 @@ const createCapacityChart = () => {
 
 // CPU 게이지 차트 생성
 const createCpuChart = () => {
-  if (!cpuChart.value || !props.serverStatus) return;
+  if (!cpuChart.value || !props.serverStatus || !cpuChart.value.isConnected)
+    return;
+
+  // 기존 차트가 있으면 제거
+  if (chartInstances.value.cpu) {
+    try {
+      chartInstances.value.cpu.destroy();
+    } catch (error) {
+      console.warn("CPU 차트 정리 중 오류:", error);
+    }
+  }
 
   const ctx = cpuChart.value.getContext("2d");
   if (!ctx) return;
 
   const usage = props.serverStatus.cpu.usage;
 
-  new ChartJS(ctx, {
+  chartInstances.value.cpu = new ChartJS(ctx, {
     type: "doughnut",
     data: {
       labels: ["사용률", "여유"],
@@ -254,6 +289,7 @@ const createCpuChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       plugins: {
         legend: {
           display: false,
@@ -276,14 +312,24 @@ const createCpuChart = () => {
 
 // RAM 게이지 차트 생성
 const createRamChart = () => {
-  if (!ramChart.value || !props.serverStatus) return;
+  if (!ramChart.value || !props.serverStatus || !ramChart.value.isConnected)
+    return;
+
+  // 기존 차트가 있으면 제거
+  if (chartInstances.value.ram) {
+    try {
+      chartInstances.value.ram.destroy();
+    } catch (error) {
+      console.warn("RAM 차트 정리 중 오류:", error);
+    }
+  }
 
   const ctx = ramChart.value.getContext("2d");
   if (!ctx) return;
 
   const usage = props.serverStatus.ram.usage;
 
-  new ChartJS(ctx, {
+  chartInstances.value.ram = new ChartJS(ctx, {
     type: "doughnut",
     data: {
       labels: ["사용률", "여유"],
@@ -298,6 +344,7 @@ const createRamChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       plugins: {
         legend: {
           display: false,
@@ -320,7 +367,21 @@ const createRamChart = () => {
 
 // 시스템 로드 차트 생성
 const createSystemChart = () => {
-  if (!systemChart.value || !props.serverStatus) return;
+  if (
+    !systemChart.value ||
+    !props.serverStatus ||
+    !systemChart.value.isConnected
+  )
+    return;
+
+  // 기존 차트가 있으면 제거
+  if (chartInstances.value.system) {
+    try {
+      chartInstances.value.system.destroy();
+    } catch (error) {
+      console.warn("시스템 차트 정리 중 오류:", error);
+    }
+  }
 
   const ctx = systemChart.value.getContext("2d");
   if (!ctx) return;
@@ -328,7 +389,7 @@ const createSystemChart = () => {
   const loadAverage = props.serverStatus.system.loadAverage;
   const labels = ["1분", "5분", "15분"];
 
-  new ChartJS(ctx, {
+  chartInstances.value.system = new ChartJS(ctx, {
     type: "line",
     data: {
       labels: labels,
@@ -347,6 +408,7 @@ const createSystemChart = () => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       plugins: {
         legend: {
           display: false,
@@ -375,19 +437,83 @@ const createSystemChart = () => {
 
 // 차트들 생성
 const createCharts = () => {
-  createCapacityChart();
-  createCpuChart();
-  createRamChart();
-  createSystemChart();
+  // DOM 요소가 여전히 존재하고 연결되어 있는지 확인
+  if (
+    !capacityChart.value?.isConnected ||
+    !cpuChart.value?.isConnected ||
+    !ramChart.value?.isConnected ||
+    !systemChart.value?.isConnected
+  ) {
+    return;
+  }
+
+  // 약간의 지연을 두어 DOM이 완전히 준비된 후 차트 생성
+  nextTick(() => {
+    if (
+      !capacityChart.value?.isConnected ||
+      !cpuChart.value?.isConnected ||
+      !ramChart.value?.isConnected ||
+      !systemChart.value?.isConnected
+    ) {
+      return;
+    }
+    
+    createCapacityChart();
+    createCpuChart();
+    createRamChart();
+    createSystemChart();
+  });
 };
 
 // serverStatus가 변경될 때마다 차트 업데이트
-watch(() => props.serverStatus, createCharts, { deep: true });
+watch(
+  () => props.serverStatus,
+  (newStatus, oldStatus) => {
+    if (newStatus !== oldStatus) {
+      // 기존 차트 정리 후 새로 생성
+      destroyCharts();
+      if (newStatus) {
+        createCharts();
+      }
+    }
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   if (props.serverStatus) {
     createCharts();
   }
+});
+
+// 차트 정리 함수
+const destroyCharts = () => {
+  Object.values(chartInstances.value).forEach((chart) => {
+    if (chart && typeof chart.destroy === "function") {
+      try {
+        // 애니메이션 중지
+        if (chart.stop) {
+          chart.stop();
+        }
+        // 차트 제거
+        chart.destroy();
+      } catch (error) {
+        console.warn("차트 정리 중 오류:", error);
+      }
+    }
+  });
+  chartInstances.value = {};
+};
+
+// 컴포넌트 언마운트 시 차트 정리
+onUnmounted(() => {
+  // 즉시 차트 정리
+  destroyCharts();
+});
+
+// 컴포넌트가 비활성화될 때도 차트 정리
+onDeactivated(() => {
+  destroyCharts();
 });
 </script>
 

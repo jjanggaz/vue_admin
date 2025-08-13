@@ -474,6 +474,11 @@ onMounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        canvas {
+          max-width: 100%;
+          height: auto;
+        }
       }
 
       .metric-details {

@@ -7,7 +7,67 @@
   },
   "dashboard": {
     "welcome": "환영합니다!",
-    "title": "WAI DESIGN 관리 시스템 대시보드입니다."
+    "title": "WAI DESIGN 관리 시스템 대시보드입니다.",
+    "serverCapacity": {
+      "title": "서버용량 상태",
+      "total": "전체",
+      "used": "사용중",
+      "free": "여유공간"
+    },
+    "projectStatus": {
+      "title": "프로젝트 진행 현황",
+      "total": "전체",
+      "inProgress": "진행중",
+      "completed": "완료"
+    },
+    "modelProduction": {
+      "title": "3D모델 제작 현황",
+      "total": "전체",
+      "categories": {
+        "firstProcessing": "1차처리",
+        "mainProcessing": "주처리",
+        "reservoir": "저류조",
+        "others": "기타"
+      }
+    },
+    "approvalStatus": {
+      "title": "승인관리 현황",
+      "total": "전체",
+      "thisMonth": "이번달",
+      "projectApproval": "프로젝트 승인",
+      "processApproval": "프로세스 승인",
+      "modelApproval": "3D모델 등록승인"
+    },
+    "serverStatus": {
+      "title": "서버 상태",
+      "online": "온라인",
+      "offline": "오프라인",
+      "capacity": "저장소",
+      "cpu": "CPU",
+      "ram": "RAM",
+      "system": "시스템",
+      "cores": "코어",
+      "temp": "온도",
+      "uptime": "가동시간",
+      "load": "로드 평균"
+    },
+    "processManagement": {
+      "title": "공정관리 현황",
+      "total": "전체",
+      "active": "진행중",
+      "pending": "대기중",
+      "completed": "완료",
+      "suspended": "중단"
+    },
+    "costStatus": {
+      "title": "단가현황",
+      "total": "총액",
+      "average": "평균",
+      "labor": "인건비",
+      "material": "재료비",
+      "equipment": "설비비",
+      "overhead": "간접비"
+    }
   },
   "columns": {
     "processDetail": {

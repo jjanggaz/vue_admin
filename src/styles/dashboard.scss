@@ -1,0 +1,105 @@
+// 대시보드 공통 스타일
+.dashboard-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  transition: box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+  }
+}
+
+// 차트 컨테이너 높이 조정
+.chart-container {
+  &.small {
+    height: 200px;
+  }
+
+  &.medium {
+    height: 250px;
+  }
+
+  &.large {
+    height: 300px;
+  }
+}
+
+// 반응형 그리드
+.dashboard-grid {
+  display: grid;
+  gap: 24px;
+
+  &.stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  &.charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+
+    .chart-item {
+      &.large {
+        grid-column: span 2;
+
+        @media (max-width: 1200px) {
+          grid-column: span 1;
+        }
+      }
+
+      &.medium {
+        grid-column: span 1;
+      }
+    }
+  }
+
+  &.activity-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
+}
+
+// 모바일 반응형
+@media (max-width: 768px) {
+  .dashboard-grid {
+    &.stats-grid,
+    &.charts-grid,
+    &.activity-grid {
+      grid-template-columns: 1fr;
+
+      .chart-item.large {
+        grid-column: span 1;
+      }
+    }
+  }
+
+  .dashboard-card {
+    padding: 16px;
+
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+}

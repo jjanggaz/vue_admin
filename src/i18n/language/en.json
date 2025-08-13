@@ -7,7 +7,67 @@
   },
   "dashboard": {
     "welcome": "Welcome!",
-    "title": "This is the WAI DESIGN Management System Dashboard."
+    "title": "This is the WAI DESIGN Management System Dashboard.",
+    "serverCapacity": {
+      "title": "Server Capacity Status",
+      "total": "Total",
+      "used": "Used",
+      "free": "Free Space"
+    },
+    "projectStatus": {
+      "title": "Project Progress Status",
+      "total": "Total",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "modelProduction": {
+      "title": "3D Model Production Status",
+      "total": "Total",
+      "categories": {
+        "firstProcessing": "1st Processing",
+        "mainProcessing": "Main Processing",
+        "reservoir": "Reservoir",
+        "others": "Others"
+      }
+    },
+    "approvalStatus": {
+      "title": "Approval Management Status",
+      "total": "Total",
+      "thisMonth": "This Month",
+      "projectApproval": "Project Approval",
+      "processApproval": "Process Approval",
+      "modelApproval": "3D Model Registration Approval"
+    },
+    "serverStatus": {
+      "title": "Server Status",
+      "online": "Online",
+      "offline": "Offline",
+      "capacity": "Storage",
+      "cpu": "CPU",
+      "ram": "RAM",
+      "system": "System",
+      "cores": "Cores",
+      "temp": "Temperature",
+      "uptime": "Uptime",
+      "load": "Load Average"
+    },
+    "processManagement": {
+      "title": "Process Management Status",
+      "total": "Total",
+      "active": "Active",
+      "pending": "Pending",
+      "completed": "Completed",
+      "suspended": "Suspended"
+    },
+    "costStatus": {
+      "title": "Cost Status",
+      "total": "Total",
+      "average": "Average",
+      "labor": "Labor",
+      "material": "Material",
+      "equipment": "Equipment",
+      "overhead": "Overhead"
+    }
   },
   "columns": {
     "processDetail": {

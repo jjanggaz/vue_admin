@@ -9,71 +9,100 @@
         <!-- Top Section - Search/Filter Controls -->
         <div class="search-section">
           <div class="search-filters">
-                         <div class="filter-group">
-               <label class="filter-label"
-                 >⊙ {{ t("columns.code.codeGroup") }}</label
-               >
-                              <select v-model="searchCodeGroupInput" class="filter-select" disabled>
-                  <option value="">{{ props.selectedCodeGroup?.value || "내용없음" }}</option>
-                  <option
-                    v-if="props.selectedCodeGroup"
-                    :key="props.selectedCodeGroup.key"
-                    :value="props.selectedCodeGroup.key"
-                  >
-                    {{ props.selectedCodeGroup.value }} [{{ props.selectedCodeGroup.key }}]
-                  </option>
-                </select>
-             </div>
-                         <div class="filter-group">
-               <label class="filter-label"
-                 >⊙ {{ t("columns.code.majorCategory") }}</label
-               >
-                              <select v-model="searchCategory1Input" class="filter-select" disabled>
-                  <option value="">{{ props.selectedCategory1?.value || "내용없음" }}</option>
-                  <option
-                    v-if="props.selectedCategory1"
-                    :key="props.selectedCategory1.key"
-                    :value="props.selectedCategory1.key"
-                  >
-                    {{ props.selectedCategory1.value }} [{{ props.selectedCategory1.key }}]
-                  </option>
-                </select>
-             </div>
-                         <div class="filter-group">
-               <label class="filter-label"
-                 >⊙ {{ t("columns.code.mediumCategory") }}</label
-               >
-                              <select v-model="searchCategory2Input" class="filter-select" disabled>
-                  <option value="">{{ props.selectedCategory2?.value || "내용없음" }}</option>
-                  <option
-                    v-if="props.selectedCategory2"
-                    :key="props.selectedCategory2.key"
-                    :value="props.selectedCategory2.key"
-                  >
-                    {{ props.selectedCategory2.value }} [{{ props.selectedCategory2.key }}]
-                  </option>
-                </select>
-             </div>
-                         <div class="filter-group">
-               <label class="filter-label"
-                 >⊙ {{ t("columns.code.minorCategory") }}</label
-               >
-                              <select v-model="searchCategory3Input" class="filter-select" disabled>
-                  <option value="">{{ props.selectedCategory3?.value || "내용없음" }}</option>
-                  <option
-                    v-if="props.selectedCategory3"
-                    :key="props.selectedCategory3.key"
-                    :value="props.selectedCategory3.key"
-                  >
-                    {{ props.selectedCategory3.value }} [{{ props.selectedCategory3.key }}]
-                  </option>
-                </select>
-             </div>
-            
+            <div class="filter-group">
+              <label class="filter-label"
+                >⊙ {{ t("columns.code.codeGroup") }}</label
+              >
+              <select
+                v-model="searchCodeGroupInput"
+                class="filter-select"
+                disabled
+              >
+                <option value="">
+                  {{ props.selectedCodeGroup?.value || "내용없음" }}
+                </option>
+                <option
+                  v-if="props.selectedCodeGroup"
+                  :key="props.selectedCodeGroup.key"
+                  :value="props.selectedCodeGroup.key"
+                >
+                  {{ props.selectedCodeGroup.value }} [{{
+                    props.selectedCodeGroup.key
+                  }}]
+                </option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label"
+                >⊙ {{ t("columns.code.majorCategory") }}</label
+              >
+              <select
+                v-model="searchCategory1Input"
+                class="filter-select"
+                disabled
+              >
+                <option value="">
+                  {{ props.selectedCategory1?.value || "내용없음" }}
+                </option>
+                <option
+                  v-if="props.selectedCategory1"
+                  :key="props.selectedCategory1.key"
+                  :value="props.selectedCategory1.key"
+                >
+                  {{ props.selectedCategory1.value }} [{{
+                    props.selectedCategory1.key
+                  }}]
+                </option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label"
+                >⊙ {{ t("columns.code.mediumCategory") }}</label
+              >
+              <select
+                v-model="searchCategory2Input"
+                class="filter-select"
+                disabled
+              >
+                <option value="">
+                  {{ props.selectedCategory2?.value || "내용없음" }}
+                </option>
+                <option
+                  v-if="props.selectedCategory2"
+                  :key="props.selectedCategory2.key"
+                  :value="props.selectedCategory2.key"
+                >
+                  {{ props.selectedCategory2.value }} [{{
+                    props.selectedCategory2.key
+                  }}]
+                </option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label"
+                >⊙ {{ t("columns.code.minorCategory") }}</label
+              >
+              <select
+                v-model="searchCategory3Input"
+                class="filter-select"
+                disabled
+              >
+                <option value="">
+                  {{ props.selectedCategory3?.value || "내용없음" }}
+                </option>
+                <option
+                  v-if="props.selectedCategory3"
+                  :key="props.selectedCategory3.key"
+                  :value="props.selectedCategory3.key"
+                >
+                  {{ props.selectedCategory3.value }} [{{
+                    props.selectedCategory3.key
+                  }}]
+                </option>
+              </select>
+            </div>
           </div>
         </div>
-
-        
 
         <!-- Action Buttons -->
         <div class="modal-action-buttons">
@@ -96,17 +125,15 @@
 
         <!-- Data Table -->
         <div class="modal-table-section">
-                     <DataTable
-             :columns="tableColumns"
-             :data="codeList"
-             :loading="loading"
-             :selectable="false"
-             @sort-change="handleSortChange"
-             @row-click="handleRowClick"
-           />
+          <DataTable
+            :columns="tableColumns"
+            :data="codeList"
+            :loading="loading"
+            :selectable="false"
+            @sort-change="handleSortChange"
+            @row-click="handleRowClick"
+          />
         </div>
-
-        
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" @click="handleClose">
@@ -162,8 +189,6 @@ const searchCategory3Input = ref(props.selectedCategory3?.key || "");
 const codeList = ref<CodeItem[]>([]);
 const loading = ref(false);
 
-
-
 // Excel 파일 input
 const excelFileInput = ref<HTMLInputElement>();
 
@@ -195,8 +220,6 @@ const tableColumns: TableColumn[] = [
   },
 ];
 
-
-
 // 이벤트 핸들러들
 const handleClose = () => {
   emit("close");
@@ -206,10 +229,6 @@ const handleClose = () => {
 const handleSave = () => {
   emit("save", codeList.value);
 };
-
-
-
-
 
 const handleSortChange = (sortInfo: {
   key: string | null;
@@ -221,8 +240,6 @@ const handleSortChange = (sortInfo: {
 const handleRowClick = (item: CodeItem) => {
   console.log("모달 행 클릭:", item);
 };
-
-
 
 // Excel 관련 함수들
 const downloadExcelForm = () => {
@@ -312,7 +329,7 @@ const loadData = async () => {
       selectedCodeGroup: props.selectedCodeGroup,
       selectedCategory1: props.selectedCategory1,
       selectedCategory2: props.selectedCategory2,
-      selectedCategory3: props.selectedCategory3
+      selectedCategory3: props.selectedCategory3,
     });
   } catch (error: any) {
     console.error("모달 데이터 로드 실패:", error);
@@ -329,7 +346,7 @@ watch(
     props.selectedCodeGroup,
     props.selectedCategory1,
     props.selectedCategory2,
-    props.selectedCategory3
+    props.selectedCategory3,
   ],
   ([newCodeGroup, newCategory1, newCategory2, newCategory3]) => {
     if (newCodeGroup !== undefined) {
@@ -469,10 +486,6 @@ onMounted(() => {
   }
 }
 
-
-
-
-
 // 액션 버튼 스타일
 .modal-action-buttons {
   display: flex;
@@ -489,8 +502,6 @@ onMounted(() => {
 .modal-table-section {
   margin-bottom: 20px;
 }
-
-
 
 // 버튼 스타일
 .btn {
@@ -540,4 +551,3 @@ onMounted(() => {
   }
 }
 </style>
-

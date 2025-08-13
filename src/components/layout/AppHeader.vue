@@ -26,7 +26,6 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { computed } from "vue";
@@ -283,6 +282,12 @@ const currentPageTitle = computed<string>(() => {
       border-color: $primary-color;
       color: $primary-color;
     }
+  }
+}
+
+@media (max-width: $breakpoint-lg) {
+  .app-header {
+    left: 0;
   }
 }
 </style>

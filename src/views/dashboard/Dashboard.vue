@@ -196,6 +196,14 @@ import CategoryChart from "@/components/dashboard/CategoryChart.vue";
 const dashboardStore = useDashboardStore();
 
 onMounted(async () => {
+  // 대시보드 진입 시 한 번만 새로고침
+  const hasReloaded = sessionStorage.getItem("dashboardReloaded");
+  if (!hasReloaded) {
+    sessionStorage.setItem("dashboardReloaded", "true");
+    window.location.reload();
+    return;
+  }
+
   await dashboardStore.fetchDashboardData();
 });
 </script>

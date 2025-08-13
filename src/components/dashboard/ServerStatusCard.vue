@@ -106,15 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  onDeactivated,
-  ref,
-  watch,
-} from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { ServerStatus } from "@/stores/dashboardStore";
 import {
@@ -445,32 +437,10 @@ const createSystemChart = () => {
 
 // 차트들 생성
 const createCharts = () => {
-  // DOM 요소가 여전히 존재하고 연결되어 있는지 확인
-  if (
-    !capacityChart.value?.isConnected ||
-    !cpuChart.value?.isConnected ||
-    !ramChart.value?.isConnected ||
-    !systemChart.value?.isConnected
-  ) {
-    return;
-  }
-
-  // 약간의 지연을 두어 DOM이 완전히 준비된 후 차트 생성
-  nextTick(() => {
-    if (
-      !capacityChart.value?.isConnected ||
-      !cpuChart.value?.isConnected ||
-      !ramChart.value?.isConnected ||
-      !systemChart.value?.isConnected
-    ) {
-      return;
-    }
-
-    createCapacityChart();
-    createCpuChart();
-    createRamChart();
-    createSystemChart();
-  });
+  createCapacityChart();
+  createCpuChart();
+  createRamChart();
+  createSystemChart();
 };
 
 // serverStatus가 변경될 때마다 차트 업데이트
@@ -515,12 +485,6 @@ const destroyCharts = () => {
 
 // 컴포넌트 언마운트 시 차트 정리
 onUnmounted(() => {
-  // 즉시 차트 정리
-  destroyCharts();
-});
-
-// 컴포넌트가 비활성화될 때도 차트 정리
-onDeactivated(() => {
   destroyCharts();
 });
 </script>

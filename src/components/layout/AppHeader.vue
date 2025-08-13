@@ -59,16 +59,20 @@ const handleLogout = async () => {
 // 각 섹션별 탭들 정의
 const sectionTabs = {
   model: [
-    { name: "Model3D", label: t("tabs.model.model3d"), to: "/model/3d" },
     {
       name: "RevitManagement",
       label: t("tabs.model.revitManagement"),
       to: "/model/revit",
     },
     {
-      name: "StandardManagement",
-      label: t("tabs.model.standardManagement"),
+      name: "StandardPlacement",
+      label: t("tabs.model.standardPlacement"),
       to: "/model/standard",
+    },
+    {
+      name: "3D Asset",
+      label: t("tabs.model.asset3d"),
+      to: "/model/3dAsset",
     },
   ],
   asset: [

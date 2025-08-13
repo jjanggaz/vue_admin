@@ -1,29 +1,20 @@
 // 3D 모델 관리 페이지
 const ModelManagement = () => import("@/views/model/ModelManagement.vue");
-const Model3D = () => import("@/views/model/Model3D.vue");
 const Revit = () => import("@/views/model/Revit.vue");
 const Standard = () => import("@/views/model/Standard.vue");
+const Asset3D = () => import("@/views/model/Asset3D.vue");
 
 export const modelRoute = {
   path: "/model",
   name: "ModelManagement",
   component: ModelManagement,
-  redirect: "/model/3d",
+  redirect: "/model/revit",
   meta: {
     requiresAuth: true,
     titleKey: "pageTitles.modelManagement",
     icon: "model",
   },
   children: [
-    {
-      path: "3d",
-      name: "Model3D",
-      component: Model3D,
-      meta: {
-        titleKey: "tabs.model.model3d",
-        breadcrumbKeys: ["pageTitles.modelManagement", "tabs.model.model3d"],
-      },
-    },
     {
       path: "revit",
       name: "Revit",
@@ -41,11 +32,20 @@ export const modelRoute = {
       name: "Standard",
       component: Standard,
       meta: {
-        titleKey: "tabs.model.standardManagement",
+        titleKey: "tabs.model.standardPlacement",
         breadcrumbKeys: [
           "pageTitles.modelManagement",
-          "tabs.model.standardManagement",
+          "tabs.model.standardPlacement",
         ],
+      },
+    },
+    {
+      path: "3dAsset",
+      name: "3D Asset",
+      component: Asset3D,
+      meta: {
+        titleKey: "tabs.model.asset3d",
+        breadcrumbKeys: ["pageTitles.modelManagement", "tabs.model.asset3d"],
       },
     },
   ],

@@ -217,7 +217,7 @@
     "userManagement": "User Management",
     "modelManagement": "3D Model Management",
     "revitManagement": "Revit Management",
-    "standardManagement": "Standard Management",
+    "standardPlacement": "Standard Placement",
     "project": "Project",
     "approvalPending": "Approval Pending",
     "itemManagement": "Item Management",
@@ -645,9 +645,9 @@
   },
   "tabs": {
     "model": {
-      "model3d": "3D Model Management",
       "revitManagement": "Revit Management",
-      "standardManagement": "Standard Management"
+      "standardPlacement": "Standard Placement",
+      "asset3d": "3D Asset Management"
     },
     "asset": {
       "inflow": "Inflow",

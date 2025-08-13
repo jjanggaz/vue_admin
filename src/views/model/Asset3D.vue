@@ -2,8 +2,7 @@
   <div class="model-3d-page">
     <!-- Add Button -->
     <div class="action-bar">
-      <button class="btn btn-primary add-button" @click="openUploadModal">
-        <span class="plus-icon">+</span>
+      <button class="btn btn-primary btn-regist" @click="openUploadModal">
         {{ t("common.register") }}
       </button>
     </div>
@@ -18,7 +17,7 @@
     >
       <!-- 수정 버튼 슬롯 -->
       <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">
+        <button class="btn btn-primary btn-edit" @click.stop="editItem(item)">
           {{ t("common.edit") }}
         </button>
       </template>

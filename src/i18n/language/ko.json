@@ -217,7 +217,7 @@
     "userManagement": "사용자 관리",
     "modelManagement": "3D 모델 관리",
     "revitManagement": "Revit 관리",
-    "standardManagement": "표준배치 관리",
+    "standardPlacement": "표준배치",
     "project": "프로젝트",
     "approvalPending": "승인대기",
     "itemManagement": "항목관리",
@@ -594,7 +594,7 @@
     "projectManagement": "프로젝트 관리",
     "assetManagement": "유입종류 관리",
     "processManagement": "공정 관리",
-    "modelManagement": "3D모델 관리",
+    "modelManagement": "3D 모델 관리",
     "machineManagement": "기기리스트 관리",
     "userManagement": "사용자 관리",
     "codeManagement": "코드 관리",
@@ -604,9 +604,9 @@
   },
   "tabs": {
     "model": {
-      "model3d": "3D 모델 관리",
       "revitManagement": "Revit 관리",
-      "standardManagement": "표준배치 관리"
+      "standardPlacement": "표준배치",
+      "asset3d": "3D Asset"
     },
     "asset": {
       "inflow": "유입",

@@ -460,6 +460,7 @@
   "process": {
     "search": "검색",
     "processType": "공정구분",
+    "middleClassi": "공정 중분류",
     "processName": "공정명",
     "mode": "모드",
     "processSymbol": "공정심볼",

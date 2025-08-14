@@ -4,9 +4,6 @@
     <div class="action-bar">
       <div class="search-bar">
         <div class="group-form">
-          <label for="searchOption" class="label-search">{{
-            t("common.search")
-          }}</label>
           <label for="searchOption" class="label-title">{{
             t("process.processType")
           }}</label>
@@ -15,15 +12,35 @@
               id="searchOption"
               v-model="searchOptionInput"
               class="form-select"
+              @change="handleSearchOptionChange"
             >
-              <option value="">{{ t("common.selectItem") }}</option>
-              <option value="processType">
-                {{ t("process.processType") }}
+              <option value=""></option>
+              <option 
+                v-for="option in searchProcessTypeOptions" 
+                :key="option.value" 
+                :value="option.value"
+              >
+                {{ option.label }}
               </option>
-              <option value="processNm">{{ t("process.processName") }}</option>
-              <option value="mode">{{ t("process.mode") }}</option>
-              <option value="processSymbol">
-                {{ t("process.processSymbol") }}
+            </select>
+          </div>
+        </div>
+        <div class="group-form">
+          <label for="searchSubCategory" class="label-title">{{ t("process.middleClassi") }}</label>
+          <div class="form-item">
+            <select
+              id="searchSubCategory"
+              v-model="searchSubCategoryInput"
+              class="form-select"
+              @change="handleSubCategoryChange"
+            >
+              <option value=""></option>
+              <option 
+                v-for="option in searchSubCategoryOptions" 
+                :key="option.value" 
+                :value="option.value"
+              >
+                {{ option.label }}
               </option>
             </select>
           </div>
@@ -33,13 +50,20 @@
             t("process.processName")
           }}</label>
           <div class="form-item">
-            <input
-              type="text"
-              id="search"
-              :placeholder="t('placeholder.searchQuery')"
+            <select
+              id="searchProcessName"
               v-model="searchQueryInput"
-              @keyup.enter="handleSearch"
-            />
+              class="form-select"
+            >
+              <option value=""></option>
+              <option 
+                v-for="option in searchProcessNameOptions" 
+                :key="option.value" 
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
           </div>
           <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
@@ -56,9 +80,6 @@
           :disabled="selectedItems.length === 0"
         >
           {{ t("process.deleteSelected") }}
-        </button>
-        <button class="btn btn-secondary btn-test" @click="handleTestApi">
-          API 테스트
         </button>
       </div>
     </div>
@@ -110,11 +131,28 @@
                 required
               >
                 <option value="">{{ t("common.select") }}</option>
-                <option value="제작">{{ t("process.manufacture") }}</option>
-                <option value="설계">{{ t("process.design") }}</option>
-                <option value="검토">{{ t("process.review") }}</option>
-                <option value="조립">{{ t("process.assembly") }}</option>
-                <option value="검사">{{ t("process.inspection") }}</option>
+                <option 
+                  v-for="option in processTypeOptions" 
+                  :key="option.value" 
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </dd>
+            <dt class="essential">{{ t("process.middleClassi") }}</dt>
+            <dd>
+              <select
+                v-model="registForm.processSubCategory"
+                class="form-select"
+                required
+              >
+                <option value="">{{ t("common.select") }}</option>
+                <option value="mechanical">기계</option>
+                <option value="electrical">전기</option>
+                <option value="civil">토목</option>
+                <option value="chemical">화학</option>
+                <option value="instrumentation">계측</option>
               </select>
             </dd>
             <dt class="essential">{{ t("process.processName") }}</dt>
@@ -369,9 +407,10 @@ import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
-import { request } from "../../utils/request";
+
 import { isCurrentTokenValid } from "../../utils/tokenManager";
 import { useAuthStore } from "../../stores/authStore";
+import { request } from "../../utils/request";
 
 // 쿠키 확인 유틸리티 함수
 const getCookie = (name: string): string | null => {
@@ -408,6 +447,7 @@ interface ProcessItem {
 
 interface RegistForm {
   processType: string;
+  processSubCategory: string;
   processNm: string;
   mode: string;
   processSymbol: string;
@@ -443,14 +483,44 @@ const totalCount = ref(0);
 const sortColumn = ref<string | null>(null);
 const sortOrder = ref<"asc" | "desc" | null>(null);
 const searchOptionInput = ref("");
+const searchSubCategoryInput = ref("");
 const searchQueryInput = ref("");
 const searchOption = ref("");
+const searchSubCategory = ref("");
 const searchQuery = ref("");
 const isRegistModalOpen = ref(false);
+
+// 공정구분 콤보박스 옵션 (동적으로 생성)
+const processTypeOptions = ref<{ value: string; label: string }[]>([]);
+
+// 검색 옵션 세렉트박스 옵션 (동적으로 생성)
+const searchProcessTypeOptions = ref<{ value: string; label: string }[]>([]);
+
+// 중분류 검색 옵션 세렉트박스 옵션 (동적으로 생성)
+const searchSubCategoryOptions = ref<{ value: string; label: string }[]>([]);
+
+// 공정명 검색 옵션 세렉트박스 옵션 (동적으로 생성)
+const searchProcessNameOptions = ref<{ value: string; label: string }[]>([]);
+
+// 중분류 변경 핸들러
+const handleSubCategoryChange = () => {
+  const selectedValue = searchSubCategoryInput.value;
+  
+  if (selectedValue === "") {
+    // 공백값이 선택된 경우 공정명 옵션 초기화
+    searchProcessNameOptions.value = [];
+    searchQueryInput.value = "";
+    console.log("중분류 변경: 공백값 선택 - 공정명 옵션 초기화");
+  } else {
+    console.log("중분류 변경:", selectedValue);
+    handleProcessNameCodeSearch();
+  }
+};
 
 // 등록 폼 데이터
 const registForm = ref<RegistForm>({
   processType: "",
+  processSubCategory: "",
   processNm: "",
   mode: "",
   processSymbol: "",
@@ -487,6 +557,7 @@ const closeRegistModal = () => {
   // 폼 초기화
   registForm.value = {
     processType: "",
+    processSubCategory: "",
     processNm: "",
     mode: "",
     processSymbol: "",
@@ -756,34 +827,59 @@ const handleSelectionChange = (items: ProcessItem[]) => {
   console.log("선택된 항목:", selectedItems.value);
 };
 
+// 검색 옵션 변경 핸들러
+const handleSearchOptionChange = () => {
+  const selectedValue = searchOptionInput.value;
+  
+  if (selectedValue === "") {
+    // 공백값이 선택된 경우 중분류 옵션 초기화
+    searchSubCategoryOptions.value = [];
+    searchSubCategoryInput.value = "";
+    // 공정명 옵션도 초기화
+    searchProcessNameOptions.value = [];
+    searchQueryInput.value = "";
+    console.log("검색 옵션 변경: 공백값 선택 - 중분류 및 공정명 옵션 초기화");
+  } else {
+    const selectedOption = searchProcessTypeOptions.value.find(option => option.value === selectedValue);
+    
+    if (selectedOption) {
+      console.log("검색 옵션 변경:");
+      console.log("  key:", selectedOption.value);
+      console.log("  value:", selectedOption.label);
+      // 공정명 옵션 초기화
+      searchProcessNameOptions.value = [];
+      searchQueryInput.value = "";
+      handleMiddleCodeSearch();
+    } else {
+      console.log("검색 옵션 변경: 선택되지 않음");
+    }
+  }
+};
+
 // 검색 기능 구현
 const handleSearch = () => {
   //검색시 선택된 항목 초기화
   selectedItems.value = [];
   searchOption.value = searchOptionInput.value;
+  searchSubCategory.value = searchSubCategoryInput.value;
   searchQuery.value = searchQueryInput.value;
   currentPage.value = 1;
 };
 
-// API 테스트 함수
-const handleTestApi = async () => {
+//공정구분분 select 항목 공통코드 조회
+const handleProcessCodeSearch = async () => {
   try {
     loading.value = true;
-    console.log("API 테스트 시작: /api/process/search/master");
+    console.log("공정 코드 검색 시작: /api/process/code/search");
     
-    // API 호출 - UserController 패턴을 참조하여 POST 방식으로 변경
-    const requestData: any = {
-      keyword: "1",
-      search_field: "process_code",
-      search_value: "PST-001",
-      page: 1,
-      page_size: 10,
-      order_by: "updated_at",
-      order_direction: "asc",
-      limit: 10
+    const requestData = {
+      search_field: 'parent_key',
+      search_value: 'PRC_FLW',
+      order_by: 'code_order',
+      order_direction: 'asc'
     };
 
-    const result = await request("/api/process/search/master", undefined, {
+    const result = await request("/api/process/code/search", undefined, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -794,23 +890,148 @@ const handleTestApi = async () => {
     console.log("API 응답:", result);
     
     if (result.success) {
-      alert(`API 테스트 성공!\n응답 데이터: ${JSON.stringify(result.response, null, 2)}`);
+      console.log("API 응답 데이터:", result.response);
+      
+             // result.response에서 code_key를 키로, code_value를 값으로 하는 공정구분 콤보 옵션 생성
+       if (result.response && Array.isArray(result.response)) {
+         processTypeOptions.value = result.response.map((item: any) => ({
+           value: item.code_key,
+           label: item.code_value
+         }));
+         
+         // 검색 옵션 세렉트박스도 동일한 데이터로 설정
+         searchProcessTypeOptions.value = result.response.map((item: any) => ({
+           value: item.code_key,
+           label: item.code_value
+         }));
+         
+         console.log("생성된 공정구분 옵션:", processTypeOptions.value);
+         console.log("생성된 검색 옵션:", searchProcessTypeOptions.value);
+         //alert(`공정 코드 검색 테스트 성공!\n생성된 옵션 수: ${processTypeOptions.value.length}\n첫 번째 옵션: ${processTypeOptions.value[0]?.label || '없음'}`);
+       } else {
+         //alert(`공정 코드 검색 테스트 성공!\n응답 데이터: ${JSON.stringify(result.response, null, 2)}`);
+       }
     } else {
-      alert(`API 테스트 실패: ${result.message}`);
+      alert(`공정 코드 검색 테스트 실패: ${result.message}`);
     }
     
   } catch (error: any) {
-    console.error("API 테스트 실패:", error);
+    console.error("공정 코드 검색 테스트 실패:", error);
     const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`API 테스트 실패: ${errorMessage}`);
+    alert(`공정 코드 검색 테스트 실패: ${errorMessage}`);
   } finally {
     loading.value = false;
   }
 };
 
+//중분류 select 항목 공통코드 조회
+const handleMiddleCodeSearch = async () => {
+  try {
+    loading.value = true;
+    console.log("중분류 코드 검색 시작: /api/process/code/search");
+    
+    const requestData = {
+      search_field: 'parent_key',
+      search_value: searchOptionInput.value,
+      order_by: 'code_order',
+      order_direction: 'asc'
+    };
+
+    const result = await request("/api/process/code/search", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    console.log("API 응답:", result);
+    
+    if (result.success) {
+      console.log("API 응답 데이터:", result.response);
+      
+      // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
+      if (result.response && Array.isArray(result.response)) {
+        searchSubCategoryOptions.value = result.response.map((item: any) => ({
+          value: item.code_key,
+          label: item.code_value
+        }));
+        
+        console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
+      } else {
+        console.log("중분류 데이터가 없습니다.");
+      }
+    } else {
+      alert(`중분류 코드 검색 실패: ${result.message}`);
+    }
+    
+  } catch (error: any) {
+    console.error("중분류 코드 검색 실패:", error);
+    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
+    alert(`중분류 코드 검색 실패: ${errorMessage}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
+//공정명 select 항목 공통코드 조회
+const handleProcessNameCodeSearch = async () => {
+  try {
+    loading.value = true;
+    console.log("중분류 코드 검색 시작: /api/process/code/search");
+    
+    const requestData = {
+      search_field: 'parent_key',
+      search_value: searchSubCategoryInput.value,
+      order_by: 'code_order',
+      order_direction: 'asc'
+    };
+
+    const result = await request("/api/process/code/search", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    console.log("API 응답:", result);
+    
+    if (result.success) {
+      console.log("API 응답 데이터:", result.response);
+      
+      // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
+      if (result.response && Array.isArray(result.response)) {
+        searchProcessNameOptions.value = result.response.map((item: any) => ({
+          value: item.code_key,
+          label: item.code_value
+        }));
+        
+        console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
+      } else {
+        console.log("공정명 데이터가 없습니다.");
+      }
+    } else {
+      alert(`공정명 코드 검색 실패: ${result.message}`);
+    }
+    
+  } catch (error: any) {
+    console.error("공정명 코드 검색 실패:", error);
+    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
+    alert(`공정명 코드 검색 실패: ${errorMessage}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
+
 onMounted(() => {
   loadProcessList();
+  // 초기 공정구분 옵션 로드 - handleProcessCodeSearch 함수 사용
+  handleProcessCodeSearch();
 });
+
+
 </script>
 
 <style scoped lang="scss">

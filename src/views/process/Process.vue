@@ -461,16 +461,16 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "processType", title: t("process.processType"), sortable: true },
-  { key: "processNm", title: t("process.processName"), sortable: true },
-  { key: "mode", title: t("process.mode"), sortable: true },
-  { key: "processSymbol", title: t("process.processSymbol"), sortable: true },
+  { key: "processType", title: t("process.processType"), sortable: true }, // 공정구분
+  { key: "mode", title: t("process.middleClassi"), sortable: true }, // 공정 중분류
+  { key: "processNm", title: t("process.processName"), sortable: true }, // 공정명
+  { key: "processSymbol", title: t("process.processSymbol"), sortable: true }, // 공정심볼
   {
     key: "viewDetail",
     title: t("process.viewDetail"),
     sortable: false,
     formatter: (value) => formatDate(value),
-  },
+  }, // 상세보기
 ];
 
 const processList = ref<ProcessItem[]>([]);
@@ -707,119 +707,7 @@ const paginatedProcessList = computed(() => {
   return filteredProcessList.value.slice(start, end);
 });
 
-const loadProcessList = async (sortInfo?: {
-  key: string;
-  direction: "asc" | "desc";
-}) => {
-  loading.value = true;
-  try {
-    // API 호출로 데이터 로드
-    // 임시 샘플 데이터
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
 
-    processList.value = [
-      {
-        id: "1",
-        processType: "제작",
-        processNm: "3D 모델링",
-        mode: "3D",
-        processSymbol: "🔧",
-        viewDetail: "",
-      },
-      {
-        id: "2",
-        processType: "설계",
-        processNm: "CAD 도면",
-        mode: "2D",
-        processSymbol: "📐",
-        viewDetail: "",
-      },
-      {
-        id: "3",
-        processType: "검토",
-        processNm: "품질 검사",
-        mode: "검사",
-        processSymbol: "🔍",
-        viewDetail: "",
-      },
-      {
-        id: "4",
-        processType: "제작",
-        processNm: "용접 작업",
-        mode: "용접",
-        processSymbol: "⚡",
-        viewDetail: "",
-      },
-      {
-        id: "5",
-        processType: "설계",
-        processNm: "구조 분석",
-        mode: "분석",
-        processSymbol: "📊",
-        viewDetail: "",
-      },
-      {
-        id: "6",
-        processType: "검토",
-        processNm: "안전 검토",
-        mode: "검토",
-        processSymbol: "🛡️",
-        viewDetail: "",
-      },
-      {
-        id: "7",
-        processType: "제작",
-        processNm: "조립 작업",
-        mode: "조립",
-        processSymbol: "🔩",
-        viewDetail: "",
-      },
-      {
-        id: "8",
-        processType: "설계",
-        processNm: "배관 설계",
-        mode: "2D",
-        processSymbol: "🔗",
-        viewDetail: "",
-      },
-      {
-        id: "9",
-        processType: "검토",
-        processNm: "기술 검토",
-        mode: "검토",
-        processSymbol: "📋",
-        viewDetail: "",
-      },
-      {
-        id: "10",
-        processType: "제작",
-        processNm: "도장 작업",
-        mode: "도장",
-        processSymbol: "🎨",
-        viewDetail: "",
-      },
-      {
-        id: "11",
-        processType: "설계",
-        processNm: "전기 설계",
-        mode: "2D",
-        processSymbol: "⚡",
-        viewDetail: "",
-      },
-    ];
-
-    totalCount.value = processList.value.length;
-    totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-
-    console.log("Sort info:", sortInfo);
-  } catch (error: any) {
-    console.error("데이터 로드 실패:", error);
-    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
-    alert(errorMessage);
-  } finally {
-    loading.value = false;
-  }
-};
 
 // 선택된 항목 변경 핸들러
 const handleSelectionChange = (items: ProcessItem[]) => {
@@ -857,13 +745,132 @@ const handleSearchOptionChange = () => {
 };
 
 // 검색 기능 구현
-const handleSearch = () => {
-  //검색시 선택된 항목 초기화
-  selectedItems.value = [];
-  searchOption.value = searchOptionInput.value;
-  searchSubCategory.value = searchSubCategoryInput.value;
-  searchQuery.value = searchQueryInput.value;
-  currentPage.value = 1;
+const handleSearch = async () => {
+  try {
+    loading.value = true;
+    console.log("검색 시작: /master/search");
+    
+    // // 검색시 선택된 항목 초기화
+    // selectedItems.value = [];
+    // searchOption.value = searchOptionInput.value;
+    // searchSubCategory.value = searchSubCategoryInput.value;
+    // searchQuery.value = searchQueryInput.value;
+    // currentPage.value = 1;
+    
+    const requestData = {
+      // searchOption: searchOptionInput.value,
+      // searchSubCategory: searchSubCategoryInput.value,
+      // searchQuery: searchQueryInput.value,
+      search_field: 'process_code',
+      search_value: searchQueryInput.value
+    };
+
+    const result = await request("/api/process/master/search", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    console.log("검색 API 응답:", result);
+    
+    if (result.success && result.response) {
+      console.log("검색 결과:", result.response);
+      
+      // result.response가 배열인 경우 직접 처리 (API 응답 구조에 맞게)
+      if (Array.isArray(result.response)) {
+        console.log("검색 결과 배열:", result.response);
+        
+        // // 배열을 순환하여 요청된 값들 출력
+        // result.response.forEach((item: any, index: number) => {
+        //   console.log(`=== 검색 결과 ${index + 1}번째 항목 ===`);
+        //   console.log("level2_code_value (공정구분):", item.level2_code_value);
+        //   console.log("level3_code_value (공정 중분류):", item.level3_code_value);
+        //   console.log("process_name (공정명):", item.process_name);
+        //   console.log("symbol_uri (공정심볼):", item.symbol_uri);
+        //   console.log("================================");
+        // });
+        
+        // 검색 결과를 processList에 설정하여 표에 출력
+        processList.value = result.response.map((item: any) => ({
+          id: item.id || item.process_code || `process_${Date.now()}_${Math.random()}`,
+          processType: item.level2_code_value || "",
+          processNm: item.process_name || "",
+          mode: item.level3_code_value || "",
+          processSymbol: item.symbol_uri || "📄",
+          viewDetail: ""
+        }));
+        
+        totalCount.value = processList.value.length;
+        totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+        
+        // 페이징 초기화
+        currentPage.value = 1;
+        
+        console.log("processList 업데이트 완료:", processList.value);
+        console.log("페이징 정보 - 총 개수:", totalCount.value, "총 페이지:", totalPages.value);
+        
+      } else if (result.response.items && Array.isArray(result.response.items)) {
+        // result.response.items가 배열인 경우 (기존 로직 유지)
+        console.log("검색 결과 items 배열:", result.response.items);
+        
+        // items 배열을 순환하여 요청된 값들 출력
+        result.response.items.forEach((item: any, index: number) => {
+          console.log(`=== 검색 결과 ${index + 1}번째 항목 ===`);
+          console.log("level2_code_value (공정구분):", item.level2_code_value);
+          console.log("level3_code_value (공정 중분류):", item.level3_code_value);
+          console.log("process_name (공정명):", item.process_name);
+          console.log("symbol_uri (공정심볼):", item.symbol_uri);
+          console.log("================================");
+        });
+        
+        // 검색 결과를 processList에 설정
+        processList.value = result.response.items.map((item: any) => ({
+          id: item.id || `process_${Date.now()}_${Math.random()}`,
+          processType: item.level2_code_value || "",
+          processNm: item.process_name || "",
+          mode: item.level3_code_value || "",
+          processSymbol: item.symbol_uri || "📄",
+          viewDetail: ""
+        }));
+        
+        totalCount.value = processList.value.length;
+        totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+        
+        // 페이징 초기화
+        currentPage.value = 1;
+        
+        console.log("processList 업데이트 완료:", processList.value);
+        console.log("페이징 정보 - 총 개수:", totalCount.value, "총 페이지:", totalPages.value);
+        
+      } else {
+        console.log("검색 결과가 없거나 응답 형식이 올바르지 않습니다.");
+        console.log("응답 데이터:", result.response);
+        
+        // 빈 결과로 테이블 초기화
+        processList.value = [];
+        totalCount.value = 0;
+        totalPages.value = 1;
+      }
+      
+    } else {
+      console.log("검색 실패 또는 응답이 없습니다.");
+      console.log("전체 응답:", result);
+      
+      // 빈 결과로 테이블 초기화
+      processList.value = [];
+      totalCount.value = 0;
+      totalPages.value = 1;
+    }
+    
+  } catch (error: any) {
+    console.error("검색 실패:", error);
+    const errorMessage = error.message || error.response || '검색 중 오류가 발생했습니다.';
+    alert(`검색 실패: ${errorMessage}`);
+  } finally {
+    loading.value = false;
+  }
 };
 
 //공정구분분 select 항목 공통코드 조회
@@ -1026,9 +1033,11 @@ const handleProcessNameCodeSearch = async () => {
 
 
 onMounted(() => {
-  loadProcessList();
   // 초기 공정구분 옵션 로드 - handleProcessCodeSearch 함수 사용
   handleProcessCodeSearch();
+  
+  // 화면 로드 시 초기 검색 수행하여 표에 데이터 표시
+  handleSearch();
 });
 
 

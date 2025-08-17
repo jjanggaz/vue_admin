@@ -501,8 +501,8 @@
   },
   "processDetail": {
     "processType": "공정구분",
+    "subCategory": "공정 중분류",
     "processName": "공정명",
-    "mode": "모드",
     "processSymbol": "공정심볼",
     "etc": "기타",
     "tabs": {

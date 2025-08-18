@@ -7,29 +7,31 @@
           <label class="filter-label"
             >⊙ {{ t("columns.code.codeGroup") }}</label
           >
-          <select v-model="searchCodeGroupInput" class="filter-select">
-            <option value="">{{ t("placeholder.selectGroupName") }}</option>
-            <option
-              v-for="group in uniqueCodeGroups"
-              :key="group.key"
-              :value="group.key"
-            >
-              {{ group.value }} [{{ group.key }}]
-            </option>
-          </select>
+                     <select v-model="searchCodeGroupInput" class="filter-select" @change="handleCodeGroupChange">
+             <option value="">{{ t("common.selectAll") }}</option>
+             <option
+               v-for="group in uniqueCodeGroups"
+               :key="group.key"
+               :value="group.key"
+             >
+             {{ group.value }}
+               <!-- {{ group.value }} [{{ group.key }}] -->
+             </option>
+           </select>
         </div>
         <div class="filter-group">
           <label class="filter-label"
             >⊙ {{ t("columns.code.majorCategory") }}</label
           >
-                     <select v-model="searchCategory1Input" class="filter-select">
-             <option value="">{{ t("common.select") }}</option>
+                     <select v-model="searchCategory1Input" class="filter-select" @change="handleCategory1Change" :disabled="uniqueCategories1.length === 0">
+             <option value="">{{ uniqueCategories1.length === 0 ? "내용없음" : t("common.select") }}</option>
              <option
                v-for="category in uniqueCategories1"
                :key="category.key"
                :value="category.key"
              >
-               {{ category.value }} [{{ category.key }}]
+             {{ category.value }}
+               <!-- {{ category.value }} [{{ category.key }}] -->
              </option>
            </select>
         </div>
@@ -37,32 +39,34 @@
           <label class="filter-label"
             >⊙ {{ t("columns.code.mediumCategory") }}</label
           >
-            <select v-model="searchCategory2Input" class="filter-select">
-             <option value="">{{ t("common.select") }}</option>
-             <option
-               v-for="category in uniqueCategories2"
-               :key="category.key"
-               :value="category.key"
-             >
-               {{ category.value }} [{{ category.key }}]
-             </option>
-           </select>
+                         <select v-model="searchCategory2Input" class="filter-select" @change="handleCategory2Change" :disabled="uniqueCategories2.length === 0">
+              <option value="">{{ uniqueCategories2.length === 0 ? "내용없음" : t("common.select") }}</option>
+              <option
+                v-for="category in uniqueCategories2"
+                :key="category.key"
+                :value="category.key"
+              >
+              {{ category.value }}
+                <!-- {{ category.value }} [{{ category.key }}] -->
+              </option>
+            </select>
         </div>
-        <div class="filter-group">
-          <label class="filter-label"
-            >⊙ {{ t("columns.code.minorCategory") }}</label
-          >
-                     <select v-model="searchCategory3Input" class="filter-select">
-             <option value="">{{ t("common.select") }}</option>
-             <option
-               v-for="category in uniqueCategories3"
-               :key="category"
-               :value="category"
-             >
-               {{ category }}
-             </option>
-           </select>
-        </div>
+                 <div class="filter-group">
+           <label class="filter-label"
+             >⊙ {{ t("columns.code.minorCategory") }}</label
+           >
+                      <select v-model="searchCategory3Input" class="filter-select" :disabled="uniqueCategories3.length === 0">
+              <option value="">{{ uniqueCategories3.length === 0 ? "내용없음" : t("common.select") }}</option>
+              <option
+                v-for="category in uniqueCategories3"
+                :key="category.key"
+                :value="category.key"
+              >
+              {{ category.value }}
+                <!-- {{ category.value }} [{{ category.key }}] -->
+              </option>
+            </select>
+         </div>
         <button class="btn-search" @click="handleSearch">
           {{ t("common.search") }}
         </button>
@@ -74,8 +78,15 @@
       <!-- Main Data Table & Actions -->
       <div class="table-section">
         <div class="action-buttons">
-          <button class="btn btn-secondary btn-register" @click="handleRegist">
+          <button class="btn btn-secondary btn-register" @click="handleSingleRegist">
             {{ t("common.register") }}
+          </button>
+          <button 
+            class="btn btn-secondary btn-multi-register" 
+            @click="handleMultiRegist"
+            :disabled="!searchCodeGroupInput"
+          >
+            {{ t("common.multiRegister") }}
           </button>
           <button
             class="btn btn-secondary btn-edit"
@@ -119,16 +130,119 @@
         </div>
       </div>
     </div>
-    <!-- 등록 모달 컴포넌트 -->
+    <!-- 등록 모달 컴포넌트 (다건등록) -->
     <CodeRegistrationModal
-      :visible="isRegistModalOpen && !isEditMode"
+      :visible="isRegistModalOpen && !isEditMode && isMultiRegister"
       :selected-code-group="modalCodeGroup"
       :selected-category1="modalCategory1"
       :selected-category2="modalCategory2"
       :selected-category3="modalCategory3"
+      :selected-code-level="modalCodeLevel"
+      :selected-parent-key="modalParentKey"
       @close="isRegistModalOpen = false"
       @save="handleModalSave"
     />
+
+    <!-- 새로운 등록 모달 (단건등록) -->
+    <div v-if="isRegistModalOpen && !isEditMode && !isMultiRegister" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>{{ t("common.registerCode") }}</h3>
+          <button class="btn-close" @click="isRegistModalOpen = false">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <dl class="column-regist">
+            <dt>{{ t("columns.code.codeGroup") }}</dt>
+            <dd>
+              <input
+                id="code-group"
+                v-model="newCode.code_group"
+                type="text"
+                :placeholder="t('placeholder.codeGroup')"
+              />
+              <input
+                id="code-high-code"
+                v-model="newCode.parent_key"
+                type="text"
+                :placeholder="t('placeholder.codeHighCode')"
+                :disabled="true"
+              />
+            </dd>
+            <dt>{{ t("columns.code.code") }}</dt>
+            <dd>
+              <input
+                id="code-name"
+                v-model="newCode.code_key"
+                type="text"
+                :placeholder="t('placeholder.codeCodeName')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.codeNameKorean") }}</dt>
+            <dd>
+              <input
+                id="code-name-korean"
+                v-model="newCode.code_value"
+                type="text"
+                :placeholder="t('placeholder.codeCodeName')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.codeNameEnglish") }}</dt>
+            <dd>
+              <input
+                id="code-name-english"
+                v-model="newCode.code_value_en"
+                type="text"
+                :placeholder="t('placeholder.codeCodeName')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.orderMovement") }}</dt>
+            <dd>
+              <input
+                id="code-order"
+                v-model="newCode.code_order"
+                type="number"
+                :placeholder="t('placeholder.codeOrder')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.code_level") }}</dt>
+            <dd>
+              <input
+                id="code-level"
+                v-model="newCode.code_level"
+                type="text"
+                :placeholder="t('placeholder.codeLevel')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.usageStatus") }}</dt>
+            <dd>
+              <select v-model="newCode.is_active" class="filter-select">
+                <option :value="true">사용</option>
+                <option :value="false">미사용</option>
+              </select>
+            </dd>
+            <dt>{{ t("columns.code.codeDescription") }}</dt>
+            <dd>
+              <input
+                id="code-description"
+                v-model="newCode.description"
+                type="text"
+                :placeholder="t('placeholder.codeDescription')"
+              />
+            </dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
+            {{ t("common.cancel") }}
+          </button>
+          <button class="btn btn-primary" @click="updateCode">
+            {{ t("common.save") }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 수정 모달 -->
     <div v-if="isRegistModalOpen && isEditMode" class="modal-overlay">
@@ -156,17 +270,14 @@
                  type="text"
                  :disabled="isEditMode"
                />
-             </dd>
-            <dt>{{ t("columns.code.parentCode") }}</dt>
-            <dd>
-              <input
+                <input
                 id="code-high-code"
                 v-model="newCode.parent_key"
                 type="text"
                 :placeholder="t('placeholder.codeHighCode')"
                 :disabled="isEditMode"
               />
-            </dd>
+             </dd>
             <dt>{{ t("columns.code.code") }}</dt>
             <dd>
               <input
@@ -286,9 +397,68 @@ const modalCodeGroup = ref<{ key: string; value: string }>({ key: "", value: "" 
 const modalCategory1 = ref<{ key: string; value: string }>({ key: "", value: "" });
 const modalCategory2 = ref<{ key: string; value: string }>({ key: "", value: "" });
 const modalCategory3 = ref<{ key: string; value: string }>({ key: "", value: "" });
+const modalCodeLevel = ref<string>("");
+const modalParentKey = ref<string>("");
 
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
+const isMultiRegister = ref(false);
+
+// 선택된 카테고리들을 찾는 함수
+const findSelectedCategories = () => {
+  // 선택된 코드그룹의 key와 value 찾기 (선택사항)
+  const selectedGroup = searchCodeGroupInput.value ? uniqueCodeGroups.value.find(group => group.key === searchCodeGroupInput.value) : null;
+
+  // 선택된 대분류의 key와 value 찾기
+  const selectedCategory1 = searchCategory1Input.value ? uniqueCategories1.value.find(cat => cat.key === searchCategory1Input.value) : null;
+  
+  // 선택된 중분류의 key와 value 찾기
+  const selectedCategory2 = searchCategory2Input.value ? uniqueCategories2.value.find(cat => cat.key === searchCategory2Input.value) : null;
+  
+  // 선택된 소분류의 key와 value 찾기
+  const selectedCategory3 = searchCategory3Input.value ? uniqueCategories3.value.find(cat => cat.key === searchCategory3Input.value) : null;
+
+  return {
+    selectedGroup,
+    selectedCategory1,
+    selectedCategory2,
+    selectedCategory3
+  };
+};
+
+// 선택된 카테고리에 따라 code_level과 parent_key를 자동 설정하는 함수
+const getAutoCodeLevel = (selectedGroup: any, selectedCategory1: any, selectedCategory2: any, selectedCategory3: any) => {
+  let autoCodeLevel = "";
+  let parentKey = "";
+  
+  if (!selectedGroup && !selectedCategory1 && !selectedCategory2 && !selectedCategory3) {
+    // 아무것도 선택하지 않은 경우
+    autoCodeLevel = "1";
+    parentKey = "";
+  } else if (selectedGroup && !selectedCategory1 && !selectedCategory2 && !selectedCategory3) {
+    // 코드그룹만 선택한 경우
+    autoCodeLevel = "2";
+    parentKey = selectedGroup.key;
+  } else if (selectedGroup && selectedCategory1 && !selectedCategory2 && !selectedCategory3) {
+    // 코드그룹/대분류만 선택한 경우
+    autoCodeLevel = "3";
+    parentKey = selectedCategory1.key;
+  } else if (selectedGroup && selectedCategory1 && selectedCategory2 && !selectedCategory3) {
+    // 코드그룹/대분류/중분류만 선택한 경우
+    autoCodeLevel = "4";
+    parentKey = selectedCategory2.key;
+  } else if (selectedGroup && selectedCategory1 && selectedCategory2 && selectedCategory3) {
+    // 코드그룹/대분류/중분류/소분류 모두 선택한 경우
+    autoCodeLevel = "5";
+    parentKey = selectedCategory3.key;
+  }
+  
+  return {
+    codeLevel: autoCodeLevel,
+    parentKey: parentKey
+  };
+};
+
 const newCode = ref<CodeItem>({
   code_id: "",
   code_group: "",
@@ -305,18 +475,18 @@ const newCode = ref<CodeItem>({
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  {
-    key: "code_group",
-    title: t("columns.code.codeGroupKorean"),
-    width: "120px",
-    sortable: true,
-  },
-  {
-    key: "parent_key",
-    title: t("columns.code.parentCode"),
-    width: "100px",
-    sortable: true,
-  },
+  // {
+  //   key: "parent_key",
+  //   title: t("columns.code.parentCode"),
+  //   width: "100px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "code_group",
+  //   title: t("columns.code.codeGroup"),
+  //   width: "120px",
+  //   sortable: true,
+  // },
   {
     key: "code_key",
     title: t("columns.code.code"),
@@ -364,39 +534,136 @@ const tableColumns: TableColumn[] = [
 ];
 
 // 검색조건 (1.코드그룹, 2, 대분류, 3.중분류, 4. 소분류)
-// const uniqueCodeGroups = computed(() => {
-//   const set = new Set(codeList.value.map((item) => item.code_group));
-//   return Array.from(set);
-// });
-const uniqueCodeGroups = computed(() => {
-  return [
-    { key: "EQUIP", value: "기계" },
-    { key: "MATER", value: "재질" },
-    { key: "ARTF", value: "기자재" }
-  ];
-});
+const uniqueCodeGroups = ref<{ key: string; value: string }[]>([]);
+const uniqueCategories1 = ref<{ key: string; value: string }[]>([]);
+const uniqueCategories2 = ref<{ key: string; value: string }[]>([]);
+const uniqueCategories3 = ref<{ key: string; value: string }[]>([]);
 
-const uniqueCategories1 = computed(() => {
-  // return ["공정", "기계", "유형", "유입종류"];
-  return [
-    { key: "E_VALV", value: "전동식 밸브" },
-    { key: "PUMP", value: "펌프" },
-    { key: "CSGR", value: "협잡물종합처리기" },
-    { key: "AEBL", value: "송풍기" }
-  ];
-});
-const uniqueCategories2 = computed(() => {
-  // return ["전처리", "후처리", "송풍기", "펌프"];
-  return [
-    { key: "E_VAV01", value: "전동식 게이트 밸브(슬루스 밸브)" },
-    { key: "E_VAV02", value: "전동식 버터플라이밸브" },
-    { key: "E_VAV03", value: "전동식 체크밸브" },
-    { key: "E_VAV04", value: "볼벨브" }
-  ];
-});
-const uniqueCategories3 = computed(() => {
-  return ["1차", "2차", "3차"];
-});
+// 공용 함수: parent_key를 받아서 해당하는 카테고리 데이터를 로드
+const loadCategoryData = async (parentKey: string, targetRef: any, categoryName: string) => {
+  try {
+    const queryParams: Record<string, any> = {};
+    
+    if (parentKey) {
+      // parent_key가 있으면 해당 값으로 검색
+      queryParams.search_field = "parent_key";
+      queryParams.search_value = parentKey;
+    } else {
+      // parent_key가 없으면 코드 그룹 조회 (최상위 레벨)
+      queryParams.search_field = "parent_key";
+      queryParams.search_value = "";
+    }
+    
+    queryParams.page = 1;
+    queryParams.page_size = 100; // 충분한 데이터를 가져오기 위해 큰 값 설정
+    queryParams.order_by = "code_order";
+    queryParams.order_direction = "asc";
+    
+    console.log(`${categoryName} 조회 파라미터:`, queryParams);
+
+    const result = await request("/api/code/list", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(queryParams),
+    });
+
+    console.log(`${categoryName} 조회 결과:`, result);
+
+    // API 응답에서 데이터 추출하여 code_key와 code_value로 매핑
+    let items: any[] = [];
+    if (result.response && Array.isArray(result.response.items)) {
+      items = result.response.items;
+    } else if (result.response && Array.isArray(result.response.data)) {
+      items = result.response.data;
+    } else if (Array.isArray(result.response)) {
+      items = result.response;
+    } else if (Array.isArray(result)) {
+      items = result;
+    }
+
+    // 중복 제거 및 매핑
+    const uniqueItems = items.reduce((acc: any[], item: any) => {
+      const existing = acc.find(existingItem => existingItem.key === item.code_key);
+      if (!existing) {
+        acc.push({
+          key: item.code_key,
+          value: item.code_value
+        });
+      }
+      return acc;
+    }, []);
+
+    targetRef.value = uniqueItems;
+    console.log(`매핑된 ${categoryName}:`, uniqueItems);
+    
+  } catch (error: any) {
+    console.error(`${categoryName} 로드 실패:`, error);
+    const errorMessage = error?.message || `${categoryName} 로드에 실패했습니다.`;
+    console.error(errorMessage);
+    targetRef.value = [];
+  }
+};
+
+// 코드 그룹 로드 (parent_key 없음)
+const loadCodeGroups = async () => {
+  await loadCategoryData("", uniqueCodeGroups, "코드 그룹");
+};
+
+// 대분류 로드 (선택된 코드 그룹의 code_key를 parent_key로 사용)
+const loadCategories1 = async (codeGroupKey: string) => {
+  await loadCategoryData(codeGroupKey, uniqueCategories1, "대분류");
+};
+
+// 중분류 로드 (선택된 대분류의 code_key를 parent_key로 사용)
+const loadCategories2 = async (category1Key: string) => {
+  await loadCategoryData(category1Key, uniqueCategories2, "중분류");
+};
+
+// 소분류 로드 (선택된 중분류의 code_key를 parent_key로 사용)
+const loadCategories3 = async (category2Key: string) => {
+  await loadCategoryData(category2Key, uniqueCategories3, "소분류");
+};
+
+// 드롭다운 변경 이벤트 핸들러들
+const handleCodeGroupChange = async () => {
+  // 하위 카테고리들 초기화
+  searchCategory1Input.value = "";
+  searchCategory2Input.value = "";
+  searchCategory3Input.value = "";
+  uniqueCategories1.value = [];
+  uniqueCategories2.value = [];
+  uniqueCategories3.value = [];
+  
+  if (searchCodeGroupInput.value) {
+    await loadCategories1(searchCodeGroupInput.value);
+  }
+};
+
+const handleCategory1Change = async () => {
+  // 하위 카테고리들 초기화
+  searchCategory2Input.value = "";
+  searchCategory3Input.value = "";
+  uniqueCategories2.value = [];
+  uniqueCategories3.value = [];
+  
+  if (searchCategory1Input.value) {
+    await loadCategories2(searchCategory1Input.value);
+  }
+};
+
+const handleCategory2Change = async () => {
+  // 하위 카테고리 초기화
+  searchCategory3Input.value = "";
+  uniqueCategories3.value = [];
+  
+  if (searchCategory2Input.value) {
+    await loadCategories3(searchCategory2Input.value);
+  }
+};
+
+// 기존 computed 속성들은 제거하고 ref로 변경됨
 
 // 데이터 로드 함수
 const loadData = async () => {
@@ -426,7 +693,7 @@ const loadData = async () => {
    } else {
      // 둘 다 없으면 기본값
      queryParams.search_field = "parent_key";
-     queryParams.search_value = "parent_key";
+     queryParams.search_value = "";
    }
 
   // 페이지네이션 설정 (서버 페이징)
@@ -532,6 +799,8 @@ const filteredCodeList = computed(() => {
 // 서버 페이징: 현재 페이지에 해당하는 데이터만 API에서 내려옴
 const paginatedcodeList = computed(() => filteredCodeList.value);
 
+
+
 const handleSelectionChange = (selected: CodeItem[]) => {
   // 단일 선택 보장
   selectedItems.value = selected.slice(0, 1);
@@ -562,8 +831,9 @@ const handleRowClick = (item: CodeItem) => {
 };
 
 // 컴포넌트 마운트 시 데이터 로드
-onMounted(() => {
-  loadData();
+onMounted(async () => {
+  await loadCodeGroups(); // 코드 그룹 데이터 먼저 로드
+  await loadData(); // 메인 데이터 로드
 });
 
 // 검색 기능 구현
@@ -578,61 +848,146 @@ const handleSearch = () => {
 };
 
 // 모달 저장 핸들러
-const handleModalSave = (data: any[]) => {
-  console.log("모달에서 저장된 데이터:", data);
-  // 여기서 데이터를 메인 테이블에 추가하거나 처리
-  alert(t("messages.success.codeRegistered"));
-  isRegistModalOpen.value = false;
+const handleModalSave = async (data: any[]) => {
+
+  try {
+    // const requestData = {
+    //   code_group: newCode.value.code_group,
+    //   code_key: newCode.value.code_key,
+    //   code_value: newCode.value.code_value,
+    //   code_value_en: newCode.value.code_value_en,
+    //   code_order: newCode.value.code_order,
+    //   is_active: newCode.value.is_active,
+    //   parent_key: newCode.value.parent_key,
+    //   code_level: newCode.value.code_level,
+    //   description: newCode.value.description,
+    // };
+    console.log("모달에서 저장된 데이터:", data);
+    console.log("data :", data);
+    console.log("data :", JSON.stringify(data));
+
+    console.log("등록 요청 데이터:", data);
+
+    const response = await request(
+      "/api/code/multiCreate",
+      undefined,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+    console.log("다건등록 응답:", response);
+
+    // 여기서 데이터를 메인 테이블에 추가하거나 처리
+    alert(t("messages.success.codeRegistered"));
+    isRegistModalOpen.value = false;
+    isEditMode.value = false;
+
+    await loadCodeGroups();
+    await loadData();
+
+  } catch (error: any) {
+    console.error("코드 저장 실패:", error);
+    const errorMessage = error?.message || t("messages.error.saveFailed");
+    alert(errorMessage);
+  }
 };
 
-// 등록 버튼 핸들러
-const handleRegist = () => {
+// 단건 등록 버튼 핸들러
+const handleSingleRegist = () => {
+  // 모듈화된 함수를 사용하여 선택된 카테고리들 찾기
+  const { selectedGroup, selectedCategory1, selectedCategory2, selectedCategory3 } = findSelectedCategories();
+  
+  console.log("handleSingleRegist - 선택된 카테고리들:", {
+    selectedGroup,
+    selectedCategory1,
+    selectedCategory2,
+    selectedCategory3
+  });
+
+  // 모달에 전달할 props 값들을 설정 (key와 value 모두 전달)
+  modalCodeGroup.value = selectedGroup ? { key: selectedGroup.key, value: selectedGroup.value } : { key: "", value: "" };
+  modalCategory1.value = selectedCategory1 ? { key: selectedCategory1.key, value: selectedCategory1.value } : { key: "", value: "" };
+  modalCategory2.value = selectedCategory2 ? { key: selectedCategory2.key, value: selectedCategory2.value } : { key: "", value: "" };
+  modalCategory3.value = selectedCategory3 ? { key: selectedCategory3.key, value: selectedCategory3.value } : { key: "", value: "" };
+
+  isRegistModalOpen.value = true;
+  isEditMode.value = false;
+  isMultiRegister.value = false;
+  
+  // 모듈화된 함수를 사용하여 code_level과 parent_key 자동 설정
+  const { codeLevel, parentKey } = getAutoCodeLevel(selectedGroup, selectedCategory1, selectedCategory2, selectedCategory3);
+  
+  console.log("handleSingleRegist - 자동 설정된 code_level:", codeLevel);
+  console.log("handleSingleRegist - 자동 설정된 parent_key:", parentKey);
+  
+  newCode.value = {
+    code_id: "",
+    code_group: selectedGroup ? selectedGroup.key : "",
+    code_key: "",
+    code_value: "",
+    code_value_en: "",
+    code_order: "",
+    is_active: true,
+    parent_key: parentKey,
+    code_level: codeLevel,
+    description: "",
+  };
+
+  console.log("단건 등록 모드 - 선택된 데이터:", {
+    codeGroup: modalCodeGroup,
+    category1: modalCategory1,
+    category2: modalCategory2,
+    category3: modalCategory3
+  });
+};
+
+// 다건 등록 버튼 핸들러
+const handleMultiRegist = () => {
   // 코드그룹이 선택되지 않았으면 경고
   if (!searchCodeGroupInput.value) {
-    alert("코드그룹을 먼저 선택해주세요.");
+    alert("다건등록을 위해서는 코드그룹을 먼저 선택해주세요.");
     return;
   }
 
-  // 선택된 코드그룹의 key와 value 찾기
-  const selectedGroup = uniqueCodeGroups.value.find(group => group.key === searchCodeGroupInput.value);
+  // 모듈화된 함수를 사용하여 선택된 카테고리들 찾기
+  const { selectedGroup, selectedCategory1, selectedCategory2, selectedCategory3 } = findSelectedCategories();
+  
+  console.log("handleMultiRegist - 선택된 카테고리들:", {
+    selectedGroup,
+    selectedCategory1,
+    selectedCategory2,
+    selectedCategory3
+  });
+
+  // 선택된 코드그룹 정보 확인
   if (!selectedGroup) {
     alert("선택된 코드그룹 정보를 찾을 수 없습니다.");
     return;
   }
 
-  // 선택된 대분류의 key와 value 찾기
-  const selectedCategory1 = searchCategory1Input.value ? uniqueCategories1.value.find(cat => cat.key === searchCategory1Input.value) : null;
+  // 모듈화된 함수를 사용하여 code_level과 parent_key 자동 설정
+  const { codeLevel, parentKey } = getAutoCodeLevel(selectedGroup, selectedCategory1, selectedCategory2, selectedCategory3);
   
-  // 선택된 중분류의 key와 value 찾기
-  const selectedCategory2 = searchCategory2Input.value ? uniqueCategories2.value.find(cat => cat.key === searchCategory2Input.value) : null;
-  
-  // 선택된 소분류의 key와 value 찾기
-  const selectedCategory3 = searchCategory3Input.value ? uniqueCategories3.value.find(cat => cat === searchCategory3Input.value) : null;
+  console.log("handleMultiRegist - 자동 설정된 code_level:", codeLevel);
+  console.log("handleMultiRegist - 자동 설정된 parent_key:", parentKey);
 
   // 모달에 전달할 props 값들을 설정 (key와 value 모두 전달)
   modalCodeGroup.value = { key: selectedGroup.key, value: selectedGroup.value };
   modalCategory1.value = selectedCategory1 ? { key: selectedCategory1.key, value: selectedCategory1.value } : { key: "", value: "" };
   modalCategory2.value = selectedCategory2 ? { key: selectedCategory2.key, value: selectedCategory2.value } : { key: "", value: "" };
-  modalCategory3.value = selectedCategory3 ? { key: selectedCategory3, value: selectedCategory3 } : { key: "", value: "" };
+  modalCategory3.value = selectedCategory3 ? { key: selectedCategory3.key, value: selectedCategory3.value } : { key: "", value: "" };
+  modalCodeLevel.value = codeLevel;
+  modalParentKey.value = parentKey;
 
   isRegistModalOpen.value = true;
   isEditMode.value = false;
-  
-  // newCode는 수정 모달용이므로 등록 모달에서는 사용하지 않음
-  newCode.value = {
-    code_id: "",
-    code_group: modalCodeGroup.value.key,
-    code_key: modalCategory1.value.key,
-    code_value: modalCategory2.value.key,
-    code_value_en: modalCategory3.value.key,
-    code_order: "",
-    is_active: true,
-    parent_key: modalCategory1.value.key,
-    code_level: modalCategory2.value.key,
-    description: "",
-  };
+  isMultiRegister.value = true;
 
-  console.log("등록 모드 - 선택된 데이터:", {
+  console.log("다건 등록 모드 - 선택된 데이터:", {
     codeGroup: modalCodeGroup,
     category1: modalCategory1,
     category2: modalCategory2,
@@ -642,7 +997,9 @@ const handleRegist = () => {
     selectedCodeGroup: modalCodeGroup,
     selectedCategory1: modalCategory1,
     selectedCategory2: modalCategory2,
-    selectedCategory3: modalCategory3
+    selectedCategory3: modalCategory3,  
+    selectedCodeLevel: modalCodeLevel,
+    selectedParentKey: modalParentKey 
   });
 };
 
@@ -690,6 +1047,8 @@ const updateCode = async () => {
       }
       
       alert(t("messages.success.codeInfoUpdated"));
+      
+
     } else {
       // 등록 모드: 새 코드 추가
       const requestData = {
@@ -747,6 +1106,9 @@ const updateCode = async () => {
     };
     isEditMode.value = false;
 
+    await loadCodeGroups();
+    await loadData();
+
   } catch (error: any) {
     console.error("코드 저장 실패:", error);
     const errorMessage = error?.message || t("messages.error.saveFailed");
@@ -755,23 +1117,52 @@ const updateCode = async () => {
 };
 
 // 선택된 항목 삭제
-const handleDelete = () => {
+const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
-    )
-  ) {
+  if (confirm(t("messages.confirm.deleteItem"))) {
     console.log("삭제할 항목:", selectedItems.value);
-    const selectedIds = selectedItems.value.map((item) => item.code_id);
-    codeList.value = codeList.value.filter(
-      (item) => !selectedIds.includes(item.code_id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
+    
+    
+    try {
+      const code_id = selectedItems.value[0].code_id;
+      
+      const response = await request(
+        `/api/code/delete/${code_id}`,
+        undefined,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("삭제 응답:", response);
+
+
+
+
+      selectedItems.value = [];
+      alert(t("messages.success.deleted"));
+
+      await loadCodeGroups();
+      await loadData();
+      selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
+    } catch (error: any) {
+      console.error("삭제 실패:", error);
+      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      alert(errorMessage);
+    }
+
+    // const selectedIds = selectedItems.value.map((item) => item.code_id);
+    // codeList.value = codeList.value.filter(
+    //   (item) => !selectedIds.includes(item.code_id)
+    // );
+    // selectedItems.value = [];
+    // alert(t("messages.success.deleted"));
   }
 };
 

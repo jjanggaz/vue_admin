@@ -31,7 +31,6 @@
                   }}]
                 </option>
               </select>
-              
             </div>
             <div v-if="props.selectedCategory1" class="filter-group">
               <label class="filter-label"
@@ -104,6 +103,7 @@
             </div>
           </div>
         </div>
+
         <!-- Action Buttons -->
         <div class="modal-action-buttons">
           <button class="btn btn-success" @click="downloadExcelForm">
@@ -122,6 +122,7 @@
             </button>
           </div>
         </div>
+
         <!-- Data Table -->
         <div class="modal-table-section">
           <DataTable
@@ -129,7 +130,8 @@
             :data="codeList"
             :loading="loading"
             :selectable="false"
-            :sortable="false"
+            @sort-change="handleSortChange"
+            @row-click="handleRowClick"
           />
         </div>
       </div>
@@ -159,9 +161,6 @@ interface CodeItem {
   code_value: string;
   code_value_en: string;
   description: string;
-  code_level: string;
-  parent_key: string;
-  code_group: string;
 }
 
 interface Props {
@@ -170,8 +169,6 @@ interface Props {
   selectedCategory1?: { key: string; value: string };
   selectedCategory2?: { key: string; value: string };
   selectedCategory3?: { key: string; value: string };
-  selectedCodeLevel?: string;
-  selectedParentKey?: string;
 }
 
 interface Emits {
@@ -201,46 +198,25 @@ const tableColumns: TableColumn[] = [
     key: "code_key",
     title: t("columns.code.code"),
     width: "100px",
-    sortable: false,
+    sortable: true,
   },
   {
     key: "code_value",
     title: t("columns.code.codeNameKorean"),
     width: "150px",
-    sortable: false,
+    sortable: true,
   },
   {
     key: "code_value_en",
     title: t("columns.code.codeNameEnglish"),
     width: "100px",
-    sortable: false,
+    sortable: true,
   },
   {
     key: "description",
     title: t("columns.code.codeDescription"),
     width: "120px",
-    sortable: false,
-  },
-  {
-    hidden: true,
-    key: "code_level",
-    title: t("columns.code.codeLevel"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    hidden: true,
-    key: "code_group",
-    title: t("columns.code.codeGroup"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    hidden: true,
-    key: "parent_key",
-    title: t("columns.code.parentKey"),
-    width: "120px",
-    sortable: false,
+    sortable: true,
   },
 ];
 
@@ -254,7 +230,16 @@ const handleSave = () => {
   emit("save", codeList.value);
 };
 
+const handleSortChange = (sortInfo: {
+  key: string | null;
+  direction: "asc" | "desc" | null;
+}) => {
+  console.log("모달 정렬 변경:", sortInfo);
+};
 
+const handleRowClick = (item: CodeItem) => {
+  console.log("모달 행 클릭:", item);
+};
 
 // Excel 관련 함수들
 const downloadExcelForm = () => {
@@ -310,14 +295,11 @@ const parseExcelFile = (file: File) => {
           const code_id = `excel_${Date.now()}_${index}`;
 
           return {
-            code_id: "",
+            code_id,
             code_key: row[0] || "",
             code_value: row[1] || "",
             code_value_en: row[2] || "",
             description: row[3] || "",
-            parent_key: props.selectedParentKey || "",
-            code_level: props.selectedCodeLevel || "",
-            code_group: props.selectedCodeGroup?.key || "",
           };
         });
 
@@ -338,7 +320,30 @@ const parseExcelFile = (file: File) => {
   reader.readAsArrayBuffer(file);
 };
 
+// 데이터 로드 함수 (CodeManagement.vue와 동일한 구조)
+const loadData = async () => {
+  loading.value = true;
+  try {
+    // 모달에서는 별도 데이터 로드 없이 props로 받은 값만 사용
+    console.log("모달 데이터 로드 완료 - props로 받은 값들:", {
+      selectedCodeGroup: props.selectedCodeGroup,
+      selectedCategory1: props.selectedCategory1,
+      selectedCategory2: props.selectedCategory2,
+      selectedCategory3: props.selectedCategory3,
+    });
 
+    // Excel 파일이 있다면 JSON으로 변환하여 콘솔에 출력
+    if (codeList.value.length > 0) {
+      console.log("loadData - Excel 데이터를 JSON으로 변환한 jsonData:", codeList.value);
+    }
+  } catch (error: any) {
+    console.error("모달 데이터 로드 실패:", error);
+    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    alert(errorMessage);
+  } finally {
+    loading.value = false;
+  }
+};
 
 // props 변경 감지하여 selectbox 값 업데이트 (CodeManagement.vue와 동일한 로직)
 watch(
@@ -377,7 +382,10 @@ watch(
   }
 );
 
-
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped lang="scss">

@@ -646,9 +646,10 @@ const handleSubmit = async () => {
 
     closeModal();
     // roleStore에서 자동으로 목록을 새로고침하므로 loadRoles() 호출 불필요
-  } catch (error) {
+  } catch (error: any) {
     console.error("권한 저장 실패:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = error?.message || "권한 저장에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 

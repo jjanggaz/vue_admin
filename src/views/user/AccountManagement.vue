@@ -381,14 +381,6 @@ const tableColumns: TableColumn[] = [
     title: t("columns.user.roleGroup"),
     width: "120px",
     sortable: false,
-    formatter: (value, row) => {
-      // role_id가 있으면 해당 역할의 이름을 찾아서 반환
-      if (row.role_id && userStore.roles.length > 0) {
-        const role = userStore.roles.find((r) => r.role_id === row.role_id);
-        return role ? role.role_name : "-";
-      }
-      return "-";
-    },
   },
   {
     key: "is_active",
@@ -602,7 +594,7 @@ const handleRegist = () => {
     description: "",
     is_superuser: false,
     is_active: true, // 등록 시 기본값은 활성 상태
-    role_id: "", // 메뉴권한 ID 초기화 (선택 안함 - 빈 문자열로 설정)
+    role_id: "", // 메뉴권한 ID 초기화 (빈 문자열로 설정하여 "항목을 선택해주세요" 표시)
   };
   isIdChecked.value = false;
 };
@@ -667,6 +659,12 @@ const saveUser = async () => {
         "confirm_password 값:",
         newUser.value.passwordConfirm
       );
+      console.log(
+        "수정 모드 - role_id 값:",
+        newUser.value.role_id,
+        "타입:",
+        typeof newUser.value.role_id
+      );
 
       await userStore.updateUser(selectedUser.user_id, {
         username: newUser.value.username,
@@ -699,6 +697,7 @@ const saveUser = async () => {
         description: newUser.value.description,
         is_superuser: newUser.value.is_superuser,
         user_type: newUser.value.user_type,
+        role_id: newUser.value.role_id,
       });
 
       console.log(
@@ -706,6 +705,12 @@ const saveUser = async () => {
         newUser.value.user_type,
         "타입:",
         typeof newUser.value.user_type
+      );
+      console.log(
+        "role_id 값:",
+        newUser.value.role_id,
+        "타입:",
+        typeof newUser.value.role_id
       );
 
       await userStore.createUser({
@@ -740,7 +745,7 @@ const saveUser = async () => {
       description: "",
       is_superuser: false,
       is_active: true,
-      role_id: undefined,
+      role_id: "",
     };
     isEditMode.value = false;
     isIdChecked.value = false;
@@ -816,6 +821,23 @@ const handleEdit = () => {
   isRegistModalOpen.value = true;
   isEditMode.value = true;
   showPasswordChange.value = false;
+
+  // role_id 설정 로직 개선
+  let roleId: string | number | undefined = "";
+
+  // itemToEdit.role_name이 존재하는지 확인
+  if ((itemToEdit as any).role_name) {
+    if (userStore.roles.length > 0) {
+      // role_name을 기준으로 역할을 찾아서 role_id를 가져옴
+      const role = userStore.roles.find(
+        (r) => r.role_name === (itemToEdit as any).role_name
+      );
+      roleId = role ? role.role_id : "";
+    } else {
+      roleId = "";
+    }
+  }
+
   newUser.value = {
     username: itemToEdit.username,
     password: "",
@@ -828,11 +850,7 @@ const handleEdit = () => {
     description: itemToEdit.description || "",
     is_superuser: itemToEdit.is_superuser,
     is_active: itemToEdit.is_active, // 수정 시 현재 상태 유지
-    role_id:
-      itemToEdit.role_id &&
-      userStore.roles.some((role) => role.role_id === itemToEdit.role_id)
-        ? itemToEdit.role_id
-        : "", // 메뉴권한 ID가 null이거나 현재 목록에 없으면 빈 문자열로 설정
+    role_id: roleId,
   };
 };
 </script>

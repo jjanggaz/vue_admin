@@ -525,7 +525,7 @@
   "process": {
     "search": "Search",
     "processType": "Process Type",
-    "middleClassi": "Middle Classification",
+    "subCategory": "Sub Category",
     "processName": "Process Name",
     "mode": "Mode",
     "processSymbol": "Process Symbol",

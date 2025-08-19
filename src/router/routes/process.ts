@@ -40,6 +40,12 @@ export const processRoute = {
       path: "detail/:id",
       name: "ProcessDetail",
       component: ProcessDetail,
+      props: (route: any) => ({
+        id: route.params.id,
+        process_type: route.query.process_type,
+        sub_category: route.query.sub_category,
+        process_code: route.query.process_code,
+      }),
       meta: {
         titleKey: "processDetail.processName",
         breadcrumbKeys: [

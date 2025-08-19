@@ -449,6 +449,9 @@ onMounted(async () => {
 // 권한 목록 로드
 const loadRoles = async () => {
   try {
+    // 체크된 row 초기화
+    selectedItems.value = [];
+
     await roleStore.fetchRoles({
       search_field:
         searchField.value && searchValue.value ? searchField.value : undefined,
@@ -604,7 +607,8 @@ const handleDelete = async () => {
         await roleStore.deleteRole(role.role_id);
         selectedItems.value = [];
         alert(t("messages.success.deleteSuccess"));
-        // roleStore에서 자동으로 목록을 새로고침하므로 loadRoles() 호출 불필요
+        // 목록 새로고침
+        await loadRoles();
       } catch (error) {
         console.error("권한 삭제 실패:", error);
         alert(t("messages.error.deleteFailed"));
@@ -645,7 +649,8 @@ const handleSubmit = async () => {
     }
 
     closeModal();
-    // roleStore에서 자동으로 목록을 새로고침하므로 loadRoles() 호출 불필요
+    // 목록 새로고침
+    await loadRoles();
   } catch (error: any) {
     console.error("권한 저장 실패:", error);
     const errorMessage = error?.message || "권한 저장에 실패했습니다.";

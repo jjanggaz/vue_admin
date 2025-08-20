@@ -112,7 +112,7 @@
                 <input
                   type="file"
                   @change="handleFileUpload"
-                  accept=".dwg,.pdf,.dxf"
+                  accept=".dwg,.pfd,.dxf"
                   style="display: none"
                 />
               </label>

@@ -348,7 +348,7 @@ const outputDataList = ref<
   0: Array.from({ length: 30 }, (_, i) => ({
     id: i + 1,
     title: `계산서 ${i + 1}`,
-    type: "PDF",
+    type: "PFD",
     size: "8.5MB",
     date: "2025.05.20",
   })),

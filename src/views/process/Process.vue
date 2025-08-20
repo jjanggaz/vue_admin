@@ -218,13 +218,13 @@
                 </label>
               </div>
             </dd>
-            <dt>{{ t("process.pdf") }}</dt>
+            <dt>{{ t("process.pfd") }}</dt>
             <dd>
               <div class="file-upload-row">
                 <input
                   type="text"
                   class="file-name-input"
-                  :value="selectedFiles.pdfFile?.name || ''"
+                  :value="selectedFiles.pfdFile?.name || ''"
                   :placeholder="t('placeholder.selectFile')"
                   readonly
                 />
@@ -232,8 +232,8 @@
                   {{ t("common.selectFile") }}
                   <input
                     type="file"
-                    @change="handleFileChange('pdfFile' as any, $event)"
-                    accept=".pdf"
+                    @change="handleFileChange('pfdFile' as any, $event)"
+                    accept=".pfd"
                     style="display: none"
                   />
                 </label>
@@ -748,30 +748,15 @@ const router = useRouter();
 const viewDetail = (item: ProcessItem) => {
   console.log("=== viewDetail 함수 호출 ===");
   console.log("전체 item:", item);
-  console.log("item.process_type:", item.process_type);
-  console.log("item.sub_category:", item.sub_category);
-  console.log("item.process_code:", item.process_code);
   console.log("item.process_id:", item.process_id);
   console.log("item.process_nm:", item.process_nm);
   
   if (item.process_nm) {
-    const params = {
-      process_type: item.process_type,
-      sub_category: item.sub_category,
-      process_code: item.process_code,
-      id: item.process_id
-    };
-    
-    console.log("라우터로 전달할 params:", params);
+    console.log("라우터로 전달할 params:", { id: item.process_id });
     
     router.push({
       name: "ProcessDetail",
-      params: { id: params.id },
-      query: {
-        process_type: params.process_type,
-        sub_category: params.sub_category,
-        process_code: params.process_code
-      }
+      params: { id: item.process_id }
     });
   } else {
     console.log("process_nm이 없어서 라우터 이동하지 않음");
@@ -853,7 +838,7 @@ const handleSearchProcessTypeChange = () => {
           // 공정명 옵션 초기화
     searchProcessNameOptions.value = [];
     searchProcessName.value = null;
-      handleMiddleCodeSearch();
+      handleSubCategoryCode();
     } else {
       console.log("공정구분 변경: 선택되지 않음");
     }
@@ -1064,7 +1049,7 @@ const handleProcessCodeSearch = async () => {
 };
 
 //중분류 select 항목 공통코드 조회
-const handleMiddleCodeSearch = async () => {
+const handleSubCategoryCode = async () => {
   try {
     loading.value = true;
     console.log("중분류 코드 검색 시작: /api/process/code/search");

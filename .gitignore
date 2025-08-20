@@ -1,5 +1,7 @@
 # 환경 변수 파일 무시
 .env
+vite.config.ts
+
 # Logs
 logs
 *.log

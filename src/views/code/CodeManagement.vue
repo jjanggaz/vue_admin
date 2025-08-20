@@ -30,7 +30,7 @@
                :key="category.key"
                :value="category.key"
              >
-             {{ category.value }}
+             {{ category.value }} [{{ category.key }}]
                <!-- {{ category.value }} [{{ category.key }}] -->
              </option>
            </select>
@@ -46,7 +46,7 @@
                 :key="category.key"
                 :value="category.key"
               >
-              {{ category.value }}
+              {{ category.value }} [{{ category.key }}]
                 <!-- {{ category.value }} [{{ category.key }}] -->
               </option>
             </select>
@@ -62,7 +62,7 @@
                 :key="category.key"
                 :value="category.key"
               >
-              {{ category.value }}
+              {{ category.value }} [{{ category.key }}]
                 <!-- {{ category.value }} [{{ category.key }}] -->
               </option>
             </select>

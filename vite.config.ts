@@ -46,7 +46,7 @@ export default defineConfig({
     proxy: {
       // 인증 API 프록시
       "/api": {
-        target: process.env.VITE_API_PROXY_TARGET || "http://localhost:8080",
+        target: process.env.VITE_API_PROXY_TARGET || "http://localhost:8080" ,
         changeOrigin: true,
         secure: false,
       },

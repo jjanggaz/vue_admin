@@ -1,100 +1,94 @@
 <template>
   <div class="process-page">
     <!-- Add Button -->
-     <div class="action-bar">
-               <div class="btns">
-          <button class="btn btn-primary btn-edit" @click="handleUpdate">{{ t("common.edit") }}</button>
-        </div>
-     </div>
-     
-     <div class="action-bar">
-       <dl class="column-search">
-         <dt class="essential">{{ t("processDetail.processType") }}</dt>
-         <dd>
-           <select 
-             v-model="searchProcessTypeInput" 
-             class="form-select"
-             @change="handleProcessTypeChange"
-           >
-             <option :value="null">{{ t("common.select") }}</option>
-             <option 
-               v-for="option in searchProcessTypeOptions" 
-               :key="option.value" 
-               :value="option.value"
-             >
-               {{ option.label }}
-             </option>
-           </select>
-         </dd>
-         <dt>{{ t("processDetail.subCategory") }}</dt>
-         <dd>
-           <select 
-             v-model="searchSubCategoryInput" 
-             class="form-select"
-             @change="handleSubCategoryChange"
-           >
-             <option :value="null">{{ t("common.select") }}</option>
-             <option 
-               v-for="option in searchSubCategoryOptions" 
-               :key="option.value" 
-               :value="option.value"
-             >
-               {{ option.label }}
-             </option>
-           </select>
-         </dd>
-         <dt class="essential">{{ t("processDetail.processName") }}</dt>
-         <dd>
-           <select 
-             v-model="searchProcessNameInput" 
-             class="form-select"
-             @change="handleProcessNameChange"
-           >
-             <option :value="null">{{ t("common.select") }}</option>
-             <option 
-               v-for="option in searchProcessNameOptions" 
-               :key="option.value" 
-               :value="option.value"
-             >
-               {{ option.label }}
-             </option>
-           </select>
-         </dd>
-                  <dt class="essential">{{ t("processDetail.processSymbol") }}</dt>
-          <dd>
-            <div class="file-upload-row">
+    <div class="action-bar">
+      <dl class="column-search">
+        <dt class="essential">{{ t("processDetail.processType") }}</dt>
+        <dd>
+          <select
+            v-model="processStore.processDetail.processType"
+            class="form-select"
+            @change="handleProcessTypeChange"
+          >
+            <option :value="null">{{ t("common.select") }}</option>
+            <option
+              v-for="option in processStore.searchProcessTypeOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </dd>
+        <dt>{{ t("processDetail.subCategory") }}</dt>
+        <dd>
+          <select
+            v-model="processStore.processDetail.subCategory"
+            class="form-select"
+            @change="handleSubCategoryChange"
+          >
+            <option :value="null">{{ t("common.select") }}</option>
+            <option
+              v-for="option in processStore.searchSubCategoryOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </dd>
+        <dt class="essential">{{ t("processDetail.processName") }}</dt>
+        <dd>
+          <select
+            v-model="processStore.processDetail.processName"
+            class="form-select"
+            @change="handleProcessNameChange"
+          >
+            <option :value="null">{{ t("common.select") }}</option>
+            <option
+              v-for="option in processStore.searchProcessNameOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </dd>
+        <dt class="essential">{{ t("processDetail.processSymbol") }}</dt>
+        <dd>
+          <div class="file-upload-row">
+            <input
+              type="text"
+              class="file-name-input"
+              :value="processStore.processDetail.processSymbol || ''"
+              :placeholder="t('placeholder.selectFile')"
+              readonly
+            />
+            <label class="file-select-btn">
+              {{ t("common.selectFile") }}
               <input
-                type="text"
-                class="file-name-input"
-                :value="selectedFiles.processSymbol?.name || ''"
-                :placeholder="t('placeholder.selectFile')"
-                readonly
+                type="file"
+                @change="handleFileChange('processSymbol', $event)"
+                style="display: none"
               />
-              <label class="file-select-btn">
-                {{ t("common.selectFile") }}
-                <input
-                  type="file"
-                  @change="handleFileChange('processSymbol', $event)"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </dd>
-          <!-- <dt class="essential">계산식</dt>
+            </label>
+          </div>
+        </dd>
+        <!-- <dt class="essential">계산식</dt>
           <dd>
             <input type="text" class="form-input" :placeholder="t('placeholder.projectDetail')">
           </dd> -->
-           <dt>{{ t("processDetail.description") }}</dt>
-           <dd class="extend-all">
-             <input
-               type="text"
-               class="form-input"
-               v-model="processDetail.description"
-               :placeholder="t('placeholder.projectDetail')"
-             />
-           </dd>
-        </dl>
-     </div>
+        <dt>{{ t("processDetail.description") }}</dt>
+        <dd class="extend-all">
+          <input
+            type="text"
+            class="form-input"
+            v-model="processStore.processDetail.description"
+            :placeholder="t('placeholder.projectDetail')"
+          />
+        </dd>
+      </dl>
+    </div>
   </div>
 
   <div class="action-bar tab-action-bar">
@@ -523,70 +517,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed, watch } from "vue";
+import { ref, onMounted, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useI18n } from "vue-i18n";
-import { request } from "@/utils/request";
+import { useProcessStore } from "@/stores/processStore";
+
+// Props 정의
+interface Props {
+  processId?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  processId: undefined,
+});
+
 const { t } = useI18n();
 const route = useRoute();
+const processStore = useProcessStore();
 defineExpose({ t });
 
 // 공통 로딩 상태
-const loading = ref(false);
-
-// Process.vue와 동일한 구조의 검색 입력 변수들
-const searchProcessTypeInput = ref<string | null>(null);
-const searchSubCategoryInput = ref<string | null>(null);
-const searchProcessNameInput = ref<string | null>(null);
-
-// Process.vue와 동일한 구조의 검색 옵션 변수들 (공유 데이터)
-const searchProcessTypeOptions = ref<{ value: string; label: string }[]>([]);
-const searchSubCategoryOptions = ref<{ value: string; label: string }[]>([]);
-const searchProcessNameOptions = ref<{ value: string; label: string }[]>([]);
-
-// 공정 상세 정보 (search 변수들과 동기화)
-const processDetail = ref({
-  processType: null as string | null,
-  processName: null as string | null,
-  subCategory: null as string | null,
-  processSymbol: "",
-  description: ""
-});
-
-// 전역변수로 공정 데이터 저장
-const globalProcessData = ref({
-  level2_code_key: "",
-  level3_code_key: "",
-  process_code: ""
-});
-
-// search 변수들과 processDetail 객체 동기화
-watch(searchProcessTypeInput, (newValue) => {
-  processDetail.value.processType = newValue;
-});
-
-watch(searchSubCategoryInput, (newValue) => {
-  processDetail.value.subCategory = newValue;
-});
-
-watch(searchProcessNameInput, (newValue) => {
-  processDetail.value.processName = newValue;
-});
-
-// processDetail 객체의 값들과 search 변수들 동기화
-watch(() => processDetail.value.processType, (newValue) => {
-  searchProcessTypeInput.value = newValue;
-});
-
-watch(() => processDetail.value.subCategory, (newValue) => {
-  searchSubCategoryInput.value = newValue;
-});
-
-watch(() => processDetail.value.processName, (newValue) => {
-  searchProcessNameInput.value = newValue;
-});
+const loading = computed(() => processStore.loading);
 
 // 0: P&ID 탭용 컬럼/데이터
 const pidColumns: TableColumn[] = [
@@ -742,7 +695,10 @@ const handleMccSelectionChange = (items: any[]) => {
 };
 
 // 정렬 이벤트 핸들러
-const handleSortChange = (args: { key: string | null; direction: "asc" | "desc" | null }) => {
+const handleSortChange = (args: {
+  key: string | null;
+  direction: "asc" | "desc" | null;
+}) => {
   console.log("Sort:", args.key, args.direction);
 };
 
@@ -754,26 +710,30 @@ const handleRowClick = (item: any, index: number) => {
 // Process.vue와 동일한 구조의 핸들러 함수들
 // 공정구분 변경 핸들러
 const handleProcessTypeChange = () => {
-  const selectedValue = searchProcessTypeInput.value;
-  
+  const selectedValue = processStore.processDetail.processType;
+
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 중분류 옵션 초기화
-    searchSubCategoryOptions.value = [];
-    searchSubCategoryInput.value = null;
+    processStore.searchSubCategoryOptions.length = 0;
+    processStore.setProcessDetail({ subCategory: null });
     // 공정명 옵션도 초기화
-    searchProcessNameOptions.value = [];
-    searchProcessNameInput.value = null;
-    console.log("검색 옵션 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화");
+    processStore.searchProcessNameOptions.length = 0;
+    processStore.setProcessDetail({ processName: null });
+    console.log(
+      "검색 옵션 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화"
+    );
   } else {
-    const selectedOption = searchProcessTypeOptions.value.find(option => option.value === selectedValue);
-    
+    const selectedOption = processStore.searchProcessTypeOptions.find(
+      (option) => option.value === selectedValue
+    );
+
     if (selectedOption) {
       console.log("검색 옵션 변경:");
       console.log("  key:", selectedOption.value);
       console.log("  value:", selectedOption.label);
       // 공정명 옵션 초기화
-      searchProcessNameOptions.value = [];
-      searchProcessNameInput.value = null;
+      processStore.searchProcessNameOptions.length = 0;
+      processStore.setProcessDetail({ processName: null });
       handleSubCategoryCode();
     } else {
       console.log("검색 옵션 변경: 선택되지 않음");
@@ -781,12 +741,10 @@ const handleProcessTypeChange = () => {
   }
 };
 
-
-
 // 공정명 변경 핸들러
 const handleProcessNameChange = () => {
-  const selectedValue = searchProcessNameInput.value;
-  
+  const selectedValue = processStore.processDetail.processName;
+
   if (selectedValue === null || selectedValue === "") {
     console.log("공정명 변경: null 또는 공백값 선택");
   } else {
@@ -796,12 +754,12 @@ const handleProcessNameChange = () => {
 
 // 공정 중분류(subCategory) 변경 핸들러
 const handleSubCategoryChange = () => {
-  const selectedValue = searchSubCategoryInput.value;
-  
+  const selectedValue = processStore.processDetail.subCategory;
+
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    searchProcessNameOptions.value = [];
-    searchProcessNameInput.value = null;
+    processStore.searchProcessNameOptions.length = 0;
+    processStore.setProcessDetail({ processName: null });
     console.log("공정 중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
   } else {
     console.log("공정 중분류 변경:", selectedValue);
@@ -810,155 +768,37 @@ const handleSubCategoryChange = () => {
   }
 };
 
-// Process.vue와 동일한 구조의 공정구분 코드 검색 함수
-const handleProcessTypeCode = async () => {
-  try {
-    loading.value = true;
-    console.log("공정구분 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: 'PRC_FLW',
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      if (result.response && Array.isArray(result.response)) {
-        searchProcessTypeOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 공정구분 옵션:", searchProcessTypeOptions.value);
-      } else {
-        console.log("공정구분 데이터가 없습니다.");
-      }
-    } else {
-      alert(`공정구분 코드 검색 실패: ${result.message}`);
-    }
-    
-  } catch (error: any) {
-    console.error("공정구분 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`공정구분 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
-
 // Process.vue와 동일한 구조의 중분류 코드 검색 함수
 const handleSubCategoryCode = async () => {
   try {
-    loading.value = true;
-    console.log("중분류 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: searchProcessTypeInput.value,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      if (result.response && Array.isArray(result.response)) {
-        searchSubCategoryOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
-      } else {
-        console.log("중분류 데이터가 없습니다.");
-      }
-    } else {
-      alert(`중분류 코드 검색 실패: ${result.message}`);
+    if (processStore.processDetail.processType) {
+      await processStore.loadSubCategoryCodes(
+        processStore.processDetail.processType
+      );
     }
-    
   } catch (error: any) {
     console.error("중분류 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
+    const errorMessage =
+      error.message || error.response || "알 수 없는 오류가 발생했습니다.";
     alert(`중분류 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
   }
 };
 
 // Process.vue와 동일한 구조의 공정명 코드 검색 함수
 const handleProcessNameCode = async () => {
   try {
-    loading.value = true;
-    console.log("공정명 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: searchSubCategoryInput.value,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      if (result.response && Array.isArray(result.response)) {
-        searchProcessNameOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
-      } else {
-        console.log("공정명 데이터가 없습니다.");
-      }
-    } else {
-      alert(`공정명 코드 검색 실패: ${result.message}`);
+    if (processStore.processDetail.subCategory) {
+      await processStore.loadProcessNameCodes(
+        processStore.processDetail.subCategory
+      );
     }
-    
   } catch (error: any) {
     console.error("공정명 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
+    const errorMessage =
+      error.message || error.response || "알 수 없는 오류가 발생했습니다.";
     alert(`공정명 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
   }
 };
-
-
 
 const tabs = ref([
   "P&ID",
@@ -997,7 +837,7 @@ const getSelectedFilesText = (key: string) => {
       : t("common.filesSelected", { count: selectedPidFiles.value.length });
   }
   if (key === "pfdFiles" && selectedPfdFiles.value.length > 0) {
-    return selectedPfdFiles.value.length === 1
+    return selectedPidFiles.value.length === 1
       ? selectedPfdFiles.value[0].name
       : t("common.filesSelected", { count: selectedPfdFiles.value.length });
   }
@@ -1009,7 +849,7 @@ const getSelectedFilesText = (key: string) => {
         });
   }
   if (key === "mccFiles" && selectedMccFiles.value.length > 0) {
-    return selectedMccFiles.value.length === 1
+    return selectedPidFiles.value.length === 1
       ? selectedMccFiles.value[0].name
       : t("common.filesSelected", { count: selectedMccFiles.value.length });
   }
@@ -1182,62 +1022,141 @@ const loadData = () => {
 };
 
 onMounted(async () => {
-  loadData();
-  
-  // 라우터 매개변수에서 초기값 가져오기
-  const processId = route.params.id as string;
-  
-  console.log("=== ProcessDetail.vue 라우터 매개변수 확인 ===");
-  console.log("processId:", processId);
-  
-  // 1. searchProcessTypeOptions의 리스트들 입력
-  await handleProcessTypeCode();
-  console.log("1. searchProcessTypeOptions 리스트 로드 완료");
-  
-  // 화면 로드 시 handleSearch 함수 수행하여 입력 필드 값들 초기화
-  await handleSearch();
-  
-  // // 3. searchSubCategoryOptions의 리스트들 입력
-  if (globalProcessData.value.level2_code_key) {
-    await handleSubCategoryCode();
-    console.log("3. searchSubCategoryOptions 리스트 로드 완료");
-  }
-  
-  // // 4. searchSubCategoryInput 초기값 지정
-  if (globalProcessData.value.level3_code_key) {
-    // 해당 옵션이 실제로 존재하는지 확인
-    const subCategoryExists = searchSubCategoryOptions.value.some(option => option.value === globalProcessData.value.level3_code_key);
-    if (subCategoryExists) {
-      searchSubCategoryInput.value = globalProcessData.value.level3_code_key;
-      console.log("4. searchSubCategoryInput 초기값 설정:", globalProcessData.value.level3_code_key);
-    } else {
-      console.log("4. searchSubCategoryInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:", globalProcessData.value.level3_code_key);
-      console.log("현재 searchSubCategoryOptions:", searchSubCategoryOptions.value);
+  try {
+    console.log("=== ProcessDetail.vue onMounted 시작 ===");
+
+    // 기본 데이터 로드
+    loadData();
+    console.log("기본 데이터 로드 완료");
+
+    // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
+    const processId = props.processId || (route.params.id as string);
+
+    if (!processId) {
+      console.log("processId가 없어서 초기화를 건너뜁니다.");
+      return;
     }
-  }
-  
-  // // 5. searchProcessNameOptions의 리스트들 입력
-  if (globalProcessData.value.process_code) {
-    await handleProcessNameCode();
-    console.log("5. searchProcessNameOptions 리스트 로드 완료");
-  }
-  
-  // // 6. searchProcessNameInput 초기값 지정
-  if (globalProcessData.value.process_code) {
-    // 해당 옵션이 실제로 존재하는지 확인
-    const processNameExists = searchProcessNameOptions.value.some(option => option.value === globalProcessData.value.process_code);
-    if (processNameExists) {
-      searchProcessNameInput.value = globalProcessData.value.process_code;
-      console.log("6. searchProcessNameInput 초기값 설정:", globalProcessData.value.process_code);
-    } else {
-      console.log("6. searchProcessNameInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:", globalProcessData.value.process_code);
-      console.log("현재 searchProcessNameOptions:", searchProcessNameOptions.value);
+
+    console.log("=== ProcessDetail.vue processId 확인 ===");
+    console.log("props.processId:", props.processId);
+    console.log("route.params.id:", route.params.id);
+    console.log("사용할 processId:", processId);
+
+    // 1. 공정구분 코드 리스트 로드
+    try {
+      await processStore.loadProcessTypeCodes();
+      console.log("1. searchProcessTypeOptions 리스트 로드 완료");
+    } catch (error) {
+      console.error("공정구분 코드 로드 실패:", error);
     }
+
+    // 2. 화면 로드 시 handleSearch 함수 수행하여 입력 필드 값들 초기화
+    try {
+      await processStore.searchProcessById(processId);
+      console.log("2. handleSearch 완료");
+    } catch (error) {
+      console.error("handleSearch 실패:", error);
+    }
+
+    // 3. 중분류 코드 리스트 로드 (공정구분이 설정된 경우에만)
+    if (processStore.globalProcessData.level2_code_key) {
+      try {
+        await processStore.loadSubCategoryCodes(
+          processStore.globalProcessData.level2_code_key
+        );
+        console.log("3. searchSubCategoryOptions 리스트 로드 완료");
+      } catch (error) {
+        console.error("중분류 코드 로드 실패:", error);
+      }
+    }
+
+    // 4. 중분류 입력 필드 초기값 설정
+    if (processStore.globalProcessData.level3_code_key) {
+      try {
+        // 해당 옵션이 실제로 존재하는지 확인
+        const subCategoryExists = processStore.searchSubCategoryOptions.some(
+          (option) =>
+            option.value === processStore.globalProcessData.level3_code_key
+        );
+        if (subCategoryExists) {
+          processStore.setProcessDetail({
+            subCategory: processStore.globalProcessData.level3_code_key,
+          });
+          console.log(
+            "4. searchSubCategoryInput 초기값 설정:",
+            processStore.globalProcessData.level3_code_key
+          );
+        } else {
+          console.log(
+            "4. searchSubCategoryInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:",
+            processStore.globalProcessData.level3_code_key
+          );
+          console.log(
+            "현재 searchSubCategoryOptions:",
+            processStore.searchSubCategoryOptions
+          );
+        }
+      } catch (error) {
+        console.error("중분류 입력 필드 초기값 설정 실패:", error);
+      }
+    }
+
+    // 5. 공정명 코드 리스트 로드 (중분류가 설정된 경우에만)
+    if (processStore.globalProcessData.level3_code_key) {
+      try {
+        await processStore.loadProcessNameCodes(
+          processStore.globalProcessData.level3_code_key
+        );
+        console.log("5. searchProcessNameOptions 리스트 로드 완료");
+      } catch (error) {
+        console.error("공정명 코드 로드 실패:", error);
+      }
+    }
+
+    // 6. 공정명 입력 필드 초기값 설정
+    if (processStore.globalProcessData.process_code) {
+      try {
+        // 해당 옵션이 실제로 존재하는지 확인
+        const processNameExists = processStore.searchProcessNameOptions.some(
+          (option) =>
+            option.value === processStore.globalProcessData.process_code
+        );
+        if (processNameExists) {
+          processStore.setProcessDetail({
+            processName: processStore.globalProcessData.process_code,
+          });
+          console.log(
+            "6. searchProcessNameInput 초기값 설정:",
+            processStore.globalProcessData.process_code
+          );
+        } else {
+          console.log(
+            "6. searchProcessNameInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:",
+            processStore.globalProcessData.process_code
+          );
+          console.log(
+            "현재 searchProcessNameOptions:",
+            processStore.searchProcessNameOptions
+          );
+        }
+      } catch (error) {
+        console.error("공정명 입력 필드 초기값 설정 실패:", error);
+      }
+    }
+
+    console.log("=== ProcessDetail.vue 초기화 완료 ===");
+  } catch (error) {
+    console.error("ProcessDetail.vue 초기화 중 오류 발생:", error);
+  } finally {
+    // 스크롤 버튼 상태 업데이트
+    nextTick(() => {
+      try {
+        updateScrollButtons();
+      } catch (error) {
+        console.error("스크롤 버튼 상태 업데이트 실패:", error);
+      }
+    });
   }
-  
-  nextTick(() => {
-    updateScrollButtons();
-  });
 });
 
 // PFD pagination state
@@ -1319,10 +1238,10 @@ const closePfdModal = () => {
 const handlePfdFilesSelected = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   selectedPfdFiles.value = files ? Array.from(files) : [];
-  console.log("Selected PFD files:", selectedPfdFiles.value);
+  console.log("Selected PFD files:", selectedPidFiles.value);
 };
 const uploadPfdFiles = () => {
-  console.log("PFD upload executed:", selectedPfdFiles.value);
+  console.log("PFD upload executed:", selectedPidFiles.value);
   closePfdModal();
 };
 
@@ -1456,174 +1375,6 @@ const handleMccDelete = () => {
     alert(t("messages.success.mccDiagramItemDeleted"));
   }
 };
-
-
-// 검색 기능 구현 (단건 조회)
-const handleSearch = async () => {
-  try {
-    loading.value = true;
-    console.log("검색 시작: /master/search");
-    
-    const requestData = {
-      search_field: 'process_id',
-      search_value: route.params.id
-    };
-
-    console.log("requestData", requestData);
-
-    const result = await request("/api/process/master/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("검색 API 응답:", result);
-    
-    if (result.success && result.response) {
-      console.log("검색 결과:", result.response);
-      
-      // 단건 조회 결과 처리
-      let processData;
-      
-      if (Array.isArray(result.response) && result.response.length > 0) {
-        // 배열로 응답이 온 경우 첫 번째 항목만 사용
-        processData = result.response[0];
-        console.log("배열 응답에서 첫 번째 항목 사용:", processData);
-      } else if (result.response.items && Array.isArray(result.response.items) && result.response.items.length > 0) {
-        // items 배열로 응답이 온 경우 첫 번째 항목만 사용
-        processData = result.response.items[0];
-        console.log("items 배열에서 첫 번째 항목 사용:", processData);
-      } else if (typeof result.response === 'object' && !Array.isArray(result.response)) {
-        // 단일 객체로 응답이 온 경우
-        processData = result.response;
-        console.log("단일 객체 응답 사용:", processData);
-      } else {
-        console.log("검색 결과가 없거나 응답 형식이 올바르지 않습니다.");
-        console.log("응답 데이터:", result.response);
-        return;
-      }
-      
-      // 검색된 데이터를 화면에 표시
-      if (processData) {
-        console.log("=== 검색된 공정 데이터 ===");
-        console.log("level2_code_value (공정구분):", processData.level2_code_value);
-        console.log("level3_code_value (공정 중분류):", processData.level3_code_value);
-        console.log("process_name (공정명):", processData.process_name);
-        console.log("symbol_uri (공정심볼):", processData.symbol_uri);
-        console.log("================================");
-        
-        // 전역변수에 공정 데이터 저장
-        globalProcessData.value.level2_code_key = processData.level2_code_key || "";
-        globalProcessData.value.level3_code_key = processData.level3_code_key || "";
-        globalProcessData.value.process_code = processData.process_code || "";
-        
-        console.log("전역변수에 저장된 공정 데이터:", globalProcessData.value);
-        
-        // 검색된 데이터를 화면 입력 필드에 설정
-        if (processData.level2_code_key) {
-          searchProcessTypeInput.value = processData.level2_code_key;
-        }
-        
-        if (processData.process_description) {
-            processDetail.value.description = processData.process_description;
-            console.log("공정 설명:", processData.process_description);
-        }
-          
-        if (processData.symbol_uri) {
-          // 파일 정보 설정 (실제 구현에서는 파일 객체로 변환 필요)
-          console.log("공정 심볼 파일:", processData.symbol_uri);
-        }
-        
-        console.log("화면 입력 필드 업데이트 완료");
-      }
-      
-    } else {
-      console.log("검색 실패 또는 응답이 없습니다.");
-      console.log("전체 응답:", result);
-    }
-    
-  } catch (error: any) {
-    console.error("검색 실패:", error);
-    const errorMessage = error.message || error.response || '검색 중 오류가 발생했습니다.';
-    alert(`검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
-
-const handleUpdate = async () => {
-  try {
-    // 라우터 매개변수에서 processId 가져오기
-    const processId = route.params.id as string;
-    
-    if (!processId) {
-      alert(t("messages.error.processIdNotFound"));
-      return;
-    }
-
-    // 필수 필드 검증
-    if (!searchProcessTypeInput.value || !searchProcessNameInput.value) {
-      alert(t("messages.warning.pleaseFillRequiredFields"));
-      return;
-    }
-
-    // 선택된 공정구분의 label과 value 찾기
-    const selectedProcessTypeOption = searchProcessTypeOptions.value.find(
-      option => option.value === searchProcessTypeInput.value
-    );
-
-    // 선택된 공정명의 label과 value 찾기
-    const selectedProcessNameOption = searchProcessNameOptions.value.find(
-      option => option.value === searchProcessNameInput.value
-    );
-
-    if (!selectedProcessTypeOption || !selectedProcessNameOption) {
-      alert(t("messages.error.invalidProcessData"));
-      return;
-    }
-
-    // API 호출을 위한 데이터 준비
-    const requestData = {
-      process_code: selectedProcessNameOption.value,
-      process_name: selectedProcessNameOption.label,
-      process_type_code: selectedProcessTypeOption.value,
-      process_category: searchSubCategoryInput.value || "",
-      process_symbol_file: selectedFiles.value.processSymbol?.name || "",
-      process_description: processDetail.value.description || ""
-    };
-
-    console.log("공정 상세 저장 요청 데이터:", requestData);
-
-    // /api/process/master/update 서비스 호출
-    const result = await request(`/api/process/master/update/${processId}`, undefined, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-
-    console.log("공정 상세 저장 API 응답:", result);
-
-    if (result.success) {
-      alert(t("messages.success.updateSuccess"));
-      // 저장 성공 후 필요한 처리
-    } else {
-      const errorMessage = result.message || t("messages.error.saveError");
-      alert(`저장 실패: ${errorMessage}`);
-    }
-
-  } catch (error: any) {
-    console.error("저장 실패:", error);
-    const errorMessage =
-      error?.message || t("messages.error.saveError");
-    alert(`저장 실패: ${errorMessage}`);
-  }
-};
-
 </script>
 
 <style scoped lang="scss">
@@ -1637,14 +1388,14 @@ const handleUpdate = async () => {
 // action-bar 스타일
 .action-bar {
   margin-bottom: 1rem;
-  
+
   .btns {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 0.5rem;
     width: 100%;
-    
+
     .btn-edit {
       margin-left: auto;
     }

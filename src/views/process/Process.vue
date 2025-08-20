@@ -10,14 +10,14 @@
           <div class="form-item">
             <select
               id="searchProcessType"
-              v-model="searchProcessType"
+              v-model="processStore.searchProcessType"
               class="form-select"
               @change="handleSearchProcessTypeChange"
             >
               <option :value="null">{{ t("common.select") }}</option>
-              <option 
-                v-for="option in searchProcessTypeOptions" 
-                :key="option.value" 
+              <option
+                v-for="option in processStore.searchProcessTypeOptions"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -26,18 +26,20 @@
           </div>
         </div>
         <div class="group-form">
-          <label for="searchSubCategory" class="label-title">{{ t("process.subCategory") }}</label>
+          <label for="searchSubCategory" class="label-title">{{
+            t("process.subCategory")
+          }}</label>
           <div class="form-item">
             <select
               id="searchSubCategory"
-              v-model="searchSubCategoryInput"
+              v-model="processStore.searchSubCategoryInput"
               class="form-select"
               @change="handleSubCategoryChange"
             >
               <option :value="null">{{ t("common.select") }}</option>
-              <option 
-                v-for="option in searchSubCategoryOptions" 
-                :key="option.value" 
+              <option
+                v-for="option in processStore.searchSubCategoryOptions"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -52,13 +54,13 @@
           <div class="form-item">
             <select
               id="searchProcessName"
-              v-model="searchProcessName"
+              v-model="processStore.searchProcessName"
               class="form-select"
             >
               <option :value="null">{{ t("common.select") }}</option>
-              <option 
-                v-for="option in searchProcessNameOptions" 
-                :key="option.value" 
+              <option
+                v-for="option in processStore.searchProcessNameOptions"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -77,7 +79,7 @@
         <button
           class="btn btn-primary btn-delete"
           @click="handleDelete"
-          :disabled="selectedItems.length === 0"
+          :disabled="processStore.selectedItems.length === 0"
         >
           {{ t("process.deleteSelected") }}
         </button>
@@ -88,10 +90,10 @@
     <!-- DataTable row-key가 default로 id로 설정돼있어서 추가 수정함함 -->
     <DataTable
       :columns="tableColumns"
-      :data="paginatedProcessList"
-      :loading="loading"
+      :data="processStore.paginatedProcessList"
+      :loading="processStore.loading"
       :selectable="true"
-      :selected-items="selectedItems"
+      :selected-items="processStore.selectedItems"
       row-key="id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
@@ -108,8 +110,8 @@
     <!-- Pagination -->
     <div class="pagination-container">
       <Pagination
-        :current-page="currentPage"
-        :total-pages="totalPagesComputed"
+        :current-page="processStore.currentPage"
+        :total-pages="processStore.totalPagesComputed"
         @page-change="handlePageChange"
       />
     </div>
@@ -132,13 +134,13 @@
                 @change="handleRegistProcessTypeChange"
               >
                 <option :value="null">{{ t("common.select") }}</option>
-                <option 
-                  v-for="option in searchProcessTypeOptions" 
-                  :key="option.value" 
+                <option
+                  v-for="option in processStore.searchProcessTypeOptions"
+                  :key="option.value"
                   :value="option.value"
                 >
                   {{ option.label }}
-              </option>
+                </option>
               </select>
             </dd>
             <dt class="essential">{{ t("process.subCategory") }}</dt>
@@ -150,9 +152,9 @@
                 @change="handleRegistSubCategoryChange"
               >
                 <option :value="null">{{ t("common.select") }}</option>
-                <option 
-                  v-for="option in searchSubCategoryOptions" 
-                  :key="option.value" 
+                <option
+                  v-for="option in processStore.searchSubCategoryOptions"
+                  :key="option.value"
                   :value="option.value"
                 >
                   {{ option.label }}
@@ -167,9 +169,9 @@
                 required
               >
                 <option :value="null">{{ t("common.select") }}</option>
-                <option 
-                  v-for="option in searchProcessNameOptions" 
-                  :key="option.value" 
+                <option
+                  v-for="option in processStore.searchProcessNameOptions"
+                  :key="option.value"
                   :value="option.value"
                 >
                   {{ option.label }}
@@ -359,56 +361,48 @@
         </div>
       </div>
     </div>
+
+    <!-- ProcessDetail 모달 -->
+    <div v-if="isDetailModalOpen" class="modal-overlay detail-modal-overlay">
+      <div class="modal-container detail-modal-container">
+        <div class="modal-header">
+          <h3>공정 상세</h3>
+          <button class="btn-close" @click="closeDetailModal">×</button>
+        </div>
+        <div class="modal-body detail-modal-body">
+          <ProcessDetail
+            :process-id="selectedProcessId || undefined"
+            @close="closeDetailModal"
+            ref="processDetailRef"
+          />
+        </div>
+        <div class="modal-footer detail-modal-footer">
+          <button class="btn btn-secondary" @click="closeDetailModal">
+            닫기
+          </button>
+          <button
+            class="btn btn-primary"
+            @click="handleDetailUpdate"
+            :disabled="!isDetailFormValid"
+          >
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import ProcessDetail from "./ProcessDetail.vue";
 import { useI18n } from "vue-i18n";
-
-import { isCurrentTokenValid } from "../../utils/tokenManager";
-import { useAuthStore } from "../../stores/authStore";
-import { request } from "../../utils/request";
-
-// 쿠키 확인 유틸리티 함수
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
-};
-
-const hasCookie = (name: string): boolean => {
-  return getCookie(name) !== null;
-};
-
-// 실제 쿠키 이름을 찾는 함수
-const findCookieByName = (patterns: string[]): string | null => {
-  for (const pattern of patterns) {
-    if (hasCookie(pattern)) {
-      return pattern;
-    }
-  }
-  return null;
-};
+import { useProcessStore, type ProcessItem } from "@/stores/processStore";
 
 const { t } = useI18n();
-
-interface ProcessItem {
-  id: string;
-  process_id: string;
-  process_type: string;
-  process_type_nm: string;
-  process_nm: string;
-  sub_category: string;
-  sub_category_nm: string;
-  process_code: string;
-  process_symbol: string;
-  viewDetail: string | null;
-}
+const processStore = useProcessStore();
 
 interface RegistForm {
   processType: string | null;
@@ -439,83 +433,13 @@ const tableColumns: TableColumn[] = [
   }, // 상세보기
 ];
 
-const processList = ref<ProcessItem[]>([]);
-const selectedItems = ref<ProcessItem[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const totalPages = ref(999);
-const pageSize = ref(10);
-const totalCount = ref(0);
+// 로컬 상태 (store에서 관리되지 않는 것들)
 const sortColumn = ref<string | null>(null);
 const sortOrder = ref<"asc" | "desc" | null>(null);
-const searchProcessType = ref<string | null>(null);
-const searchSubCategoryInput = ref<string | null>(null);
-const searchProcessName = ref<string | null>(null);
-const searchOption = ref("");
-const searchSubCategory = ref("");
-const searchQuery = ref("");
 const isRegistModalOpen = ref(false);
-
-// 공정구분 콤보박스 옵션 (동적으로 생성)
-const processTypeOptions = ref<{ value: string; label: string }[]>([]);
-
-// 검색 옵션 세렉트박스 옵션 (동적으로 생성)
-const searchProcessTypeOptions = ref<{ value: string; label: string }[]>([]);
-
-// 중분류 검색 옵션 세렉트박스 옵션 (동적으로 생성)
-const searchSubCategoryOptions = ref<{ value: string; label: string }[]>([]);
-
-// 공정명 검색 옵션 세렉트박스 옵션 (동적으로 생성)
-const searchProcessNameOptions = ref<{ value: string; label: string }[]>([]);
-
-// 중분류 변경 핸들러
-const handleSubCategoryChange = () => {
-  const selectedValue = searchSubCategoryInput.value;
-  
-  if (selectedValue === null || selectedValue === "") {
-    // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    searchProcessNameOptions.value = [];
-    searchProcessName.value = null;
-    console.log("중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
-  } else {
-    console.log("중분류 변경:", selectedValue);
-    handleProcessNameCodeSearch();
-  }
-};
-
-// 등록 모달 공정구분 변경 핸들러
-const handleRegistProcessTypeChange = () => {
-  const selectedValue = registForm.value.processType;
-  
-  if (selectedValue === null || selectedValue === "") {
-    // null 또는 공백값이 선택된 경우 중분류 및 공정명 옵션 초기화
-    searchSubCategoryOptions.value = [];
-    searchProcessNameOptions.value = [];
-    registForm.value.processSubCategory = null;
-    registForm.value.processNm = null;
-    console.log("등록 모달 공정구분 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화");
-  } else {
-    console.log("등록 모달 공정구분 변경:", selectedValue);
-    // 중분류 옵션 로드
-    handleRegistMiddleCodeSearch();
-  }
-};
-
-// 등록 모달 중분류 변경 핸들러
-const handleRegistSubCategoryChange = () => {
-  const selectedValue = registForm.value.processSubCategory;
-  
-  if (selectedValue === null || selectedValue === "") {
-    // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    searchProcessNameOptions.value = [];
-    registForm.value.processNm = null;
-    console.log("등록 모달 중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
-  } else {
-    console.log("등록 모달 중분류 변경:", selectedValue);
-    // 공정명 옵션 로드
-    handleRegistProcessNameCodeSearch();
-  }
-};
+const isDetailModalOpen = ref(false);
+const selectedProcessId = ref<string | undefined>(undefined);
+const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
 
 // 등록 폼 데이터
 const registForm = ref<RegistForm>({
@@ -600,9 +524,10 @@ const handleSave = async () => {
     }
 
     // 선택된 공정명의 label과 value 찾기
-    const selectedProcessNameOption = searchProcessNameOptions.value.find(
-      option => option.value === registForm.value.processNm
-    );
+    const selectedProcessNameOption =
+      processStore.searchProcessNameOptions.find(
+        (option) => option.value === registForm.value.processNm
+      );
 
     if (!selectedProcessNameOption) {
       alert(t("messages.error.invalidProcessName"));
@@ -620,33 +545,18 @@ const handleSave = async () => {
       calculation_file: registForm.value.calculationFile,
       pid_file: registForm.value.pidFile,
       excel_file: registForm.value.excelFile,
-      consistency_check: registForm.value.consistencyCheck
+      consistency_check: registForm.value.consistencyCheck,
     };
 
     console.log("공정 등록 요청 데이터:", requestData);
 
-    // /api/process/master/create 서비스 호출
-    const result = await request("/api/process/master/create", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
+    // processStore를 통한 공정 등록
+    const result = await processStore.createProcess(requestData);
 
     console.log("공정 등록 API 응답:", result);
 
-    if (result.response.data.success) {
-      alert(t("messages.success.processRegistered"));
-      closeRegistModal();
-      
-      // 등록 성공 후 목록 새로고침
-      handleSearch();
-    } else {
-      const errorMessage = result.message || t("messages.error.registrationError");
-      alert(`등록 실패: ${errorMessage}` + "\n" + result.response.data.message);
-    }
-
+    alert(t("messages.success.processRegistered"));
+    closeRegistModal();
   } catch (error: any) {
     console.error("등록 실패:", error);
     const errorMessage =
@@ -656,121 +566,114 @@ const handleSave = async () => {
 };
 
 const handleDelete = async () => {
-  if (selectedItems.value.length === 0) {
+  if (processStore.selectedItems.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
-  
+
   if (
     confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
+      t("messages.confirm.deleteItems", {
+        count: processStore.selectedItems.length,
+      })
     )
   ) {
     try {
-      loading.value = true;
-      console.log("삭제할 항목:", selectedItems.value);
-      
       // 선택된 항목들의 process_id 추출
-      const selectedProcessIds = selectedItems.value.map(
+      const selectedProcessIds = processStore.selectedItems.map(
         (item) => item.process_id
       );
-      
+
       console.log("삭제할 process_id 목록:", selectedProcessIds);
-      
-      // 각 process_id에 대해 삭제 API 호출
-      const deletePromises = selectedProcessIds.map(async (processId) => {
-        if (!processId) {
-          console.warn("process_id가 없는 항목:", processId);
-          return { success: false, message: "process_id가 없습니다." };
-        }
-        
-        try {
-          const result = await request(`/api/process/master/delete/${processId}`, undefined, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          
-          console.log(`process_id ${processId} 삭제 결과:`, result);
-          return result;
-        } catch (error: any) {
-          console.error(`process_id ${processId} 삭제 실패:`, error);
-          return { success: false, message: error.message || "삭제 실패" };
-        }
-      });
-      
-      // 모든 삭제 요청 완료 대기
-      const deleteResults = await Promise.all(deletePromises);
-      
-      // 삭제 결과 분석
-      const successCount = deleteResults.filter(result => result.success).length;
-      const failCount = deleteResults.filter(result => !result.success).length;
-      
-      console.log("삭제 결과 요약:", { successCount, failCount, total: selectedProcessIds.length });
-      
-      if (successCount > 0) {
-        // 성공한 항목들을 로컬 목록에서 제거
-        const successProcessIds = selectedProcessIds.filter((_, index) => deleteResults[index].success);
-        processList.value = processList.value.filter(
-          (item) => !successProcessIds.includes(item.process_id)
+
+      // processStore를 통한 삭제 처리
+      const { successCount, failCount } = await processStore.deleteProcesses(
+        selectedProcessIds
+      );
+
+      if (failCount > 0) {
+        alert(
+          `${successCount}개 항목 삭제 성공, ${failCount}개 항목 삭제 실패`
         );
-        
-        totalCount.value = processList.value.length;
-        totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-        
-        // 선택된 항목 초기화
-        selectedItems.value = [];
-        
-        if (failCount > 0) {
-          alert(`${successCount}개 항목 삭제 성공, ${failCount}개 항목 삭제 실패`);
-        } else {
-          alert(t("messages.success.deleted"));
-        }
-        
-        // 목록 새로고침
-        handleSearch();
       } else {
-        alert("모든 항목 삭제에 실패했습니다.");
+        alert(t("messages.success.deleted"));
       }
-      
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);
       alert(`삭제 처리 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-      loading.value = false;
     }
   }
 };
 
 // 상세 보기 이동
-const router = useRouter();
 const viewDetail = (item: ProcessItem) => {
   console.log("=== viewDetail 함수 호출 ===");
   console.log("전체 item:", item);
   console.log("item.process_id:", item.process_id);
   console.log("item.process_nm:", item.process_nm);
-  
-  if (item.process_nm) {
-    console.log("라우터로 전달할 params:", { id: item.process_id });
-    
-    router.push({
-      name: "ProcessDetail",
-      params: { id: item.process_id }
-    });
+
+  if (item.process_id) {
+    console.log("모달로 전달할 process_id:", item.process_id);
+
+    selectedProcessId.value = item.process_id;
+    isDetailModalOpen.value = true;
   } else {
-    console.log("process_nm이 없어서 라우터 이동하지 않음");
+    console.log("process_id가 없어서 모달을 열지 않음");
   }
 };
 
+const closeDetailModal = () => {
+  isDetailModalOpen.value = false;
+  selectedProcessId.value = undefined;
+};
+
+const handleDetailUpdate = async () => {
+  try {
+    console.log("ProcessDetail 업데이트 처리 시작");
+
+    // ProcessDetail 컴포넌트의 폼 데이터를 가져와서 업데이트 처리
+    if (selectedProcessId.value && processStore.processDetail) {
+      const processData = { ...processStore.processDetail };
+
+      console.log("업데이트할 데이터:", {
+        processId: selectedProcessId.value,
+        processData: processData,
+      });
+
+      // processStore의 updateProcess 액션 호출
+      await processStore.updateProcess(selectedProcessId.value, processData);
+
+      console.log("공정 수정 완료");
+      alert("공정이 성공적으로 수정되었습니다.");
+
+      // 수정 성공 후 목록 새로고침
+      await processStore.searchProcesses();
+
+      // 모달 닫기
+      closeDetailModal();
+    } else {
+      console.error("업데이트할 데이터가 없습니다.");
+      alert("업데이트할 데이터를 찾을 수 없습니다.");
+    }
+  } catch (error: any) {
+    console.error("공정 수정 실패:", error);
+    const errorMessage = error?.message || "공정 수정 중 오류가 발생했습니다.";
+    alert(`공정 수정 실패: ${errorMessage}`);
+  }
+};
+
+const isDetailFormValid = computed(() => {
+  // ProcessDetail 컴포넌트의 폼 유효성 검사 결과를 반환
+  return true; // 실제로는 ProcessDetail의 폼 상태를 확인해야 함
+});
+
 const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  //loadProcessList();
+  processStore.setCurrentPage(page);
 };
 
 const handleSortChange = (sortInfo: {
-  key: string;
-  direction: "asc" | "desc";
+  key: string | null;
+  direction: "asc" | "desc" | null;
 }) => {
   sortColumn.value = sortInfo.key;
   sortOrder.value = sortInfo.direction;
@@ -781,63 +684,38 @@ const handleRowClick = (item: ProcessItem, index: number) => {
   // 행 클릭 시 상세 페이지로 이동하거나 모달 열기 등
 };
 
-// --- computed로 페이징 및 필터 처리 ---
-const filteredProcessList = computed(() => {
-  if (searchOption.value && searchQuery.value) {
-    return processList.value.filter((process) => {
-      const key = searchOption.value as keyof ProcessItem;
-      return (
-        process[key] &&
-        process[key]!.toString()
-          .toLowerCase()
-          .includes(searchQuery.value.toLowerCase())
-      );
-    });
-  }
-  return processList.value;
-});
-
-const totalCountComputed = computed(() => filteredProcessList.value.length);
-const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
-);
-
-const paginatedProcessList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredProcessList.value.slice(start, end);
-});
-
-
-
 // 선택된 항목 변경 핸들러
 const handleSelectionChange = (items: ProcessItem[]) => {
-  selectedItems.value = items;
-  console.log("선택된 항목:", selectedItems.value);
+  processStore.setSelectedItems(items);
+  console.log("선택된 항목:", processStore.selectedItems);
 };
 
 // 검색 옵션 변경 핸들러
 const handleSearchProcessTypeChange = () => {
-  const selectedValue = searchProcessType.value;
-  
+  const selectedValue = processStore.searchProcessType;
+
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 중분류 옵션 초기화
-    searchSubCategoryOptions.value = [];
-    searchSubCategoryInput.value = null;
+    processStore.searchSubCategoryOptions.length = 0;
+    processStore.setSearchSubCategoryInput(null);
     // 공정명 옵션도 초기화
-    searchProcessNameOptions.value = [];
-    searchProcessName.value = null;
-    console.log("공정구분 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화");
+    processStore.searchProcessNameOptions.length = 0;
+    processStore.setSearchProcessName(null);
+    console.log(
+      "공정구분 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화"
+    );
   } else {
-    const selectedOption = searchProcessTypeOptions.value.find(option => option.value === selectedValue);
-    
+    const selectedOption = processStore.searchProcessTypeOptions.find(
+      (option) => option.value === selectedValue
+    );
+
     if (selectedOption) {
       console.log("공정구분 변경:");
       console.log("  key:", selectedOption.value);
       console.log("  value:", selectedOption.label);
-          // 공정명 옵션 초기화
-    searchProcessNameOptions.value = [];
-    searchProcessName.value = null;
+      // 공정명 옵션 초기화
+      processStore.searchProcessNameOptions.length = 0;
+      processStore.setSearchProcessName(null);
       handleSubCategoryCode();
     } else {
       console.log("공정구분 변경: 선택되지 않음");
@@ -845,429 +723,146 @@ const handleSearchProcessTypeChange = () => {
   }
 };
 
+// 중분류 변경 핸들러
+const handleSubCategoryChange = () => {
+  const selectedValue = processStore.searchSubCategoryInput;
+
+  if (selectedValue === null || selectedValue === "") {
+    // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
+    processStore.searchProcessNameOptions.length = 0;
+    processStore.setSearchProcessName(null);
+    console.log("중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
+  } else {
+    console.log("중분류 변경:", selectedValue);
+    handleProcessNameCodeSearch();
+  }
+};
+
+// 등록 모달 공정구분 변경 핸들러
+const handleRegistProcessTypeChange = () => {
+  const selectedValue = registForm.value.processType;
+
+  if (selectedValue === null || selectedValue === "") {
+    // null 또는 공백값이 선택된 경우 중분류 및 공정명 옵션 초기화
+    processStore.searchSubCategoryOptions.length = 0;
+    processStore.searchProcessNameOptions.length = 0;
+    registForm.value.processSubCategory = null;
+    registForm.value.processNm = null;
+    console.log(
+      "등록 모달 공정구분 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화"
+    );
+  } else {
+    console.log("등록 모달 공정구분 변경:", selectedValue);
+    // 중분류 옵션 로드
+    handleRegistMiddleCodeSearch();
+  }
+};
+
+// 등록 모달 중분류 변경 핸들러
+const handleRegistSubCategoryChange = () => {
+  const selectedValue = registForm.value.processSubCategory;
+
+  if (selectedValue === null || selectedValue === "") {
+    // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
+    processStore.searchProcessNameOptions.length = 0;
+    registForm.value.processNm = null;
+    console.log(
+      "등록 모달 중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화"
+    );
+  } else {
+    console.log("등록 모달 중분류 변경:", selectedValue);
+    // 공정명 옵션 로드
+    handleRegistProcessNameCodeSearch();
+  }
+};
+
 // 검색 기능 구현
 const handleSearch = async () => {
   try {
-    loading.value = true;
-    console.log("검색 시작: /master/search");
-    
-    let requestData;
-    
-    // 1. searchProcessName.value != null 인 경우
-    if (searchProcessName.value != null) {
-      requestData = {
-        search_field: 'process_code',
-        search_value: searchProcessName.value
-      };
-    }
-    // 2. searchProcessName.value == null && searchSubCategoryInput.value != null 인 경우
-    else if (searchProcessName.value == null && searchSubCategoryInput.value != null) {
-      requestData = {
-        search_field: 'level3_code_key',
-        search_value: searchSubCategoryInput.value
-      };
-    }
-    // 3. searchProcessName.value == null && searchSubCategoryInput.value == null && searchProcessType.value != null 인 경우
-    else if (searchProcessName.value == null && searchSubCategoryInput.value == null && searchProcessType.value != null) {
-      requestData = {
-        search_field: 'level2_code_key',
-        search_value: searchProcessType.value
-      };
-    }
-    // 4. 모든 값이 null인 경우
-    else {
-      requestData = {
-        search_field: 'process_code',
-        search_value: ""
-      };
-    }
-
-    console.log("requestData", requestData);
-
-    const result = await request("/api/process/master/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("검색 API 응답:", result);
-    
-    if (result.success && result.response) {
-      console.log("검색 결과:", result.response);
-      
-      // result.response가 배열인 경우 직접 처리 (API 응답 구조에 맞게)
-      if (Array.isArray(result.response)) {
-        console.log("검색 결과 배열:", result.response);
-        
-        // 검색 결과를 processList에 설정하여 표에 출력
-        processList.value = result.response.map((item: any) => ({
-          id: item.id || item.process_code || `process_${Date.now()}_${Math.random()}`,
-          process_id: item.process_id || item.id || item.process_code || "",
-          process_type: item.level2_code_key || "",
-          process_type_nm: item.level2_code_value || "",
-          process_nm: item.process_name || "",
-          sub_category: item.level3_code_key || "",
-          sub_category_nm: item.level3_code_value || "",
-          process_code: item.process_code || "",
-          process_symbol: item.symbol_uri || "📄",
-          viewDetail: ""
-        }));
-        
-        totalCount.value = processList.value.length;
-        totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-        
-        // 페이징 초기화
-        currentPage.value = 1;
-        
-        console.log("processList 업데이트 완료:", processList.value);
-        console.log("페이징 정보 - 총 개수:", totalCount.value, "총 페이지:", totalPages.value);
-        
-      } else if (result.response.items && Array.isArray(result.response.items)) {
-        // result.response.items가 배열인 경우 (기존 로직 유지)
-        console.log("검색 결과 items 배열:", result.response.items);
-        
-        // items 배열을 순환하여 요청된 값들 출력
-        result.response.items.forEach((item: any, index: number) => {
-          console.log(`=== 검색 결과 ${index + 1}번째 항목 ===`);
-          console.log("level2_code_value (공정구분):", item.level2_code_value);
-          console.log("level3_code_value (공정 중분류):", item.level3_code_value);
-          console.log("process_name (공정명):", item.process_name);
-          console.log("symbol_uri (공정심볼):", item.symbol_uri);
-          console.log("================================");
-        });
-        
-        // 검색 결과를 processList에 설정
-        processList.value = result.response.items.map((item: any) => ({
-          id: item.id || `process_${Date.now()}_${Math.random()}`,
-          process_id: item.process_id || item.id || item.process_code || "",
-          process_type: item.level2_code_key || "",
-          process_type_nm: item.level2_code_value || "",
-          process_nm: item.process_name || "",
-          sub_category: item.level3_code_key || "",
-          sub_category_nm: item.level3_code_value || "",
-          process_code: item.process_code || "",
-          process_symbol: item.symbol_uri || "📄",
-          viewDetail: ""
-        }));
-        
-        totalCount.value = processList.value.length;
-        totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-        
-        // 페이징 초기화
-        currentPage.value = 1;
-        
-        console.log("processList 업데이트 완료:", processList.value);
-        console.log("페이징 정보 - 총 개수:", totalCount.value, "총 페이지:", totalPages.value);
-        
-      } else {
-        console.log("검색 결과가 없거나 응답 형식이 올바르지 않습니다.");
-        console.log("응답 데이터:", result.response);
-        
-        // 빈 결과로 테이블 초기화
-        processList.value = [];
-        totalCount.value = 0;
-        totalPages.value = 1;
-      }
-      
-    } else {
-      console.log("검색 실패 또는 응답이 없습니다.");
-      console.log("전체 응답:", result);
-      
-      // 빈 결과로 테이블 초기화
-      processList.value = [];
-      totalCount.value = 0;
-      totalPages.value = 1;
-    }
-    
+    await processStore.searchProcesses();
   } catch (error: any) {
-    console.error("검색 실패:", error);
-    const errorMessage = error.message || error.response || '검색 중 오류가 발생했습니다.';
+    const errorMessage = error?.message || "검색 중 오류가 발생했습니다.";
     alert(`검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
   }
 };
 
-//공정구분분 select 항목 공통코드 조회
-const handleProcessCodeSearch = async () => {
-  try {
-    loading.value = true;
-    console.log("공정 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: 'PRC_FLW',
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-             // result.response에서 code_key를 키로, code_value를 값으로 하는 공정구분 콤보 옵션 생성
-       if (result.response && Array.isArray(result.response)) {
-         processTypeOptions.value = result.response.map((item: any) => ({
-           value: item.code_key,
-           label: item.code_value
-         }));
-         
-         // 검색 옵션 세렉트박스도 동일한 데이터로 설정
-         searchProcessTypeOptions.value = result.response.map((item: any) => ({
-           value: item.code_key,
-           label: item.code_value
-         }));
-         
-         console.log("생성된 공정구분 옵션:", processTypeOptions.value);
-         console.log("생성된 검색 옵션:", searchProcessTypeOptions.value);
-         //alert(`공정 코드 검색 테스트 성공!\n생성된 옵션 수: ${processTypeOptions.value.length}\n첫 번째 옵션: ${processTypeOptions.value[0]?.label || '없음'}`);
-       } else {
-         //alert(`공정 코드 검색 테스트 성공!\n응답 데이터: ${JSON.stringify(result.response, null, 2)}`);
-       }
-    } else {
-      alert(`공정 코드 검색 테스트 실패: ${result.message}`);
-    }
-    
-  } catch (error: any) {
-    console.error("공정 코드 검색 테스트 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`공정 코드 검색 테스트 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
-//중분류 select 항목 공통코드 조회
+// 중분류 코드 로드
 const handleSubCategoryCode = async () => {
   try {
-    loading.value = true;
-    console.log("중분류 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: searchProcessType.value,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
-      if (result.response && Array.isArray(result.response)) {
-        searchSubCategoryOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
-      } else {
-        console.log("중분류 데이터가 없습니다.");
-      }
-    } else {
-      alert(`중분류 코드 검색 실패: ${result.message}`);
+    if (processStore.searchProcessType) {
+      await processStore.loadSubCategoryCodes(processStore.searchProcessType);
     }
-    
   } catch (error: any) {
-    console.error("중분류 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`중분류 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
+    const errorMessage = error?.message || "중분류 코드 로드 실패";
+    alert(`중분류 코드 로드 실패: ${errorMessage}`);
   }
 };
 
-// 등록 모달용 중분류 select 항목 공통코드 조회
-const handleRegistMiddleCodeSearch = async () => {
-  try {
-    loading.value = true;
-    console.log("등록 모달 중분류 코드 검색 시작: /api/process/code/search");
-    
-    if (!registForm.value.processType) {
-      console.log("등록 모달 공정구분이 선택되지 않았습니다.");
-      return;
-    }
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: registForm.value.processType,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
-      if (result.response && Array.isArray(result.response)) {
-        searchSubCategoryOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 등록 모달 중분류 옵션:", searchSubCategoryOptions.value);
-      } else {
-        console.log("등록 모달 중분류 데이터가 없습니다.");
-      }
-    } else {
-      alert(`등록 모달 중분류 코드 검색 실패: ${result.message}`);
-    }
-    
-  } catch (error: any) {
-    console.error("등록 모달 중분류 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`등록 모달 중분류 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
-//공정명 select 항목 공통코드 조회
+// 공정명 코드 로드
 const handleProcessNameCodeSearch = async () => {
   try {
-    loading.value = true;
-    console.log("중분류 코드 검색 시작: /api/process/code/search");
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: searchSubCategoryInput.value,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
-      if (result.response && Array.isArray(result.response)) {
-        searchProcessNameOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
-      } else {
-        console.log("공정명 데이터가 없습니다.");
-      }
-    } else {
-      alert(`공정명 코드 검색 실패: ${result.message}`);
+    if (processStore.searchSubCategoryInput) {
+      await processStore.loadProcessNameCodes(
+        processStore.searchSubCategoryInput
+      );
     }
-    
   } catch (error: any) {
-    console.error("공정명 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`공정명 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
+    const errorMessage = error?.message || "공정명 코드 로드 실패";
+    alert(`공정명 코드 로드 실패: ${errorMessage}`);
   }
 };
 
-// 등록 모달용 공정명 select 항목 공통코드 조회
+// 등록 모달용 중분류 코드 로드
+const handleRegistMiddleCodeSearch = async () => {
+  try {
+    if (registForm.value.processType) {
+      await processStore.loadSubCategoryCodes(registForm.value.processType);
+    }
+  } catch (error: any) {
+    const errorMessage = error?.message || "등록 모달 중분류 코드 로드 실패";
+    alert(`등록 모달 중분류 코드 로드 실패: ${errorMessage}`);
+  }
+};
+
+// 등록 모달용 공정명 코드 로드
 const handleRegistProcessNameCodeSearch = async () => {
   try {
-    loading.value = true;
-    console.log("등록 모달 공정명 코드 검색 시작: /api/process/code/search");
-    
-    if (!registForm.value.processSubCategory) {
-      console.log("등록 모달 중분류가 선택되지 않았습니다.");
-      return;
+    if (registForm.value.processSubCategory) {
+      await processStore.loadProcessNameCodes(
+        registForm.value.processSubCategory
+      );
     }
-    
-    const requestData = {
-      search_field: 'parent_key',
-      search_value: registForm.value.processSubCategory,
-      order_by: 'code_order',
-      order_direction: 'asc'
-    };
-
-    const result = await request("/api/process/code/search", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    console.log("API 응답:", result);
-    
-    if (result.success) {
-      console.log("API 응답 데이터:", result.response);
-      
-      // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
-      if (result.response && Array.isArray(result.response)) {
-        searchProcessNameOptions.value = result.response.map((item: any) => ({
-          value: item.code_key,
-          label: item.code_value
-        }));
-        
-        console.log("생성된 등록 모달 공정명 옵션:", searchProcessNameOptions.value);
-      } else {
-        console.log("등록 모달 공정명 데이터가 없습니다.");
-      }
-    } else {
-      alert(`등록 모달 공정명 코드 검색 실패: ${result.message}`);
-    }
-    
   } catch (error: any) {
-    console.error("등록 모달 공정명 코드 검색 실패:", error);
-    const errorMessage = error.message || error.response || '알 수 없는 오류가 발생했습니다.';
-    alert(`등록 모달 공정명 코드 검색 실패: ${errorMessage}`);
-  } finally {
-    loading.value = false;
+    const errorMessage = error?.message || "등록 모달 공정명 코드 로드 실패";
+    alert(`등록 모달 공정명 코드 로드 실패: ${errorMessage}`);
   }
 };
 
+onMounted(async () => {
+  try {
+    console.log("=== Process.vue onMounted 시작 ===");
 
-onMounted(() => {
-  // 초기 공정구분 옵션 로드 - handleProcessCodeSearch 함수 사용
-  handleProcessCodeSearch();
-  
-  // 화면 로드 시 초기 검색 수행하여 표에 데이터 표시
-  handleSearch();
+    // 1. 초기 공정구분 옵션 로드
+    try {
+      await processStore.loadProcessTypeCodes();
+      console.log("1. 공정구분 옵션 로드 완료");
+    } catch (error) {
+      console.error("공정구분 옵션 로드 실패:", error);
+    }
+
+    // 2. 화면 로드 시 초기 검색 수행하여 표에 데이터 표시
+    try {
+      await processStore.searchProcesses();
+      console.log("2. 초기 검색 완료");
+    } catch (error) {
+      console.error("초기 검색 실패:", error);
+    }
+
+    console.log("=== Process.vue 초기화 완료 ===");
+  } catch (error) {
+    console.error("Process.vue 초기화 중 오류 발생:", error);
+  }
 });
-
-
 </script>
 
 <style scoped lang="scss">
@@ -1282,5 +877,39 @@ onMounted(() => {
 .action-bar {
   display: flex;
   margin-bottom: $spacing-lg;
+}
+
+// ProcessDetail 모달 스타일
+.detail-modal-overlay {
+  z-index: 1000;
+}
+
+.detail-modal-container {
+  width: 90vw;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 800px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-modal-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+
+  .process-page {
+    padding: 0;
+    height: 100%;
+    overflow: auto;
+  }
+}
+
+.detail-modal-footer {
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
 }
 </style>

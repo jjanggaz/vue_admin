@@ -567,22 +567,70 @@ const handleEdit = async () => {
     try {
       const roleDetail = await roleStore.fetchRoleDetail(role.role_id);
       if (roleDetail && roleDetail.menus) {
-        // 기존 메뉴들을 찾아서 선택 상태로 설정
-        const existingMenuIds = roleDetail.menus.map(
-          (menu: any) => menu.menu_id
+        // 모든 레벨의 메뉴 ID를 재귀적으로 수집하는 함수
+        const collectAllMenuIds = (menus: any[]): string[] => {
+          const allIds: string[] = [];
+
+          menus.forEach((menu) => {
+            // 현재 메뉴 ID 추가
+            if (menu.menu_id) {
+              allIds.push(menu.menu_id);
+            }
+
+            // children이 있으면 재귀적으로 처리
+            if (menu.children && menu.children.length > 0) {
+              allIds.push(...collectAllMenuIds(menu.children));
+            }
+          });
+
+          return allIds;
+        };
+
+        // 모든 레벨의 메뉴 ID 수집
+        const allExistingMenuIds = collectAllMenuIds(roleDetail.menus);
+        console.log("수집된 모든 메뉴 ID들:", allExistingMenuIds);
+
+        // WAI_WEB_VIEW 메뉴들에서 기존 선택된 것들 찾기 (모든 레벨 포함)
+        const findSelectedMenus = (
+          menus: MenuItem[],
+          selectedIds: string[]
+        ): MenuItem[] => {
+          const selected: MenuItem[] = [];
+
+          const traverseMenus = (menuList: MenuItem[]) => {
+            menuList.forEach((menu) => {
+              // 현재 메뉴가 선택되어 있는지 확인
+              if (selectedIds.includes(menu.menu_id)) {
+                selected.push(menu);
+                console.log(
+                  `메뉴 선택됨: ${menu.menu_name} (ID: ${menu.menu_id}, 타입: ${menu.menu_type})`
+                );
+              }
+
+              // children이 있으면 재귀적으로 처리
+              if (menu.children && menu.children.length > 0) {
+                traverseMenus(menu.children);
+              }
+            });
+          };
+
+          traverseMenus(menus);
+          return selected;
+        };
+
+        // VIEW 메뉴들에서 선택된 것들 찾기
+        selectedViewMenus.value = findSelectedMenus(
+          viewMenus.value,
+          allExistingMenuIds
         );
 
-        // WAI_WEB_VIEW 메뉴들에서 기존 선택된 것들 찾기
-        selectedViewMenus.value = viewMenus.value.filter((menu: MenuItem) =>
-          existingMenuIds.includes(menu.menu_id)
+        // ADMIN 메뉴들에서 선택된 것들 찾기
+        selectedAdminMenus.value = findSelectedMenus(
+          adminMenus.value,
+          allExistingMenuIds
         );
 
-        // WAI_WEB_ADMIN 메뉴들에서 기존 선택된 것들 찾기
-        selectedAdminMenus.value = adminMenus.value.filter((menu: MenuItem) =>
-          existingMenuIds.includes(menu.menu_id)
-        );
-
-        console.log("기존 선택된 메뉴 복원:", {
+        console.log("기존 선택된 메뉴 복원 (모든 레벨 포함):", {
           view: selectedViewMenus.value,
           admin: selectedAdminMenus.value,
         });

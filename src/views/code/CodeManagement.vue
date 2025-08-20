@@ -14,7 +14,7 @@
                :key="group.key"
                :value="group.key"
              >
-             {{ group.value }}
+             {{ group.value }} [{{ group.key }}]
                <!-- {{ group.value }} [{{ group.key }}] -->
              </option>
            </select>
@@ -475,18 +475,20 @@ const newCode = ref<CodeItem>({
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  // {
-  //   key: "parent_key",
-  //   title: t("columns.code.parentCode"),
-  //   width: "100px",
-  //   sortable: true,
-  // },
-  // {
-  //   key: "code_group",
-  //   title: t("columns.code.codeGroup"),
-  //   width: "120px",
-  //   sortable: true,
-  // },
+  {
+    key: "parent_key",
+    title: t("columns.code.parentCode"),
+    width: "100px",
+    sortable: true,
+    hidden: true,
+  },
+  {
+    key: "code_group",
+    title: t("columns.code.codeGroup"),
+    width: "120px",
+    sortable: true,
+    hidden: true,
+  },
   {
     key: "code_key",
     title: t("columns.code.code"),
@@ -624,6 +626,26 @@ const loadCategories2 = async (category1Key: string) => {
 // 소분류 로드 (선택된 중분류의 code_key를 parent_key로 사용)
 const loadCategories3 = async (category2Key: string) => {
   await loadCategoryData(category2Key, uniqueCategories3, "소분류");
+};
+
+// 모든 selectbox 데이터를 refresh하는 공용 함수
+const refreshAllSelectBoxes = async () => {
+  // 코드그룹 selectbox refresh
+  await loadCodeGroups();
+  
+  // 현재 선택된 값들에 따라 하위 카테고리들도 refresh
+  if (searchCodeGroupInput.value) {
+    await loadCategories1(searchCodeGroupInput.value);
+  }
+  if (searchCategory1Input.value) {
+    await loadCategories2(searchCategory1Input.value);
+  }
+  if (searchCategory2Input.value) {
+    await loadCategories3(searchCategory2Input.value);
+  }
+  
+  // 메인 데이터 refresh
+  await loadData();
 };
 
 // 드롭다운 변경 이벤트 핸들러들
@@ -886,8 +908,8 @@ const handleModalSave = async (data: any[]) => {
     isRegistModalOpen.value = false;
     isEditMode.value = false;
 
-    await loadCodeGroups();
-    await loadData();
+    // 모든 selectbox 데이터 refresh
+    await refreshAllSelectBoxes();
 
   } catch (error: any) {
     console.error("코드 저장 실패:", error);
@@ -930,7 +952,7 @@ const handleSingleRegist = () => {
     code_key: "",
     code_value: "",
     code_value_en: "",
-    code_order: "",
+    code_order: "1",
     is_active: true,
     parent_key: parentKey,
     code_level: codeLevel,
@@ -1098,7 +1120,7 @@ const updateCode = async () => {
       code_key: "",
       code_value: "",
       code_value_en: "",
-      code_order: "",
+      code_order: "1",
       is_active: true,
       parent_key: "",
       code_level: "",
@@ -1106,8 +1128,12 @@ const updateCode = async () => {
     };
     isEditMode.value = false;
 
-    await loadCodeGroups();
-    await loadData();
+    
+
+    // 모든 selectbox 데이터 refresh
+    await refreshAllSelectBoxes();
+
+    console.log("등록 성공 - 모든 selectbox 데이터 refresh 완료");
 
   } catch (error: any) {
     console.error("코드 저장 실패:", error);
@@ -1148,8 +1174,11 @@ const handleDelete = async () => {
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
 
-      await loadCodeGroups();
-      await loadData();
+      // 모든 selectbox 데이터 refresh
+      await refreshAllSelectBoxes();
+
+      console.log("삭제 성공 - 모든 selectbox 데이터 refresh 완료");
+
       selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     } catch (error: any) {
       console.error("삭제 실패:", error);

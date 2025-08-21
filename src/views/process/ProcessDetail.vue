@@ -61,7 +61,7 @@
               type="text"
               class="file-name-input"
               :value="processStore.processDetail.processSymbol || ''"
-              :placeholder="t('placeholder.selectFile')"
+              placeholder="파일 선택"
               readonly
             />
             <label class="file-select-btn">
@@ -74,10 +74,6 @@
             </label>
           </div>
         </dd>
-        <!-- <dt class="essential">계산식</dt>
-          <dd>
-            <input type="text" class="form-input" :placeholder="t('placeholder.projectDetail')">
-          </dd> -->
         <dt>{{ t("processDetail.description") }}</dt>
         <dd class="extend-all">
           <input
@@ -123,203 +119,160 @@
 
     <!-- 탭별 버튼들 -->
     <div class="tab-buttons">
-      <!-- P&ID 탭 버튼들 -->
-      <div v-if="activeTab === 0" class="btns">
-        <button class="btn btn-primary btn-regist" @click="openPidModal">
-          {{ t("processDetail.addPid") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handlePidDelete"
-          :disabled="selectedPidItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
-      </div>
+             <!-- PFD 탭 버튼들 -->
+       <div v-if="activeTab === 0" class="btns">
+         <button class="btn btn-primary btn-add" @click="openPfdModal">
+           {{ t("common.add") }}
+         </button>
+         <button
+           class="btn btn-primary btn-delete"
+           @click="handlePfdDelete"
+           :disabled="selectedPfdItems.length === 0"
+         >
+           {{ t("common.delete") }}
+         </button>
+       </div>
 
-      <!-- PFD 탭 버튼들 -->
-      <div v-if="activeTab === 4" class="btns">
-        <button class="btn btn-primary btn-add" @click="openPfdModal">
-          {{ t("common.add") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handlePfdDelete"
-          :disabled="selectedPfdItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
-      </div>
+                      <!-- P&ID 탭 버튼들 -->
+         <div v-if="activeTab === 1" class="btns">
+           <button class="btn btn-primary btn-regist" @click="openPidModal">
+             {{ t("processDetail.addPid") }}
+           </button>
+           <button
+             class="btn btn-primary btn-delete"
+             @click="handlePidDelete"
+             :disabled="selectedPidItems.length === 0"
+           >
+             {{ t("common.delete") }}
+           </button>
+         </div>
 
-      <!-- 전기도면 탭 버튼들 -->
-      <div v-if="activeTab === 5" class="btns">
-        <button class="btn btn-primary btn-add" @click="openElectricModal">
-          {{ t("common.add") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleElectricDelete"
-          :disabled="selectedElectricItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
-      </div>
+        <!-- 계산식 관리 탭 버튼들 -->
+        <div v-if="activeTab === 2" class="btns">
+          <button class="btn btn-primary btn-add" @click="openFormulaModal">
+            {{ t("common.add") }}
+          </button>
+          <button
+            class="btn btn-primary btn-delete"
+            @click="handleFormulaDelete"
+            :disabled="selectedFormulaItems.length === 0"
+          >
+            {{ t("common.delete") }}
+          </button>
+        </div>
 
-      <!-- Mcc 구성도 탭 버튼들 -->
-      <div v-if="activeTab === 6" class="btns">
-        <button class="btn btn-primary btn-add" @click="openMccModal">
-          {{ t("common.add") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleMccDelete"
-          :disabled="selectedMccItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
-      </div>
+                           <!-- 수리계통도 탭 버튼들 -->
+        <div v-if="activeTab === 3" class="btns">
+          <button class="btn btn-primary btn-add" @click="openHydraulicModal">
+            {{ t("common.add") }}
+          </button>
+          <button
+            class="btn btn-primary btn-delete"
+            @click="handleHydraulicDelete"
+            :disabled="selectedHydraulicItems.length === 0"
+          >
+            {{ t("common.delete") }}
+          </button>
+        </div>
+
+
     </div>
   </div>
 
-  <div class="tab-content">
-    <div v-if="activeTab === 0" class="content">
-      <!-- P&ID 탭 -->
-      <DataTable
-        :columns="pidColumns"
-        :data="pagedPidList"
-        :loading="loading"
-        :selectable="true"
-        :selectedItems="selectedPidItems"
-        @selection-change="handlePidSelectionChange"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <div class="pagination-container">
-        <Pagination
-          :current-page="currentPagePid"
-          :total-pages="totalPagesPid"
-          @page-change="handlePageChangePid"
+     <div class="tab-content">
+     <div v-if="activeTab === 0" class="content">
+       <!-- PFD 탭 -->
+       <DataTable
+         :columns="pfdColumns"
+         :data="pagedPfdList"
+         :loading="loading"
+         :selectable="true"
+         :selectedItems="selectedPfdItems"
+         @selection-change="handlePfdSelectionChange"
+         @sort-change="handleSortChange"
+         @row-click="handleRowClick"
+       />
+       <div class="pagination-container">
+         <Pagination
+           :current-page="currentPagePfd"
+           :total-pages="totalPagesPfd"
+           @page-change="handlePageChangePfd"
+         />
+       </div>
+     </div>
+
+     <div v-if="activeTab === 1" class="content">
+       <!-- P&ID 탭 -->
+       <DataTable
+         :columns="pidColumns"
+         :data="pagedPidList"
+         :loading="loading"
+         :selectable="true"
+         :selectedItems="selectedPidItems"
+         @selection-change="handlePidSelectionChange"
+         @sort-change="handleSortChange"
+         @row-click="handleRowClick"
+       />
+       <div class="pagination-container">
+         <Pagination
+           :current-page="currentPagePid"
+           :total-pages="totalPagesPid"
+           @page-change="handlePageChangePid"
+         />
+       </div>
+     </div>
+
+          <div v-if="activeTab === 4" class="content">
+        <!-- 공용구조물 탭 -->
+       <DataTable
+         :columns="structColumns"
+         :data="structList"
+         :loading="loading"
+         @sort-change="handleSortChange"
+         @row-click="handleRowClick"
+       />
+     </div>
+          <div v-if="activeTab === 2" class="content">
+        <!-- 계산식 관리 탭 -->
+       <DataTable
+         :columns="formulaColumns"
+         :data="pagedFormulaList"
+         :loading="loading"
+         :selectable="true"
+         :selectedItems="selectedFormulaItems"
+         @selection-change="handleFormulaSelectionChange"
+         @sort-change="handleSortChange"
+         @row-click="handleRowClick"
+       />
+       <div class="pagination-container">
+         <Pagination
+           :current-page="currentPageFormula"
+           :total-pages="totalPagesFormula"
+           @page-change="handlePageChangeFormula"
+         />
+       </div>
+     </div>
+                   <div v-if="activeTab === 3" class="content">
+        <!-- 수리계통도 탭 -->
+        <DataTable
+          :columns="hydraulicColumns"
+          :data="pagedHydraulicList"
+          :loading="loading"
+          :selectable="true"
+          :selectedItems="selectedHydraulicItems"
+          @selection-change="handleHydraulicSelectionChange"
+          @sort-change="handleSortChange"
+          @row-click="handleRowClick"
         />
+        <div class="pagination-container">
+          <Pagination
+            :current-page="currentPageHydraulic"
+            :total-pages="totalPagesHydraulic"
+            @page-change="handlePageChangeHydraulic"
+          />
+        </div>
       </div>
-    </div>
-    <div
-      v-if="activeTab === 1"
-      class="content display-grid-2"
-      style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px"
-    >
-      <!-- 설계조건 탭: 기본 테이블 -->
-      <DataTable
-        :columns="designColumns"
-        :data="designList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <!-- 설계조건 탭: 세부 Criteria 테이블 -->
-      <DataTable
-        :columns="designCriteriaColumns"
-        :data="designCriteriaList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <!-- 설계조건 탭: 파라미터 테이블 -->
-      <DataTable
-        :columns="designParameterColumns"
-        :data="designParameterList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <!-- 설계조건 탭: 효율 테이블 -->
-      <DataTable
-        :columns="designEfficiencyColumns"
-        :data="designEfficiencyList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-    </div>
-    <div v-if="activeTab === 2" class="content">
-      <!-- 공용구조물 탭 -->
-      <DataTable
-        :columns="structColumns"
-        :data="structList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-    </div>
-    <div v-if="activeTab === 3" class="content">
-      <!-- 계산식 관리 탭 -->
-      <DataTable
-        :columns="calculationColumns"
-        :data="calculationList"
-        :loading="loading"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-    </div>
-    <div v-if="activeTab === 4" class="content">
-      <!-- PFD 탭 -->
-      <DataTable
-        :columns="pfdColumns"
-        :data="pagedPfdList"
-        :loading="loading"
-        :selectable="true"
-        :selectedItems="selectedPfdItems"
-        @selection-change="handlePfdSelectionChange"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <div class="pagination-container">
-        <Pagination
-          :current-page="currentPagePfd"
-          :total-pages="totalPagesPfd"
-          @page-change="handlePageChangePfd"
-        />
-      </div>
-    </div>
-    <div v-if="activeTab === 5" class="content">
-      <!-- 전기도면 탭 -->
-      <DataTable
-        :columns="electricColumns"
-        :data="pagedElectricList"
-        :loading="loading"
-        :selectable="true"
-        :selectedItems="selectedElectricItems"
-        @selection-change="handleElectricSelectionChange"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <div class="pagination-container">
-        <Pagination
-          :current-page="currentPageElectric"
-          :total-pages="totalPagesElectric"
-          @page-change="handlePageChangeElectric"
-        />
-      </div>
-    </div>
-    <div v-if="activeTab === 6" class="content">
-      <!-- Mcc 구성도 탭 -->
-      <DataTable
-        :columns="mccColumns"
-        :data="pagedMccList"
-        :loading="loading"
-        :selectable="true"
-        :selectedItems="selectedMccItems"
-        @selection-change="handleMccSelectionChange"
-        @sort-change="handleSortChange"
-        @row-click="handleRowClick"
-      />
-      <div class="pagination-container">
-        <Pagination
-          :current-page="currentPageMcc"
-          :total-pages="totalPagesMcc"
-          @page-change="handlePageChangeMcc"
-        />
-      </div>
-    </div>
+         
   </div>
 
   <!-- P&ID 파일 첨부 모달 -->
@@ -344,7 +297,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('pidFiles')"
-                :placeholder="t('placeholder.selectFile')"
+                placeholder="파일 선택"
                 readonly
               />
               <label class="file-select-btn">
@@ -392,7 +345,7 @@
                 type="text"
                 class="file-name-input"
                 :value="getSelectedFilesText('pfdFiles')"
-                :placeholder="t('placeholder.selectFile')"
+                placeholder="파일 선택"
                 readonly
               />
               <label class="file-select-btn">
@@ -418,14 +371,15 @@
       </div>
     </div>
   </div>
-  <!-- Electric 파일 첨부 모달 -->
-  <div v-if="showElectricModal" class="modal-overlay">
+
+  <!-- 계산식 관리 파일 첨부 모달 -->
+  <div v-if="showFormulaModal" class="modal-overlay">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>{{ t("processDetail.attachElectricFile") }}</h3>
+        <h3>{{ t("processDetail.attachFormulaFile") }}</h3>
         <button
           class="btn-close"
-          @click="closeElectricModal"
+          @click="closeFormulaModal"
           :aria-label="t('common.close')"
         >
           ×
@@ -433,14 +387,14 @@
       </div>
       <div class="modal-body">
         <dl class="column-regist">
-          <dt class="essential">{{ t("processDetail.attachElectricFile") }}</dt>
+          <dt class="essential">{{ t("processDetail.attachFormulaFile") }}</dt>
           <dd>
             <div class="file-upload-row">
               <input
                 type="text"
                 class="file-name-input"
-                :value="getSelectedFilesText('electricFiles')"
-                :placeholder="t('placeholder.selectFile')"
+                :value="getSelectedFilesText('formulaFiles')"
+                placeholder="파일 선택"
                 readonly
               />
               <label class="file-select-btn">
@@ -448,7 +402,7 @@
                 <input
                   type="file"
                   multiple
-                  @change="handleElectricFilesSelected"
+                  @change="handleFormulaFilesSelected"
                   style="display: none"
                 />
               </label>
@@ -457,63 +411,65 @@
         </dl>
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadElectricFiles">
+        <button class="btn btn-primary" @click="uploadFormulaFiles">
           {{ t("common.upload") }}
         </button>
-        <button class="btn" @click="closeElectricModal">
+        <button class="btn" @click="closeFormulaModal">
           {{ t("common.cancel") }}
         </button>
       </div>
     </div>
   </div>
-  <!-- Mcc 구성도 파일 첨부 모달 -->
-  <div v-if="showMccModal" class="modal-overlay">
-    <div class="modal-window">
-      <div class="modal-header">
-        <h3>{{ t("processDetail.attachMccFile") }}</h3>
-        <button
-          class="btn-close"
-          @click="closeMccModal"
-          :aria-label="t('common.close')"
-        >
-          ×
-        </button>
-      </div>
-      <div class="modal-body">
-        <dl class="column-regist">
-          <dt class="essential">{{ t("processDetail.attachMccFile") }}</dt>
-          <dd>
-            <div class="file-upload-row">
-              <input
-                type="text"
-                class="file-name-input"
-                :value="getSelectedFilesText('mccFiles')"
-                :placeholder="t('placeholder.selectFile')"
-                readonly
-              />
-              <label class="file-select-btn">
-                {{ t("common.selectFile") }}
-                <input
-                  type="file"
-                  multiple
-                  @change="handleMccFilesSelected"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </dd>
-        </dl>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadMccFiles">
-          {{ t("common.upload") }}
-        </button>
-        <button class="btn" @click="closeMccModal">
-          {{ t("common.cancel") }}
-        </button>
-      </div>
-    </div>
-  </div>
+  
+
+   <!-- 수리계통도 파일 첨부 모달 -->
+   <div v-if="showHydraulicModal" class="modal-overlay">
+     <div class="modal-window">
+       <div class="modal-header">
+         <h3>{{ t("processDetail.attachHydraulicFile") }}</h3>
+         <button
+           class="btn-close"
+           @click="closeHydraulicModal"
+           :aria-label="t('common.close')"
+         >
+           ×
+         </button>
+       </div>
+       <div class="modal-body">
+         <dl class="column-regist">
+           <dt class="essential">{{ t("processDetail.attachHydraulicFile") }}</dt>
+           <dd>
+             <div class="file-upload-row">
+               <input
+                 type="text"
+                 class="file-name-input"
+                 :value="getSelectedFilesText('hydraulicFiles')"
+                 placeholder="파일 선택"
+                 readonly
+               />
+               <label class="file-select-btn">
+                 {{ t("common.selectFile") }}
+                 <input
+                   type="file"
+                   multiple
+                   @change="handleHydraulicFilesSelected"
+                   style="display: none"
+                 />
+               </label>
+             </div>
+           </dd>
+         </dl>
+       </div>
+       <div class="modal-buttons">
+         <button class="btn btn-primary" @click="uploadHydraulicFiles">
+           {{ t("common.upload") }}
+         </button>
+         <button class="btn" @click="closeHydraulicModal">
+           {{ t("common.cancel") }}
+         </button>
+       </div>
+     </div>
+   </div>
 </template>
 
 <script setup lang="ts">
@@ -522,7 +478,7 @@ import { useRoute } from "vue-router";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useI18n } from "vue-i18n";
-import { useProcessStore } from "@/stores/processStore";
+import { useProcessStore } from "../../stores/processStore";
 
 // Props 정의
 interface Props {
@@ -533,10 +489,14 @@ const props = withDefaults(defineProps<Props>(), {
   processId: undefined,
 });
 
+// Emits 정의
+defineEmits<{
+  close: [];
+}>();
+
 const { t } = useI18n();
 const route = useRoute();
 const processStore = useProcessStore();
-defineExpose({ t });
 
 // 공통 로딩 상태
 const loading = computed(() => processStore.loading);
@@ -632,6 +592,20 @@ const handlePfdSelectionChange = (items: any[]) => {
   console.log("PFD selection changed:", items);
 };
 
+// 계산식 관리 탭용 컬럼/데이터
+const formulaColumns: TableColumn[] = [
+  { key: "no", title: t("columns.processDetail.no"), sortable: true },
+  { key: "formulaVersion", title: t("columns.processDetail.formulaVersion"), sortable: true },
+  { key: "appliedVersion", title: t("columns.processDetail.appliedVersion"), sortable: true },
+  { key: "remarks", title: t("columns.processDetail.remarks"), sortable: true },
+];
+const formulaList = ref<any[]>([]);
+const selectedFormulaItems = ref<any[]>([]);
+const handleFormulaSelectionChange = (items: any[]) => {
+  selectedFormulaItems.value = items;
+  console.log("Formula selection changed:", items);
+};
+
 // 8: 전기도면 탭용 컬럼/데이터
 const electricColumns: TableColumn[] = [
   { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
@@ -692,6 +666,25 @@ const selectedMccItems = ref<any[]>([]);
 const handleMccSelectionChange = (items: any[]) => {
   selectedMccItems.value = items;
   console.log("MCC diagram selection changed:", items);
+};
+
+// 10: 수리계통도 탭용 컬럼/데이터
+const hydraulicColumns: TableColumn[] = [
+  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
+  {
+    key: "info",
+    title: t("columns.processDetail.infoOverview"),
+    sortable: true,
+  },
+  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
+];
+const hydraulicList = ref<any[]>([]);
+// 수리계통도 탭 선택 상태
+const selectedHydraulicItems = ref<any[]>([]);
+const handleHydraulicSelectionChange = (items: any[]) => {
+  selectedHydraulicItems.value = items;
+  console.log("Hydraulic diagram selection changed:", items);
 };
 
 // 정렬 이벤트 핸들러
@@ -800,14 +793,87 @@ const handleProcessNameCode = async () => {
   }
 };
 
+// 공정 수정 처리 함수
+const handleUpdate = async () => {
+  try {
+    console.log("공정 수정 처리 시작");
+    
+    // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
+    const processId = props.processId || (route.params.id as string);
+    
+    console.log("props.processId:", props.processId);
+    console.log("route.params.id:", route.params.id);
+    console.log("사용할 processId:", processId);
+    
+    if (!processId) {
+      throw new Error("공정 ID가 없습니다. props.processId와 route.params.id 모두 확인해주세요.");
+    }
+    
+    // processName의 label 값과 key(value) 값 찾기
+    // processStore.processDetail.processName에는 선택된 옵션의 value가 저장되어 있음
+    const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+      option => option.value === processStore.processDetail.processName
+    );
+    
+    // processCode에는 value(내부 코드값)를, processName에는 label(표시값)을 사용
+    const processNameValue = selectedProcessNameOption?.value || processStore.processDetail.processName || "";
+    const processNameLabel = selectedProcessNameOption?.label || processStore.processDetail.processName || "";
+    
+    console.log("=== 선택된 공정명 옵션 정보 ===");
+    console.log("selectedProcessNameOption:", selectedProcessNameOption);
+    console.log("processNameValue (processCode용):", processNameValue);
+    console.log("processNameLabel (processName용):", processNameLabel);
+    
+    // globalProcessData 동기화 (processDetail의 현재 값으로 업데이트)
+    const newGlobalData = {
+      level2_code_key: processStore.processDetail.processType || "",
+      level3_code_key: processStore.processDetail.subCategory || "",
+      process_code: processStore.processDetail.processName || "",
+    };
+    
+    processStore.setGlobalProcessData(newGlobalData);
+    
+    const processDetailData = {
+      processType: processStore.processDetail.processType || "",
+      processCode: processNameValue,      // value 값 사용 (내부 코드)
+      processName: processNameLabel,      // label 값 사용 (표시명)
+      subCategory: processStore.processDetail.subCategory || "",
+      processSymbol: processStore.processDetail.processSymbol || "",
+      description: processStore.processDetail.description || "",
+    };
+    
+    console.log("=== processStore.processDetail에서 직접 가져온 데이터 ===");
+    console.log("processDetailData:", processDetailData);
+    
+    await processStore.updateProcess(processId, processDetailData);
+    
+    console.log("공정 수정 완료");
+    alert("공정이 성공적으로 수정되었습니다.");
+    
+    // 목록 새로고침
+    console.log("목록 새로고침 시작");
+    await processStore.searchProcesses();
+    console.log("목록 새로고침 완료");
+    
+    // 부모 컴포넌트에 성공 이벤트 전달 (필요시)
+    // emit('update-success');
+    
+  } catch (error: any) {
+    console.error("공정 수정 실패:", error);
+    const errorMessage = error?.message || "공정 수정 중 오류가 발생했습니다.";
+    alert(`공정 수정 실패: ${errorMessage}`);
+  }
+};
+
+// 컴포넌트 외부에서 사용할 수 있는 메서드들
+defineExpose({ t, handleUpdate });
+
 const tabs = ref([
-  "P&ID",
-  "설계조건",
-  "공용구조물",
-  "계산식 관리",
   "PFD",
-  "전기도면",
-  "Mcc 구성도",
+  "P&ID",
+  "계산식 관리",
+  "수리계통도",
+  "공용구조물",
 ]);
 const activeTab = ref(0);
 const canScrollLeft = ref(false);
@@ -837,9 +903,19 @@ const getSelectedFilesText = (key: string) => {
       : t("common.filesSelected", { count: selectedPidFiles.value.length });
   }
   if (key === "pfdFiles" && selectedPfdFiles.value.length > 0) {
-    return selectedPidFiles.value.length === 1
+    return selectedPfdFiles.value.length === 1
       ? selectedPfdFiles.value[0].name
       : t("common.filesSelected", { count: selectedPfdFiles.value.length });
+  }
+  if (key === "formulaFiles" && selectedFormulaFiles.value.length > 0) {
+    return selectedFormulaFiles.value.length === 1
+      ? selectedFormulaFiles.value[0].name
+      : t("common.filesSelected", { count: selectedFormulaFiles.value.length });
+  }
+  if (key === "hydraulicFiles" && selectedHydraulicFiles.value.length > 0) {
+    return selectedHydraulicFiles.value.length === 1
+      ? selectedHydraulicFiles.value[0].name
+      : t("common.filesSelected", { count: selectedHydraulicFiles.value.length });
   }
   if (key === "electricFiles" && selectedElectricFiles.value.length > 0) {
     return selectedElectricFiles.value.length === 1
@@ -849,7 +925,7 @@ const getSelectedFilesText = (key: string) => {
         });
   }
   if (key === "mccFiles" && selectedMccFiles.value.length > 0) {
-    return selectedPidFiles.value.length === 1
+    return selectedMccFiles.value.length === 1
       ? selectedMccFiles.value[0].name
       : t("common.filesSelected", { count: selectedMccFiles.value.length });
   }
@@ -984,41 +1060,73 @@ const loadData = () => {
       view: "file2.svg",
     },
   ];
-  electricList.value = [
+  formulaList.value = [
     {
       id: "1",
-      dwg: "elec1.dwg",
-      excel: "elec1.xlsx",
-      info: "전도개요1",
-      view: "elec1.svg",
+      no: "1",
+      formulaVersion: "v1.0",
+      appliedVersion: "v1.0",
+      remarks: "초기 계산식",
     },
     {
       id: "2",
-      dwg: "elec2.dwg",
-      excel: "elec2.xlsx",
-      info: "전도개요2",
-      view: "elec2.svg",
+      no: "2",
+      formulaVersion: "v1.1",
+      appliedVersion: "v1.0",
+      remarks: "수정된 계산식",
     },
   ];
-  structList.value = [
-    { id: "1", type: "", components: "", equipmentType: "", item: "" },
-  ];
-  mccList.value = [
-    {
-      id: "1",
-      dwg: "mcc1.dwg",
-      excel: "mcc1.xlsx",
-      info: "Mcc 정보 1",
-      view: "mcc1.svg",
-    },
-    {
-      id: "2",
-      dwg: "mcc2.dwg",
-      excel: "mcc2.xlsx",
-      info: "Mcc 정보 2",
-      view: "mcc2.svg",
-    },
-  ];
+     hydraulicList.value = [
+     {
+       id: "1",
+       dwg: "hydraulic1.dwg",
+       excel: "hydraulic1.xlsx",
+       info: "수리계통도 정보 1",
+       view: "hydraulic1.svg",
+     },
+     {
+       id: "2",
+       dwg: "hydraulic2.dwg",
+       excel: "hydraulic2.xlsx",
+       info: "수리계통도 정보 2",
+       view: "hydraulic2.svg",
+     },
+   ];
+   structList.value = [
+     { id: "1", type: "", components: "", equipmentType: "", item: "" },
+   ];
+   mccList.value = [
+     {
+       id: "1",
+       dwg: "mcc1.dwg",
+       excel: "mcc1.xlsx",
+       info: "Mcc 정보 1",
+       view: "mcc1.svg",
+     },
+     {
+       id: "2",
+       dwg: "mcc2.dwg",
+       excel: "mcc2.xlsx",
+       info: "Mcc 정보 2",
+       view: "mcc2.svg",
+     },
+   ];
+   electricList.value = [
+     {
+       id: "1",
+       dwg: "elec1.dwg",
+       excel: "elec1.xlsx",
+       info: "전도개요1",
+       view: "elec1.svg",
+     },
+     {
+       id: "2",
+       dwg: "elec2.dwg",
+       excel: "elec2.xlsx",
+       info: "전도개요2",
+       view: "elec2.svg",
+     },
+   ];
 };
 
 onMounted(async () => {
@@ -1032,15 +1140,28 @@ onMounted(async () => {
     // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
     const processId = props.processId || (route.params.id as string);
 
-    if (!processId) {
-      console.log("processId가 없어서 초기화를 건너뜁니다.");
+    console.log("=== ProcessDetail.vue processId 확인 ===");
+    console.log("props.processId:", props.processId);
+    console.log("props.processId 타입:", typeof props.processId);
+    console.log("route.params.id:", route.params.id);
+    console.log("route.params.id 타입:", typeof route.params.id);
+    console.log("사용할 processId:", processId);
+    console.log("사용할 processId 타입:", typeof processId);
+
+    if (!processId || processId === "undefined" || processId === "null") {
+      console.log("processId가 없거나 유효하지 않아서 초기화를 건너뜁니다.");
       return;
     }
 
-    console.log("=== ProcessDetail.vue processId 확인 ===");
-    console.log("props.processId:", props.processId);
-    console.log("route.params.id:", route.params.id);
-    console.log("사용할 processId:", processId);
+    // processId가 문자열이 아닌 경우 문자열로 변환
+    const validProcessId = String(processId).trim();
+    
+    if (!validProcessId) {
+      console.log("processId가 빈 문자열이어서 초기화를 건너뜁니다.");
+      return;
+    }
+
+    console.log("유효한 processId:", validProcessId);
 
     // 1. 공정구분 코드 리스트 로드
     try {
@@ -1052,8 +1173,19 @@ onMounted(async () => {
 
     // 2. 화면 로드 시 handleSearch 함수 수행하여 입력 필드 값들 초기화
     try {
-      await processStore.searchProcessById(processId);
+      await processStore.searchProcessById(validProcessId);
       console.log("2. handleSearch 완료");
+      
+      // 2-1. 공정구분(processType) 초기값 설정
+      if (processStore.globalProcessData.level2_code_key) {
+        processStore.setProcessDetail({
+          processType: processStore.globalProcessData.level2_code_key,
+        });
+        console.log(
+          "2-1. processType 초기값 설정:",
+          processStore.globalProcessData.level2_code_key
+        );
+      }
     } catch (error) {
       console.error("handleSearch 실패:", error);
     }
@@ -1174,6 +1306,21 @@ const handlePageChangePfd = (page: number) => {
   currentPagePfd.value = page;
 };
 
+// Formula pagination state
+const currentPageFormula = ref(1);
+const totalPagesFormula = computed(
+  () => Math.ceil(formulaList.value.length / pageSize.value) || 1
+);
+const pagedFormulaList = computed(() =>
+  formulaList.value.slice(
+    (currentPageFormula.value - 1) * pageSize.value,
+    currentPageFormula.value * pageSize.value
+  )
+);
+const handlePageChangeFormula = (page: number) => {
+  currentPageFormula.value = page;
+};
+
 // Electric pagination state
 const currentPageElectric = ref(1);
 const totalPagesElectric = computed(
@@ -1202,6 +1349,21 @@ const pagedMccList = computed(() =>
 );
 const handlePageChangeMcc = (page: number) => {
   currentPageMcc.value = page;
+};
+
+// Hydraulic pagination state
+const currentPageHydraulic = ref(1);
+const totalPagesHydraulic = computed(
+  () => Math.ceil(hydraulicList.value.length / pageSize.value) || 1
+);
+const pagedHydraulicList = computed(() =>
+  hydraulicList.value.slice(
+    (currentPageHydraulic.value - 1) * pageSize.value,
+    currentPageHydraulic.value * pageSize.value
+  )
+);
+const handlePageChangeHydraulic = (page: number) => {
+  currentPageHydraulic.value = page;
 };
 
 // Modal state for P&ID file upload
@@ -1241,8 +1403,28 @@ const handlePfdFilesSelected = (event: Event) => {
   console.log("Selected PFD files:", selectedPidFiles.value);
 };
 const uploadPfdFiles = () => {
-  console.log("PFD upload executed:", selectedPidFiles.value);
+  console.log("PFD upload executed:", selectedPfdFiles.value);
   closePfdModal();
+};
+
+// Modal state for Formula file upload
+const showFormulaModal = ref(false);
+const selectedFormulaFiles = ref<File[]>([]);
+const openFormulaModal = () => {
+  showFormulaModal.value = true;
+};
+const closeFormulaModal = () => {
+  showFormulaModal.value = false;
+  selectedFormulaFiles.value = [];
+};
+const handleFormulaFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files;
+  selectedFormulaFiles.value = files ? Array.from(files) : [];
+  console.log("Selected formula files:", selectedFormulaFiles.value);
+};
+const uploadFormulaFiles = () => {
+  console.log("Formula upload executed:", selectedFormulaFiles.value);
+  closeFormulaModal();
 };
 
 const showElectricModal = ref(false);
@@ -1281,6 +1463,26 @@ const handleMccFilesSelected = (event: Event) => {
 const uploadMccFiles = () => {
   console.log("MCC upload executed:", selectedMccFiles.value);
   closeMccModal();
+};
+
+// Modal state for Hydraulic diagram file upload
+const showHydraulicModal = ref(false);
+const selectedHydraulicFiles = ref<File[]>([]);
+const openHydraulicModal = () => {
+  showHydraulicModal.value = true;
+};
+const closeHydraulicModal = () => {
+  showHydraulicModal.value = false;
+  selectedHydraulicFiles.value = [];
+};
+const handleHydraulicFilesSelected = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files;
+  selectedHydraulicFiles.value = files ? Array.from(files) : [];
+  console.log("Selected Hydraulic diagram files:", selectedHydraulicFiles.value);
+};
+const uploadHydraulicFiles = () => {
+  console.log("Hydraulic diagram upload executed:", selectedHydraulicFiles.value);
+  closeHydraulicModal();
 };
 
 // 삭제 핸들러 함수들
@@ -1330,6 +1532,30 @@ const handlePfdDelete = () => {
   }
 };
 
+// 계산식 관리 탭 삭제 함수
+const handleFormulaDelete = () => {
+  if (selectedFormulaItems.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  if (
+    confirm(
+      t("messages.confirm.deleteItems", {
+        count: selectedFormulaItems.value.length,
+      })
+    )
+  ) {
+    // 선택된 항목들을 formulaList에서 제거
+    const selectedIds = selectedFormulaItems.value.map((item) => item.no);
+    formulaList.value = formulaList.value.filter(
+      (item) => !selectedIds.includes(item.no)
+    );
+    selectedFormulaItems.value = [];
+    alert(t("messages.success.formulaItemDeleted"));
+  }
+};
+
 const handleElectricDelete = () => {
   if (selectedElectricItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
@@ -1375,6 +1601,31 @@ const handleMccDelete = () => {
     alert(t("messages.success.mccDiagramItemDeleted"));
   }
 };
+
+const handleHydraulicDelete = () => {
+  if (selectedHydraulicItems.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  if (
+    confirm(
+      t("messages.confirm.deleteItems", {
+        count: selectedHydraulicItems.value.length,
+      })
+    )
+  ) {
+    // 선택된 항목들을 hydraulicList에서 제거
+    const selectedIds = selectedHydraulicItems.value.map((item) => item.dwg);
+    hydraulicList.value = hydraulicList.value.filter(
+      (item) => !selectedIds.includes(item.dwg)
+    );
+    selectedHydraulicItems.value = [];
+    alert(t("messages.success.hydraulicDiagramItemDeleted"));
+  }
+};
+
+// 컴포넌트 외부에서 사용할 수 있는 메서드들
 </script>
 
 <style scoped lang="scss">
@@ -1541,5 +1792,26 @@ const handleMccDelete = () => {
       opacity: 0.6;
     }
   }
+}
+
+.file-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.file-name-input {
+  flex: 1 1 0%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-select-btn {
+  white-space: nowrap;
 }
 </style>

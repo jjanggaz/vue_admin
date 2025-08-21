@@ -382,7 +382,7 @@
           </button>
           <button
             class="btn btn-primary"
-            @click="handleDetailUpdate"
+            @click="processDetailRef?.handleUpdate"
             :disabled="!isDetailFormValid"
           >
             저장
@@ -627,40 +627,8 @@ const closeDetailModal = () => {
   selectedProcessId.value = undefined;
 };
 
-const handleDetailUpdate = async () => {
-  try {
-    console.log("ProcessDetail 업데이트 처리 시작");
-
-    // ProcessDetail 컴포넌트의 폼 데이터를 가져와서 업데이트 처리
-    if (selectedProcessId.value && processStore.processDetail) {
-      const processData = { ...processStore.processDetail };
-
-      console.log("업데이트할 데이터:", {
-        processId: selectedProcessId.value,
-        processData: processData,
-      });
-
-      // processStore의 updateProcess 액션 호출
-      await processStore.updateProcess(selectedProcessId.value, processData);
-
-      console.log("공정 수정 완료");
-      alert("공정이 성공적으로 수정되었습니다.");
-
-      // 수정 성공 후 목록 새로고침
-      await processStore.searchProcesses();
-
-      // 모달 닫기
-      closeDetailModal();
-    } else {
-      console.error("업데이트할 데이터가 없습니다.");
-      alert("업데이트할 데이터를 찾을 수 없습니다.");
-    }
-  } catch (error: any) {
-    console.error("공정 수정 실패:", error);
-    const errorMessage = error?.message || "공정 수정 중 오류가 발생했습니다.";
-    alert(`공정 수정 실패: ${errorMessage}`);
-  }
-};
+// ProcessDetail 컴포넌트에서 직접 업데이트를 처리하므로 이 함수는 불필요
+// const handleDetailUpdate = async () => { ... };
 
 const isDetailFormValid = computed(() => {
   // ProcessDetail 컴포넌트의 폼 유효성 검사 결과를 반환

@@ -25,6 +25,7 @@ export interface ProcessDetail {
   processType: string | null;
   processName: string | null;
   subCategory: string | null;
+  processCode: string | null;
   processSymbol: string;
   description: string;
 }
@@ -62,6 +63,7 @@ export const useProcessStore = defineStore("process", () => {
     processType: null,
     processName: null,
     subCategory: null,
+    processCode: null,
     processSymbol: "",
     description: "",
   });
@@ -292,18 +294,29 @@ export const useProcessStore = defineStore("process", () => {
     try {
       setLoading(true);
       console.log("ProcessDetail 검색 시작: /api/process/master/search");
+      console.log("전달받은 processId:", processId);
+      console.log("processId 타입:", typeof processId);
 
-      if (!processId) {
-        console.log("processId가 없어서 검색을 건너뜁니다.");
+      if (!processId || processId === "undefined" || processId === "null") {
+        console.log("processId가 없거나 유효하지 않아서 검색을 건너뜁니다.");
+        return null;
+      }
+
+      // processId가 문자열이 아닌 경우 문자열로 변환
+      const validProcessId = String(processId).trim();
+      
+      if (!validProcessId) {
+        console.log("processId가 빈 문자열이어서 검색을 건너뜁니다.");
         return null;
       }
 
       const requestData = {
         search_field: "process_id",
-        search_value: processId,
+        search_value: validProcessId,
       };
 
       console.log("검색 요청 데이터:", requestData);
+      console.log("요청 데이터 JSON:", JSON.stringify(requestData));
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -650,14 +663,14 @@ export const useProcessStore = defineStore("process", () => {
 
       console.log("공정 등록 API 응답:", result);
 
-      if (result.response.data.success) {
-        // 등록 성공 후 목록 새로고침
-        await searchProcesses();
-        return result;
-      } else {
-        const errorMessage = result.message || "등록 실패";
-        throw new Error(`${errorMessage}\n${result.response.data.message}`);
-      }
+             if (result.success) {
+         // 등록 성공 후 목록 새로고침
+         await searchProcesses();
+         return result;
+       } else {
+         const errorMessage = result.message || "등록 실패";
+         throw new Error(errorMessage);
+       }
     } catch (error: any) {
       console.error("등록 실패:", error);
       throw error;
@@ -675,16 +688,38 @@ export const useProcessStore = defineStore("process", () => {
       console.log("공정 수정 요청 데이터:", { processId, processData });
 
       // API 요청을 위한 데이터 구조 변환
+      console.log("=== processData 원본 데이터 ===");
+      console.log("processData.processType:", processData.processType);
+      console.log("processData.processCode:", processData.processCode);
+      console.log("processData.processName:", processData.processName);
+      console.log("processData.subCategory:", processData.subCategory);
+      console.log("processData.processSymbol:", processData.processSymbol);
+      console.log("processData.description:", processData.description);
+      
+      // API 서버에서 요구하는 필드명으로 데이터 구조 변환
       const updateData = {
-        process_id: processId,
-        process_type: processData.processType,
-        process_nm: processData.processName,
-        sub_category: processData.subCategory,
-        process_symbol: processData.processSymbol,
-        process_description: processData.description,
+        process_code: processData.processCode || "",          // 공정 코드 (내부 코드값)
+        process_type_code: processData.processType || "",     // 공정 타입 코드
+        process_name: processData.processName || "",          // 공정명 (표시명)
+        process_category: processData.subCategory || "",      // 공정 카테고리
+        process_symbol: processData.processSymbol || "",      // 공정 심볼
+        process_description: processData.description || "",   // 공정 설명
       };
+      
+      console.log("=== API 요청용 변환된 데이터 ===");
+      console.log("process_code:", updateData.process_code);
+      console.log("process_type_code:", updateData.process_type_code);
+      console.log("process_name:", updateData.process_name);
+      console.log("process_category:", updateData.process_category);
+      console.log("process_symbol:", updateData.process_symbol);
+      console.log("process_description:", updateData.process_description);
 
-      const result = await request("/api/process/master/update", undefined, {
+      console.log("=== 최종 API 요청 데이터 ===");
+      console.log("URL:", `/api/process/master/update/${processId}`);
+      console.log("Method:", "PUT");
+      console.log("Request Body:", JSON.stringify(updateData, null, 2));
+      
+      const result = await request(`/api/process/master/update/${processId}`, undefined, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -694,13 +729,65 @@ export const useProcessStore = defineStore("process", () => {
 
       console.log("공정 수정 API 응답:", result);
 
-      if (result.response.data.success) {
-        // 수정 성공 - 목록 새로고침은 모달이 닫힌 후 수동으로 처리
+      // HTTP 상태 코드 확인 (409 Conflict 등)
+      if (result.status && result.status >= 400) {
+        console.error("HTTP 오류 상태 코드:", result.status);
+        
+        let errorMessage = "공정 수정에 실패했습니다.";
+        
+        if (result.response) {
+          try {
+            const responseData = JSON.parse(result.response);
+            if (responseData.detail) {
+              errorMessage = responseData.detail;
+            }
+          } catch {
+            // JSON 파싱 실패 시 기본 메시지 사용
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // success 필드 확인
+      if (result.success === false) {
+        console.error("API 오류 응답:", result);
+        
+        let errorMessage = "공정 수정에 실패했습니다.";
+        if (result.message) {
+          errorMessage = result.message;
+        } else if (result.response) {
+          try {
+            const responseData = JSON.parse(result.response);
+            if (responseData.detail) {
+              errorMessage = responseData.detail;
+            }
+          } catch {
+            // JSON 파싱 실패 시 기본 메시지 사용
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // message 필드에서 오류 메시지 확인 (서버가 success: true와 함께 오류 메시지를 보내는 경우)
+      if (result.message && (
+        result.message.includes("이미 사용 중인 값입니다") ||
+        result.message.includes("실패") ||
+        result.message.includes("오류") ||
+        result.message.includes("에러")
+      )) {
+        console.error("API 오류 메시지 감지:", result.message);
+        throw new Error(result.message);
+      }
+
+      if (result.success) {
+        // 수정 성공
         console.log("공정 수정 성공");
         return result;
       } else {
-        const errorMessage = result.message || "수정 실패";
-        throw new Error(`${errorMessage}\n${result.response.data.message}`);
+        // 응답에 success 필드가 없는 경우
+        throw new Error("API 응답 형식이 올바르지 않습니다.");
       }
     } catch (error: any) {
       console.error("수정 실패:", error);
@@ -725,6 +812,7 @@ export const useProcessStore = defineStore("process", () => {
       processType: null,
       processName: null,
       subCategory: null,
+      processCode: null,
       processSymbol: "",
       description: "",
     };

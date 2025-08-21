@@ -514,14 +514,17 @@
       "계산식 관리": "계산식 관리",
       "PFD": "PFD",
       "전기도면": "전기도면",
-      "Mcc 구성도": "Mcc 구성도"
+      "Mcc 구성도": "Mcc 구성도",
+      "수리계통도": "수리계통도"
     },
     "addPid": "P&ID 추가",
     "attachPidFile": "P&ID 파일 첨부",
     "pidFile": "P&ID 파일",
     "attachPfdFile": "PFD 파일 첨부",
+    "attachFormulaFile": "계산식 파일 첨부",
     "attachElectricFile": "전기도면 파일 첨부",
-    "attachMccFile": "Mcc 구성도 파일 첨부"
+    "attachMccFile": "Mcc 구성도 파일 첨부",
+    "attachHydraulicFile": "수리계통도 파일 첨부"
   },
   "error": {
     "notFound": "페이지를 찾을 수 없습니다.",
@@ -750,8 +753,10 @@
       "codeRegistered": "코드가 등록되었습니다.",
       "pidItemDeleted": "P&ID 항목이 삭제되었습니다.",
       "pfdItemDeleted": "PFD 항목이 삭제되었습니다.",
+      "formulaItemDeleted": "계산식 항목이 삭제되었습니다.",
       "electricDrawingItemDeleted": "전기도면 항목이 삭제되었습니다.",
       "mccDiagramItemDeleted": "Mcc 구성도 항목이 삭제되었습니다.",
+      "hydraulicDiagramItemDeleted": "수리계통도 항목이 삭제되었습니다.",
       "processRegisteredSuccessfully": "공정이 성공적으로 등록되었습니다.",
       "idAvailable": "사용 가능한 아이디입니다.",
       "roleGroupRegistered": "역할 그룹이 등록되었습니다.",

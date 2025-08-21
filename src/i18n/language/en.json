@@ -576,14 +576,17 @@
       "계산식 관리": "Formula Management",
       "PFD": "PFD",
       "전기도면": "Electric Drawing",
-      "Mcc 구성도": "MCC Diagram"
+      "Mcc 구성도": "MCC Diagram",
+      "수리계통도": "Hydraulic System Diagram"
     },
     "addPid": "Add P&ID",
     "attachPidFile": "Attach P&ID File",
     "pidFile": "P&ID File",
     "attachPfdFile": "Attach PFD File",
+    "attachFormulaFile": "Attach Formula File",
     "attachElectricFile": "Attach Electric File",
-    "attachMccFile": "Attach MCC File"
+    "attachMccFile": "Attach MCC File",
+    "attachHydraulicFile": "Attach Hydraulic System Diagram File"
   },
   "error": {
     "notFound": "Page not found",
@@ -751,8 +754,10 @@
       "codeRegistered": "Code registered successfully.",
       "pidItemDeleted": "P&ID item deleted.",
       "pfdItemDeleted": "PFD item deleted.",
+      "formulaItemDeleted": "Formula item deleted.",
       "electricDrawingItemDeleted": "Electric drawing item deleted.",
       "mccDiagramItemDeleted": "MCC diagram item deleted.",
+      "hydraulicDiagramItemDeleted": "Hydraulic system diagram item deleted.",
       "processRegisteredSuccessfully": "Process registered successfully.",
       "idAvailable": "ID is available.",
       "roleGroupRegistered": "Permission has been registered.",

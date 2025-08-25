@@ -63,16 +63,7 @@ export const useProjectStore = defineStore("project", () => {
   const paginatedProjectList = computed(() => {
     // 서버 사이드 페이지네이션을 사용하므로 projectList.value를 그대로 반환
     // 서버에서 이미 해당 페이지의 데이터만 보내줌
-    const result = projectList.value;
-    console.log("paginatedProjectList 계산:", {
-      currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      totalItems: projectList.value.length,
-      resultLength: result.length,
-      result: result,
-      projectListValue: projectList.value,
-    });
-    return result;
+    return projectList.value;
   });
 
   // API 응답을 테이블 데이터로 변환하는 함수
@@ -97,11 +88,6 @@ export const useProjectStore = defineStore("project", () => {
   const fetchProjectList = async (params: ProjectListParams = {}) => {
     try {
       loading.value = true;
-      console.log("projectStore - API 호출 시작:", params);
-      console.log("projectStore - 정렬 관련 파라미터:", {
-        order_by: params.order_by,
-        order_direction: params.order_direction,
-      });
 
       const requestBody = {
         page: params.page || 1,
@@ -111,8 +97,6 @@ export const useProjectStore = defineStore("project", () => {
         order_direction: params.order_direction || "asc",
       };
 
-      console.log("요청 본문:", requestBody);
-
       const response = await request(`/api/project/list`, undefined, {
         method: "POST",
         headers: {
@@ -121,11 +105,8 @@ export const useProjectStore = defineStore("project", () => {
         body: JSON.stringify(requestBody),
       });
 
-      console.log("API 응답:", response);
-
       if (response.success && response.response) {
         const apiItems = response.response.items || [];
-        console.log("API 아이템 개수:", apiItems.length);
 
         projectList.value = transformApiData(apiItems);
         totalCount.value = response.response.total || 0;
@@ -139,38 +120,18 @@ export const useProjectStore = defineStore("project", () => {
           // 빈 문자열인 경우 정렬 해제
           if (params.order_by === "") {
             sortField.value = "";
-            console.log("projectStore - 정렬 필드 해제");
           } else {
             sortField.value = params.order_by;
-            console.log("projectStore - 정렬 필드 업데이트:", params.order_by);
           }
         }
         if (params.order_direction !== undefined) {
           // 빈 문자열인 경우 정렬 해제
           if (params.order_direction === "") {
             sortOrder.value = "asc"; // 기본값으로 초기화
-            console.log("projectStore - 정렬 방향 해제");
           } else {
             sortOrder.value = params.order_direction;
-            console.log(
-              "projectStore - 정렬 방향 업데이트:",
-              params.order_direction
-            );
           }
         }
-
-        console.log("데이터 변환 완료:", projectList.value.length, "개 항목");
-        console.log("총 개수:", totalCount.value);
-        console.log("projectList 상태:", {
-          length: projectList.value.length,
-          firstItem: projectList.value[0],
-          currentPage: currentPage.value,
-          pageSize: pageSize.value,
-        });
-        console.log("paginatedProjectList 계산 결과:", {
-          length: projectList.value.length,
-          items: projectList.value,
-        });
       } else {
         console.warn("API 응답이 성공이 아니거나 데이터가 없음:", response);
         projectList.value = [];
@@ -183,23 +144,16 @@ export const useProjectStore = defineStore("project", () => {
       totalCount.value = 0;
     } finally {
       loading.value = false;
-      console.log("API 호출 완료, 로딩 상태:", loading.value);
     }
   };
 
   // 초기 데이터 로드
   const loadInitialData = async () => {
-    console.log("초기 데이터 로드 시작");
     try {
       await fetchProjectList({
         page: 1,
         pageSize: pageSize.value,
       });
-      console.log(
-        "초기 데이터 로드 완료:",
-        projectList.value.length,
-        "개 항목"
-      );
     } catch (error) {
       console.error("초기 데이터 로드 중 에러 발생:", error);
       throw error;
@@ -224,28 +178,12 @@ export const useProjectStore = defineStore("project", () => {
       order_direction?: "asc" | "desc";
     }
   ) => {
-    console.log("projectStore - changePage 시작:", {
-      page,
-      pageSize: pageSize.value,
-      searchParams,
-      currentSearchQuery: searchQuery.value,
-      currentSortField: sortField.value,
-      currentSortOrder: sortOrder.value,
-    });
-
     await fetchProjectList({
       page,
       pageSize: pageSize.value,
       search_value: searchParams?.search_value ?? searchQuery.value,
       order_by: searchParams?.order_by ?? sortField.value,
       order_direction: searchParams?.order_direction ?? sortOrder.value,
-    });
-
-    console.log("projectStore - changePage 완료:", {
-      page,
-      currentPage: currentPage.value,
-      projectListLength: projectList.value.length,
-      totalCount: totalCount.value,
     });
   };
 

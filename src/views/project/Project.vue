@@ -158,35 +158,11 @@ const paginatedProjectList = computed(() => projectStore.paginatedProjectList);
 
 const handlePageChange = async (page: number) => {
   try {
-    console.log("Project.vue - 페이지 변경 시작:", page);
-    console.log("Project.vue - 현재 검색 조건:", searchQueryInput.value);
-    console.log("Project.vue - 현재 정렬 조건:", {
-      field: projectStore.sortField,
-      order: projectStore.sortOrder,
-    });
-
     // 현재 검색 조건과 정렬 조건을 유지하면서 페이지 변경
     await projectStore.changePage(page, {
       search_value: searchQueryInput.value,
       order_by: projectStore.sortField,
       order_direction: projectStore.sortOrder,
-    });
-
-    console.log("Project.vue - 페이지 변경 완료:", page);
-    console.log("Project.vue - 변경 후 상태:", {
-      currentPage: currentPage.value,
-      totalPages: totalPages.value,
-      paginatedProjectList: paginatedProjectList.value,
-      projectListLength: projectStore.projectList.length,
-    });
-
-    // 추가 디버깅
-    console.log("Project.vue - 추가 디버깅:", {
-      paginatedProjectListType: typeof paginatedProjectList.value,
-      paginatedProjectListIsArray: Array.isArray(paginatedProjectList.value),
-      paginatedProjectListKeys: Object.keys(paginatedProjectList.value || {}),
-      projectStoreProjectListType: typeof projectStore.projectList,
-      projectStoreProjectListIsArray: Array.isArray(projectStore.projectList),
     });
   } catch (error: any) {
     console.error("페이지 변경 실패:", error);
@@ -220,8 +196,6 @@ const handleSortChange = async (sortInfo: {
   key: string | null;
   direction: "asc" | "desc" | null;
 }) => {
-  console.log("정렬 변경:", sortInfo);
-
   try {
     const params: any = {
       page: projectStore.currentPage, // 현재 페이지 유지 (AccountManagement.vue와 동일)
@@ -263,26 +237,8 @@ const closeProjectDetail = () => {
 };
 
 onMounted(async () => {
-  console.log("Project.vue - onMounted 시작");
   try {
-    console.log("Project.vue - 초기 데이터 로드 시작");
     await projectStore.loadInitialData();
-    console.log("Project.vue - 초기 데이터 로드 완료");
-    console.log("Project.vue - 로드 후 상태:", {
-      loading: loading,
-      currentPage: currentPage,
-      totalPages: totalPages,
-      paginatedProjectList: paginatedProjectList,
-    });
-
-    // store 상태 직접 확인
-    console.log("Project.vue - store 상태 직접 확인:", {
-      projectListLength: projectStore.projectList.length,
-      projectListFirstItem: projectStore.projectList[0],
-      currentPageFromStore: projectStore.currentPage,
-      pageSizeFromStore: projectStore.pageSize,
-      totalCountFromStore: projectStore.totalCount,
-    });
   } catch (error) {
     console.error("초기 데이터 로드 실패:", error);
   }

@@ -85,43 +85,6 @@
                 </template>
               </DataTable>
 
-              <div class="action-bar">
-                <div class="title">
-                  <h4>{{ t("inflow.formulaList") }}</h4>
-                </div>
-                <div class="btns">
-                  <button class="btn btn-add">{{ t("inflow.delete") }}</button>
-                </div>
-              </div>
-
-              <DataTable 
-                :columns="gridColumns2" 
-                :data="currentGridData2"
-                maxHeight="300px"
-                :stickyHeader="true"
-              >
-                <template #cell-formula="{ item }">
-                  <span>{{ item.formula }}</span>
-                </template>
-                <template #cell-apply="{ item }: { item: GridRow2 }">
-                  <input
-                    type="checkbox"
-                    v-model="item.apply"
-                    true-value="Y"
-                    false-value="N"
-                  />
-                </template>
-                <template #cell-remarks="{ item, index }">
-                  <input
-                    v-if="index === currentGridData2.length - 1"
-                    type="text"
-                    v-model="item.remarks"
-                    class="form-input"
-                  />
-                  <span v-else>{{ item.remarks }}</span>
-                </template>
-              </DataTable>
-
             </div>
           </div>
             
@@ -164,44 +127,6 @@
                 </template>
               </DataTable>
 
-              <div class="action-bar">
-                <div class="title">
-                  <h4>{{ t("inflow.formulaList") }}</h4>
-                </div>
-                <div class="btns">
-                  <button class="btn btn-add">{{ t("inflow.delete") }}</button>
-                </div>
-              </div>
-
-              <DataTable 
-                :columns="gridColumns2" 
-                :data="currentGridData2"
-                maxHeight="300px"
-                :stickyHeader="true"
-              >
-                <template #cell-formula="{ item }">
-                  <span>{{ item.formula }}</span>
-                </template>
-                <template #cell-apply="{ item }: { item: GridRow2 }">
-                  <input
-                    type="checkbox"
-                    v-model="item.apply"
-                    true-value="Y"
-                    false-value="N"
-                  />
-                </template>
-                <template #cell-remarks="{ item, index }">
-                  <input
-                    v-if="index === currentGridData2.length - 1"
-                    type="text"
-                    v-model="item.remarks"
-                    class="form-input"
-                  />
-                  <span v-else>{{ item.remarks }}</span>
-                </template>
-              </DataTable>
-
-              
             </div>
           </div>
           </div>

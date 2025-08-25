@@ -139,7 +139,7 @@
       "item": "항목",
       "influent": "INFLUENT",
       "unit": "UNIT",
-      "display": "표출여부",
+      "active": "사용여부",
       "remarks": "비고",
       "formula": "계산식",
       "uploadDate": "업로드 일자",
@@ -149,9 +149,14 @@
     "outflow": {
       "no": "순번",
       "item": "항목",
-      "influent": "INFLUENT",
+      "effluent": "EFFLUENT",
       "unit": "UNIT",
-      "remarks": "비고"
+      "active": "사용여부",
+      "remarks": "비고",
+      "formula": "계산식",
+      "uploadDate": "업로드 일자",
+      "author": "작성자",
+      "apply": "적용선택"
     },
     "model3d": {
       "id": "ID",
@@ -665,23 +670,31 @@
   },
   "inflow": {
     "registerNew": "신규등록",
+    "update": "수정",
     "addItem": "항목 추가",
     "addFormula": "계산식 추가",
     "formulaList": "계산식 목록",
     "save": "저장",
-    "typeName": "유입종류명",
+    "typeNameKo": "유입종류명 국문",
+    "typeNameEn": "유입종류명 영문",
     "symbolColor": "심볼색상",
     "uploadFormula": "계산식 업로드",
-    "register": "등록"
+    "register": "등록",
+    "delete": "삭제"
   },
   "outflow": {
     "registerNew": "신규등록",
+    "update": "수정",
     "addItem": "항목 추가",
+    "addFormula": "계산식 추가",
+    "formulaList": "계산식 목록",
     "save": "저장",
-    "outputName": "아웃풋명",
-    "remarks": "비고",
+    "typeNameKo": "유출종류명 국문",
+    "typeNameEn": "유출종류명 영문",
+    "symbolColor": "심볼색상",
+    "uploadFormula": "계산식 업로드",
     "register": "등록",
-    "cancel": "취소"
+    "delete": "삭제"
   },
   "sidebar": {
     "dashboard": "대시보드",

@@ -93,7 +93,7 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("common.typeName") }}</dt>
+            <dt class="essential">{{ t("common.typeNameKo") }}</dt>
             <dd>
               <input
                 v-model="newTypeName"

@@ -139,7 +139,7 @@
       "item": "Item",
       "influent": "INFLUENT",
       "unit": "UNIT",
-      "display": "Display",
+      "active": "Active",
       "remarks": "Remarks",
       "formula": "Formula",
       "uploadDate": "Upload Date",
@@ -149,9 +149,14 @@
     "outflow": {
       "no": "No",
       "item": "Item",
-      "influent": "INFLUENT",
+      "effluent": "EFFLUENT",
       "unit": "UNIT",
-      "remarks": "Remarks"
+      "active": "Active",
+      "remarks": "Remarks",
+      "formula": "Formula",
+      "uploadDate": "Upload Date",
+      "author": "Author",
+      "apply": "Apply"
     },
     "model3d": {
       "id": "ID",
@@ -667,23 +672,30 @@
   },
   "inflow": {
     "registerNew": "Register New",
+    "update": "Update",
     "addItem": "Add Item",
     "addFormula": "Add Formula",
     "formulaList": "Formula List",
     "save": "Save",
-    "typeName": "Type Name",
+    "typeNameKo": "Type Name (Korean)",
+    "typeNameEn": "Inflow Type Name (English)",
     "symbolColor": "Symbol Color",
     "uploadFormula": "Upload Formula",
-    "register": "Register"
+    "register": "Register",
+    "delete": "Delete"
   },
   "outflow": {
     "registerNew": "Register New",
     "addItem": "Add Item",
+    "addFormula": "Add Formula",
+    "formulaList": "Formula List",
     "save": "Save",
-    "outputName": "Output Name",
-    "remarks": "Remarks",
+    "typeNameKo": "Type Name (Korean)",
+    "typeNameEn": "Inflow Type Name (English)",
+    "symbolColor": "Symbol Color",
+    "uploadFormula": "Upload Formula",
     "register": "Register",
-    "cancel": "Cancel"
+    "delete": "Delete"
   },
   "sidebar": {
     "dashboard": "Dashboard",

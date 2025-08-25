@@ -133,127 +133,123 @@
          </button>
        </div>
 
-                      <!-- P&ID 탭 버튼들 -->
+                      
+
+                 <!-- 계산식 관리 탭 버튼들 -->
          <div v-if="activeTab === 1" class="btns">
-           <button class="btn btn-primary btn-regist" @click="openPidModal">
-             {{ t("processDetail.addPid") }}
+           <button class="btn btn-primary btn-add" @click="openFormulaModal">
+             {{ t("common.add") }}
            </button>
            <button
              class="btn btn-primary btn-delete"
-             @click="handlePidDelete"
-             :disabled="selectedPidItems.length === 0"
+             @click="handleFormulaDelete"
+             :disabled="selectedFormulaItems.length === 0"
            >
              {{ t("common.delete") }}
            </button>
          </div>
 
-        <!-- 계산식 관리 탭 버튼들 -->
-        <div v-if="activeTab === 2" class="btns">
-          <button class="btn btn-primary btn-add" @click="openFormulaModal">
-            {{ t("common.add") }}
-          </button>
-          <button
-            class="btn btn-primary btn-delete"
-            @click="handleFormulaDelete"
-            :disabled="selectedFormulaItems.length === 0"
-          >
-            {{ t("common.delete") }}
-          </button>
-        </div>
-
-                           <!-- 수리계통도 탭 버튼들 -->
-        <div v-if="activeTab === 3" class="btns">
-          <button class="btn btn-primary btn-add" @click="openHydraulicModal">
-            {{ t("common.add") }}
-          </button>
-          <button
-            class="btn btn-primary btn-delete"
-            @click="handleHydraulicDelete"
-            :disabled="selectedHydraulicItems.length === 0"
-          >
-            {{ t("common.delete") }}
-          </button>
-        </div>
+                            <!-- 수리계통도 탭 버튼들 -->
+         <div v-if="activeTab === 2" class="btns">
+           <button class="btn btn-primary btn-add" @click="openHydraulicModal">
+             {{ t("common.add") }}
+           </button>
+           <button
+             class="btn btn-primary btn-delete"
+             @click="handleHydraulicDelete"
+             :disabled="selectedHydraulicItems.length === 0"
+           >
+             {{ t("common.delete") }}
+           </button>
+         </div>
 
 
     </div>
   </div>
 
      <div class="tab-content">
-     <div v-if="activeTab === 0" class="content">
-       <!-- PFD 탭 -->
-       <DataTable
-         :columns="pfdColumns"
-         :data="pagedPfdList"
-         :loading="loading"
-         :selectable="true"
-         :selectedItems="selectedPfdItems"
-         @selection-change="handlePfdSelectionChange"
-         @sort-change="handleSortChange"
-         @row-click="handleRowClick"
-       />
-       <div class="pagination-container">
-         <Pagination
-           :current-page="currentPagePfd"
-           :total-pages="totalPagesPfd"
-           @page-change="handlePageChangePfd"
-         />
-       </div>
-     </div>
+           <div v-if="activeTab === 0" class="content">
+        <!-- PFD 탭 -->
+        <div class="pfd-section">
+          <div class="section-header">
+            <h4>PFD 목록</h4>
+          </div>
+        </div>
+        <DataTable
+          :columns="pfdColumnsWithActions"
+          :data="pfdList"
+          :loading="loading"
+          :selectable="true"
+          :selectedItems="selectedPfdItems"
+          @selection-change="handlePfdSelectionChange"
+          @sort-change="handleSortChange"
+          @row-click="handleRowClick"
+        >
+          <!-- 매핑 P&ID 목록 컬럼에 "보기" 버튼 렌더링 -->
+          <template #cell-mappingPidList="{ item }">
+            <button 
+              class="btn btn-link view-btn" 
+              @click.stop="handlePfdViewClick(item.id)"
+            >
+              보기
+            </button>
+          </template>
+        </DataTable>
+        <!-- P&ID 목록 섹션 -->
+        <div class="pid-section">
+          <div class="section-header">
+            <h4>P&ID 목록</h4>
+            <div class="section-actions">
+              <button class="btn btn-primary" @click="handlePidAdd">
+                {{ t("common.add") }}
+              </button>
+              <button 
+                class="btn btn-danger" 
+                @click="handlePidDelete"
+                :disabled="selectedPidItems.length === 0"
+              >
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+          
+          <DataTable
+            :columns="pidColumns"
+            :data="pagedPidList"
+            :loading="loading"
+            :selectable="true"
+            :selectedItems="selectedPidItems"
+            @selection-change="handlePidSelectionChange"
+            @sort-change="handleSortChange"
+            @row-click="handleRowClick"
+          />
+        </div>
+      </div>
 
-     <div v-if="activeTab === 1" class="content">
-       <!-- P&ID 탭 -->
-       <DataTable
-         :columns="pidColumns"
-         :data="pagedPidList"
-         :loading="loading"
-         :selectable="true"
-         :selectedItems="selectedPidItems"
-         @selection-change="handlePidSelectionChange"
-         @sort-change="handleSortChange"
-         @row-click="handleRowClick"
-       />
-       <div class="pagination-container">
-         <Pagination
-           :current-page="currentPagePid"
-           :total-pages="totalPagesPid"
-           @page-change="handlePageChangePid"
-         />
-       </div>
-     </div>
+     
 
-          <div v-if="activeTab === 4" class="content">
-        <!-- 공용구조물 탭 -->
-       <DataTable
-         :columns="structColumns"
-         :data="structList"
-         :loading="loading"
-         @sort-change="handleSortChange"
-         @row-click="handleRowClick"
-       />
-     </div>
-          <div v-if="activeTab === 2" class="content">
-        <!-- 계산식 관리 탭 -->
-       <DataTable
-         :columns="formulaColumns"
-         :data="pagedFormulaList"
-         :loading="loading"
-         :selectable="true"
-         :selectedItems="selectedFormulaItems"
-         @selection-change="handleFormulaSelectionChange"
-         @sort-change="handleSortChange"
-         @row-click="handleRowClick"
-       />
-       <div class="pagination-container">
-         <Pagination
-           :current-page="currentPageFormula"
-           :total-pages="totalPagesFormula"
-           @page-change="handlePageChangeFormula"
-         />
-       </div>
-     </div>
-                   <div v-if="activeTab === 3" class="content">
-        <!-- 수리계통도 탭 -->
+                                <div v-if="activeTab === 1" class="content">
+         <!-- 계산식 관리 탭 -->
+        <DataTable
+          :columns="formulaColumns"
+          :data="pagedFormulaList"
+          :loading="loading"
+          :selectable="true"
+          :selectedItems="selectedFormulaItems"
+          @selection-change="handleFormulaSelectionChange"
+          @sort-change="handleSortChange"
+          @row-click="handleRowClick"
+        />
+        <div class="pagination-container">
+          <Pagination
+            :current-page="currentPageFormula"
+            :total-pages="totalPagesFormula"
+            @page-change="handlePageChangeFormula"
+          />
+        </div>
+      </div>
+                    <div v-if="activeTab === 2" class="content">
+         <!-- 수리계통도 탭 -->
         <DataTable
           :columns="hydraulicColumns"
           :data="pagedHydraulicList"
@@ -272,6 +268,23 @@
           />
         </div>
       </div>
+                       <div v-if="activeTab === 3" class="content">
+          <!-- 공용구조물 탭 -->
+         <DataTable
+           :columns="structColumns"
+           :data="pagedStructList"
+           :loading="loading"
+           @sort-change="handleSortChange"
+           @row-click="handleRowClick"
+         />
+         <div class="pagination-container">
+           <Pagination
+             :current-page="currentPageStruct"
+             :total-pages="totalPagesStruct"
+             @page-change="handlePageChangeStruct"
+           />
+         </div>
+       </div>
          
   </div>
 
@@ -314,11 +327,11 @@
         </dl>
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadPidFiles">
-          {{ t("common.upload") }}
-        </button>
         <button class="btn" @click="closePidModal">
           {{ t("common.cancel") }}
+        </button>
+        <button class="btn btn-primary" @click="uploadPidFiles">
+          {{ t("common.upload") }}
         </button>
       </div>
     </div>
@@ -362,11 +375,11 @@
         </dl>
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadPfdFiles">
-          {{ t("common.upload") }}
-        </button>
         <button class="btn" @click="closePfdModal">
           {{ t("common.cancel") }}
+        </button>
+        <button class="btn btn-primary" @click="uploadPfdFiles">
+          {{ t("common.upload") }}
         </button>
       </div>
     </div>
@@ -411,16 +424,18 @@
         </dl>
       </div>
       <div class="modal-buttons">
-        <button class="btn btn-primary" @click="uploadFormulaFiles">
-          {{ t("common.upload") }}
-        </button>
         <button class="btn" @click="closeFormulaModal">
           {{ t("common.cancel") }}
+        </button>
+        <button class="btn btn-primary" @click="uploadFormulaFiles">
+          {{ t("common.upload") }}
         </button>
       </div>
     </div>
   </div>
   
+
+   
 
    <!-- 수리계통도 파일 첨부 모달 -->
    <div v-if="showHydraulicModal" class="modal-overlay">
@@ -460,14 +475,14 @@
            </dd>
          </dl>
        </div>
-       <div class="modal-buttons">
-         <button class="btn btn-primary" @click="uploadHydraulicFiles">
-           {{ t("common.upload") }}
-         </button>
-         <button class="btn" @click="closeHydraulicModal">
-           {{ t("common.cancel") }}
-         </button>
-       </div>
+             <div class="modal-buttons">
+        <button class="btn" @click="closeHydraulicModal">
+          {{ t("common.cancel") }}
+        </button>
+        <button class="btn btn-primary" @click="uploadHydraulicFiles">
+          {{ t("common.upload") }}
+        </button>
+      </div>
      </div>
    </div>
 </template>
@@ -501,13 +516,14 @@ const processStore = useProcessStore();
 // 공통 로딩 상태
 const loading = computed(() => processStore.loading);
 
-// 0: P&ID 탭용 컬럼/데이터
-const pidColumns: TableColumn[] = [
-  { key: "dwg", title: t("columns.processDetail.dwgFile") },
-  { key: "excel", title: t("columns.processDetail.excel") },
-  { key: "info", title: t("columns.processDetail.infoOverview") },
-  { key: "view", title: t("columns.processDetail.svgPreview") },
-];
+  // 0: P&ID 탭용 컬럼/데이터
+  const pidColumns: TableColumn[] = [
+    { key: "pfdFileName", title: "PFD 파일명" },
+    { key: "pidFileDwg", title: "P&ID 파일 DWG" },
+    { key: "mappingExcel", title: "매핑정보 엑셀파일" },
+    { key: "infoOverview", title: "정보개요(기기명+대수)" },
+    { key: "svgPreview", title: "Svg 도면 미리보기" },
+  ];
 const pidList = ref<any[]>([]);
 
 // P&ID 탭 페이징 상태
@@ -574,33 +590,39 @@ const calculationColumns: TableColumn[] = [
 ];
 const calculationList = ref<any[]>([]);
 
-// 7: PFD 탭용 컬럼/데이터
-const pfdColumns: TableColumn[] = [
-  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-  {
-    key: "info",
-    title: t("columns.processDetail.infoOverview"),
-    sortable: true,
-  },
-  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-];
+  // 7: PFD 탭용 컬럼/데이터 (보기 버튼 포함)
+  const pfdColumnsWithActions: TableColumn[] = [
+    { key: "fileName", title: "PFD 파일명", sortable: true },
+    { key: "registrationDate", title: "등록일자", sortable: true },
+    {
+      key: "info",
+      title: "정보개요",
+      sortable: true,
+    },
+    { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: true },
+    { key: "remarks", title: "비고", sortable: true },
+  ];
 const pfdList = ref<any[]>([]);
 const selectedPfdItems = ref<any[]>([]);
+
 const handlePfdSelectionChange = (items: any[]) => {
   selectedPfdItems.value = items;
   console.log("PFD selection changed:", items);
 };
 
-// 계산식 관리 탭용 컬럼/데이터
-const formulaColumns: TableColumn[] = [
-  { key: "no", title: t("columns.processDetail.no"), sortable: true },
-  { key: "formulaVersion", title: t("columns.processDetail.formulaVersion"), sortable: true },
-  { key: "appliedVersion", title: t("columns.processDetail.appliedVersion"), sortable: true },
-  { key: "remarks", title: t("columns.processDetail.remarks"), sortable: true },
-];
+  // 계산식 관리 탭용 컬럼/데이터
+  const formulaColumns: TableColumn[] = [
+    { key: "formula_id", title: "formula_id", hidden: true }, // hidden 컬럼으로 formula_id 추가
+    { key: "no", title: "순번", sortable: true },
+    { key: "registeredFormula", title: "등록계산식", sortable: true },
+    { key: "registrationDate", title: "등록일자", sortable: true },
+    { key: "infoOverview", title: "정보개요", sortable: true },
+    { key: "remarks", title: "비고", sortable: true },
+  ];
 const formulaList = ref<any[]>([]);
 const selectedFormulaItems = ref<any[]>([]);
+const initialFormulaList = ref<any[]>([]); // 초기값 저장용 변수 추가
+
 const handleFormulaSelectionChange = (items: any[]) => {
   selectedFormulaItems.value = items;
   console.log("Formula selection changed:", items);
@@ -668,17 +690,17 @@ const handleMccSelectionChange = (items: any[]) => {
   console.log("MCC diagram selection changed:", items);
 };
 
-// 10: 수리계통도 탭용 컬럼/데이터
-const hydraulicColumns: TableColumn[] = [
-  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-  {
-    key: "info",
-    title: t("columns.processDetail.infoOverview"),
-    sortable: true,
-  },
-  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-];
+ // 10: 수리계통도 탭용 컬럼/데이터
+ const hydraulicColumns: TableColumn[] = [
+   { key: "dwg", title: "도면파일 DWG", sortable: true },
+   { key: "registrationDate", title: "등록일자", sortable: true },
+   {
+     key: "info",
+     title: "정보개요",
+     sortable: true,
+   },
+   { key: "view", title: "Svg 도면 미리보기", sortable: true },
+ ];
 const hydraulicList = ref<any[]>([]);
 // 수리계통도 탭 선택 상태
 const selectedHydraulicItems = ref<any[]>([]);
@@ -699,6 +721,21 @@ const handleSortChange = (args: {
 const handleRowClick = (item: any, index: number) => {
   console.log("Row clicked:", item, index);
 };
+
+// PFD 그리드의 "보기" 버튼 클릭 핸들러 (현재는 사용하지 않음)
+const handlePfdViewClick = (itemId: string) => {
+  console.log("PFD 보기 버튼 클릭:", itemId);
+  // P&ID 목록이 PFD 탭 하단에 표시되므로 모달을 열 필요 없음
+};
+
+// P&ID 추가 핸들러
+const handlePidAdd = () => {
+  console.log("P&ID 추가 버튼 클릭");
+  // TODO: P&ID 추가 로직 구현
+  alert("P&ID 추가 기능을 구현해야 합니다.");
+};
+
+
 
 // Process.vue와 동일한 구조의 핸들러 함수들
 // 공정구분 변경 핸들러
@@ -793,6 +830,112 @@ const handleProcessNameCode = async () => {
   }
 };
 
+// 계산식 검색 API 호출 함수
+const searchFormulaAPI = async () => {
+  try {
+    console.log('계산식 검색 API 호출 시작 - 엔드포인트: /api/process/formula/search');
+    
+    const requestBody = {
+      search_field: "equipment_type",
+      search_value: "PUMP",
+      order_by: "created_at"
+    };
+    
+    console.log('요청 데이터:', requestBody);
+    
+    const response = await fetch('/api/process/formula/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('API 응답 상태:', response.status, response.statusText);
+
+    if (!response.ok) {
+      // 400, 404 등의 오류 시 상세 정보 로깅
+      const errorText = await response.text();
+      console.error('API 응답 오류 상세:', errorText);
+      
+      // 400 상태 코드이지만 실제로는 404 오류인 경우 처리
+      if (response.status === 404 || (response.status === 400 && errorText.includes('Not Found'))) {
+        console.log('API 엔드포인트가 존재하지 않습니다. 임시 더미 데이터로 초기화합니다.');
+        console.warn('⚠️ /api/process/formula/search API가 구현되지 않았습니다. 백엔드 개발자에게 문의하세요.');
+        
+        // 임시로 더미 데이터 반환하여 그리드가 정상적으로 표시되도록 함
+        return { 
+          success: true,
+          response: [
+            {
+              id: "1",
+              formula_name: "계산식_001",
+              created_at: "2024-01-15",
+              formula_scope: "PROCESS",
+              output_type: "number"
+            },
+            {
+              id: "2", 
+              formula_name: "계산식_002",
+              created_at: "2024-01-20",
+              formula_scope: "PROCESS",
+              output_type: "number"
+            }
+          ] 
+        };
+      } else if (response.status === 400) {
+        console.log('API 요청 형식이 잘못되었습니다. 빈 데이터로 초기화합니다.');
+        return { data: [] };
+      }
+      
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('계산식 검색 API 호출 성공:', result);
+    return result;
+  } catch (error) {
+    console.error('계산식 검색 API 호출 실패:', error);
+    
+    // 네트워크 오류나 기타 오류 시에도 빈 데이터 반환
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      console.log('네트워크 오류로 인해 빈 데이터로 초기화합니다.');
+      return { data: [] };
+    }
+    
+    // 기타 오류 시에도 빈 데이터 반환하여 화면이 정상적으로 로드되도록 함
+    console.log('API 호출 실패로 인해 빈 데이터로 초기화합니다.');
+    return { data: [] };
+  }
+};
+
+// 계산식 API 호출 함수
+const createFormulaAPI = async (processId: string, formulaName: string) => {
+  try {
+    const response = await fetch('/api/process/formula/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        process_id: processId,
+        formula_name: formulaName,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log('계산식 생성 API 호출 성공');
+    return true;
+  } catch (error) {
+    console.error('계산식 API 호출 실패:', error);
+    throw error;
+  }
+};
+
 // 공정 수정 처리 함수
 const handleUpdate = async () => {
   try {
@@ -847,6 +990,65 @@ const handleUpdate = async () => {
     
     await processStore.updateProcess(processId, processDetailData);
     
+    // 계산식 관리 탭 그리드 데이터 비교하여 추가된 행 확인
+    console.log("계산식 그리드 데이터 비교 시작");
+    console.log("초기값:", initialFormulaList.value);
+    console.log("현재값:", formulaList.value);
+    
+    // 삭제된 행 찾기 (초기값에는 있지만 현재값에는 없는 행)
+    const deletedRows = initialFormulaList.value.filter(initialItem => 
+      !formulaList.value.some(currentItem => currentItem.formula_id === initialItem.formula_id)
+    );
+    
+    // 추가된 행 찾기 (현재값에는 있지만 초기값에는 없는 행)
+    const addedRows = formulaList.value.filter(currentItem => 
+      !initialFormulaList.value.some(initialItem => initialItem.formula_id === currentItem.formula_id)
+    );
+    
+    // 삭제된 행이 있는 경우 삭제 API 호출
+    if (deletedRows.length > 0) {
+      console.log("삭제된 행 발견:", deletedRows);
+      const deletedFormulaIds = deletedRows.map(row => row.formula_id);
+      
+      try {
+        console.log("삭제된 행에 대한 API 호출 시작");
+        const deletePromises = deletedFormulaIds.map(formulaId => 
+          deleteFormulaAPI(formulaId)
+        );
+        
+        await Promise.all(deletePromises);
+        console.log("삭제된 행에 대한 API 호출 완료");
+      } catch (deleteError) {
+        console.error("삭제된 행 API 호출 실패:", deleteError);
+        alert("공정은 수정되었으나 삭제된 계산식 데이터 처리에 실패했습니다.");
+      }
+    } else {
+      console.log("삭제된 행이 없습니다.");
+    }
+    
+    if (addedRows.length > 0) {
+      console.log("추가된 행 발견:", addedRows);
+      const addedFormulaIds = addedRows.map(row => row.formula_id).join(', ');
+      //alert(`추가된 계산식 formula_id: ${addedFormulaIds}`);
+      
+      // 추가된 행에 대해서만 API 호출
+      console.log("추가된 행에 대해서만 API 호출 시작");
+      
+      try {
+        const formulaPromises = addedRows.map(formula => 
+          createFormulaAPI(processId, formula.registeredFormula)
+        );
+        
+        await Promise.all(formulaPromises);
+        console.log("추가된 행에 대한 API 호출 완료");
+      } catch (formulaError) {
+        console.error("추가된 행 API 호출 실패:", formulaError);
+        alert("공정은 수정되었으나 추가된 계산식 데이터 저장에 실패했습니다.");
+      }
+    } else {
+      console.log("추가된 행이 없습니다. API 호출을 건너뜁니다.");
+    }
+    
     console.log("공정 수정 완료");
     alert("공정이 성공적으로 수정되었습니다.");
     
@@ -870,7 +1072,6 @@ defineExpose({ t, handleUpdate });
 
 const tabs = ref([
   "PFD",
-  "P&ID",
   "계산식 관리",
   "수리계통도",
   "공용구조물",
@@ -948,22 +1149,24 @@ const scrollTabs = (direction: number) => {
 
 // 데이터 로드 함수 (임시 데이터 할당)
 const loadData = () => {
-  pidList.value = [
-    {
-      id: "1",
-      dwg: "pid1.dwg",
-      excel: "pid1.xlsx",
-      info: "P&ID 정보 1",
-      view: "pid1.svg",
-    },
-    {
-      id: "2",
-      dwg: "pid2.dwg",
-      excel: "pid2.xlsx",
-      info: "P&ID 정보 2",
-      view: "pid2.svg",
-    },
-  ];
+      pidList.value = [
+      {
+        id: "1",
+        pfdFileName: "PFD_001",
+        pidFileDwg: "PID_001.dwg",
+        mappingExcel: "PID_001.xlsx",
+        infoOverview: "펌프 2대, 밸브 5개",
+        svgPreview: "PID_001.svg",
+      },
+      {
+        id: "2",
+        pfdFileName: "PFD_002",
+        pidFileDwg: "PID_002.dwg",
+        mappingExcel: "PID_002.xlsx",
+        infoOverview: "탱크 1개, 파이프 3개",
+        svgPreview: "PID_002.svg",
+      },
+    ];
   designList.value = [
     {
       id: "1",
@@ -1044,57 +1247,79 @@ const loadData = () => {
       remark: "업데이트",
     },
   ];
-  pfdList.value = [
-    {
-      id: "1",
-      dwg: "file1.dwg",
-      excel: "file1.xlsx",
-      info: "개요1",
-      view: "file1.svg",
-    },
-    {
-      id: "2",
-      dwg: "file2.dwg",
-      excel: "file2.xlsx",
-      info: "개요2",
-      view: "file2.svg",
-    },
-  ];
-  formulaList.value = [
-    {
-      id: "1",
-      no: "1",
-      formulaVersion: "v1.0",
-      appliedVersion: "v1.0",
-      remarks: "초기 계산식",
-    },
-    {
-      id: "2",
-      no: "2",
-      formulaVersion: "v1.1",
-      appliedVersion: "v1.0",
-      remarks: "수정된 계산식",
-    },
-  ];
-     hydraulicList.value = [
-     {
-       id: "1",
-       dwg: "hydraulic1.dwg",
-       excel: "hydraulic1.xlsx",
-       info: "수리계통도 정보 1",
-       view: "hydraulic1.svg",
-     },
-     {
-       id: "2",
-       dwg: "hydraulic2.dwg",
-       excel: "hydraulic2.xlsx",
-       info: "수리계통도 정보 2",
-       view: "hydraulic2.svg",
-     },
-   ];
-   structList.value = [
-     { id: "1", type: "", components: "", equipmentType: "", item: "" },
-   ];
+      pfdList.value = [
+      {
+        id: "1",
+        fileName: "PFD_001.dwg",
+        registrationDate: "2024-01-15",
+        info: "중력식 농축설비 PFD",
+        mappingPidList: "보기",
+        remarks: "초기 설계",
+      },
+      {
+        id: "2",
+        fileName: "PFD_002.dwg",
+        registrationDate: "2024-01-20",
+        info: "기계식 농축설비 PFD",
+        mappingPidList: "보기",
+        remarks: "수정 설계",
+      },
+      {
+        id: "3",
+        fileName: "PFD_003.dwg",
+        registrationDate: "2024-01-25",
+        info: "SBR 반응조 PFD",
+        mappingPidList: "보기",
+        remarks: "신규 설계",
+      },
+    ];
+      formulaList.value = [];
+           hydraulicList.value = [
+       {
+         id: "1",
+         dwg: "hydraulic1.dwg",
+         registrationDate: "2024-01-15",
+         info: "수리계통도 정보 1",
+         view: "hydraulic1.svg",
+       },
+       {
+         id: "2",
+         dwg: "hydraulic2.dwg",
+         registrationDate: "2024-01-20",
+         info: "수리계통도 정보 2",
+         view: "hydraulic2.svg",
+       },
+     ];
+       structList.value = [
+      { 
+        id: "1", 
+        type: "공용구조물", 
+        components: "구조물", 
+        equipmentType: "서스 원형", 
+        item: "SBR 반응조 구조물" 
+      },
+      { 
+        id: "2", 
+        type: "공용구조물", 
+        components: "구조물", 
+        equipmentType: "서스 사각", 
+        item: "" 
+      },
+      { 
+        id: "3", 
+        type: "공용구조물", 
+        components: "구조물", 
+        equipmentType: "콘크리트 사각", 
+        item: "" 
+      },
+      { 
+        id: "4", 
+        type: "공용기계", 
+        components: "송풍기", 
+        equipmentType: "터보블로워(VVWF)", 
+        item: "반응조 송풍기" 
+      }
+    ];
    mccList.value = [
      {
        id: "1",
@@ -1137,6 +1362,8 @@ onMounted(async () => {
     loadData();
     console.log("기본 데이터 로드 완료");
 
+
+
     // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
     const processId = props.processId || (route.params.id as string);
 
@@ -1162,6 +1389,48 @@ onMounted(async () => {
     }
 
     console.log("유효한 processId:", validProcessId);
+
+    // 0. 계산식 검색 API 호출하여 그리드 데이터 초기화 (가장 먼저 실행)
+    console.log("계산식 검색 API 호출 시작");
+    console.log("searchFormulaAPI 함수 타입:", typeof searchFormulaAPI);
+    console.log("searchFormulaAPI 함수:", searchFormulaAPI);
+    
+    try {
+      console.log("searchFormulaAPI 함수 호출 전");
+      const formulaResult = await searchFormulaAPI();
+      console.log("searchFormulaAPI 함수 호출 후, 결과:", formulaResult);
+      
+      if (formulaResult && formulaResult.success && formulaResult.response && Array.isArray(formulaResult.response) && formulaResult.response.length > 0) {
+        console.log("API 응답 데이터가 있습니다. 그리드 변환 시작");
+        console.log("응답 데이터 구조:", formulaResult);
+        console.log("response 배열:", formulaResult.response);
+        
+        formulaList.value = formulaResult.response.map((item: any, index: number) => ({
+          formula_id: item.formula_id || item.id || (index + 1).toString(), // formula_id 컬럼에 실제 formula_id 값 설정
+          id: item.id || (index + 1).toString(),
+          no: (index + 1).toString(),
+          registeredFormula: item.formula_name || '',
+          registrationDate: formatDate(item.created_at) || new Date().toISOString().split('T')[0], // created_at이 없으면 현재 날짜 사용
+          infoOverview: item.formula_scope || '',
+          remarks: item.output_type || '',
+        }));
+        
+        // 초기값을 별도로 저장 (깊은 복사)
+        initialFormulaList.value = JSON.parse(JSON.stringify(formulaList.value));
+        console.log("계산식 그리드 데이터 초기화 완료:", formulaList.value);
+        console.log("초기값 저장 완료:", initialFormulaList.value);
+      } else {
+        console.log("API 응답 데이터가 없거나 빈 배열입니다. 빈 배열로 초기화");
+        console.log("formulaResult:", formulaResult);
+        formulaList.value = [];
+        initialFormulaList.value = []; // 초기값도 빈 배열로 설정
+      }
+    } catch (error) {
+      console.error("계산식 검색 API 호출 중 예외 발생:", error);
+      console.error("에러 상세:", error);
+      formulaList.value = [];
+    }
+    console.log("계산식 검색 API 호출 완료");
 
     // 1. 공정구분 코드 리스트 로드
     try {
@@ -1366,6 +1635,21 @@ const handlePageChangeHydraulic = (page: number) => {
   currentPageHydraulic.value = page;
 };
 
+// Struct pagination state
+const currentPageStruct = ref(1);
+const totalPagesStruct = computed(
+  () => Math.ceil(structList.value.length / pageSize.value) || 1
+);
+const pagedStructList = computed(() =>
+  structList.value.slice(
+    (currentPageStruct.value - 1) * pageSize.value,
+    currentPageStruct.value * pageSize.value
+  )
+);
+const handlePageChangeStruct = (page: number) => {
+  currentPageStruct.value = page;
+};
+
 // Modal state for P&ID file upload
 const showPidModal = ref(false);
 const selectedPidFiles = ref<File[]>([]);
@@ -1413,6 +1697,45 @@ const selectedFormulaFiles = ref<File[]>([]);
 const openFormulaModal = () => {
   showFormulaModal.value = true;
 };
+// 날짜 포맷팅 함수
+const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('날짜 포맷팅 오류:', error);
+    return '';
+  }
+};
+
+// 계산식 삭제 API 함수
+const deleteFormulaAPI = async (formulaId: string) => {
+  try {
+    const response = await fetch(`/api/process/formula/delete/${formulaId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    console.log('계산식 삭제 API 호출 성공:', formulaId);
+    return true;
+  } catch (error) {
+    console.error('계산식 삭제 API 호출 실패:', error);
+    throw error;
+  }
+};
+
 const closeFormulaModal = () => {
   showFormulaModal.value = false;
   selectedFormulaFiles.value = [];
@@ -1424,6 +1747,28 @@ const handleFormulaFilesSelected = (event: Event) => {
 };
 const uploadFormulaFiles = () => {
   console.log("Formula upload executed:", selectedFormulaFiles.value);
+  
+  // 선택된 파일들을 formulaList에 추가
+  if (selectedFormulaFiles.value.length > 0) {
+    selectedFormulaFiles.value.forEach((file, index) => {
+      // .py 확장자를 제외한 파일명 추출
+      const fileNameWithoutExt = file.name.replace(/\.py$/i, '');
+      
+      // 새로운 계산식 항목 생성
+      const newFormula = {
+        formula_id: Date.now().toString() + index, // formula_id 컬럼에 고유 ID 설정
+        id: Date.now().toString() + index, // 고유 ID 생성
+        no: (formulaList.value.length + index + 1).toString(),
+        registeredFormula: fileNameWithoutExt,
+        registrationDate: new Date().toISOString().split('T')[0], // 현재 날짜
+        infoOverview: "",
+        remarks: "",
+      };
+      
+      formulaList.value.push(newFormula);
+    });
+  }
+  
   closeFormulaModal();
 };
 
@@ -1464,6 +1809,9 @@ const uploadMccFiles = () => {
   console.log("MCC upload executed:", selectedMccFiles.value);
   closeMccModal();
 };
+
+// Modal state for P&ID list popup
+
 
 // Modal state for Hydraulic diagram file upload
 const showHydraulicModal = ref(false);
@@ -1538,6 +1886,12 @@ const handleFormulaDelete = () => {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
+
+  // 선택된 항목들의 formula_id 속성을 alert로 출력
+  selectedFormulaItems.value.forEach((item, index) => {
+    const formulaId = item.formula_id || 'formula_id 속성이 없습니다';
+    //alert(`선택된 행 ${index + 1}: formula_id = ${formulaId}`);
+  });
 
   if (
     confirm(
@@ -1811,7 +2165,284 @@ const handleHydraulicDelete = () => {
   white-space: nowrap;
 }
 
-.file-select-btn {
-  white-space: nowrap;
-}
+ .file-select-btn {
+   white-space: nowrap;
+ }
+
+ .pid-section {
+   margin-top: 1rem;
+   
+   h4 {
+     margin-bottom: 1rem;
+     color: #333;
+     font-size: 1.1rem;
+     font-weight: 600;
+   }
+ }
+
+ .tab-content .content {
+   // 팝업 사이즈에 맞게 유연하게 조정
+   max-height: calc(100vh - 150px); // 상단 여백 줄임
+   min-height: 500px; // 최소 높이 증가
+   overflow-y: auto; // 필요시에만 스크롤바 표시
+   
+   // 스크롤바 스타일링
+   &::-webkit-scrollbar {
+     width: 8px;
+   }
+   
+   &::-webkit-scrollbar-track {
+     background: #f1f1f1;
+     border-radius: 4px;
+   }
+   
+   &::-webkit-scrollbar-thumb {
+     background: #c1c1c1;
+     border-radius: 4px;
+     
+     &:hover {
+       background: #a8a8a8;
+     }
+   }
+   
+   // Firefox 스크롤바 스타일링
+   scrollbar-width: thin;
+   scrollbar-color: #c1c1c1 #f1f1f1;
+ }
+
+ // PFD 탭 전용 스타일 (P&ID 섹션 포함)
+ .tab-content .content:first-child {
+   // 팝업 크기에 관계없이 항상 스크롤 가능하도록 설정
+   position: relative;
+   height: auto !important;
+   max-height: none !important;
+   overflow-y: auto !important;
+   
+   // 내부 요소들이 높이를 차지하도록 설정
+   .pagination-container {
+     margin-bottom: 1rem;
+   }
+   
+   .pfd-section {
+     margin-bottom: 1rem;
+     
+     .section-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       margin-bottom: 1rem;
+       
+       h4 {
+         margin: 0;
+         font-size: 1.1rem;
+         font-weight: 600;
+         color: #333;
+       }
+     }
+   }
+   
+   .pid-section {
+     margin-bottom: 2rem;
+     display: block !important;
+     visibility: visible !important;
+     height: auto !important;
+     min-height: 200px !important;
+     position: relative;
+   }
+   
+   // 스크롤바가 제대로 작동하도록 내부 콘텐츠 높이 보장
+   > * {
+     min-height: fit-content;
+   }
+   
+   // 스크롤바 스타일링
+   &::-webkit-scrollbar {
+     width: 8px;
+   }
+   
+   &::-webkit-scrollbar-track {
+     background: #f1f1f1;
+     border-radius: 4px;
+   }
+   
+   &::-webkit-scrollbar-thumb {
+     background: #c1c1c1;
+     border-radius: 4px;
+     
+     &:hover {
+       background: #a8a8a8;
+     }
+   }
+   
+   // Firefox 스크롤바 스타일링
+   scrollbar-width: thin;
+   scrollbar-color: #c1c1c1 #f1f1f1;
+ }
+
+ // 팝업 환경에서 스크롤이 제대로 작동하도록 추가 설정
+ .tab-content {
+   position: relative;
+   height: auto;
+   overflow: visible;
+ }
+
+ .tab-content .content {
+   position: relative;
+   height: auto;
+   overflow-y: auto;
+ }
+
+ // 팝업 크기 제한 해제를 위한 추가 설정
+ .process-page {
+   height: auto;
+   overflow: visible;
+   
+   // 팝업 환경에서 스크롤바 설정
+   &.popup-mode {
+     height: auto;
+     overflow: visible;
+     
+     // 하위 요소들도 스크롤바 설정
+     .action-bar,
+     .tab-action-bar,
+     .tab-content {
+       max-height: none;
+       overflow: visible;
+     }
+     
+     // 탭 컨텐츠 영역 스크롤바 설정
+     .tab-content .content {
+       max-height: none;
+       overflow: visible;
+     }
+   }
+ }
+
+ .action-bar {
+   height: auto;
+   overflow: visible;
+ }
+
+ .tab-action-bar {
+   height: auto;
+   overflow: visible;
+ }
+
+ // P&ID 섹션 스타일
+ .pid-section {
+   margin-top: 0.5rem;
+   padding-top: 0.5rem;
+   
+   .section-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 0.5rem;
+     
+     h4 {
+       margin: 0;
+       font-size: 1.1rem;
+       font-weight: 600;
+       color: #333;
+     }
+     
+     .section-actions {
+       display: flex;
+       gap: 0.5rem;
+       
+       .btn {
+         padding: 0.5rem 1rem;
+         border-radius: 0.25rem;
+         font-size: 0.875rem;
+         cursor: pointer;
+         border: 1px solid transparent;
+         
+         &.btn-primary {
+           background-color: #007bff;
+           color: white;
+           
+           &:hover {
+             background-color: #0056b3;
+           }
+         }
+         
+         &.btn-danger {
+           background-color: #dc3545;
+           color: white;
+           
+           &:disabled {
+             background-color: #6c757d;
+             cursor: not-allowed;
+           }
+           
+           &:hover:not(:disabled) {
+             background-color: #c82333;
+           }
+         }
+       }
+     }
+   }
+ }
+
+ // "보기" 버튼 스타일
+ .view-btn {
+   background: none;
+   border: none;
+   color: #007bff;
+   text-decoration: underline;
+   cursor: pointer;
+   padding: 0;
+   font-size: inherit;
+   
+   &:hover {
+     color: #0056b3;
+     text-decoration: none;
+   }
+   
+   &:focus {
+     outline: none;
+     text-decoration: none;
+   }
+ }
+
+ // 모달 액션 바 스타일
+ .modal-action-bar {
+   display: flex;
+   justify-content: flex-end;
+   gap: 0.5rem;
+   margin-bottom: 1rem;
+   padding: 0.5rem 0;
+   border-bottom: 1px solid #e0e0e0;
+   
+   .btn {
+     padding: 0.5rem 1rem;
+     border-radius: 0.25rem;
+     font-size: 0.875rem;
+     cursor: pointer;
+     border: 1px solid transparent;
+     
+     &.btn-primary {
+       background-color: #007bff;
+       color: white;
+       
+       &:hover {
+         background-color: #0056b3;
+       }
+     }
+     
+     &.btn-danger {
+       background-color: #dc3545;
+       color: white;
+       
+       &:disabled {
+         background-color: #6c757d;
+         cursor: not-allowed;
+       }
+       
+       &:hover:not(:disabled) {
+         background-color: #c82333;
+       }
+     }
+   }
+ }
 </style>

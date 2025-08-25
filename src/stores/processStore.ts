@@ -663,14 +663,79 @@ export const useProcessStore = defineStore("process", () => {
 
       console.log("공정 등록 API 응답:", result);
 
-             if (result.success) {
-         // 등록 성공 후 목록 새로고침
-         await searchProcesses();
-         return result;
-       } else {
-         const errorMessage = result.message || "등록 실패";
-         throw new Error(errorMessage);
-       }
+      // HTTP 상태 코드 확인 (409 Conflict 등)
+      if (result.status && result.status >= 400) {
+        console.error("HTTP 오류 상태 코드:", result.status);
+        
+        let errorMessage = "공정 등록에 실패했습니다.";
+        
+        if (result.response) {
+          try {
+            const responseData = JSON.parse(result.response);
+            if (responseData.detail) {
+              errorMessage = responseData.detail;
+            }
+          } catch {
+            // JSON 파싱 실패 시 기본 메시지 사용
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // response.data.success 확인 (서버가 success: true와 함께 response.data.success: false를 보내는 경우)
+      if (result.response && result.response.data && result.response.data.success === false) {
+        console.error("API response.data 오류 응답:", result.response.data);
+        
+        let errorMessage = "공정 등록에 실패했습니다.";
+        if (result.response.data.message) {
+          errorMessage = result.response.data.message;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // success 필드 확인
+      if (result.success === false) {
+        console.error("API 오류 응답:", result);
+        
+        let errorMessage = "공정 등록에 실패했습니다.";
+        if (result.message) {
+          errorMessage = result.message;
+        } else if (result.response) {
+          try {
+            const responseData = JSON.parse(result.response);
+            if (responseData.detail) {
+              errorMessage = responseData.detail;
+            }
+          } catch {
+            // JSON 파싱 실패 시 기본 메시지 사용
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // message 필드에서 오류 키워드 확인 (서버가 success: true와 함께 오류 메시지를 보내는 경우)
+      if (result.message && (
+        result.message.includes("이미 사용 중인 값입니다") ||
+        result.message.includes("실패") ||
+        result.message.includes("오류") ||
+        result.message.includes("에러")
+      )) {
+        console.error("API 오류 메시지 감지:", result.message);
+        throw new Error(result.message);
+      }
+
+      if (result.success) {
+        // 등록 성공
+        console.log("공정 등록 성공");
+        await searchProcesses();
+        return result;
+      } else {
+        // 응답에 success 필드가 없는 경우
+        throw new Error("API 응답 형식이 올바르지 않습니다.");
+      }
     } catch (error: any) {
       console.error("등록 실패:", error);
       throw error;

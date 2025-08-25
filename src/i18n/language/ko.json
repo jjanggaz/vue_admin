@@ -474,6 +474,7 @@
     "processSymbol": "공정심볼",
     "calculation": "계산식",
     "pfd": "PFD",
+    "hydraulic": "수리계통도",
     "electricDrawing": "전기도면",
     "mccDiagram": "Mcc구성도",
     "pid": "P&ID",

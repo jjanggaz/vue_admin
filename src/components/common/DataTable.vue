@@ -137,6 +137,7 @@ export interface TableColumn {
   sortable?: boolean;
   className?: string;
   formatter?: (value: any, item: any) => string;
+  dateFormat?: string; // 날짜 포맷 (예: 'YYYY-MM-DD', 'YYYY-MM-DD HH:mm')
   width?: string;
   hidden?: boolean;
 }
@@ -272,6 +273,21 @@ const sortConfig = ref<SortConfig>({
   direction: props.defaultSort?.direction || null,
 });
 
+// defaultSort prop 변경 시 정렬 상태 동기화
+watch(
+  () => props.defaultSort,
+  (newDefaultSort) => {
+    if (newDefaultSort) {
+      sortConfig.value.key = newDefaultSort.key;
+      sortConfig.value.direction = newDefaultSort.direction;
+    } else {
+      sortConfig.value.key = null;
+      sortConfig.value.direction = null;
+    }
+  },
+  { deep: true }
+);
+
 // 정렬된 데이터 계산 (서버 측 정렬 사용)
 const sortedData = computed(() => {
   // 서버에서 정렬된 데이터를 받아오므로 클라이언트 측 정렬 불필요
@@ -301,6 +317,7 @@ const handleSort = (column: TableColumn) => {
       eventData = { key: null, direction: null };
       shouldEmitEvent = true;
     } else {
+      // direction이 null인 경우 (초기 상태)
       sortConfig.value.direction = "asc";
       eventData = { key: column.key, direction: "asc" };
       shouldEmitEvent = true;
@@ -338,11 +355,41 @@ const getRowKey = (item: any, index: number) => {
   return item[props.rowKey] || index;
 };
 
+// 날짜 포맷 함수
+const formatDate = (dateString: string | Date, format: string): string => {
+  if (!dateString) return "";
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+
+    switch (format) {
+      case "YYYY-MM-DD":
+        return date.toISOString().split("T")[0];
+      case "YYYY-MM-DD HH:mm":
+        return date.toISOString().slice(0, 16).replace("T", " ");
+      case "MM/DD/YYYY":
+        return date.toLocaleDateString("en-US");
+      case "DD/MM/YYYY":
+        return date.toLocaleDateString("en-GB");
+      default:
+        return date.toISOString().split("T")[0]; // 기본값: YYYY-MM-DD
+    }
+  } catch {
+    return "";
+  }
+};
+
 const formatCellValue = (item: any, column: TableColumn) => {
   const value = getColumnValue(item, column.key);
 
   if (column.formatter) {
     return column.formatter(value, item);
+  }
+
+  // 날짜 포맷 처리
+  if (column.dateFormat && value) {
+    return formatDate(value, column.dateFormat);
   }
 
   if (value == null) return "-";

@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('placeholder.searchQuery')"
+              placeholder="프로젝트명을 입력하세요"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -21,24 +21,28 @@
           </button>
         </div>
       </div>
-      <div class="btns">
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleDelete"
-          :disabled="selectedItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
-      </div>
+      <!-- 삭제 버튼 제거됨 -->
     </div>
     <!-- 데이터 테이블 -->
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner">데이터를 불러오는 중...</div>
+    </div>
     <DataTable
+      ref="dataTableRef"
+      v-else
       :columns="tableColumns"
       :data="paginatedProjectList"
-      :loading="loading"
-      :selectable="true"
-      :selected-items="selectedItems"
-      @selection-change="handleSelectionChange"
+      :loading="false"
+      :selectable="false"
+      :default-sort="
+        projectStore.sortField && projectStore.sortOrder
+          ? {
+              key: projectStore.sortField,
+              direction: projectStore.sortOrder,
+            }
+          : undefined
+      "
+      @sort-change="handleSortChange"
     >
       <template #cell-detail="{ item }">
         <button class="btn-view" @click.stop="viewDetail(item)">
@@ -50,7 +54,7 @@
     <div class="pagination-container">
       <Pagination
         :current-page="currentPage"
-        :total-pages="totalPagesComputed"
+        :total-pages="totalPages"
         @page-change="handlePageChange"
       />
     </div>
@@ -65,151 +69,182 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import ProjectDetail from "./ProjectDetail.vue";
+import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
 
 const { t } = useI18n();
+const projectStore = useProjectStore();
 
 // 모달 상태
 const showProjectDetail = ref(false);
 const selectedProjectId = ref("");
-
-interface ProjectItem {
-  id: string;
-  name: string;
-  client: string;
-  manager: string;
-  type: string;
-  capacity: string;
-  process: string;
-  createdAt: string;
-  country: string;
-}
+const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
 
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("columns.project.id"), width: "60px", sortable: false },
   {
-    key: "name",
-    title: t("columns.project.name"),
+    key: "project_name",
+    title: "프로젝트명",
     width: "180px",
-    sortable: true,
+    sortable: false,
   },
   {
-    key: "client",
-    title: t("columns.project.client"),
+    key: "client_name",
+    title: "고객사",
     width: "120px",
-    sortable: true,
+    sortable: false,
   },
   {
-    key: "manager",
-    title: t("columns.project.manager"),
+    key: "contact_person",
+    title: "설계 담당자",
     width: "120px",
-    sortable: true,
+    sortable: false,
   },
   {
-    key: "type",
-    title: t("columns.project.type"),
+    key: "unit_system",
+    title: "유입종류",
     width: "100px",
     sortable: true,
   },
   {
-    key: "capacity",
-    title: t("columns.project.capacity"),
+    key: "site_capacity",
+    title: "시설용량",
     width: "120px",
     sortable: true,
   },
   {
-    key: "process",
-    title: t("columns.project.process"),
+    key: "solution",
+    title: "솔루션",
     width: "120px",
-    sortable: true,
+    sortable: false,
   },
   {
-    key: "createdAt",
-    title: t("columns.project.createdAt"),
+    key: "created_at",
+    title: "생성일",
     width: "120px",
-    sortable: true,
+    sortable: false,
+    dateFormat: "YYYY-MM-DD",
   },
   {
-    key: "country",
-    title: t("columns.project.country"),
+    key: "country_code",
+    title: "국가",
     width: "100px",
-    sortable: true,
+    sortable: false,
+  },
+  {
+    key: "project_status",
+    title: "상태",
+    width: "100px",
+    sortable: false,
   },
   {
     key: "detail",
-    title: t("columns.project.detail"),
+    title: "상세정보",
     width: "100px",
     sortable: false,
   },
 ];
 
-const projectList = ref<ProjectItem[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const selectedItems = ref<ProjectItem[]>([]);
 const searchQueryInput = ref("");
-const searchQuery = ref("");
 
-const filteredProjectList = computed(() => {
-  if (searchQuery.value) {
-    return projectList.value.filter((project) =>
-      Object.values(project).some(
-        (v) =>
-          v &&
-          v.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    );
+// store에서 상태 가져오기 (computed로 반응성 보장)
+const loading = computed(() => projectStore.loading);
+const currentPage = computed(() => projectStore.currentPage);
+const totalPages = computed(() => projectStore.totalPages);
+const paginatedProjectList = computed(() => projectStore.paginatedProjectList);
+
+const handlePageChange = async (page: number) => {
+  try {
+    console.log("Project.vue - 페이지 변경 시작:", page);
+    console.log("Project.vue - 현재 검색 조건:", searchQueryInput.value);
+    console.log("Project.vue - 현재 정렬 조건:", {
+      field: projectStore.sortField,
+      order: projectStore.sortOrder,
+    });
+
+    // 현재 검색 조건과 정렬 조건을 유지하면서 페이지 변경
+    await projectStore.changePage(page, {
+      search_value: searchQueryInput.value,
+      order_by: projectStore.sortField,
+      order_direction: projectStore.sortOrder,
+    });
+
+    console.log("Project.vue - 페이지 변경 완료:", page);
+    console.log("Project.vue - 변경 후 상태:", {
+      currentPage: currentPage.value,
+      totalPages: totalPages.value,
+      paginatedProjectList: paginatedProjectList.value,
+      projectListLength: projectStore.projectList.length,
+    });
+
+    // 추가 디버깅
+    console.log("Project.vue - 추가 디버깅:", {
+      paginatedProjectListType: typeof paginatedProjectList.value,
+      paginatedProjectListIsArray: Array.isArray(paginatedProjectList.value),
+      paginatedProjectListKeys: Object.keys(paginatedProjectList.value || {}),
+      projectStoreProjectListType: typeof projectStore.projectList,
+      projectStoreProjectListIsArray: Array.isArray(projectStore.projectList),
+    });
+  } catch (error: any) {
+    console.error("페이지 변경 실패:", error);
+    const errorMessage = error?.message || "페이지 변경에 실패했습니다.";
+    alert(errorMessage);
   }
-  return projectList.value;
-});
-
-const totalCountComputed = computed(() => filteredProjectList.value.length);
-const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
-);
-
-const paginatedProjectList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredProjectList.value.slice(start, end);
-});
-
-const handleSelectionChange = (selected: ProjectItem[]) => {
-  selectedItems.value = selected;
 };
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  selectedItems.value = [];
-};
-
-const handleSearch = () => {
-  selectedItems.value = [];
-  searchQuery.value = searchQueryInput.value;
-  currentPage.value = 1;
-};
-
-const handleDelete = () => {
-  if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
-    return;
+const handleSearch = async () => {
+  // 검색시 정렬 상태 초기화
+  if (dataTableRef.value) {
+    dataTableRef.value.resetSort();
   }
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
-    )
-  ) {
-    const selectedIds = selectedItems.value.map((item) => item.id);
-    projectList.value = projectList.value.filter(
-      (item) => !selectedIds.includes(item.id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
+
+  // 서버 측 검색 실행
+  try {
+    await projectStore.fetchProjectList({
+      page: 1, // 검색 시 첫 페이지로 이동
+      pageSize: projectStore.pageSize,
+      search_value: searchQueryInput.value,
+      // 정렬 조건 제거 (초기화)
+    });
+  } catch (error: any) {
+    console.error("검색 실패:", error);
+    const errorMessage = error?.message || "검색에 실패했습니다.";
+    alert(errorMessage);
+  }
+};
+
+const handleSortChange = async (sortInfo: {
+  key: string | null;
+  direction: "asc" | "desc" | null;
+}) => {
+  console.log("정렬 변경:", sortInfo);
+
+  try {
+    const params: any = {
+      page: projectStore.currentPage, // 현재 페이지 유지 (AccountManagement.vue와 동일)
+      pageSize: projectStore.pageSize,
+      search_value: searchQueryInput.value,
+    };
+
+    // 정렬 조건 처리 (정렬 해제 포함)
+    if (sortInfo.key && sortInfo.direction) {
+      // 정렬 적용
+      params.order_by = sortInfo.key;
+      params.order_direction = sortInfo.direction;
+    } else if (sortInfo.key === null && sortInfo.direction === null) {
+      // 정렬 해제 - 빈 문자열로 전송하여 서버에서 정렬 없음을 인식
+      params.order_by = "";
+      params.order_direction = "" as const;
+    }
+
+    await projectStore.fetchProjectList(params);
+  } catch (error: any) {
+    console.error("정렬 실패:", error);
+    const errorMessage = error?.message || "정렬에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -227,24 +262,30 @@ const closeProjectDetail = () => {
   selectedProjectId.value = "";
 };
 
-// 샘플 데이터 로드 함수
-const loadData = () => {
-  projectList.value = Array.from({ length: 11 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `${t("project.sample.name")}${i + 1}`,
-    client: `${t("project.sample.client")}${(i % 5) + 1}`,
-    manager: `${t("project.sample.manager")}${(i % 3) + 1}`,
-    type: ["A", "B", "C"][i % 3],
-    capacity: `${100 + i * 10}`,
-    process: ["공정1", "공정2"][i % 2],
-    createdAt: `2023-01-${(i % 28) + 1}`,
-    country: ["한국", "일본", "미국"][i % 3],
-    detail: "-",
-  }));
-};
+onMounted(async () => {
+  console.log("Project.vue - onMounted 시작");
+  try {
+    console.log("Project.vue - 초기 데이터 로드 시작");
+    await projectStore.loadInitialData();
+    console.log("Project.vue - 초기 데이터 로드 완료");
+    console.log("Project.vue - 로드 후 상태:", {
+      loading: loading,
+      currentPage: currentPage,
+      totalPages: totalPages,
+      paginatedProjectList: paginatedProjectList,
+    });
 
-onMounted(() => {
-  loadData();
+    // store 상태 직접 확인
+    console.log("Project.vue - store 상태 직접 확인:", {
+      projectListLength: projectStore.projectList.length,
+      projectListFirstItem: projectStore.projectList[0],
+      currentPageFromStore: projectStore.currentPage,
+      pageSizeFromStore: projectStore.pageSize,
+      totalCountFromStore: projectStore.totalCount,
+    });
+  } catch (error) {
+    console.error("초기 데이터 로드 실패:", error);
+  }
 });
 </script>
 
@@ -273,12 +314,21 @@ onMounted(() => {
 .form-item {
   margin-right: 0.5rem;
 }
-.btns {
-  display: flex;
-  gap: 0.5rem;
-}
 .btn-search {
   margin-left: 0.5rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  color: #666;
+  font-size: 1.1rem;
 }
 
 // 모달이 제대로 표시되도록 하는 스타일

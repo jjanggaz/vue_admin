@@ -105,7 +105,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "unit_system",
-    title: "유입종류",
+    title: "단위",
     width: "100px",
     sortable: true,
   },

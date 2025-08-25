@@ -54,6 +54,13 @@
         @page-change="handlePageChange"
       />
     </div>
+
+    <!-- ProjectDetail 모달 -->
+    <ProjectDetail
+      v-if="showProjectDetail"
+      :project-id="selectedProjectId"
+      @close="closeProjectDetail"
+    />
   </div>
 </template>
 
@@ -61,9 +68,14 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import ProjectDetail from "./ProjectDetail.vue";
+
 const { t } = useI18n();
+
+// 모달 상태
+const showProjectDetail = ref(false);
+const selectedProjectId = ref("");
 
 interface ProjectItem {
   id: string;
@@ -201,12 +213,18 @@ const handleDelete = () => {
   }
 };
 
-// 상세 보기 이동
-const router = useRouter();
+// 상세 보기 - 모달로 열기
 const viewDetail = (item: ProjectItem) => {
   if (item.id) {
-    router.push({ name: "ProjectDetail", params: { id: item.id } });
+    selectedProjectId.value = item.id;
+    showProjectDetail.value = true;
   }
+};
+
+// 모달 닫기
+const closeProjectDetail = () => {
+  showProjectDetail.value = false;
+  selectedProjectId.value = "";
 };
 
 // 샘플 데이터 로드 함수
@@ -261,5 +279,20 @@ onMounted(() => {
 }
 .btn-search {
   margin-left: 0.5rem;
+}
+
+// 모달이 제대로 표시되도록 하는 스타일
+:deep(.modal-overlay) {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+}
+
+:deep(.modal-content) {
+  position: relative !important;
+  z-index: 10000 !important;
 }
 </style>

@@ -1,228 +1,273 @@
 <template>
-  <div class="project-detail-page">
-    <!-- 상단 정보 -->
-    <div class="project-header">
-      <div class="title-area">
-        <h1>{{ t("projectDetail.title") }}</h1>
-        <span class="project-id">{{
-          t("projectDetail.projectId", { id: projectId })
-        }}</span>
+  <div
+    class="modal-overlay"
+    @click="onClose"
+    style="
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background-color: rgba(0, 0, 0, 0.5) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 9999 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    "
+  >
+    <div
+      class="modal-content"
+      @click.stop
+      style="
+        background: white !important;
+        border-radius: 8px !important;
+        width: 90% !important;
+        max-width: 1200px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+        position: relative !important;
+        z-index: 10000 !important;
+      "
+    >
+      <div class="modal-header">
+        <h3>프로젝트 상세 정보</h3>
+        <button class="modal-close" @click="onClose" aria-label="Close">
+          ×
+        </button>
       </div>
-      <button class="btn-export">{{ t("projectDetail.export") }}</button>
-    </div>
-    <div class="project-info-table">
-      <DataTable :columns="projectInfoColumns" :data="projectInfoRows" />
-    </div>
-    <!-- 탭 -->
-    <div class="tabs-wrapper">
-      <div
-        v-for="(tab, idx) in tabs"
-        :key="tab"
-        :class="['tab', { active: activeTab === idx }]"
-        @click="activeTab = idx"
-      >
-        {{ t("projectDetail.tabs." + tab) }}
-      </div>
-    </div>
-    <!-- 탭별 내용 -->
-    <div class="tab-content">
-      <div v-if="activeTab === 0">
-        <DataTable :columns="basicColumns" :data="basicRows" />
-      </div>
-      <div v-else-if="activeTab === 1">
-        <div class="process-info-section">
-          <div class="process-info-row">
-            <div class="info-label">{{ t("projectDetail.type") }}</div>
-            <div class="info-value">{{ t("projectDetail.typeValue") }}</div>
-            <div class="info-label">{{ t("projectDetail.waterInfo") }}</div>
-            <div class="info-table-wrap">
-              <DataTable
-                :columns="processWaterColumns"
-                :data="processWaterRows"
-              />
-            </div>
+
+      <div class="modal-body">
+        <!-- 상단 정보 -->
+        <div class="project-header">
+          <div class="title-area">
+            <span class="project-id">프로젝트 ID: {{ props.projectId }}</span>
           </div>
-          <div class="process-info-row">
-            <div class="info-label">{{ t("projectDetail.processType") }}</div>
-            <div class="info-value">
-              <select>
-                <option>{{ t("projectDetail.processTypeOption") }}</option>
-              </select>
-            </div>
-            <div class="info-label">{{ t("projectDetail.processName") }}</div>
-            <div class="info-value">
-              <input
-                type="text"
-                :value="t('projectDetail.processNameValue')"
-                style="width: 180px"
-              />
-            </div>
-            <div class="info-label">{{ t("projectDetail.structure") }}</div>
-            <div class="info-value">
-              <select>
-                <option>{{ t("projectDetail.structureOption") }}</option>
-              </select>
-            </div>
-          </div>
+          <button class="btn-export">내보내기</button>
         </div>
-        <div class="structure-tabs">
-          <button
-            v-for="(tab, idx) in structureTabs"
-            :key="tab"
-            :class="['structure-tab', { active: structureActiveTab === idx }]"
-            @click="structureActiveTab = idx"
-          >
-            {{ t("projectDetail.structureTabs." + tab) }}
-          </button>
+
+        <div class="project-info-table">
+          <DataTable :columns="projectInfoColumns" :data="projectInfoRows" />
         </div>
-        <div class="structure-table-wrap">
-          <div class="structure-title">{{ t("projectDetail.structure") }}</div>
-          <DataTable :columns="structureColumns" :data="structureRows" />
-        </div>
-        <div class="structure-title">{{ t("projectDetail.device") }}</div>
-        <DataTable :columns="deviceColumns" :data="deviceRows" />
-        <div class="row-tables">
-          <div class="row-table-block">
-            <div class="structure-title">
-              {{ t("projectDetail.waterInfo") }}
-            </div>
-            <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
-          </div>
-          <div class="row-table-block">
-            <div class="structure-title">
-              {{ t("projectDetail.designCondition") }}
-            </div>
-            <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
-          </div>
-        </div>
-      </div>
-      <div v-else-if="activeTab === 2">
-        <div class="layout3d-info-section">
-          <div class="layout3d-info-row">
-            <div class="info-label">{{ t("projectDetail.processType") }}</div>
-            <div class="info-value">
-              <select>
-                <option>{{ t("projectDetail.processTypeOption") }}</option>
-              </select>
-            </div>
-            <div class="info-label">{{ t("projectDetail.processName") }}</div>
-            <div class="info-value">
-              <input
-                type="text"
-                :value="t('projectDetail.processNameValue')"
-                style="width: 180px"
-              />
-            </div>
-            <div class="info-label">{{ t("projectDetail.structure") }}</div>
-            <div class="info-value">
-              <select>
-                <option>{{ t("projectDetail.structureOption") }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="layout3d-structure-tabs">
-          <button
-            v-for="(tab, idx) in layout3dTabs"
-            :key="tab"
-            :class="[
-              'layout3d-structure-tab',
-              { active: layout3dActiveTab === idx },
-            ]"
-            @click="handleLayout3dTabChange(idx)"
-          >
-            {{ t("projectDetail.layout3dTabs." + tab) }}
-          </button>
-        </div>
-        <div class="layout3d-table-wrap">
-          <DataTable :columns="layout3dColumns" :data="paginatedLayout3dList" />
-        </div>
-        <div class="layout3d-pagination">
-          <Pagination
-            :totalPages="layout3dTotalPages"
-            :currentPage="layout3dCurrentPage"
-            @pageChange="handleLayout3dPageChange"
-          />
-        </div>
-      </div>
-      <div v-else-if="activeTab === 3">
-        <!-- 산출물 탭 -->
-        <div class="output-subtabs">
-          <button
-            v-for="(tab, idx) in outputTabs"
-            :key="tab"
-            :class="['output-subtab', { active: outputActiveTab === idx }]"
-            @click="handleOutputTabChange(idx)"
-          >
-            {{ t("projectDetail.outputTabs." + tab) }}
-          </button>
-        </div>
-        <div class="output-file-list">
+
+        <!-- 탭 -->
+        <div class="tabs-wrapper">
           <div
-            v-for="item in paginatedOutputList"
-            :key="item.id"
-            class="output-file-card"
+            v-for="(tab, idx) in tabs"
+            :key="tab"
+            :class="['tab', { active: activeTab === idx }]"
+            @click="activeTab = idx"
           >
-            <div class="file-title">{{ item.title }}</div>
-            <div class="file-meta">
-              {{ item.type }} &nbsp; {{ item.size }} &nbsp; {{ item.date }}
-            </div>
-            <div class="file-actions">
-              <button class="btn-icon" title="다운로드"><span>⬇️</span></button>
-              <button class="btn-icon" title="더보기"><span>⋯</span></button>
-            </div>
+            {{ tab }}
           </div>
         </div>
-        <div class="output-pagination">
-          <Pagination
-            :totalPages="outputTotalPages"
-            :currentPage="outputCurrentPage"
-            @pageChange="handleOutputPageChange"
-          />
+
+        <!-- 탭별 내용 -->
+        <div class="tab-content">
+          <div v-if="activeTab === 0">
+            <DataTable :columns="basicColumns" :data="basicRows" />
+          </div>
+          <div v-else-if="activeTab === 1">
+            <div class="process-info-section">
+              <div class="process-info-row">
+                <div class="info-label">타입</div>
+                <div class="info-value">기본</div>
+                <div class="info-label">수질정보</div>
+                <div class="info-table-wrap">
+                  <DataTable
+                    :columns="processWaterColumns"
+                    :data="processWaterRows"
+                  />
+                </div>
+              </div>
+              <div class="process-info-row">
+                <div class="info-label">공정타입</div>
+                <div class="info-value">
+                  <select>
+                    <option>기본공정</option>
+                  </select>
+                </div>
+                <div class="info-label">공정명</div>
+                <div class="info-value">
+                  <input type="text" value="기본공정명" style="width: 180px" />
+                </div>
+                <div class="info-label">구조물</div>
+                <div class="info-value">
+                  <select>
+                    <option>기본구조물</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="structure-tabs">
+              <button
+                v-for="(tab, idx) in structureTabs"
+                :key="tab"
+                :class="[
+                  'structure-tab',
+                  { active: structureActiveTab === idx },
+                ]"
+                @click="structureActiveTab = idx"
+              >
+                {{ tab }}
+              </button>
+            </div>
+            <div class="structure-table-wrap">
+              <div class="structure-title">구조물</div>
+              <DataTable :columns="structureColumns" :data="structureRows" />
+            </div>
+            <div class="structure-title">기기</div>
+            <DataTable :columns="deviceColumns" :data="deviceRows" />
+            <div class="row-tables">
+              <div class="row-table-block">
+                <div class="structure-title">수질정보</div>
+                <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
+              </div>
+              <div class="row-table-block">
+                <div class="structure-title">설계조건</div>
+                <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
+              </div>
+            </div>
+          </div>
+          <div v-else-if="activeTab === 2">
+            <div class="layout3d-info-section">
+              <div class="layout3d-info-row">
+                <div class="info-label">공정타입</div>
+                <div class="info-value">
+                  <select>
+                    <option>기본공정</option>
+                  </select>
+                </div>
+                <div class="info-label">공정명</div>
+                <div class="info-value">
+                  <input type="text" value="기본공정명" style="width: 180px" />
+                </div>
+                <div class="info-label">구조물</div>
+                <div class="info-value">
+                  <select>
+                    <option>기본구조물</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="layout3d-structure-tabs">
+              <button
+                v-for="(tab, idx) in layout3dTabs"
+                :key="tab"
+                :class="[
+                  'layout3d-structure-tab',
+                  { active: layout3dActiveTab === idx },
+                ]"
+                @click="handleLayout3dTabChange(idx)"
+              >
+                {{ tab }}
+              </button>
+            </div>
+            <div class="layout3d-table-wrap">
+              <DataTable
+                :columns="layout3dColumns"
+                :data="paginatedLayout3dList"
+              />
+            </div>
+            <div class="layout3d-pagination">
+              <Pagination
+                :totalPages="layout3dTotalPages"
+                :currentPage="layout3dCurrentPage"
+                @pageChange="handleLayout3dPageChange"
+              />
+            </div>
+          </div>
+          <div v-else-if="activeTab === 3">
+            <!-- 산출물 탭 -->
+            <div class="output-subtabs">
+              <button
+                v-for="(tab, idx) in outputTabs"
+                :key="tab"
+                :class="['output-subtab', { active: outputActiveTab === idx }]"
+                @click="handleOutputTabChange(idx)"
+              >
+                {{ tab }}
+              </button>
+            </div>
+            <div class="output-file-list">
+              <div
+                v-for="item in paginatedOutputList"
+                :key="item.id"
+                class="output-file-card"
+              >
+                <div class="file-title">{{ item.title }}</div>
+                <div class="file-meta">
+                  {{ item.type }} &nbsp; {{ item.size }} &nbsp; {{ item.date }}
+                </div>
+                <div class="file-actions">
+                  <button class="btn-icon" title="다운로드">
+                    <span>⬇️</span>
+                  </button>
+                  <button class="btn-icon" title="더보기">
+                    <span>⋯</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="output-pagination">
+              <Pagination
+                :totalPages="outputTotalPages"
+                :currentPage="outputCurrentPage"
+                @pageChange="handleOutputPageChange"
+              />
+            </div>
+          </div>
+          <div v-else-if="activeTab === 4">
+            <!-- 설계조건 탭 -->
+            <div class="designcond-btns">
+              <button
+                class="btn-designcond"
+                :class="{ active: designcondActiveTab === 0 }"
+                @click="handleDesigncondTabChange(0)"
+              >
+                수리조건
+              </button>
+              <button
+                class="btn-designcond"
+                :class="{ active: designcondActiveTab === 1 }"
+                @click="handleDesigncondTabChange(1)"
+              >
+                콘크리트 구조물
+              </button>
+            </div>
+            <div class="designcond-table-wrap">
+              <DataTable
+                :columns="
+                  designcondActiveTab === 0
+                    ? designcondHydroColumns
+                    : designcondConcreteColumns
+                "
+                :data="
+                  designcondActiveTab === 0
+                    ? paginatedDesigncondList
+                    : paginatedDesigncondList
+                "
+              />
+            </div>
+            <div class="designcond-pagination">
+              <Pagination
+                :totalPages="designcondTotalPages"
+                :currentPage="designcondCurrentPage"
+                @pageChange="handleDesigncondPageChange"
+              />
+            </div>
+          </div>
+          <div v-else>
+            <div class="empty-tab">내용이 없습니다.</div>
+          </div>
         </div>
-      </div>
-      <div v-else-if="activeTab === 4">
-        <!-- 설계조건 탭 -->
-        <div class="designcond-btns">
-          <button
-            class="btn-designcond"
-            :class="{ active: designcondActiveTab === 0 }"
-            @click="handleDesigncondTabChange(0)"
-          >
-            {{ t("projectDetail.repairCondition") }}
-          </button>
-          <button
-            class="btn-designcond"
-            :class="{ active: designcondActiveTab === 1 }"
-            @click="handleDesigncondTabChange(1)"
-          >
-            {{ t("projectDetail.concreteStructure") }}
-          </button>
+
+        <!-- 하단 닫기 버튼 -->
+        <div class="modal-footer">
+          <button class="btn-close-bottom" @click="onClose">닫기</button>
         </div>
-        <div class="designcond-table-wrap">
-          <DataTable
-            :columns="
-              designcondActiveTab === 0
-                ? designcondHydroColumns
-                : designcondConcreteColumns
-            "
-            :data="
-              designcondActiveTab === 0
-                ? paginatedDesigncondList
-                : paginatedDesigncondList
-            "
-          />
-        </div>
-        <div class="designcond-pagination">
-          <Pagination
-            :totalPages="designcondTotalPages"
-            :currentPage="designcondCurrentPage"
-            @pageChange="handleDesigncondPageChange"
-          />
-        </div>
-      </div>
-      <div v-else>
-        <div class="empty-tab">{{ t("projectDetail.emptyTabContent") }}</div>
       </div>
     </div>
   </div>
@@ -233,10 +278,26 @@ import { ref, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useI18n } from "vue-i18n";
+
+interface Props {
+  projectId: string;
+}
+
+interface Emits {
+  (e: "close"): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
 const { t } = useI18n();
 
-// 프로젝트 ID (임시 데이터)
-const projectId = ref("PRJ-2025-001");
+// 모달 닫기
+const onClose = () => {
+  emit("close");
+};
+
+// 프로젝트 ID는 props로 받음
 const tabs = [
   "기본 정보",
   "프로세스 정보",
@@ -598,26 +659,91 @@ const designcondConcreteColumns: TableColumn[] = [
 </script>
 
 <style scoped lang="scss">
-.project-detail-page {
-  padding: $spacing-lg;
-  background: #fff;
+// Modal 스타일 (Revit.vue와 동일)
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
 }
+
+.modal-content {
+  background: white !important;
+  border-radius: 8px !important;
+  width: 90% !important;
+  max-width: 1200px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.25rem;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
 .project-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1.5rem;
 }
+
 .title-area {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
+
 .project-id {
   font-size: 1rem;
   color: #888;
   margin-top: 0.25rem;
 }
+
 .btn-export {
   background: #3a3d4b;
   color: #fff;
@@ -627,15 +753,18 @@ const designcondConcreteColumns: TableColumn[] = [
   font-size: 1rem;
   cursor: pointer;
 }
+
 .project-info-table {
   margin-bottom: 1.5rem;
 }
+
 .tabs-wrapper {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   border-bottom: 2px solid #222;
 }
+
 .tab {
   padding: 0.75rem 1.5rem;
   font-size: 1.1rem;
@@ -646,76 +775,53 @@ const designcondConcreteColumns: TableColumn[] = [
   border-bottom: 2px solid transparent;
   transition: border 0.2s, color 0.2s;
 }
+
 .tab.active {
   color: #1a73e8;
   border-bottom: 2px solid #1a73e8;
   font-weight: bold;
 }
+
 .tab-content {
   margin-top: 1.5rem;
 }
-.basic-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-}
-.basic-table th,
-.basic-table td {
-  border: 1px solid #eee;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 1rem;
-}
-.basic-table th {
-  background: #f7f7f7;
-  font-weight: bold;
-}
+
 .empty-tab {
   padding: 2rem;
   color: #888;
   text-align: center;
 }
+
 .process-info-section {
   margin-bottom: 1.5rem;
 }
+
 .process-info-row {
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
 }
+
 .info-label {
   font-weight: bold;
   margin-right: 0.5rem;
   min-width: 80px;
 }
+
 .info-value {
   margin-right: 2rem;
 }
+
 .info-table-wrap {
   flex: 1;
 }
-.mini-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  margin-bottom: 1rem;
-}
-.mini-table th,
-.mini-table td {
-  border: 1px solid #eee;
-  padding: 0.5rem 1rem;
-  text-align: left;
-  font-size: 1rem;
-}
-.mini-table th {
-  background: #f7f7f7;
-  font-weight: bold;
-}
+
 .structure-tabs {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
+
 .structure-tab {
   padding: 0.5rem 1.2rem;
   font-size: 1rem;
@@ -726,39 +832,48 @@ const designcondConcreteColumns: TableColumn[] = [
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .structure-tab.active {
   background: #1a73e8;
   color: #fff;
 }
+
 .structure-table-wrap {
   margin-bottom: 1.5rem;
 }
+
 .structure-title {
   font-weight: bold;
   margin: 1.2rem 0 0.5rem 0;
   font-size: 1.1rem;
 }
+
 .row-tables {
   display: flex;
   gap: 2rem;
   margin-top: 1.5rem;
 }
+
 .row-table-block {
   flex: 1;
 }
+
 .layout3d-info-section {
   margin-bottom: 1.5rem;
 }
+
 .layout3d-info-row {
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
 }
+
 .layout3d-structure-tabs {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
+
 .layout3d-structure-tab {
   padding: 0.5rem 1.2rem;
   font-size: 1rem;
@@ -769,13 +884,16 @@ const designcondConcreteColumns: TableColumn[] = [
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .layout3d-structure-tab.active {
   background: #1a73e8;
   color: #fff;
 }
+
 .layout3d-table-wrap {
   margin-bottom: 1.5rem;
 }
+
 .layout3d-pagination {
   display: flex;
   justify-content: center;
@@ -783,11 +901,13 @@ const designcondConcreteColumns: TableColumn[] = [
   gap: 0.25rem;
   margin-bottom: 1.5rem;
 }
+
 .output-subtabs {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
+
 .output-subtab {
   padding: 0.5rem 1.2rem;
   font-size: 1rem;
@@ -798,16 +918,19 @@ const designcondConcreteColumns: TableColumn[] = [
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .output-subtab.active {
   background: #1a73e8;
   color: #fff;
 }
+
 .output-file-list {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
 }
+
 .output-file-card {
   border: 1px solid #bbb;
   border-radius: 8px;
@@ -818,20 +941,24 @@ const designcondConcreteColumns: TableColumn[] = [
   gap: 0.5rem;
   min-width: 0;
 }
+
 .file-title {
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
+
 .file-meta {
   font-size: 0.95rem;
   color: #666;
   margin-bottom: 0.5rem;
 }
+
 .file-actions {
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
 }
+
 .btn-icon {
   background: #f7f7f7;
   border: 1px solid #ddd;
@@ -845,21 +972,25 @@ const designcondConcreteColumns: TableColumn[] = [
   cursor: pointer;
   transition: background 0.2s, border 0.2s;
 }
+
 .btn-icon:hover {
   background: #e3eaff;
   border: 1px solid #1a73e8;
 }
+
 .output-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.25rem;
 }
+
 .designcond-btns {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
+
 .btn-designcond {
   padding: 0.5rem 1.2rem;
   font-size: 1rem;
@@ -870,22 +1001,52 @@ const designcondConcreteColumns: TableColumn[] = [
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .btn-designcond.active {
   background: #1a73e8;
   color: #fff;
 }
+
 .btn-designcond:disabled {
   background: #f7f7f7;
   color: #bbb;
   cursor: not-allowed;
 }
+
 .designcond-table-wrap {
   margin-bottom: 2rem;
 }
+
 .designcond-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.25rem;
+}
+
+// 하단 닫기 버튼 스타일
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem 0 0 0;
+  border-top: 1px solid #dee2e6;
+  margin-top: 1.5rem;
+}
+
+.btn-close-bottom {
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 80px;
+
+  &:hover {
+    background: #5a6268;
+  }
 }
 </style>

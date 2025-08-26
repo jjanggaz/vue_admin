@@ -107,13 +107,13 @@ const tableColumns: TableColumn[] = [
     key: "unit_system",
     title: "단위",
     width: "100px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "site_capacity",
     title: "시설용량",
     width: "120px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "solution",

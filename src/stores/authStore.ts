@@ -5,7 +5,6 @@ import { addRoleBasedRoutes } from "../router";
 import {
   startAutoRefresh,
   stopAutoRefresh,
-  clearAllTokens,
   isCurrentTokenValid,
 } from "../utils/tokenManager";
 
@@ -75,6 +74,10 @@ export const useAuthStore = defineStore("auth", {
               localStorage.setItem("authUsername", userInfo.username);
               localStorage.setItem("authRoleName", userInfo.roleName);
               localStorage.setItem("authCodes", JSON.stringify(userInfo.codes));
+              localStorage.setItem(
+                "authUserId",
+                responseData.user_info.user_id
+              );
 
               // 스토어 상태 업데이트
               this.isLoggedIn = true;
@@ -144,6 +147,7 @@ export const useAuthStore = defineStore("auth", {
         localStorage.removeItem("authUsername");
         localStorage.removeItem("authRoleName");
         localStorage.removeItem("authCodes");
+        localStorage.removeItem("authUserId");
 
         // 자동 토큰 갱신 중지
         stopAutoRefresh();

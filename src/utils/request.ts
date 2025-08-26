@@ -26,6 +26,9 @@ export const request = async (
 
     const headers: Record<string, string> = {
       ...options.headers,
+      system_code: import.meta.env.VITE_SYSTEM_CODE,
+      user_Id: localStorage.getItem("authUserId") || "",
+      wai_lang: localStorage.getItem("wai_lang") || "ko",
     } as Record<string, string>;
 
     // httpOnly 쿠키를 사용하므로 브라우저에서 토큰을 헤더에 추가하지 않음

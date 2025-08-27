@@ -13,27 +13,49 @@ export interface ProjectItem {
   created_at: string;
   country_code: string;
   project_status: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 // API 응답 인터페이스
 interface ApiProjectItem {
   project_id: string;
   project_name: string;
-  client?: {
-    client_name: string;
-    contact_person: string;
-  };
-  site?: {
-    site_capacity: number;
-    capacity_unit: string;
-  };
-  unit_system: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean | null;
+  owner_id: string;
   project_status: string;
+  description: string | null;
   created_at: string;
+  project_code: string;
+  version_id: string;
+  created_by: string | null;
+  client_id: string;
+  unit_system: string;
   country_code: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
+  language_code: string;
+  updated_at: string | null;
+  business_type: string;
+  orderer: string;
+  site_id: string;
+  updated_by: string;
+  client: {
+    contact_person: string;
+    location: string | null;
+    phone_number: string;
+    client_type: string | null;
+    client_name: string;
+    client_id: string;
+    email: string;
+  };
+  site: {
+    site_name: string;
+    site_address: string;
+    capacity_unit: string;
+    site_id: string;
+    site_capacity: number;
+  };
 }
 
 export interface ProjectListParams {
@@ -47,6 +69,7 @@ export interface ProjectListParams {
 export const useProjectStore = defineStore("project", () => {
   // 상태
   const projectList = ref<ProjectItem[]>([]);
+  const originalApiData = ref<ApiProjectItem[]>([]); // 원본 API 응답 데이터 저장
   const loading = ref(false);
   const currentPage = ref(1);
   const pageSize = ref(10);
@@ -81,6 +104,8 @@ export const useProjectStore = defineStore("project", () => {
       created_at: item.created_at || "",
       country_code: item.country_code || "",
       project_status: item.project_status || "",
+      start_date: item.start_date || "",
+      end_date: item.end_date || "",
     }));
   };
 
@@ -109,6 +134,7 @@ export const useProjectStore = defineStore("project", () => {
         const apiItems = response.response.items || [];
 
         projectList.value = transformApiData(apiItems);
+        originalApiData.value = apiItems; // 원본 API 데이터 저장
         totalCount.value = response.response.total || 0;
 
         if (params.page) currentPage.value = params.page;
@@ -201,6 +227,7 @@ export const useProjectStore = defineStore("project", () => {
   return {
     // 상태
     projectList,
+    originalApiData,
     loading,
     currentPage,
     pageSize,

@@ -62,7 +62,7 @@
     <!-- ProjectDetail 모달 -->
     <ProjectDetail
       v-if="showProjectDetail"
-      :project-id="selectedProjectId"
+      :project-data="selectedProjectData"
       @close="closeProjectDetail"
     />
   </div>
@@ -81,7 +81,45 @@ const projectStore = useProjectStore();
 
 // 모달 상태
 const showProjectDetail = ref(false);
-const selectedProjectId = ref("");
+const selectedProjectData = ref<{
+  project_id: string;
+  project_name: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean | null;
+  owner_id: string;
+  project_status: string;
+  description: string | null;
+  created_at: string;
+  project_code: string;
+  version_id: string;
+  created_by: string | null;
+  client_id: string;
+  unit_system: string;
+  country_code: string;
+  language_code: string;
+  updated_at: string | null;
+  business_type: string;
+  orderer: string;
+  site_id: string;
+  updated_by: string;
+  client: {
+    contact_person: string;
+    location: string | null;
+    phone_number: string;
+    client_type: string | null;
+    client_name: string;
+    client_id: string;
+    email: string;
+  };
+  site: {
+    site_name: string;
+    site_address: string;
+    capacity_unit: string;
+    site_id: string;
+    site_capacity: number;
+  };
+} | null>(null);
 const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
 
 const tableColumns: TableColumn[] = [
@@ -225,7 +263,63 @@ const handleSortChange = async (sortInfo: {
 // 상세 보기 - 모달로 열기
 const viewDetail = (item: ProjectItem) => {
   if (item.id) {
-    selectedProjectId.value = item.id;
+    // projectStore에서 원본 API 응답 데이터를 찾아서 사용
+    const originalData = projectStore.projectList.find(
+      (project) => project.id === item.id
+    );
+
+    if (originalData && projectStore.originalApiData) {
+      // API 응답의 원본 데이터를 그대로 사용
+      const apiItem = projectStore.originalApiData.find(
+        (apiItem) => apiItem.project_id === item.id
+      );
+      if (apiItem) {
+        selectedProjectData.value = apiItem;
+        showProjectDetail.value = true;
+        return;
+      }
+    }
+
+    // fallback: ProjectItem의 데이터를 사용
+    selectedProjectData.value = {
+      project_id: item.id,
+      project_name: item.project_name || "",
+      start_date: item.start_date || "",
+      end_date: item.end_date || "",
+      is_active: null,
+      owner_id: "",
+      project_status: item.project_status || "",
+      description: null,
+      created_at: item.created_at || "",
+      project_code: "",
+      version_id: "",
+      created_by: null,
+      client_id: "",
+      unit_system: item.unit_system || "",
+      country_code: item.country_code || "",
+      language_code: "",
+      updated_at: null,
+      business_type: "",
+      orderer: "",
+      site_id: "",
+      updated_by: "",
+      client: {
+        contact_person: item.contact_person || "",
+        location: null,
+        phone_number: "",
+        client_type: null,
+        client_name: item.client_name || "",
+        client_id: "",
+        email: "",
+      },
+      site: {
+        site_name: item.client_name || "", // client_name을 site_name으로 사용
+        site_address: "",
+        capacity_unit: "",
+        site_id: "",
+        site_capacity: parseFloat(item.site_capacity) || 0,
+      },
+    };
     showProjectDetail.value = true;
   }
 };
@@ -233,7 +327,7 @@ const viewDetail = (item: ProjectItem) => {
 // 모달 닫기
 const closeProjectDetail = () => {
   showProjectDetail.value = false;
-  selectedProjectId.value = "";
+  selectedProjectData.value = null;
 };
 
 onMounted(async () => {

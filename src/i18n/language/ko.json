@@ -99,7 +99,7 @@
       "client": "고객사",
       "manager": "설계담당자",
       "type": "유입종류",
-      "capacity": "시설용량(m³/d)",
+      "capacity": "시설용량",
       "process": "적용 공정",
       "createdAt": "생성일",
       "country": "국가",
@@ -116,7 +116,7 @@
       "projectPeriod": "프로젝트 기간",
       "projectManager": "담당자",
       "influentType": "유입종류",
-      "facilityCapacity": "시설용량 (m³/d)",
+      "facilityCapacity": "시설용량",
       "item": "항목",
       "influent": "유입수",
       "unit": "단위",
@@ -593,8 +593,8 @@
     "enterRoleName": "권한명을 입력하세요",
     "enterDescription": "권한 설명을 입력하세요",
     "enterMenuName": "메뉴명을 입력하세요",
-    "enterMenuOrder": "정렬순서를 입력하세요",  
-    "selectGroupName": "그룹명 선택"    
+    "enterMenuOrder": "정렬순서를 입력하세요",
+    "selectGroupName": "그룹명 선택"
   },
   "datatable": {
     "loading": "데이터를 불러오는 중...",

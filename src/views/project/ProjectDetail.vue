@@ -43,7 +43,9 @@
         <!-- 상단 정보 -->
         <div class="project-header">
           <div class="title-area">
-            <span class="project-id">프로젝트 ID: {{ props.projectId }}</span>
+            <span class="project-id"
+              >프로젝트명: {{ projectData?.project_name }}</span
+            >
           </div>
           <button class="btn-export">내보내기</button>
         </div>
@@ -280,7 +282,45 @@ import Pagination from "@/components/common/Pagination.vue";
 import { useI18n } from "vue-i18n";
 
 interface Props {
-  projectId: string;
+  projectData?: {
+    project_id: string;
+    project_name: string;
+    start_date: string;
+    end_date: string;
+    is_active: boolean | null;
+    owner_id: string;
+    project_status: string;
+    description: string | null;
+    created_at: string;
+    project_code: string;
+    version_id: string;
+    created_by: string | null;
+    client_id: string;
+    unit_system: string;
+    country_code: string;
+    language_code: string;
+    updated_at: string | null;
+    business_type: string;
+    orderer: string;
+    site_id: string;
+    updated_by: string;
+    client: {
+      contact_person: string;
+      location: string | null;
+      phone_number: string;
+      client_type: string | null;
+      client_name: string;
+      client_id: string;
+      email: string;
+    };
+    site: {
+      site_name: string;
+      site_address: string;
+      capacity_unit: string;
+      site_id: string;
+      site_capacity: number;
+    };
+  } | null;
 }
 
 interface Emits {
@@ -614,35 +654,33 @@ const layout3dColumns: TableColumn[] = [
   { key: "model", title: t("columns.projectDetail.model3d") },
   { key: "feature", title: t("columns.projectDetail.modelFeature") },
 ];
-const layout3dRows = [
-  {
-    no: "text",
-    structure: "text",
-    device: "text",
-    type: "text",
-    model: "text",
-    feature: "text",
-  },
-];
+
 // 산출물, 설계조건 등은 카드/커스텀 UI이므로 table 변환 제외
 
 const projectInfoColumns: TableColumn[] = [
-  { key: "projectPeriod", title: t("columns.projectDetail.projectPeriod") },
-  { key: "projectManager", title: t("columns.projectDetail.projectManager") },
-  { key: "influentType", title: t("columns.projectDetail.influentType") },
+  { key: "start_date", title: t("columns.projectDetail.projectPeriod") },
+  { key: "contact_person", title: t("columns.projectDetail.projectManager") },
+  { key: "site_name", title: t("columns.projectDetail.influentType") },
   {
-    key: "facilityCapacity",
+    key: "capacity_unit",
     title: t("columns.projectDetail.facilityCapacity"),
   },
 ];
-const projectInfoRows = [
+const projectInfoRows = computed(() => [
   {
-    projectPeriod: "2025.01.01 - 2025.12.31",
-    projectManager: "김철수",
-    influentType: "음식물쓰레기",
-    facilityCapacity: "1000",
+    start_date:
+      props.projectData?.start_date && props.projectData?.end_date
+        ? `${props.projectData.start_date} ~ ${props.projectData.end_date}`
+        : "",
+    contact_person: props.projectData?.client?.contact_person || "",
+    site_name: props.projectData?.site?.site_name || "",
+    capacity_unit:
+      props.projectData?.site?.site_capacity !== undefined &&
+      props.projectData?.site?.capacity_unit
+        ? `${props.projectData.site.site_capacity}${props.projectData.site.capacity_unit}`
+        : "",
   },
-];
+]);
 
 const designcondHydroColumns: TableColumn[] = [
   { key: "col1", title: t("columns.projectDetail.item") },
@@ -722,7 +760,7 @@ const designcondConcreteColumns: TableColumn[] = [
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 0rem 1.5rem 1.5rem 1.5rem;
 }
 
 .project-header {
@@ -749,7 +787,7 @@ const designcondConcreteColumns: TableColumn[] = [
   color: #fff;
   border: none;
   border-radius: 4px;
-  padding: 0.5rem 1.2rem;
+  padding: 0.4rem 0.8rem;
   font-size: 1rem;
   cursor: pointer;
 }

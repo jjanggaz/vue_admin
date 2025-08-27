@@ -68,6 +68,7 @@
               {{ t("common.selectFile") }}
               <input
                 type="file"
+                accept=".svg"
                 @change="handleFileChange('processSymbol', $event)"
                 style="display: none"
               />
@@ -85,37 +86,43 @@
         </dd>
       </dl>
     </div>
-  </div>
 
-  <div class="action-bar tab-action-bar">
-    <div class="swiper-bar">
-      <div class="tabs-wrapper">
-        <button
-          v-if="canScrollLeft"
-          class="btn-scroll left"
-          @click="scrollTabs(-1)"
-        >
-          ◀
-        </button>
-        <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
-          <div
-            v-for="(tab, idx) in tabs"
-            :key="tab"
-            :class="['tab', { active: activeTab === idx }]"
-            @click="onTabClick(idx)"
-          >
-            {{ t("processDetail.tabs." + tab) }}
-          </div>
-        </div>
-        <button
-          v-if="canScrollRight"
-          class="btn-scroll right"
-          @click="scrollTabs(1)"
-        >
-          ▶
+    <div class="action-bar tab-action-bar">
+      <!-- 상단 테스트 버튼 영역 -->
+      <div class="test-buttons">
+        <button class="btn btn-secondary btn-test" @click="testFormulaGridRefresh">
+          🔄 계산식 그리드 새로고침 테스트
         </button>
       </div>
-    </div>
+      
+      <div class="swiper-bar">
+        <div class="tabs-wrapper">
+          <button
+            v-if="canScrollLeft"
+            class="btn-scroll left"
+            @click="scrollTabs(-1)"
+          >
+            ◀
+          </button>
+          <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
+            <div
+              v-for="(tab, idx) in tabs"
+              :key="tab"
+              :class="['tab', { active: activeTab === idx }]"
+              @click="onTabClick(idx)"
+            >
+              {{ t("processDetail.tabs." + tab) }}
+            </div>
+          </div>
+          <button
+            v-if="canScrollRight"
+            class="btn-scroll right"
+            @click="scrollTabs(1)"
+          >
+            ▶
+          </button>
+        </div>
+      </div>
 
     <!-- 탭별 버튼들 -->
     <div class="tab-buttons">
@@ -485,6 +492,7 @@
       </div>
      </div>
    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -581,14 +589,14 @@ const designEfficiencyColumns: TableColumn[] = [
 ];
 const designEfficiencyList = ref<any[]>([]);
 
-// 6: 계산식 관리 탭용 컬럼/데이터
-const calculationColumns: TableColumn[] = [
-  { key: "no", title: t("columns.processDetail.no") },
-  { key: "formulaVersion", title: t("columns.processDetail.formulaVersion") },
-  { key: "appliedVersion", title: t("columns.processDetail.appliedVersion") },
-  { key: "remark", title: t("columns.processDetail.remarks") },
-];
-const calculationList = ref<any[]>([]);
+// 6: 계산식 관리 탭용 컬럼/데이터 (사용하지 않음 - formulaColumns로 대체)
+// const calculationColumns: TableColumn[] = [
+//   { key: "no", title: t("columns.processDetail.no") },
+//   { key: "formulaVersion", title: t("columns.processDetail.formulaVersion") },
+//   { key: "appliedVersion", title: t("columns.processDetail.appliedVersion") },
+//   { key: "remark", title: t("columns.processDetail.remarks") },
+// ];
+// const calculationList = ref<any[]>([]);
 
   // 7: PFD 탭용 컬럼/데이터 (보기 버튼 포함)
   const pfdColumnsWithActions: TableColumn[] = [
@@ -615,6 +623,7 @@ const handlePfdSelectionChange = (items: any[]) => {
     { key: "formula_id", title: "formula_id", hidden: true }, // hidden 컬럼으로 formula_id 추가
     { key: "no", title: "순번", sortable: true },
     { key: "registeredFormula", title: "등록계산식", sortable: true },
+    { key: "formula_code", title: "계산식 코드", sortable: true, hidden: true }, // 파일 내용을 표시하는 컬럼을 hidden으로 설정
     { key: "registrationDate", title: "등록일자", sortable: true },
     { key: "infoOverview", title: "정보개요", sortable: true },
     { key: "remarks", title: "비고", sortable: true },
@@ -628,24 +637,24 @@ const handleFormulaSelectionChange = (items: any[]) => {
   console.log("Formula selection changed:", items);
 };
 
-// 8: 전기도면 탭용 컬럼/데이터
-const electricColumns: TableColumn[] = [
-  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-  {
-    key: "info",
-    title: t("columns.processDetail.infoOverview"),
-    sortable: true,
-  },
-  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-];
-const electricList = ref<any[]>([]);
-// 전기도면 탭 선택 상태
-const selectedElectricItems = ref<any[]>([]);
-const handleElectricSelectionChange = (items: any[]) => {
-  selectedElectricItems.value = items;
-  console.log("Electric drawing selection changed:", items);
-};
+// 8: 전기도면 탭용 컬럼/데이터 (현재 사용하지 않음)
+// const electricColumns: TableColumn[] = [
+//   { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+//   { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
+//   {
+//     key: "info",
+//     title: t("columns.processDetail.infoOverview"),
+//     sortable: true,
+//   },
+//   { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
+// ];
+// const electricList = ref<any[]>([]);
+// // 전기도면 탭 선택 상태
+// const selectedElectricItems = ref<any[]>([]);
+// const handleElectricSelectionChange = (items: any[]) => {
+//   selectedElectricItems.value = items;
+//   console.log("Electric drawing selection changed:", items);
+// };
 
 const structColumns: TableColumn[] = [
   { key: "type", title: t("columns.processDetail.type"), sortable: true },
@@ -671,24 +680,24 @@ const handlePidSelectionChange = (items: any[]) => {
   console.log("PID selection changed:", items);
 };
 
-// 9: Mcc 구성도 탭용 컬럼/데이터
-const mccColumns: TableColumn[] = [
-  { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-  { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-  {
-    key: "info",
-    title: t("columns.processDetail.infoOverview"),
-    sortable: true,
-  },
-  { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-];
-const mccList = ref<any[]>([]);
-// Mcc 구성도 탭 선택 상태
-const selectedMccItems = ref<any[]>([]);
-const handleMccSelectionChange = (items: any[]) => {
-  selectedMccItems.value = items;
-  console.log("MCC diagram selection changed:", items);
-};
+// 9: Mcc 구성도 탭용 컬럼/데이터 (현재 사용하지 않음)
+// const mccColumns: TableColumn[] = [
+//   { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
+//   { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
+//   {
+//     key: "info",
+//     title: t("columns.processDetail.infoOverview"),
+//     sortable: true,
+//   },
+//   { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
+// ];
+// const mccList = ref<any[]>([]);
+// // Mcc 구성도 탭 선택 상태
+// const selectedMccItems = ref<any[]>([]);
+// const handleMccSelectionChange = (items: any[]) => {
+//   selectedMccItems.value = items;
+//   console.log("MCC diagram selection changed:", items);
+// };
 
  // 10: 수리계통도 탭용 컬럼/데이터
  const hydraulicColumns: TableColumn[] = [
@@ -835,13 +844,22 @@ const searchFormulaAPI = async () => {
   try {
     console.log('계산식 검색 API 호출 시작 - 엔드포인트: /api/process/formula/search');
     
+    // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
+    const processId = props.processId || (route.params.id as string);
+    
+    if (!processId) {
+      console.warn('processId가 없어서 계산식 검색을 건너뜁니다.');
+      return { data: [] };
+    }
+    
     const requestBody = {
-      search_field: "equipment_type",
-      search_value: "PUMP",
+      search_field: "process_id",
+      search_value: processId, // 동적으로 process_id 사용
       order_by: "created_at"
     };
     
     console.log('요청 데이터:', requestBody);
+    console.log('사용된 processId:', processId);
     
     const response = await fetch('/api/process/formula/search', {
       method: 'POST',
@@ -855,9 +873,47 @@ const searchFormulaAPI = async () => {
     console.log('API 응답 상태:', response.status, response.statusText);
 
     if (!response.ok) {
-      // 400, 404 등의 오류 시 상세 정보 로깅
+      // 400, 401, 404 등의 오류 시 상세 정보 로깅
       const errorText = await response.text();
       console.error('API 응답 오류 상세:', errorText);
+      
+      // 응답 본문에서 실제 상태 코드 확인 (백엔드에서 400으로 응답하지만 실제로는 401인 경우)
+      let parsedError;
+      try {
+        parsedError = JSON.parse(errorText);
+      } catch (e) {
+        parsedError = { status: response.status };
+      }
+      
+      // 실제 인증 오류인지 확인 (응답 본문의 status 필드 또는 error_code 확인)
+      const isAuthError = response.status === 401 || 
+                         parsedError.status === 401 || 
+                         parsedError.error_code === 'SESSION_REQUIRED' ||
+                         errorText.includes('Authentication required') ||
+                         errorText.includes('세션이 만료되었습니다');
+      
+      console.log('인증 오류 감지 결과:', {
+        responseStatus: response.status,
+        parsedErrorStatus: parsedError.status,
+        parsedErrorCode: parsedError.error_code,
+        includesAuthRequired: errorText.includes('Authentication required'),
+        includesSessionExpired: errorText.includes('세션이 만료되었습니다'),
+        isAuthError: isAuthError
+      });
+      
+      if (isAuthError) {
+        console.warn('⚠️ 인증이 만료되었습니다. 로그인이 필요합니다.');
+        console.log('인증 오류 응답:', errorText);
+        console.log('파싱된 오류:', parsedError);
+        
+        // 인증 오류 시 빈 데이터 반환
+        return { 
+          success: false,
+          error: 'AUTH_REQUIRED',
+          message: '인증이 필요합니다. 다시 로그인해주세요.',
+          data: [] 
+        };
+      }
       
       // 400 상태 코드이지만 실제로는 404 오류인 경우 처리
       if (response.status === 404 || (response.status === 400 && errorText.includes('Not Found'))) {
@@ -885,7 +941,25 @@ const searchFormulaAPI = async () => {
           ] 
         };
       } else if (response.status === 400) {
+        // 400 오류에서도 인증 관련 메시지가 있는지 다시 한번 확인
+        if (errorText.includes('SESSION_REQUIRED') || 
+            errorText.includes('Authentication required') || 
+            errorText.includes('세션이 만료되었습니다') ||
+            parsedError.error_code === 'SESSION_REQUIRED') {
+          
+          console.warn('⚠️ 400 오류에서 인증 문제를 발견했습니다. 인증이 필요합니다.');
+          console.log('400 인증 오류 응답:', errorText);
+          
+          return { 
+            success: false,
+            error: 'AUTH_REQUIRED',
+            message: '인증이 필요합니다. 다시 로그인해주세요.',
+            data: [] 
+          };
+        }
+        
         console.log('API 요청 형식이 잘못되었습니다. 빈 데이터로 초기화합니다.');
+        console.log('400 오류 상세:', errorText);
         return { data: [] };
       }
       
@@ -910,18 +984,73 @@ const searchFormulaAPI = async () => {
   }
 };
 
-// 계산식 API 호출 함수
-const createFormulaAPI = async (processId: string, formulaName: string) => {
+// MinIO 업로드 함수는 제거됨 - createProcessSymbolAPI에서 직접 파일 전송
+
+// 공정 심볼 파일 생성 API 호출 함수
+const createProcessSymbolAPI = async (symbolCode: string, symbolName: string, selectedFile: File) => {
   try {
+    console.log('createProcessSymbolAPI 호출:', {
+      symbolCode,
+      symbolName,
+      fileName: selectedFile.name,
+      fileSize: selectedFile.size,
+      fileType: selectedFile.type
+    });
+    
+    // FormData 생성하여 MultipartFile 형식으로 전송
+    const formData = new FormData();
+    formData.append('symbol_code', symbolCode);
+    formData.append('symbol_name', symbolName);
+    formData.append('siteFile', selectedFile); // 파일을 MultipartFile 형식으로 추가
+    
+    console.log('공정 심볼 API 요청 데이터 (FormData):', {
+      symbol_code: symbolCode,
+      symbol_name: symbolName,
+      siteFile: selectedFile.name
+    });
+    
+    const response = await fetch('/api/process/symbol/create', {
+      method: 'POST',
+      // Content-Type 헤더 제거 (FormData 사용 시 자동으로 설정됨)
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log('공정 심볼 생성 API 호출 성공');
+    return true;
+  } catch (error) {
+    console.error('공정 심볼 API 호출 실패:', error);
+    throw error;
+  }
+};
+
+// 계산식 API 호출 함수
+const createFormulaAPI = async (processId: string, formulaName: string, formulaCode: string) => {
+  try {
+    console.log('createFormulaAPI 호출:', {
+      processId,
+      formulaName,
+      formulaCode_length: formulaCode ? formulaCode.length : 0,
+      formulaCode_preview: formulaCode ? formulaCode.substring(0, 100) : '없음'
+    });
+    
+    const requestBody = {
+      process_id: processId,
+      formula_name: formulaName,
+      formula_code: formulaCode, // formula_code 필드 추가
+    };
+    
+    console.log('API 요청 데이터:', requestBody);
+    
     const response = await fetch('/api/process/formula/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        process_id: processId,
-        formula_name: formulaName,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -990,6 +1119,39 @@ const handleUpdate = async () => {
     
     await processStore.updateProcess(processId, processDetailData);
     
+    // 공정 심볼 파일이 있는 경우 API 호출
+    if (processStore.processDetail.processSymbol) {
+      try {
+        console.log("공정 심볼 파일 발견, API 호출 시작");
+        console.log("processSymbol:", processStore.processDetail.processSymbol);
+        
+        // 선택된 공정명 옵션에서 label 값 가져오기
+        const symbolCode = processNameValue; // processName의 value
+        const symbolName = processNameLabel; // processName의 label
+        const selectedFile = selectedFiles.value['processSymbol']; // 선택된 파일 객체
+        
+        if (!selectedFile) {
+          console.warn('선택된 파일이 없습니다. processSymbol:', processStore.processDetail.processSymbol);
+          return; // 파일이 없으면 API 호출하지 않음
+        }
+        
+        console.log("공정 심볼 API 매개변수:", { 
+          symbolCode, 
+          symbolName, 
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size 
+        });
+        
+        await createProcessSymbolAPI(symbolCode, symbolName, selectedFile);
+        console.log("공정 심볼 API 호출 완료");
+      } catch (symbolError) {
+        console.error("공정 심볼 API 호출 실패:", symbolError);
+        alert("공정은 수정되었으나 공정 심볼 파일 저장에 실패했습니다.");
+      }
+    } else {
+      console.log("공정 심볼 파일이 없습니다.");
+    }
+    
     // 계산식 관리 탭 그리드 데이터 비교하여 추가된 행 확인
     console.log("계산식 그리드 데이터 비교 시작");
     console.log("초기값:", initialFormulaList.value);
@@ -1035,8 +1197,17 @@ const handleUpdate = async () => {
       console.log("추가된 행에 대해서만 API 호출 시작");
       
       try {
+        console.log("추가된 행들의 formula_code 확인:");
+        addedRows.forEach((formula, index) => {
+          console.log(`행 ${index + 1}:`, {
+            registeredFormula: formula.registeredFormula,
+            formula_code_length: formula.formula_code ? formula.formula_code.length : 0,
+            formula_code_preview: formula.formula_code ? formula.formula_code.substring(0, 100) : '없음'
+          });
+        });
+        
         const formulaPromises = addedRows.map(formula => 
-          createFormulaAPI(processId, formula.registeredFormula)
+          createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '')
         );
         
         await Promise.all(formulaPromises);
@@ -1067,8 +1238,59 @@ const handleUpdate = async () => {
   }
 };
 
+// 계산식 그리드 새로고침 테스트 함수
+const testFormulaGridRefresh = async () => {
+  try {
+    console.log('🔄 계산식 그리드 새로고침 테스트 시작');
+    
+    // 현재 선택된 탭이 계산식 관리 탭이 아니면 해당 탭으로 이동
+    if (activeTab.value !== 1) {
+      console.log('계산식 관리 탭으로 이동:', activeTab.value, '→', 1);
+      activeTab.value = 1;
+    }
+    
+    // 계산식 검색 API 호출
+    console.log('계산식 검색 API 호출 시작');
+    const formulaResult = await searchFormulaAPI();
+    console.log('계산식 검색 API 호출 완료:', formulaResult);
+    
+    if (formulaResult && formulaResult.success && formulaResult.response && Array.isArray(formulaResult.response) && formulaResult.response.length > 0) {
+      console.log('API 응답 데이터가 있습니다. 그리드 변환 시작');
+      
+      formulaList.value = formulaResult.response.map((item: any, index: number) => ({
+        formula_id: item.formula_id || item.id || (index + 1).toString(),
+        id: item.id || (index + 1).toString(),
+        no: (index + 1).toString(),
+        registeredFormula: item.formula_name || '',
+        registrationDate: formatDate(item.created_at) || new Date().toISOString().split('T')[0],
+        infoOverview: item.formula_scope || '',
+        remarks: item.output_type || '',
+      }));
+      
+      // 초기값도 업데이트
+      initialFormulaList.value = JSON.parse(JSON.stringify(formulaList.value));
+      
+      console.log('계산식 그리드 데이터 새로고침 완료:', formulaList.value);
+      alert(`✅ 계산식 그리드 새로고침 완료!\n총 ${formulaList.value.length}개 항목이 로드되었습니다.`);
+      
+    } else if (formulaResult && formulaResult.error === 'AUTH_REQUIRED') {
+      console.warn('인증이 필요합니다. 계산식 데이터를 로드할 수 없습니다.');
+      alert('⚠️ 인증이 필요합니다. 다시 로그인해주세요.');
+    } else {
+      console.log('API 응답 데이터가 없습니다. 빈 배열로 초기화');
+      formulaList.value = [];
+      initialFormulaList.value = [];
+      alert('ℹ️ 계산식 데이터가 없습니다.');
+    }
+    
+  } catch (error) {
+    console.error('계산식 그리드 새로고침 테스트 실패:', error);
+    alert(`❌ 테스트 실패: ${error.message}`);
+  }
+};
+
 // 컴포넌트 외부에서 사용할 수 있는 메서드들
-defineExpose({ t, handleUpdate });
+defineExpose({ t, handleUpdate, testFormulaGridRefresh });
 
 const tabs = ref([
   "PFD",
@@ -1089,10 +1311,36 @@ const onTabClick = (index: number) => {
 };
 
 // 파일 선택 핸들러
-const handleFileChange = (key: string, event: Event) => {
+const handleFileChange = async (key: string, event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    selectedFiles.value[key] = target.files[0];
+    const file = target.files[0];
+    
+    // processSymbol인 경우 SVG 파일인지 확인
+    if (key === 'processSymbol') {
+      if (!file.name.toLowerCase().endsWith('.svg')) {
+        alert('SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.');
+        // 파일 선택 초기화
+        target.value = '';
+        return;
+      }
+    }
+    
+    selectedFiles.value[key] = file;
+    
+    // processSymbol인 경우 파일 선택 완료 처리
+    if (key === 'processSymbol') {
+      console.log('공정심볼 파일 선택됨:', file.name);
+      
+      // processStore에는 파일명만 표시 (사용자에게는 파일명만 보여줌)
+      processStore.setProcessDetail({ processSymbol: file.name });
+      
+      console.log('공정심볼 파일 선택 완료:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+    }
   }
 };
 
@@ -1231,22 +1479,23 @@ const loadData = () => {
       remark: "",
     },
   ];
-  calculationList.value = [
-    {
-      id: "1",
-      no: "1",
-      formulaVersion: "v1.0",
-      appliedVersion: "v1.1",
-      remark: "초기",
-    },
-    {
-      id: "2",
-      no: "2",
-      formulaVersion: "v2.0",
-      appliedVersion: "v2.1",
-      remark: "업데이트",
-    },
-  ];
+  // calculationList는 formulaColumns로 대체되어 사용하지 않음
+  // calculationList.value = [
+  //   {
+  //     id: "1",
+  //     no: "1",
+  //     formulaVersion: "v1.0",
+  //     appliedVersion: "v1.1",
+  //     remark: "초기",
+  //   },
+  //   {
+  //     id: "2",
+  //     no: "2",
+  //     formulaVersion: "v2.0",
+  //     appliedVersion: "v2.1",
+  //     remark: "업데이트",
+  //   },
+  // ];
       pfdList.value = [
       {
         id: "1",
@@ -1320,38 +1569,40 @@ const loadData = () => {
         item: "반응조 송풍기" 
       }
     ];
-   mccList.value = [
-     {
-       id: "1",
-       dwg: "mcc1.dwg",
-       excel: "mcc1.xlsx",
-       info: "Mcc 정보 1",
-       view: "mcc1.svg",
-     },
-     {
-       id: "2",
-       dwg: "mcc2.dwg",
-       excel: "mcc2.xlsx",
-       info: "Mcc 정보 2",
-       view: "mcc2.svg",
-     },
-   ];
-   electricList.value = [
-     {
-       id: "1",
-       dwg: "elec1.dwg",
-       excel: "elec1.xlsx",
-       info: "전도개요1",
-       view: "elec1.svg",
-     },
-     {
-       id: "2",
-       dwg: "elec2.dwg",
-       excel: "elec2.xlsx",
-       info: "전도개요2",
-       view: "elec2.svg",
-     },
-   ];
+   // mccList는 현재 사용하지 않음
+   // mccList.value = [
+   //   {
+   //     id: "1",
+   //     dwg: "mcc1.dwg",
+   //     excel: "mcc1.xlsx",
+   //     info: "Mcc 정보 1",
+   //     view: "mcc1.svg",
+   //   },
+   //   {
+   //     id: "2",
+   //     dwg: "mcc2.dwg",
+   //     excel: "mcc2.xlsx",
+   //     info: "Mcc 정보 2",
+   //     view: "mcc2.svg",
+   //   },
+   // ];
+   // electricList는 현재 사용하지 않음
+   // electricList.value = [
+   //   {
+   //     id: "1",
+   //     dwg: "elec1.dwg",
+   //     excel: "elec1.xlsx",
+   //     info: "전도개요1",
+   //     view: "elec1.svg",
+   //   },
+   //   {
+   //     id: "2",
+   //     dwg: "elec2.dwg",
+   //     excel: "elec2.xlsx",
+   //     info: "전도개요2",
+   //     view: "elec2.svg",
+   //   },
+   // ];
 };
 
 onMounted(async () => {
@@ -1390,7 +1641,9 @@ onMounted(async () => {
 
     console.log("유효한 processId:", validProcessId);
 
-    // 0. 계산식 검색 API 호출하여 그리드 데이터 초기화 (가장 먼저 실행)
+    // 0. 계산식 검색 API 호출하여 그리드 데이터 초기화 (임시 주석처리)
+    // TODO: 백엔드 API 구현 완료 후 주석 해제
+    /*
     console.log("계산식 검색 API 호출 시작");
     console.log("searchFormulaAPI 함수 타입:", typeof searchFormulaAPI);
     console.log("searchFormulaAPI 함수:", searchFormulaAPI);
@@ -1419,6 +1672,22 @@ onMounted(async () => {
         initialFormulaList.value = JSON.parse(JSON.stringify(formulaList.value));
         console.log("계산식 그리드 데이터 초기화 완료:", formulaList.value);
         console.log("초기값 저장 완료:", initialFormulaList.value);
+      } else if (formulaResult && formulaResult.error === 'AUTH_REQUIRED') {
+        console.warn("⚠️ 인증이 필요합니다. 계산식 데이터를 로드할 수 없습니다.");
+        console.log("인증 오류 응답:", formulaResult);
+        console.log("인증 오류 메시지:", formulaResult.message);
+        
+        formulaList.value = [];
+        initialFormulaList.value = [];
+        
+        // 사용자에게 인증 필요 알림
+        console.warn("⚠️ 세션이 만료되었습니다. 다시 로그인해주세요.");
+        
+        // 인증 오류 시 사용자에게 명확한 안내 (선택사항)
+        // alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        
+        // 인증 오류가 발생했지만 화면은 정상적으로 로드되도록 계속 진행
+        console.log("인증 오류가 발생했지만 화면 초기화를 계속 진행합니다.");
       } else {
         console.log("API 응답 데이터가 없거나 빈 배열입니다. 빈 배열로 초기화");
         console.log("formulaResult:", formulaResult);
@@ -1431,6 +1700,13 @@ onMounted(async () => {
       formulaList.value = [];
     }
     console.log("계산식 검색 API 호출 완료");
+    */
+    
+    // 임시로 빈 배열로 초기화 (테스트 버튼으로 수동 새로고침 가능)
+    console.log("계산식 검색 API 호출 부분이 임시 주석처리되었습니다.");
+    console.log("테스트 버튼을 사용하여 수동으로 그리드를 새로고침할 수 있습니다.");
+    formulaList.value = [];
+    initialFormulaList.value = [];
 
     // 1. 공정구분 코드 리스트 로드
     try {
@@ -1590,20 +1866,20 @@ const handlePageChangeFormula = (page: number) => {
   currentPageFormula.value = page;
 };
 
-// Electric pagination state
-const currentPageElectric = ref(1);
-const totalPagesElectric = computed(
-  () => Math.ceil(electricList.value.length / pageSize.value) || 1
-);
-const pagedElectricList = computed(() =>
-  electricList.value.slice(
-    (currentPageElectric.value - 1) * pageSize.value,
-    currentPageElectric.value * pageSize.value
-  )
-);
-const handlePageChangeElectric = (page: number) => {
-  currentPageElectric.value = page;
-};
+// Electric pagination state (현재 사용하지 않음)
+// const currentPageElectric = ref(1);
+// const totalPagesElectric = computed(
+//   () => Math.ceil(electricList.value.length / pageSize.value) || 1
+// );
+// const pagedElectricList = computed(() =>
+//   electricList.value.slice(
+//     (currentPageElectric.value - 1) * pageSize.value,
+//     currentPageElectric.value * pageSize.value
+//   )
+// );
+// const handlePageChangeElectric = (page: number) => {
+//   currentPageElectric.value = page;
+// };
 
 // Mcc pagination state
 const currentPageMcc = ref(1);
@@ -1745,31 +2021,72 @@ const handleFormulaFilesSelected = (event: Event) => {
   selectedFormulaFiles.value = files ? Array.from(files) : [];
   console.log("Selected formula files:", selectedFormulaFiles.value);
 };
-const uploadFormulaFiles = () => {
+const uploadFormulaFiles = async () => {
   console.log("Formula upload executed:", selectedFormulaFiles.value);
   
   // 선택된 파일들을 formulaList에 추가
   if (selectedFormulaFiles.value.length > 0) {
-    selectedFormulaFiles.value.forEach((file, index) => {
-      // .py 확장자를 제외한 파일명 추출
-      const fileNameWithoutExt = file.name.replace(/\.py$/i, '');
+    try {
+      // 각 파일을 순차적으로 처리
+      for (let index = 0; index < selectedFormulaFiles.value.length; index++) {
+        const file = selectedFormulaFiles.value[index];
+        
+        // 파일 내용 읽기
+        const fileContent = await readFileContent(file);
+        
+        // .py 확장자를 제외한 파일명 추출
+        const fileNameWithoutExt = file.name.replace(/\.py$/i, '');
+        
+        // 새로운 계산식 항목 생성
+        const newFormula = {
+          formula_id: Date.now().toString() + index, // formula_id 컬럼에 고유 ID 설정
+          id: Date.now().toString() + index, // 고유 ID 생성
+          no: (formulaList.value.length + index + 1).toString(),
+          registeredFormula: fileNameWithoutExt,
+          formula_code: fileContent, // 파일 내용을 formula_code에 저장
+          registrationDate: new Date().toISOString().split('T')[0], // 현재 날짜
+          infoOverview: "",
+          remarks: "",
+        };
+        
+        console.log(`새로운 계산식 항목 생성:`, newFormula);
+        console.log(`formula_code 길이:`, fileContent.length);
+        console.log(`formula_code 내용 일부:`, fileContent.substring(0, 100));
+        
+        formulaList.value.push(newFormula);
+      }
       
-      // 새로운 계산식 항목 생성
-      const newFormula = {
-        formula_id: Date.now().toString() + index, // formula_id 컬럼에 고유 ID 설정
-        id: Date.now().toString() + index, // 고유 ID 생성
-        no: (formulaList.value.length + index + 1).toString(),
-        registeredFormula: fileNameWithoutExt,
-        registrationDate: new Date().toISOString().split('T')[0], // 현재 날짜
-        infoOverview: "",
-        remarks: "",
-      };
-      
-      formulaList.value.push(newFormula);
-    });
+      console.log("계산식 파일 업로드 완료:", formulaList.value);
+    } catch (error) {
+      console.error("파일 읽기 중 오류 발생:", error);
+      alert("파일 내용을 읽는 중 오류가 발생했습니다.");
+    }
   }
   
   closeFormulaModal();
+};
+
+// 파일 내용을 읽는 함수
+const readFileContent = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        resolve(content);
+      } catch (error) {
+        reject(new Error("파일 내용을 읽을 수 없습니다."));
+      }
+    };
+    
+    reader.onerror = () => {
+      reject(new Error("파일 읽기 중 오류가 발생했습니다."));
+    };
+    
+    // 텍스트 파일로 읽기
+    reader.readAsText(file, 'UTF-8');
+  });
 };
 
 const showElectricModal = ref(false);
@@ -1910,28 +2227,29 @@ const handleFormulaDelete = () => {
   }
 };
 
-const handleElectricDelete = () => {
-  if (selectedElectricItems.value.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
-    return;
-  }
+// 전기도면 삭제 함수 (현재 사용하지 않음)
+// const handleElectricDelete = () => {
+//   if (selectedElectricItems.value.length === 0) {
+//     alert(t("messages.warning.pleaseSelectItemToDelete"));
+//     return;
+//   }
 
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: selectedElectricItems.value.length,
-      })
-    )
-  ) {
-    // 선택된 항목들을 electricList에서 제거
-    const selectedIds = selectedElectricItems.value.map((item) => item.dwg);
-    electricList.value = electricList.value.filter(
-      (item) => !selectedIds.includes(item.dwg)
-    );
-    selectedElectricItems.value = [];
-    alert(t("messages.success.electricDrawingItemDeleted"));
-  }
-};
+//   if (
+//     confirm(
+//       t("messages.confirm.deleteItems", {
+//         count: selectedElectricItems.value.length,
+//       })
+//     )
+//   ) {
+//     // 선택된 항목들을 electricList에서 제거
+//     const selectedIds = selectedElectricItems.value.map((item) => item.dwg);
+//     electricList.value = electricList.value.filter(
+//       (item) => !selectedIds.includes(item.dwg)
+//     );
+//     selectedElectricItems.value = [];
+//     alert(t("messages.success.electricDrawingItemDeleted"));
+//   }
+// };
 
 const handleMccDelete = () => {
   if (selectedMccItems.value.length === 0) {
@@ -2013,6 +2331,23 @@ const handleHydraulicDelete = () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  .test-buttons {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+    
+    .btn-test {
+      background-color: #6c757d;
+      color: white;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      
+      &:hover {
+        background-color: #5a6268;
+      }
+    }
+  }
 
   .swiper-bar {
     flex: 1;

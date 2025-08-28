@@ -42,11 +42,30 @@ export const request = async (
 
     const res = await fetch(url.toString(), requestOptions);
 
-    // 401 에러 시 토큰 갱신 시도 (단, 로그인 API는 제외)
-    if (
-      (res.status === 401 || res.status === 400) &&
-      !path.includes("/api/main/login")
-    ) {
+    // 401 에러 시 토큰 갱신 시도 (로그인 API 제외)
+    // HTTP 상태 코드 또는 응답 본문의 status 필드를 확인
+    let shouldRetryWithRefresh = false;
+
+    if (res.status === 401 && !path.includes("/api/main/login")) {
+      shouldRetryWithRefresh = true;
+    } else if (!res.ok && !path.includes("/api/main/login")) {
+      // HTTP 상태가 401이 아니어도 응답 본문에서 status 확인
+      try {
+        const responseClone = res.clone();
+        const errorData = await responseClone.json();
+        if (
+          errorData.status === 401 ||
+          errorData.response?.error_code === "SESSION_REQUIRED"
+        ) {
+          shouldRetryWithRefresh = true;
+        }
+      } catch (e) {
+        // JSON 파싱 실패시 무시
+        console.warn("응답 JSON 파싱 실패:", e);
+      }
+    }
+
+    if (shouldRetryWithRefresh) {
       console.log("401/400 에러 발생, 토큰 갱신 시도...");
       const refreshSuccess = await refreshAccessToken();
       console.log("토큰 갱신 실패시 기존 토큰의 유효시간이 만료돼서안되는것");

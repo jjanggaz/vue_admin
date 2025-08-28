@@ -33,7 +33,7 @@
       "
     >
       <div class="modal-header">
-        <h3>프로젝트 상세 정보</h3>
+        <h3>{{ t("projectDetail.title") }}</h3>
         <button class="modal-close" @click="onClose" aria-label="Close">
           ×
         </button>
@@ -44,10 +44,11 @@
         <div class="project-header">
           <div class="title-area">
             <span class="project-id"
-              >프로젝트명: {{ projectData?.project_name }}</span
+              >{{ t("projectDetail.labels.projectName") }}:
+              {{ projectData?.project_name }}</span
             >
           </div>
-          <button class="btn-export">내보내기</button>
+          <button class="btn-export">{{ t("projectDetail.export") }}</button>
         </div>
 
         <div class="project-info-table">
@@ -62,7 +63,7 @@
             :class="['tab', { active: activeTab === idx }]"
             @click="activeTab = idx"
           >
-            {{ tab }}
+            {{ t(`projectDetail.tabs.${tab}`) }}
           </div>
         </div>
 
@@ -74,9 +75,15 @@
           <div v-else-if="activeTab === 1">
             <div class="process-info-section">
               <div class="process-info-row">
-                <div class="info-label">타입</div>
-                <div class="info-value">기본</div>
-                <div class="info-label">수질정보</div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.type") }}
+                </div>
+                <div class="info-value">
+                  {{ t("projectDetail.labels.basic") }}
+                </div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.waterInfo") }}
+                </div>
                 <div class="info-table-wrap">
                   <DataTable
                     :columns="processWaterColumns"
@@ -85,20 +92,34 @@
                 </div>
               </div>
               <div class="process-info-row">
-                <div class="info-label">공정타입</div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.processType") }}
+                </div>
                 <div class="info-value">
                   <select>
-                    <option>기본공정</option>
+                    <option>
+                      {{ t("projectDetail.labels.basicProcess") }}
+                    </option>
                   </select>
                 </div>
-                <div class="info-label">공정명</div>
-                <div class="info-value">
-                  <input type="text" value="기본공정명" style="width: 180px" />
+                <div class="info-label">
+                  {{ t("projectDetail.labels.processName") }}
                 </div>
-                <div class="info-label">구조물</div>
+                <div class="info-value">
+                  <input
+                    type="text"
+                    :placeholder="t('projectDetail.labels.basicProcessName')"
+                    style="width: 180px"
+                  />
+                </div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.structure") }}
+                </div>
                 <div class="info-value">
                   <select>
-                    <option>기본구조물</option>
+                    <option>
+                      {{ t("projectDetail.labels.basicStructure") }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -113,22 +134,30 @@
                 ]"
                 @click="structureActiveTab = idx"
               >
-                {{ tab }}
+                {{ t(`projectDetail.structureTabs.${tab}`) }}
               </button>
             </div>
             <div class="structure-table-wrap">
-              <div class="structure-title">구조물</div>
+              <div class="structure-title">
+                {{ t("projectDetail.labels.structure") }}
+              </div>
               <DataTable :columns="structureColumns" :data="structureRows" />
             </div>
-            <div class="structure-title">기기</div>
+            <div class="structure-title">
+              {{ t("projectDetail.labels.equipment") }}
+            </div>
             <DataTable :columns="deviceColumns" :data="deviceRows" />
             <div class="row-tables">
               <div class="row-table-block">
-                <div class="structure-title">수질정보</div>
+                <div class="structure-title">
+                  {{ t("projectDetail.labels.waterInfo") }}
+                </div>
                 <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
               </div>
               <div class="row-table-block">
-                <div class="structure-title">설계조건</div>
+                <div class="structure-title">
+                  {{ t("projectDetail.labels.designCondition") }}
+                </div>
                 <DataTable :columns="waterInfoColumns" :data="waterInfoRows" />
               </div>
             </div>
@@ -136,20 +165,34 @@
           <div v-else-if="activeTab === 2">
             <div class="layout3d-info-section">
               <div class="layout3d-info-row">
-                <div class="info-label">공정타입</div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.processType") }}
+                </div>
                 <div class="info-value">
                   <select>
-                    <option>기본공정</option>
+                    <option>
+                      {{ t("projectDetail.labels.basicProcess") }}
+                    </option>
                   </select>
                 </div>
-                <div class="info-label">공정명</div>
-                <div class="info-value">
-                  <input type="text" value="기본공정명" style="width: 180px" />
+                <div class="info-label">
+                  {{ t("projectDetail.labels.processName") }}
                 </div>
-                <div class="info-label">구조물</div>
+                <div class="info-value">
+                  <input
+                    type="text"
+                    :placeholder="t('projectDetail.labels.basicProcessName')"
+                    style="width: 180px"
+                  />
+                </div>
+                <div class="info-label">
+                  {{ t("projectDetail.labels.structure") }}
+                </div>
                 <div class="info-value">
                   <select>
-                    <option>기본구조물</option>
+                    <option>
+                      {{ t("projectDetail.labels.basicStructure") }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -164,7 +207,7 @@
                 ]"
                 @click="handleLayout3dTabChange(idx)"
               >
-                {{ tab }}
+                {{ t(`projectDetail.layout3dTabs.${tab}`) }}
               </button>
             </div>
             <div class="layout3d-table-wrap">
@@ -190,7 +233,7 @@
                 :class="['output-subtab', { active: outputActiveTab === idx }]"
                 @click="handleOutputTabChange(idx)"
               >
-                {{ tab }}
+                {{ t(`projectDetail.outputTabs.${tab}`) }}
               </button>
             </div>
             <div class="output-file-list">
@@ -204,10 +247,16 @@
                   {{ item.type }} &nbsp; {{ item.size }} &nbsp; {{ item.date }}
                 </div>
                 <div class="file-actions">
-                  <button class="btn-icon" title="다운로드">
+                  <button
+                    class="btn-icon"
+                    :title="t('projectDetail.labels.download')"
+                  >
                     <span>⬇️</span>
                   </button>
-                  <button class="btn-icon" title="더보기">
+                  <button
+                    class="btn-icon"
+                    :title="t('projectDetail.labels.more')"
+                  >
                     <span>⋯</span>
                   </button>
                 </div>
@@ -229,14 +278,14 @@
                 :class="{ active: designcondActiveTab === 0 }"
                 @click="handleDesigncondTabChange(0)"
               >
-                수리조건
+                {{ t("projectDetail.labels.hydraulicCondition") }}
               </button>
               <button
                 class="btn-designcond"
                 :class="{ active: designcondActiveTab === 1 }"
                 @click="handleDesigncondTabChange(1)"
               >
-                콘크리트 구조물
+                {{ t("projectDetail.labels.concreteStructure") }}
               </button>
             </div>
             <div class="designcond-table-wrap">
@@ -262,13 +311,15 @@
             </div>
           </div>
           <div v-else>
-            <div class="empty-tab">내용이 없습니다.</div>
+            <div class="empty-tab">{{ t("placeholder.noData") }}</div>
           </div>
         </div>
 
         <!-- 하단 닫기 버튼 -->
         <div class="modal-footer">
-          <button class="btn-close-bottom" @click="onClose">닫기</button>
+          <button class="btn-close-bottom" @click="onClose">
+            {{ t("common.close") }}
+          </button>
         </div>
       </div>
     </div>
@@ -339,18 +390,18 @@ const onClose = () => {
 
 // 프로젝트 ID는 props로 받음
 const tabs = [
-  "기본 정보",
-  "프로세스 정보",
-  "3D 레이아웃 정보",
-  "산출물",
-  "설계조건",
+  "basicInfo",
+  "processInfo",
+  "layout3dInfo",
+  "output",
+  "designCondition",
 ];
 const activeTab = ref(0);
-const structureTabs = ["구조물1", "구조물2", "구조물3", "구조물4"];
+const structureTabs = ["structure1", "structure2", "structure3", "structure4"];
 const structureActiveTab = ref(0);
-const layout3dTabs = ["구조물", "기기", "배관", "표준배치"];
+const layout3dTabs = ["structure", "equipment", "piping", "standardLayout"];
 const layout3dActiveTab = ref(0);
-const outputTabs = ["계산서", "내역서", "도면"];
+const outputTabs = ["calculation", "specification", "drawing"];
 const outputActiveTab = ref(0);
 const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조물 설정
 
@@ -376,8 +427,8 @@ const layout3dDataList = ref<
   0: Array.from({ length: 18 }, (_, i) => ({
     id: i + 1,
     no: i + 1,
-    structure: `구조물${i + 1}`,
-    device: `기기${i + 1}`,
+    structure: `${t("projectDetail.labels.structure")}${i + 1}`,
+    device: `${t("projectDetail.labels.equipment")}${i + 1}`,
     type: `타입${i + 1}`,
     model: `모델${i + 1}`,
     feature: `특성${i + 1}`,
@@ -385,16 +436,18 @@ const layout3dDataList = ref<
   1: Array.from({ length: 12 }, (_, i) => ({
     id: i + 1,
     no: i + 1,
-    structure: `기기구조물${i + 1}`,
-    device: `기기명${i + 1}`,
-    type: `기기타입${i + 1}`,
-    model: `기기모델${i + 1}`,
-    feature: `기기특성${i + 1}`,
+    structure: `${t("projectDetail.labels.equipment")}${t(
+      "projectDetail.labels.structure"
+    )}${i + 1}`,
+    device: `${t("projectDetail.labels.equipment")}명${i + 1}`,
+    type: `${t("projectDetail.labels.equipment")}타입${i + 1}`,
+    model: `${t("projectDetail.labels.equipment")}모델${i + 1}`,
+    feature: `${t("projectDetail.labels.equipment")}특성${i + 1}`,
   })),
   2: Array.from({ length: 25 }, (_, i) => ({
     id: i + 1,
     no: i + 1,
-    structure: `배관구조물${i + 1}`,
+    structure: `배관${t("projectDetail.labels.structure")}${i + 1}`,
     device: `배관${i + 1}`,
     type: `배관타입${i + 1}`,
     model: `배관모델${i + 1}`,
@@ -403,7 +456,7 @@ const layout3dDataList = ref<
   3: Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
     no: i + 1,
-    structure: `표준구조물${i + 1}`,
+    structure: `표준${t("projectDetail.labels.structure")}${i + 1}`,
     device: `표준배치${i + 1}`,
     type: `표준타입${i + 1}`,
     model: `표준모델${i + 1}`,
@@ -448,21 +501,21 @@ const outputDataList = ref<
 >({
   0: Array.from({ length: 30 }, (_, i) => ({
     id: i + 1,
-    title: `계산서 ${i + 1}`,
+    title: `${t("projectDetail.outputTabs.calculation")} ${i + 1}`,
     type: "PFD",
     size: "8.5MB",
     date: "2025.05.20",
   })),
   1: Array.from({ length: 22 }, (_, i) => ({
     id: i + 1,
-    title: `내역서 ${i + 1}`,
+    title: `${t("projectDetail.outputTabs.specification")} ${i + 1}`,
     type: "EXCEL",
     size: "2.1MB",
     date: "2025.05.19",
   })),
   2: Array.from({ length: 35 }, (_, i) => ({
     id: i + 1,
-    title: `도면 ${i + 1}`,
+    title: `${t("projectDetail.outputTabs.drawing")} ${i + 1}`,
     type: "DWG",
     size: "15.2MB",
     date: "2025.05.18",
@@ -495,7 +548,7 @@ const designcondCurrentPage = ref(1);
 const designcondHydroList = ref(
   Array.from({ length: 15 }, (_, i) => ({
     id: i + 1,
-    col1: `수리항목 ${i + 1}`,
+    col1: `${t("projectDetail.labels.hydraulicItem")} ${i + 1}`,
     col2: `${100 + i * 10}`,
     col3: `${200 + i * 10}`,
     col4: "m³/h",
@@ -504,7 +557,7 @@ const designcondHydroList = ref(
 const designcondConcreteList = ref(
   Array.from({ length: 20 }, (_, i) => ({
     id: i + 1,
-    col1: `구조물 ${i + 1}`,
+    col1: `${t("projectDetail.labels.structureItem")} ${i + 1}`,
     col2: `${20 + i * 2}`,
     col3: `${10 + i}`,
     col4: `${5 + i}`,
@@ -552,29 +605,29 @@ const basicColumns: TableColumn[] = [
 const basicRows = [
   {
     project: "###프로젝트",
-    title1: "제목",
-    content1: "내용텍스트",
-    title2: "제목",
-    content2: "내용텍스트",
-    title3: "제목",
-    content3: "내용텍스트",
+    title1: t("columns.projectDetail.title"),
+    content1: t("columns.projectDetail.content"),
+    title2: t("columns.projectDetail.title"),
+    content2: t("columns.projectDetail.content"),
+    title3: t("columns.projectDetail.title"),
+    content3: t("columns.projectDetail.content"),
   },
   {
-    project: "제목",
-    title1: "내용텍스트",
-    content1: "제목",
-    title2: "내용텍스트",
-    content2: "제목",
-    title3: "내용텍스트",
+    project: t("columns.projectDetail.title"),
+    title1: t("columns.projectDetail.content"),
+    content1: t("columns.projectDetail.title"),
+    title2: t("columns.projectDetail.content"),
+    content2: t("columns.projectDetail.title"),
+    title3: t("columns.projectDetail.content"),
     content3: "",
   },
   {
-    project: "제목",
-    title1: "내용텍스트",
-    content1: "제목",
-    title2: "내용텍스트",
-    content2: "제목",
-    title3: "내용텍스트",
+    project: t("columns.projectDetail.title"),
+    title1: t("columns.projectDetail.content"),
+    content1: t("columns.projectDetail.title"),
+    title2: t("columns.projectDetail.content"),
+    content2: t("columns.projectDetail.title"),
+    title3: t("columns.projectDetail.content"),
     content3: "",
   },
 ];

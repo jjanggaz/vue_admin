@@ -619,28 +619,48 @@
     "projectId": "프로젝트 ID. {{id}}",
     "export": "내보내기",
     "tabs": {
-      "기본 정보": "기본 정보",
-      "프로세스 정보": "프로세스 정보",
-      "3D 레이아웃 정보": "3D 레이아웃 정보",
-      "산출물": "산출물",
-      "설계조건": "설계조건"
+      "basicInfo": "기본 정보",
+      "processInfo": "프로세스 정보",
+      "layout3dInfo": "3D 레이아웃 정보",
+      "output": "산출물",
+      "designCondition": "설계조건"
     },
     "structureTabs": {
-      "구조물1": "구조물1",
-      "구조물2": "구조물2",
-      "구조물3": "구조물3",
-      "구조물4": "구조물4"
+      "structure1": "구조물1",
+      "structure2": "구조물2",
+      "structure3": "구조물3",
+      "structure4": "구조물4"
     },
     "layout3dTabs": {
-      "구조물": "구조물",
-      "기기": "기기",
-      "배관": "배관",
-      "표준배치": "표준배치"
+      "structure": "구조물",
+      "equipment": "기기",
+      "piping": "배관",
+      "standardLayout": "표준배치"
     },
     "outputTabs": {
-      "계산서": "계산서",
-      "내역서": "내역서",
-      "도면": "도면"
+      "calculation": "계산서",
+      "specification": "내역서",
+      "drawing": "도면"
+    },
+    "labels": {
+      "type": "타입",
+      "basic": "기본",
+      "waterInfo": "수질정보",
+      "processType": "공정타입",
+      "basicProcess": "기본공정",
+      "processName": "공정명",
+      "basicProcessName": "기본공정명",
+      "structure": "구조물",
+      "basicStructure": "기본구조물",
+      "equipment": "기기",
+      "designCondition": "설계조건",
+      "hydraulicCondition": "수리조건",
+      "concreteStructure": "콘크리트 구조물",
+      "projectName": "프로젝트명",
+      "download": "다운로드",
+      "more": "더보기",
+      "hydraulicItem": "수리항목",
+      "structureItem": "구조물"
     },
     "type": "유입종류",
     "typeValue": "음식물쓰레기",
@@ -791,8 +811,7 @@
       "saveFailed": "저장에 실패했습니다.",
       "updateFailed": "수정에 실패했습니다.",
       "loadFailed": "데이터 로딩에 실패했습니다.",
-      "duplicateCheckFailed": "중복 확인에 실패했습니다.",
-      "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다"
+      "duplicateCheckFailed": "중복 확인에 실패했습니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",

@@ -621,28 +621,48 @@
     "projectId": "Project ID. {{id}}",
     "export": "Export",
     "tabs": {
-      "기본 정보": "Basic Info",
-      "프로세스 정보": "Process Info",
-      "3D 레이아웃 정보": "3D Layout Info",
-      "산출물": "Output",
-      "설계조건": "Design Conditions"
+      "basicInfo": "Basic Info",
+      "processInfo": "Process Info",
+      "layout3dInfo": "3D Layout Info",
+      "output": "Output",
+      "designCondition": "Design Conditions"
     },
     "structureTabs": {
-      "구조물1": "Structure1",
-      "구조물2": "Structure2",
-      "구조물3": "Structure3",
-      "구조물4": "Structure4"
+      "structure1": "Structure1",
+      "structure2": "Structure2",
+      "structure3": "Structure3",
+      "structure4": "Structure4"
     },
     "layout3dTabs": {
-      "구조물": "Structure",
-      "기기": "Equipment",
-      "배관": "Piping",
-      "표준배치": "Standard Layout"
+      "structure": "Structure",
+      "equipment": "Equipment",
+      "piping": "Piping",
+      "standardLayout": "Standard Layout"
     },
     "outputTabs": {
-      "계산서": "Calculation",
-      "내역서": "Specification",
-      "도면": "Drawing"
+      "calculation": "Calculation",
+      "specification": "Specification",
+      "drawing": "Drawing"
+    },
+    "labels": {
+      "type": "Type",
+      "basic": "Basic",
+      "waterInfo": "Water Info",
+      "processType": "Process Type",
+      "basicProcess": "Basic Process",
+      "processName": "Process Name",
+      "basicProcessName": "Basic Process Name",
+      "structure": "Structure",
+      "basicStructure": "Basic Structure",
+      "equipment": "Equipment",
+      "designCondition": "Design Condition",
+      "hydraulicCondition": "Hydraulic Condition",
+      "concreteStructure": "Concrete Structure",
+      "projectName": "Project Name",
+      "download": "Download",
+      "more": "More",
+      "hydraulicItem": "Hydraulic Item",
+      "structureItem": "Structure"
     },
     "type": "Type",
     "typeValue": "Food Waste",
@@ -789,6 +809,7 @@
       "registrationError": "Registration error occurred.",
       "deleteFailed": "Delete failed.",
       "saveFailed": "Save failed.",
+      "updateFailed": "Update failed.",
       "duplicateCheckFailed": "Duplicate check failed.",
       "loadFailed": "Failed to load data"
     },

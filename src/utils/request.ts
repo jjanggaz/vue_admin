@@ -120,6 +120,13 @@ export const request = async (
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
       console.log("토큰 갱신 실패, 로그인 페이지로 리다이렉트");
 
+      // localStorage 정리 (중요!)
+      localStorage.removeItem("authName");
+      localStorage.removeItem("authUsername");
+      localStorage.removeItem("authRoleName");
+      localStorage.removeItem("authCodes");
+      localStorage.removeItem("authUserId");
+
       // Vue Router를 사용하여 로그인 페이지로 리다이렉트
       // window.location.href 대신 router.push 사용
       if (typeof window !== "undefined") {

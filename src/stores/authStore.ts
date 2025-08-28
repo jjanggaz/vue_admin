@@ -199,17 +199,34 @@ export const useAuthStore = defineStore("auth", {
           await this.loadStoredToken();
           console.log("사용자 정보 복구 완료, isLoggedIn:", this.isLoggedIn);
         } else {
-          // 토큰이 무효하면 로그인 상태를 false로 설정
-          console.log("토큰이 무효하므로 로그인 상태를 false로 설정");
+          // 토큰이 무효하면 로그인 상태를 false로 설정하고 localStorage 정리
+          console.log(
+            "토큰이 무효하므로 로그인 상태를 false로 설정하고 localStorage 정리"
+          );
           this.isLoggedIn = false;
           this.user = null;
+
+          // localStorage 정리 (중요!)
+          localStorage.removeItem("authName");
+          localStorage.removeItem("authUsername");
+          localStorage.removeItem("authRoleName");
+          localStorage.removeItem("authCodes");
+          localStorage.removeItem("authUserId");
         }
         return this.isLoggedIn; // 실제 스토어 상태를 반환
       } catch (error) {
         console.error("토큰 유효성 확인 실패:", error);
-        // 에러 발생 시에도 로그인 상태를 false로 설정
+        // 에러 발생 시에도 로그인 상태를 false로 설정하고 localStorage 정리
         this.isLoggedIn = false;
         this.user = null;
+
+        // localStorage 정리 (중요!)
+        localStorage.removeItem("authName");
+        localStorage.removeItem("authUsername");
+        localStorage.removeItem("authRoleName");
+        localStorage.removeItem("authCodes");
+        localStorage.removeItem("authUserId");
+
         return false;
       }
     },

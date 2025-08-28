@@ -194,14 +194,22 @@ export const useAuthStore = defineStore("auth", {
         console.log("토큰 유효성 확인 결과:", isValid);
 
         if (isValid) {
-          // 토큰이 유효하면 sessionStorage에서 사용자 정보 복구
+          // 토큰이 유효하면 localStorage에서 사용자 정보 복구
           console.log("토큰이 유효하므로 사용자 정보 복구 시도...");
           await this.loadStoredToken();
           console.log("사용자 정보 복구 완료, isLoggedIn:", this.isLoggedIn);
+        } else {
+          // 토큰이 무효하면 로그인 상태를 false로 설정
+          console.log("토큰이 무효하므로 로그인 상태를 false로 설정");
+          this.isLoggedIn = false;
+          this.user = null;
         }
         return this.isLoggedIn; // 실제 스토어 상태를 반환
       } catch (error) {
         console.error("토큰 유효성 확인 실패:", error);
+        // 에러 발생 시에도 로그인 상태를 false로 설정
+        this.isLoggedIn = false;
+        this.user = null;
         return false;
       }
     },

@@ -88,7 +88,11 @@
 
     <!-- Data Table -->
     <!-- DataTable row-key가 default로 id로 설정돼있어서 추가 수정함함 -->
+    <!-- 디버깅: 데이터 확인 -->
+
+    
     <DataTable
+      v-if="isComponentMounted && processStore.paginatedProcessList && processStore.paginatedProcessList.length >= 0"
       :columns="tableColumns"
       :data="processStore.paginatedProcessList"
       :loading="processStore.loading"
@@ -97,9 +101,55 @@
       row-key="id"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
-      @row-click="handleRowClick"
     >
-      <!-- 수정 버튼 슬롯 -->
+      <!-- 공정심볼 SVG 미리보기 + 파일명 슬롯 -->
+      <template #cell-symbol_download="{ item }">
+        <!-- symbol_download가 없거나 null이거나 빈 문자열이거나 {}이거나 빈 객체인 경우 공백 표시 -->
+        <div v-if="!item.symbol_download || item.symbol_download === '' || item.symbol_download === null || item.symbol_download === 'null' || item.symbol_download === '{}' || (typeof item.symbol_download === 'string' && item.symbol_download.trim() === '{}') || (typeof item.symbol_download === 'object' && Object.keys(item.symbol_download).length === 0)" class="empty-symbol">
+          &nbsp;
+        </div>
+        
+        <!-- symbol_download가 있는 경우 SVG 미리보기 + 파일명 표시 -->
+        <div v-else class="svg-preview-container" @click="handleSymbolDownload(item)">
+          <!-- SVG 미리보기 -->
+          <div class="svg-preview-section">
+            <!-- SVG 코드가 직접 포함된 경우 -->
+            <div 
+              v-if="typeof item.symbol_download === 'string' && item.symbol_download.includes('<svg')"
+              class="svg-preview clickable"
+              v-html="item.symbol_download"
+            ></div>
+            
+            <!-- SVG 파일 경로인 경우 -->
+            <img 
+              v-else-if="typeof item.symbol_download === 'string' && item.symbol_download.toLowerCase().endsWith('.svg')"
+              :src="`/${item.symbol_download}`" 
+              :alt="item.symbol_download"
+              class="svg-preview clickable"
+              @error="handleSvgError"
+            />
+            
+            <!-- 그 외의 경우 -->
+            <span v-else class="svg-fallback clickable">
+              {{ item.symbol_download || '-' }}
+            </span>
+          </div>
+          
+          <!-- 파일명 표시 (symbol_uri에서 경로 제외) -->
+          <span class="filename-text">
+            {{ getFileNameFromUri(item.process_symbol) }}
+          </span>
+          
+          <!-- 다운로드 아이콘 -->
+          <div class="download-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+          </div>
+        </div>
+      </template>
+      
+      <!-- 보기 버튼 슬롯 -->
       <template #cell-viewDetail="{ item }">
         <button class="btn-view" @click.stop="viewDetail(item)">
           {{ t("process.viewDetail") }}
@@ -334,8 +384,13 @@
           <button class="btn-close" @click="closeDetailModal">×</button>
         </div>
         <div class="modal-body detail-modal-body">
+          <div v-if="!selectedProcessId" class="loading-placeholder">
+            <p>공정 정보를 불러오는 중...</p>
+          </div>
           <ProcessDetail
-            :process-id="selectedProcessId || undefined"
+            v-else
+            :key="`process-detail-${selectedProcessId}`"
+            :process-id="String(selectedProcessId)"
             @close="closeDetailModal"
             ref="processDetailRef"
             class="popup-mode"
@@ -347,7 +402,7 @@
           </button>
           <button
             class="btn btn-primary"
-            @click="processDetailRef?.handleUpdate"
+            @click="handleDetailSave"
             :disabled="!isDetailFormValid"
           >
             저장
@@ -397,7 +452,12 @@ const tableColumns: TableColumn[] = [
   { key: "process_type_nm", title: t("process.processType"), sortable: true }, // 공정구분
   { key: "sub_category_nm", title: t("process.subCategory"), sortable: true }, // 공정 중분류
   { key: "process_nm", title: t("process.processName"), sortable: true }, // 공정명
-  { key: "process_symbol", title: t("process.processSymbol"), sortable: true }, // 공정심볼
+  { 
+    key: "symbol_download", 
+    title: t("process.processSymbol"), 
+    sortable: true,
+    formatter: (value) => value || '-'
+  }, // 공정심볼 (SVG 미리보기)
   {
     key: "viewDetail",
     title: t("process.viewDetail"),
@@ -413,6 +473,7 @@ const tableColumns: TableColumn[] = [
  const isDetailModalOpen = ref(false);
  const selectedProcessId = ref<string | undefined>(undefined);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
+ const isComponentMounted = ref(false);
  
  
 
@@ -455,6 +516,93 @@ const isFormValid = computed(() => {
 const formatDate = (date: string | null) => {
   if (!date) return "-";
   return new Date(date).toLocaleDateString("ko-KR");
+};
+
+// SVG 에러 처리 함수
+const handleSvgError = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  const container = img.parentElement;
+  if (container) {
+    img.style.display = 'none';
+    const fallback = container.querySelector('.svg-fallback') as HTMLElement;
+    if (fallback) {
+      fallback.style.display = 'inline';
+    }
+  }
+};
+
+// 상세 모달 저장 핸들러
+const handleDetailSave = async () => {
+  try {
+    if (processDetailRef.value?.handleUpdate) {
+      await processDetailRef.value.handleUpdate();
+    }
+  } catch (error) {
+    console.error('상세 모달 저장 중 오류:', error);
+  }
+};
+
+// URI에서 파일명만 추출하는 함수
+const getFileNameFromUri = (uri: string | null | undefined): string => {
+  if (!uri || typeof uri !== 'string') {
+    return '-';
+  }
+  
+  // 경로 구분자로 분할하여 마지막 부분(파일명) 추출
+  const pathParts = uri.split(/[/\\]/);
+  const fileName = pathParts[pathParts.length - 1];
+  
+  // 파일명이 비어있거나 경로가 없는 경우
+  if (!fileName || fileName === uri) {
+    return uri;
+  }
+  
+  return fileName;
+};
+
+// 공정심볼 다운로드 처리 함수
+const handleSymbolDownload = async (item: any) => {
+  try {
+    // SVG 코드가 직접 포함된 경우
+    if (typeof item.symbol_download === 'string' && item.symbol_download.includes('<svg')) {
+      // SVG 코드를 Blob으로 변환하여 다운로드
+      const blob = new Blob([item.symbol_download], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${getFileNameFromUri(item.process_symbol) || 'symbol'}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    // SVG 파일 경로인 경우
+    else if (typeof item.symbol_download === 'string' && item.symbol_download.toLowerCase().endsWith('.svg')) {
+      // 파일 경로에서 직접 다운로드
+      const a = document.createElement('a');
+      a.href = `/${item.symbol_download}`;
+      a.download = getFileNameFromUri(item.symbol_download) || 'symbol.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    // process_symbol 경로가 있는 경우
+    else if (item.process_symbol) {
+      // process_symbol 경로에서 다운로드
+      const a = document.createElement('a');
+      a.href = `/${item.process_symbol}`;
+      a.download = getFileNameFromUri(item.process_symbol) || 'symbol.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    else {
+      alert('다운로드할 수 있는 파일이 없습니다.');
+    }
+  } catch (error) {
+    console.error('파일 다운로드 중 오류 발생:', error);
+    alert('파일 다운로드에 실패했습니다.');
+  }
 };
 
 const handleRegist = () => {
@@ -593,7 +741,7 @@ const handleDelete = async () => {
         (item) => item.process_id
       );
 
-      console.log("삭제할 process_id 목록:", selectedProcessIds);
+  
 
       // processStore를 통한 삭제 처리
       const { successCount, failCount } = await processStore.deleteProcesses(
@@ -616,18 +764,12 @@ const handleDelete = async () => {
 
 // 상세 보기 이동
 const viewDetail = (item: ProcessItem) => {
-  console.log("=== viewDetail 함수 호출 ===");
-  console.log("전체 item:", item);
-  console.log("item.process_id:", item.process_id);
-  console.log("item.process_nm:", item.process_nm);
-
-  if (item.process_id) {
-    console.log("모달로 전달할 process_id:", item.process_id);
-
-    selectedProcessId.value = item.process_id;
+  // process_id가 없으면 id를 사용
+  const processId = item.process_id || item.id;
+  
+  if (processId) {
+    selectedProcessId.value = processId;
     isDetailModalOpen.value = true;
-  } else {
-    console.log("process_id가 없어서 모달을 열지 않음");
   }
 };
 
@@ -656,15 +798,11 @@ const handleSortChange = (sortInfo: {
   sortOrder.value = sortInfo.direction;
 };
 
-const handleRowClick = (item: ProcessItem, index: number) => {
-  console.log("Row clicked:", item, index);
-  // 행 클릭 시 상세 페이지로 이동하거나 모달 열기 등
-};
+
 
 // 선택된 항목 변경 핸들러
 const handleSelectionChange = (items: ProcessItem[]) => {
   processStore.setSelectedItems(items);
-  console.log("선택된 항목:", processStore.selectedItems);
 };
 
 // 검색 옵션 변경 핸들러
@@ -678,9 +816,7 @@ const handleSearchProcessTypeChange = () => {
     // 공정명 옵션도 초기화
     processStore.searchProcessNameOptions.length = 0;
     processStore.setSearchProcessName(null);
-    console.log(
-      "공정구분 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화"
-    );
+
   } else {
     const selectedOption = processStore.searchProcessTypeOptions.find(
       (option) => option.value === selectedValue
@@ -835,9 +971,13 @@ onMounted(async () => {
       console.error("초기 검색 실패:", error);
     }
 
+    // 3. 컴포넌트 마운트 완료 표시
+    isComponentMounted.value = true;
     console.log("=== Process.vue 초기화 완료 ===");
   } catch (error) {
     console.error("Process.vue 초기화 중 오류 발생:", error);
+    // 오류가 발생해도 컴포넌트는 마운트된 것으로 표시
+    isComponentMounted.value = true;
   }
 });
 </script>
@@ -845,6 +985,112 @@ onMounted(async () => {
 <style scoped lang="scss">
 .process-page {
   padding: $spacing-lg;
+}
+
+// 공정심볼 스타일
+.empty-symbol {
+  min-height: 20px;
+  min-width: 20px;
+}
+
+// SVG 미리보기 + 파일명 스타일 (1줄 표시, 클릭 가능)
+.svg-preview-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .svg-preview-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    .svg-preview {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      border-radius: 3px;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      
+      &.clickable {
+        cursor: pointer;
+      }
+      
+      &:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      
+      // SVG 코드를 직접 렌더링할 때의 스타일
+      svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+      }
+    }
+    
+    .svg-fallback {
+      font-size: 11px;
+      color: #6c757d;
+      font-family: monospace;
+      
+      &.clickable {
+        cursor: pointer;
+      }
+      
+      &.fallback-only {
+        display: inline;
+      }
+    }
+  }
+  
+  .filename-text {
+    font-size: 12px;
+    color: #495057;
+    font-family: monospace;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  
+  .download-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+  
+  &:hover .download-icon {
+    opacity: 1;
+    color: #007bff;
+  }
 }
 
 .process-3d-page {

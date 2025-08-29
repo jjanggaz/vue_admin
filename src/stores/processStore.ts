@@ -28,6 +28,99 @@ export interface ProcessDetail {
   processCode: string | null;
   processSymbol: string;
   description: string;
+  symbolId?: string | null;  // 공정 심볼 ID (공정 심볼 API에서 받은 값)
+  originalProcessSymbol?: string;  // 화면 로드 시 원본 공정심볼 파일명 (변경 감지용)
+  originalSymbolId?: string | null;  // 화면 로드 시 원본 심볼 ID (변경 감지용)
+}
+
+// ProcessDetail.vue에서 사용하는 추가 인터페이스들
+export interface TableColumn {
+  key: string;
+  title: string;
+  sortable?: boolean;
+  hidden?: boolean;
+}
+
+export interface FormulaItem {
+  formula_id: string;
+  id: string;
+  no: string;
+  registeredFormula: string;
+  formula_code: string;
+  registrationDate: string;
+  infoOverview: string;
+  remarks: string;
+}
+
+export interface PidItem {
+  id: string;
+  pfdFileName: string;
+  pidFileDwg: string;
+  mappingExcel: string;
+  infoOverview: string;
+  svgPreview: string;
+}
+
+export interface PfdItem {
+  id: string;
+  fileName: string;
+  registrationDate: string;
+  info: string;
+  mappingPidList: string;
+  remarks: string;
+}
+
+export interface DesignItem {
+  id: string;
+  columnNm: string;
+  influent: string;
+  effluent: string;
+  sludge: string;
+  unit: string;
+  remark: string;
+}
+
+export interface DesignCriteriaItem {
+  id: string;
+  columnNm: string;
+  value: string;
+  min: string;
+  max: string;
+  unit: string;
+  remark: string;
+}
+
+export interface DesignParameterItem {
+  id: string;
+  columnNm: string;
+  view: string;
+}
+
+export interface DesignEfficiencyItem {
+  id: string;
+  columnNm: string;
+  value: string;
+  min: string;
+  max: string;
+  unit: string;
+  remark: string;
+}
+
+export interface HydraulicItem {
+  id: string;
+  dwg: string;
+  registrationDate: string;
+  info: string;
+  view: string;
+  _file?: File; // hidden 속성으로 MultipartFile 정보 저장
+}
+
+export interface StructItem {
+  id: string;
+  type: string;
+  components: string;
+  equipmentType: string;
+  item: string;
 }
 
 export interface GlobalProcessData {
@@ -37,7 +130,7 @@ export interface GlobalProcessData {
 }
 
 export const useProcessStore = defineStore("process", () => {
-  // 상태
+  // 기존 상태들
   const processList = ref<ProcessItem[]>([]);
   const selectedItems = ref<ProcessItem[]>([]);
   const loading = ref(false);
@@ -66,6 +159,8 @@ export const useProcessStore = defineStore("process", () => {
     processCode: null,
     processSymbol: "",
     description: "",
+    originalProcessSymbol: "",
+    originalSymbolId: null,
   });
 
   const globalProcessData = ref<GlobalProcessData>({
@@ -73,6 +168,49 @@ export const useProcessStore = defineStore("process", () => {
     level3_code_key: "",
     process_code: "",
   });
+
+  // ProcessDetail.vue에서 이동한 상태들
+  
+  // P&ID 탭 관련 상태
+  const pidList = ref<PidItem[]>([]);
+  const currentPagePid = ref(1);
+  const totalPagesPid = computed(() => Math.ceil(pidList.value.length / pageSize.value) || 1);
+  const pagedPidList = computed(() =>
+    pidList.value.slice(
+      (currentPagePid.value - 1) * pageSize.value,
+      currentPagePid.value * pageSize.value
+    )
+  );
+  const selectedPidItems = ref<PidItem[]>([]);
+
+  // 설계조건 탭 관련 상태
+  const designList = ref<DesignItem[]>([]);
+  const designCriteriaList = ref<DesignCriteriaItem[]>([]);
+  const designParameterList = ref<DesignParameterItem[]>([]);
+  const designEfficiencyList = ref<DesignEfficiencyItem[]>([]);
+
+  // PFD 탭 관련 상태
+  const pfdList = ref<PfdItem[]>([]);
+  const selectedPfdItems = ref<PfdItem[]>([]);
+
+  // 계산식 관리 탭 관련 상태
+  const formulaList = ref<FormulaItem[]>([]);
+  const selectedFormulaItems = ref<FormulaItem[]>([]);
+  const initialFormulaList = ref<FormulaItem[]>([]);
+
+  // 수리계통도 탭 관련 상태
+  const hydraulicList = ref<HydraulicItem[]>([]);
+  const selectedHydraulicItems = ref<HydraulicItem[]>([]);
+
+  // 공용구조물 탭 관련 상태
+  const structList = ref<StructItem[]>([]);
+
+  // 파일 선택 관련 상태
+  const selectedFiles = ref<{ [key: string]: File }>({});
+
+  // 모달 관련 상태
+  const showFormulaModal = ref(false);
+  const selectedFormulaFiles = ref<File[]>([]);
 
   // computed
   const filteredProcessList = computed(() => {
@@ -99,6 +237,22 @@ export const useProcessStore = defineStore("process", () => {
     currentPage.value = page;
   };
 
+  // ProcessDetail.vue에서 이동한 액션들
+  
+  // P&ID 관련 액션
+  const setCurrentPagePid = (page: number) => {
+    currentPagePid.value = page;
+  };
+
+  const setPidList = (list: PidItem[]) => {
+    pidList.value = list;
+  };
+
+  const setSelectedPidItems = (items: PidItem[]) => {
+    selectedPidItems.value = items;
+  };
+
+  // 기존 액션들 (실수로 삭제됨)
   const setSelectedItems = (items: ProcessItem[]) => {
     selectedItems.value = items;
   };
@@ -121,6 +275,77 @@ export const useProcessStore = defineStore("process", () => {
 
   const setGlobalProcessData = (data: Partial<GlobalProcessData>) => {
     globalProcessData.value = { ...globalProcessData.value, ...data };
+  };
+
+  // 설계조건 관련 액션
+  const setDesignList = (list: DesignItem[]) => {
+    designList.value = list;
+  };
+
+  const setDesignCriteriaList = (list: DesignCriteriaItem[]) => {
+    designCriteriaList.value = list;
+  };
+
+  const setDesignParameterList = (list: DesignParameterItem[]) => {
+    designParameterList.value = list;
+  };
+
+  const setDesignEfficiencyList = (list: DesignEfficiencyItem[]) => {
+    designEfficiencyList.value = list;
+  };
+
+  // PFD 관련 액션
+  const setPfdList = (list: PfdItem[]) => {
+    pfdList.value = list;
+  };
+
+  const setSelectedPfdItems = (items: PfdItem[]) => {
+    selectedPfdItems.value = items;
+  };
+
+  // 계산식 관련 액션
+  const setFormulaList = (list: FormulaItem[]) => {
+    formulaList.value = list;
+  };
+
+  const setSelectedFormulaItems = (items: FormulaItem[]) => {
+    selectedFormulaItems.value = items;
+  };
+
+  const setInitialFormulaList = (list: FormulaItem[]) => {
+    initialFormulaList.value = list;
+  };
+
+  // 수리계통도 관련 액션
+  const setHydraulicList = (list: HydraulicItem[]) => {
+    hydraulicList.value = list;
+  };
+
+  const setSelectedHydraulicItems = (items: HydraulicItem[]) => {
+    selectedHydraulicItems.value = items;
+  };
+
+  // 공용구조물 관련 액션
+  const setStructList = (list: StructItem[]) => {
+    structList.value = list;
+  };
+
+  // 파일 관련 액션
+  const setSelectedFiles = (files: { [key: string]: File }) => {
+    selectedFiles.value = files;
+  };
+
+  const setSelectedFile = (key: string, file: File) => {
+    selectedFiles.value[key] = file;
+  };
+
+  // 모달 관련 액션
+  const setShowFormulaModal = (show: boolean) => {
+    showFormulaModal.value = show;
+  };
+
+  const setSelectedFormulaFiles = (files: File[]) => {
+    selectedFormulaFiles.value = files;
   };
 
   // API 호출 액션
@@ -221,6 +446,16 @@ export const useProcessStore = defineStore("process", () => {
             sub_category_nm: item.level3_code_value || "",
             process_code: item.process_code || "",
             process_symbol: item.symbol_uri || "📄",
+            symbol_download: (() => {
+              const value = item.symbol_download || item.symbol_uri;
+              // null, undefined, 빈 문자열, '{}', 'null', 빈 객체 등의 경우 null 반환
+              if (!value || value === '' || value === '{}' || value === 'null' || value === 'undefined' || 
+                  (typeof value === 'object' && Object.keys(value).length === 0)) {
+                return null;
+              }
+              return value;
+            })(),
+            symbol_id: item.symbol_id || null,
             viewDetail: "",
           }));
 
@@ -393,11 +628,15 @@ export const useProcessStore = defineStore("process", () => {
             processType: processData.level2_code_key || null,
             description: processData.process_description || "",
             processSymbol: processData.symbol_uri || "",
+            originalProcessSymbol: processData.symbol_uri || "",  // 원본 공정심볼 파일명 저장
+            originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
           });
 
           if (processData.symbol_uri) {
             // 파일 정보 설정 (실제 구현에서는 파일 객체로 변환 필요)
             console.log("공정 심볼 파일:", processData.symbol_uri);
+            console.log("원본 공정심볼 파일명:", processData.symbol_uri);
+            console.log("원본 심볼 ID:", processData.symbol_id);
           }
 
           console.log("화면 입력 필드 업데이트 완료");
@@ -762,7 +1001,7 @@ export const useProcessStore = defineStore("process", () => {
       console.log("processData.description:", processData.description);
       
       // API 서버에서 요구하는 필드명으로 데이터 구조 변환
-      const updateData = {
+      const updateData: any = {
         process_code: processData.processCode || "",          // 공정 코드 (내부 코드값)
         process_type_code: processData.processType || "",     // 공정 타입 코드
         process_name: processData.processName || "",          // 공정명 (표시명)
@@ -771,6 +1010,11 @@ export const useProcessStore = defineStore("process", () => {
         process_description: processData.description || "",   // 공정 설명
       };
       
+      // symbol_id가 유효한 값인 경우에만 추가
+      if (processData.symbolId && processData.symbolId.trim() !== "") {
+        updateData.symbol_id = processData.symbolId;
+      }
+      
       console.log("=== API 요청용 변환된 데이터 ===");
       console.log("process_code:", updateData.process_code);
       console.log("process_type_code:", updateData.process_type_code);
@@ -778,6 +1022,7 @@ export const useProcessStore = defineStore("process", () => {
       console.log("process_category:", updateData.process_category);
       console.log("process_symbol:", updateData.process_symbol);
       console.log("process_description:", updateData.process_description);
+      console.log("symbol_id:", updateData.symbol_id);
 
       console.log("=== 최종 API 요청 데이터 ===");
       console.log("URL:", `/api/process/master/update/${processId}`);
@@ -886,10 +1131,34 @@ export const useProcessStore = defineStore("process", () => {
       level3_code_key: "",
       process_code: "",
     };
+    
+    // ProcessDetail.vue 상태들도 초기화
+    pidList.value = [];
+    currentPagePid.value = 1;
+    selectedPidItems.value = [];
+    designList.value = [];
+    designCriteriaList.value = [];
+    designParameterList.value = [];
+    designEfficiencyList.value = [];
+    pfdList.value = [];
+    selectedPfdItems.value = [];
+    formulaList.value = [];
+    selectedFormulaItems.value = [];
+    initialFormulaList.value = [];
+    hydraulicList.value = [];
+    selectedHydraulicItems.value = [];
+    structList.value = [];
+    selectedFiles.value = {};
+    showFormulaModal.value = false;
+    selectedFormulaFiles.value = [];
+    
+    // 공정심볼 관련 상태 초기화
+    processDetail.value.originalProcessSymbol = "";
+    processDetail.value.originalSymbolId = null;
   };
 
   return {
-    // 상태
+    // 기존 상태
     processList,
     selectedItems,
     loading,
@@ -907,13 +1176,35 @@ export const useProcessStore = defineStore("process", () => {
     processDetail,
     globalProcessData,
 
+    // ProcessDetail.vue에서 이동한 상태들
+    pidList,
+    currentPagePid,
+    totalPagesPid,
+    pagedPidList,
+    selectedPidItems,
+    designList,
+    designCriteriaList,
+    designParameterList,
+    designEfficiencyList,
+    pfdList,
+    selectedPfdItems,
+    formulaList,
+    selectedFormulaItems,
+    initialFormulaList,
+    hydraulicList,
+    selectedHydraulicItems,
+    structList,
+    selectedFiles,
+    showFormulaModal,
+    selectedFormulaFiles,
+
     // computed
     filteredProcessList,
     totalCountComputed,
     totalPagesComputed,
     paginatedProcessList,
 
-    // 액션
+    // 기존 액션
     setLoading,
     setCurrentPage,
     setSelectedItems,
@@ -931,5 +1222,26 @@ export const useProcessStore = defineStore("process", () => {
     createProcess,
     updateProcess,
     resetState,
+
+    // ProcessDetail.vue에서 이동한 액션들
+    setCurrentPagePid,
+    setPidList,
+    setSelectedPidItems,
+    setDesignList,
+    setDesignCriteriaList,
+    setDesignParameterList,
+    setDesignEfficiencyList,
+    setPfdList,
+    setSelectedPfdItems,
+    setFormulaList,
+    setSelectedFormulaItems,
+    setInitialFormulaList,
+    setHydraulicList,
+    setSelectedHydraulicItems,
+    setStructList,
+    setSelectedFiles,
+    setSelectedFile,
+    setShowFormulaModal,
+    setSelectedFormulaFiles,
   };
 });

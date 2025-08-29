@@ -578,7 +578,7 @@
     "tabs": {
       "P&ID": "P&ID",
       "설계조건": "Design Conditions",
-      "공용구조물": "Common Structure",
+      "컴포넌트": "Components",
       "계산식 관리": "Formula Management",
       "PFD": "PFD",
       "전기도면": "Electric Drawing",

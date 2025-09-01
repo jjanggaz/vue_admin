@@ -248,7 +248,7 @@ const filteredProcessList = computed(() => {
       const key = searchOption.value as keyof ProcessItem;
       return (
         process[key] &&
-        process[key]!.toString()
+        String(process[key])
           .toLowerCase()
           .includes(searchQuery.value.toLowerCase())
       );
@@ -372,9 +372,10 @@ const loadData = async () => {
     ];
     totalCount.value = processList.value.length;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("데이터 로드 실패:", error);
-    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    const errorMessage =
+      error instanceof Error ? error.message : "데이터 로드에 실패했습니다.";
     alert(errorMessage);
   } finally {
     loading.value = false;
@@ -393,8 +394,8 @@ const handlePageChange = (page: number) => {
 
 // 정렬 변경 핸들러
 const handleSortChange = (sortInfo: {
-  key: string;
-  direction: "asc" | "desc";
+  key: string | null;
+  direction: "asc" | "desc" | null;
 }) => {
   sortColumn.value = sortInfo.key;
   sortOrder.value = sortInfo.direction;

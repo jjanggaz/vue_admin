@@ -303,6 +303,7 @@
     "save": "Save",
     "selectAll": "-- All --",
     "select": "-- Select --",
+    "selectItem": "Please select an item",
     "selectColumn": "Select",
     "selected": "Selected",
     "logout": "Logout",
@@ -460,6 +461,7 @@
     "codeHighCode": "Enter high code",
     "codeCodeName": "Enter code name",
     "codeOrder": "Enter order",
+    "codeLevel": "Enter level",
     "codeDescription": "Enter description",
     "projectDetail": "Enter detail",
     "recommendedProcessInflowType": "Enter inflow type",
@@ -469,6 +471,7 @@
     "recommendedProcessRemarks": "Enter remarks",
     "inflowTypeName": "Enter inflow type name",
     "inflowFormula": "Enter formula",
+    "outflowTypeName": "Enter outflow type name",
     "outflowOutputName": "Enter output name",
     "outflowRemarks": "Enter remarks",
     "enterModelName": "Enter model name",
@@ -707,12 +710,13 @@
   },
   "outflow": {
     "registerNew": "Register New",
+    "update": "Update",
     "addItem": "Add Item",
     "addFormula": "Add Formula",
     "formulaList": "Formula List",
     "save": "Save",
     "typeNameKo": "Type Name (Korean)",
-    "typeNameEn": "Inflow Type Name (English)",
+    "typeNameEn": "Outflow Type Name (English)",
     "symbolColor": "Symbol Color",
     "uploadFormula": "Upload Formula",
     "register": "Register",
@@ -755,7 +759,8 @@
       "recommendedProcess": "Recommended Process"
     },
     "process": {
-      "process": "Process Management"
+      "process": "Process Management",
+      "output": "Output"
     },
     "project": {
       "project": "Project",

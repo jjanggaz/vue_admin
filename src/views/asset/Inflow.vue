@@ -1647,72 +1647,7 @@ const onParameterSelect = (
   }
 };
 
-const tabGridData2 = ref<{ [key: number]: GridRow2[] }>({
-  0: [
-    {
-      id: 1,
-      mapping_id: "",
-      formula: "BOD * 1.2",
-      uploadDate: "2023-11-01",
-      author: "Admin",
-      apply: "Y",
-      remarks: "swage 계산식",
-    },
-    {
-      id: 2,
-      mapping_id: "",
-      formula: "COD / 2",
-      uploadDate: "2023-11-02",
-      author: "User1",
-      apply: "N",
-      remarks: "",
-    },
-  ],
-  1: [
-    {
-      id: 1,
-      mapping_id: "",
-      formula: "TSS * 0.8",
-      uploadDate: "2023-11-03",
-      author: "Admin",
-      apply: "Y",
-      remarks: "Food Waste 계산식",
-    },
-  ],
-  2: [
-    {
-      id: 1,
-      mapping_id: "",
-      formula: "NH3 + 5",
-      uploadDate: "2023-11-04",
-      author: "User2",
-      apply: "Y",
-      remarks: "Live Stock 계산식",
-    },
-  ],
-  3: [
-    {
-      id: 1,
-      mapping_id: "",
-      formula: "TS / 100",
-      uploadDate: "2023-11-05",
-      author: "Admin",
-      apply: "N",
-      remarks: "Sludge Cake 계산식",
-    },
-  ],
-  4: [
-    {
-      id: 1,
-      mapping_id: "",
-      formula: "CH4 * 1.1",
-      uploadDate: "2023-11-06",
-      author: "User3",
-      apply: "Y",
-      remarks: "Digest 계산식",
-    },
-  ],
-});
+const tabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
 
 // 현재 활성 탭에 따른 데이터 반환
 const currentGridData = computed(() => {

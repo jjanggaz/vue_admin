@@ -248,6 +248,7 @@
                 :placeholder="t('placeholder.inflowTypeName')"
                 class="form-input"
                 readonly
+                disabled
               />
             </dd>
           </dl>
@@ -306,25 +307,29 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
-              <label class="essential">{{ t("inflow.uploadFormula") }}</label>
-              <div class="file-upload-row" id="metricFileUpload">
-                <input
-                  type="text"
-                  :value="metricFileName || ''"
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
-                  <input
-                    type="file"
-                    @change="handleMetricFileUpload"
-                    accept=".py"
-                    style="display: none"
-                  />
-                </label>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="metricFileUpload">
+                    <input
+                      type="text"
+                      :value="metricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleMetricFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -376,25 +381,29 @@
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
-              <label class="essential">{{ t("inflow.uploadFormula") }}</label>
-              <div class="file-upload-row" id="imperialFileUpload">
-                <input
-                  type="text"
-                  :value="imperialFileName || ''"
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
-                  <input
-                    type="file"
-                    @change="handleImperialFileUpload"
-                    accept=".py"
-                    style="display: none"
-                  />
-                </label>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="imperialFileUpload">
+                    <input
+                      type="text"
+                      :value="imperialFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleImperialFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -576,6 +585,7 @@
                 :placeholder="t('placeholder.inflowTypeName')"
                 class="form-input"
                 readonly
+                disabled
               />
             </dd>
           </dl>
@@ -630,25 +640,29 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
-              <label class="essential">{{ t("inflow.uploadFormula") }}</label>
-              <div class="file-upload-row" id="updateMetricFileUpload">
-                <input
-                  type="text"
-                  :value="metricFileName || ''"
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
-                  <input
-                    type="file"
-                    @change="handleMetricFileUpload"
-                    accept=".py"
-                    style="display: none"
-                  />
-                </label>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="updateMetricFileUpload">
+                    <input
+                      type="text"
+                      :value="metricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleMetricFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -744,25 +758,29 @@
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
-              <label class="essential">{{ t("inflow.uploadFormula") }}</label>
-              <div class="file-upload-row" id="updateImperialFileUpload">
-                <input
-                  type="text"
-                  :value="imperialFileName || ''"
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
-                  <input
-                    type="file"
-                    @change="handleImperialFileUpload"
-                    accept=".py"
-                    style="display: none"
-                  />
-                </label>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="updateImperialFileUpload">
+                    <input
+                      type="text"
+                      :value="imperialFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleImperialFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -1788,7 +1806,7 @@ const createNewTab = async () => {
         : undefined;
 
     // 유입종류와 파라미터를 한 번에 등록
-    await inflowStore.createWaterFlowType({
+    const response = await inflowStore.createWaterFlowType({
       flow_type_code: selectedInputType.value, // 선택된 공통코드의 code_key 사용
       flow_type_name: newInflowTypeName.value.trim(),
       flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
@@ -1832,14 +1850,19 @@ const createNewTab = async () => {
       }
     });
 
-    alert("유입종류와 파라미터가 성공적으로 등록되었습니다.");
-  } catch (error) {
+    // API 응답의 message를 사용하거나 기본 메시지 표시
+    const successMessage =
+      response?.message || "유입종류와 파라미터가 성공적으로 등록되었습니다.";
+    alert(successMessage);
+  } catch (error: unknown) {
     console.error("유입종류 또는 파라미터 등록 실패:", error);
-    alert(
-      `등록에 실패했습니다: ${
-        error instanceof Error ? error.message : "알 수 없는 오류"
-      }`
-    );
+
+    // request 유틸리티에서 표준화된 에러 객체의 message 사용
+    const errorMessage =
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : "등록에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -1894,7 +1917,7 @@ const updateTab = async () => {
     //   : undefined;
 
     // 유입종류 수정
-    await inflowStore.updateWaterFlowType(flowTypeId, {
+    const response = await inflowStore.updateWaterFlowType(flowTypeId, {
       flow_type_code: selectedInputType.value,
       flow_type_name: newInflowTypeName.value.trim(),
       flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
@@ -1929,14 +1952,19 @@ const updateTab = async () => {
       }
     });
 
-    alert("유입종류가 성공적으로 수정되었습니다.");
-  } catch (error) {
+    // API 응답의 message를 사용하거나 기본 메시지 표시
+    const successMessage =
+      response?.message || "유입종류가 성공적으로 수정되었습니다.";
+    alert(successMessage);
+  } catch (error: unknown) {
     console.error("유입종류 수정 실패:", error);
-    alert(
-      `수정에 실패했습니다: ${
-        error instanceof Error ? error.message : "알 수 없는 오류"
-      }`
-    );
+
+    // request 유틸리티에서 표준화된 에러 객체의 message 사용
+    const errorMessage =
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : "수정에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -2007,6 +2035,13 @@ const scrollTabs = (direction: number) => {
   .modal-content-wrapper {
     display: flex;
     gap: $spacing-lg;
+    overflow-x: auto;
+
+    // 반응형 처리: 작은 화면에서는 세로 배치
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
 
     .tab-content-metric,
     .tab-content-imperial,
@@ -2017,6 +2052,13 @@ const scrollTabs = (direction: number) => {
       border-radius: $border-radius-md;
       padding: $spacing-sm;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
+      overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
+
+      // 반응형 처리
+      @media (max-width: 1024px) {
+        min-width: 100%;
+      }
 
       .section-header {
         margin-bottom: $spacing-sm;
@@ -2115,6 +2157,15 @@ const scrollTabs = (direction: number) => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+
+  // 반응형 처리
+  @media (max-width: 768px) {
+    max-width: 95%;
+    padding: $spacing-md;
+  }
 }
 
 .modal-header {
@@ -2243,20 +2294,5 @@ const scrollTabs = (direction: number) => {
   }
 }
 
-// label과 file-upload-row를 한 줄에 배치
-.modal-tab-content-metric,
-.modal-tab-content-imperial {
-  .essential + .file-upload-row {
-    display: inline-block;
-    margin-left: $spacing-sm;
-    vertical-align: top;
-  }
-
-  .essential {
-    display: inline-block;
-    margin-bottom: 0;
-    vertical-align: top;
-    line-height: 40px; // file-upload-row 높이와 맞춤
-  }
-}
+// 모달 내부 파일 업로드 폼 스타일은 상단의 dt/dd 구조와 동일하게 적용
 </style>

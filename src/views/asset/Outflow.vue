@@ -174,6 +174,7 @@
                 :placeholder="t('placeholder.outflowTypeName')"
                 class="form-input"
                 readonly
+                disabled
               />
             </dd>
           </dl>
@@ -377,6 +378,7 @@
                 :placeholder="t('placeholder.outflowTypeName')"
                 class="form-input"
                 readonly
+                disabled
               />
             </dd>
           </dl>
@@ -1286,7 +1288,10 @@ const updateTab = async () => {
     };
 
     // 수정 API 호출
-    await outflowStore.updateWaterFlowType(currentTab.flow_type_id, updateData);
+    const response = await outflowStore.updateWaterFlowType(
+      currentTab.flow_type_id,
+      updateData
+    );
 
     // 수정 완료 후 목록 새로고침
     await loadWaterFlowTypes();
@@ -1294,14 +1299,19 @@ const updateTab = async () => {
     // 모달 닫기
     closeUpdateModal();
 
-    alert("유출종류가 성공적으로 수정되었습니다.");
-  } catch (error) {
+    // API 응답의 message를 사용하거나 기본 메시지 표시
+    const successMessage =
+      response?.message || "유출종류가 성공적으로 수정되었습니다.";
+    alert(successMessage);
+  } catch (error: unknown) {
     console.error("유출종류 수정 실패:", error);
-    alert(
-      `수정에 실패했습니다: ${
-        error instanceof Error ? error.message : "알 수 없는 오류"
-      }`
-    );
+
+    // request 유틸리티에서 표준화된 에러 객체의 message 사용
+    const errorMessage =
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : "수정에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -1342,7 +1352,7 @@ const createNewTab = async () => {
         : undefined;
 
     // 유출종류와 파라미터를 한 번에 등록
-    await outflowStore.createWaterFlowType({
+    const response = await outflowStore.createWaterFlowType({
       flow_type_code: selectedOutputType.value, // 선택된 공통코드의 code_key 사용
       flow_type_name: newOutflowTypeName.value.trim(),
       flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
@@ -1386,14 +1396,19 @@ const createNewTab = async () => {
       }
     });
 
-    alert("유출종류와 파라미터가 성공적으로 등록되었습니다.");
-  } catch (error) {
+    // API 응답의 message를 사용하거나 기본 메시지 표시
+    const successMessage =
+      response?.message || "유출종류와 파라미터가 성공적으로 등록되었습니다.";
+    alert(successMessage);
+  } catch (error: unknown) {
     console.error("유출종류 또는 파라미터 등록 실패:", error);
-    alert(
-      `등록에 실패했습니다: ${
-        error instanceof Error ? error.message : "알 수 없는 오류"
-      }`
-    );
+
+    // request 유틸리티에서 표준화된 에러 객체의 message 사용
+    const errorMessage =
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : "등록에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -1452,6 +1467,13 @@ const scrollTabs = (direction: number) => {
   .modal-content-wrapper {
     display: flex;
     gap: $spacing-lg;
+    overflow-x: auto;
+
+    // 반응형 처리: 작은 화면에서는 세로 배치
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
 
     .tab-content-metric,
     .tab-content-imperial,
@@ -1462,6 +1484,14 @@ const scrollTabs = (direction: number) => {
       border-radius: $border-radius-md;
       padding: $spacing-lg;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
+      overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
+
+      // 반응형 처리
+      @media (max-width: 1024px) {
+        min-width: 100%;
+        padding: $spacing-md;
+      }
 
       .section-header {
         margin-bottom: $spacing-lg;
@@ -1561,6 +1591,15 @@ const scrollTabs = (direction: number) => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+
+  // 반응형 처리
+  @media (max-width: 768px) {
+    max-width: 95%;
+    padding: $spacing-md;
+  }
 }
 
 .modal-header {
@@ -1689,22 +1728,7 @@ const scrollTabs = (direction: number) => {
   }
 }
 
-// label과 file-upload-row를 한 줄에 배치
-.modal-tab-content-metric,
-.modal-tab-content-imperial {
-  .essential + .file-upload-row {
-    display: inline-block;
-    margin-left: $spacing-sm;
-    vertical-align: top;
-  }
-
-  .essential {
-    display: inline-block;
-    margin-bottom: 0;
-    vertical-align: top;
-    line-height: 40px; // file-upload-row 높이와 맞춤
-  }
-}
+// 모달 내부 파일 업로드 폼 스타일은 상단의 dt/dd 구조와 동일하게 적용
 
 // 수정 모달 스타일
 .update-modal-content {

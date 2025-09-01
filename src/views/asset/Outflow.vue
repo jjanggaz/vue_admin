@@ -558,6 +558,15 @@ import { useInflowStore } from "@/stores/inflow";
 
 const { t } = useI18n();
 const outflowStore = useInflowStore();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = (
+  message: string | undefined,
+  fallbackKey: string
+): string => {
+  if (!message) return t(fallbackKey);
+  return message.startsWith("messages.") ? t(message) : message;
+};
 const newOutflowTypeName = ref("");
 const newOutflowTypeNameEn = ref("");
 const selectedOutputType = ref(""); // 선택된 유출종류 코드
@@ -1221,7 +1230,7 @@ const closeModal = () => {
 // 수정 모달 관련 함수
 const openUpdateModal = async () => {
   if (activeTab.value < 0 || !tabs.value[activeTab.value]) {
-    alert("수정할 탭을 선택해주세요.");
+    alert(t("messages.warning.selectTabToEdit"));
     return;
   }
 
@@ -1275,7 +1284,7 @@ const updateTab = async () => {
   try {
     const currentTab = tabs.value[activeTab.value];
     if (!currentTab || !currentTab.flow_type_id) {
-      alert("수정할 데이터를 찾을 수 없습니다.");
+      alert(t("messages.warning.cannotFindDataToEdit"));
       return;
     }
 
@@ -1300,29 +1309,33 @@ const updateTab = async () => {
     closeUpdateModal();
 
     // API 응답의 message를 사용하거나 기본 메시지 표시
-    const successMessage =
-      response?.message || "유출종류가 성공적으로 수정되었습니다.";
+    const successMessage = translateMessage(
+      response?.message,
+      "messages.success.outflowTypeUpdateSuccess"
+    );
     alert(successMessage);
   } catch (error: unknown) {
     console.error("유출종류 수정 실패:", error);
 
     // request 유틸리티에서 표준화된 에러 객체의 message 사용
-    const errorMessage =
+    const errorMessage = translateMessage(
       error && typeof error === "object" && "message" in error
         ? (error as { message: string }).message
-        : "수정에 실패했습니다.";
+        : undefined,
+      "messages.error.waterFlowTypeUpdateFailed"
+    );
     alert(errorMessage);
   }
 };
 
 const createNewTab = async () => {
   if (!selectedOutputType.value) {
-    alert("유출종류를 선택해주세요.");
+    alert(t("messages.warning.selectOutflowType"));
     return;
   }
 
   if (!newOutflowTypeName.value.trim()) {
-    alert("유출종류명을 입력해주세요.");
+    alert(t("messages.warning.enterOutflowTypeName"));
     return;
   }
 
@@ -1397,17 +1410,21 @@ const createNewTab = async () => {
     });
 
     // API 응답의 message를 사용하거나 기본 메시지 표시
-    const successMessage =
-      response?.message || "유출종류와 파라미터가 성공적으로 등록되었습니다.";
+    const successMessage = translateMessage(
+      response?.message,
+      "messages.success.outflowTypeCreateSuccess"
+    );
     alert(successMessage);
   } catch (error: unknown) {
     console.error("유출종류 또는 파라미터 등록 실패:", error);
 
     // request 유틸리티에서 표준화된 에러 객체의 message 사용
-    const errorMessage =
+    const errorMessage = translateMessage(
       error && typeof error === "object" && "message" in error
         ? (error as { message: string }).message
-        : "등록에 실패했습니다.";
+        : undefined,
+      "messages.error.waterFlowTypeCreateFailed"
+    );
     alert(errorMessage);
   }
 };

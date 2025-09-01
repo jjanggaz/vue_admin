@@ -894,6 +894,15 @@ import { useInflowStore } from "@/stores/inflow";
 
 const { t } = useI18n();
 const inflowStore = useInflowStore();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = (
+  message: string | undefined,
+  fallbackKey: string
+): string => {
+  if (!message) return t(fallbackKey);
+  return message.startsWith("messages.") ? t(message) : message;
+};
 const newInflowTypeName = ref("");
 const newInflowTypeNameEn = ref("");
 const selectedInputType = ref(""); // 선택된 유입종류 코드
@@ -1188,7 +1197,7 @@ const handleMetricFileUpload = async (event: Event) => {
 
     // .py 파일인지 확인
     if (!file.name.endsWith(".py")) {
-      alert("Python 파일(.py)만 업로드 가능합니다.");
+      alert(t("messages.warning.pythonFileOnly"));
       return;
     }
 
@@ -1200,7 +1209,7 @@ const handleMetricFileUpload = async (event: Event) => {
       metricFileData.value = parsedData;
     } catch (error) {
       console.error("파일 파싱 에러:", error);
-      alert("파일을 읽는 중 오류가 발생했습니다.");
+      alert(t("messages.warning.fileReadError"));
     }
   }
 };
@@ -1213,7 +1222,7 @@ const handleImperialFileUpload = async (event: Event) => {
 
     // .py 파일인지 확인
     if (!file.name.endsWith(".py")) {
-      alert("Python 파일(.py)만 업로드 가능합니다.");
+      alert(t("messages.warning.pythonFileOnly"));
       return;
     }
 
@@ -1225,7 +1234,7 @@ const handleImperialFileUpload = async (event: Event) => {
       imperialFileData.value = parsedData;
     } catch (error) {
       console.error("파일 파싱 에러:", error);
-      alert("파일을 읽는 중 오류가 발생했습니다.");
+      alert(t("messages.warning.fileReadError"));
     }
   }
 };
@@ -1709,7 +1718,7 @@ const openModal = () => {
 
 const openUpdateModal = async () => {
   if (activeTab.value < 0 || !tabs.value[activeTab.value]) {
-    alert("수정할 탭을 선택해주세요.");
+    alert(t("messages.warning.selectTabToEdit"));
     return;
   }
 
@@ -1771,12 +1780,12 @@ const closeUpdateModal = () => {
 
 const createNewTab = async () => {
   if (!selectedInputType.value) {
-    alert("유입종류를 선택해주세요.");
+    alert(t("messages.warning.selectInflowType"));
     return;
   }
 
   if (!newInflowTypeName.value.trim()) {
-    alert("유입종류명을 입력해주세요.");
+    alert(t("messages.warning.enterInflowTypeName"));
     return;
   }
 
@@ -1851,34 +1860,38 @@ const createNewTab = async () => {
     });
 
     // API 응답의 message를 사용하거나 기본 메시지 표시
-    const successMessage =
-      response?.message || "유입종류와 파라미터가 성공적으로 등록되었습니다.";
+    const successMessage = translateMessage(
+      response?.message,
+      "messages.success.waterFlowTypeCreateSuccess"
+    );
     alert(successMessage);
   } catch (error: unknown) {
     console.error("유입종류 또는 파라미터 등록 실패:", error);
 
     // request 유틸리티에서 표준화된 에러 객체의 message 사용
-    const errorMessage =
+    const errorMessage = translateMessage(
       error && typeof error === "object" && "message" in error
         ? (error as { message: string }).message
-        : "등록에 실패했습니다.";
+        : undefined,
+      "messages.error.waterFlowTypeCreateFailed"
+    );
     alert(errorMessage);
   }
 };
 
 const updateTab = async () => {
   if (activeTab.value < 0 || !tabs.value[activeTab.value]) {
-    alert("수정할 탭을 선택해주세요.");
+    alert(t("messages.warning.selectTabToEdit"));
     return;
   }
 
   if (!selectedInputType.value) {
-    alert("유입종류를 선택해주세요.");
+    alert(t("messages.warning.selectInflowType"));
     return;
   }
 
   if (!newInflowTypeName.value.trim()) {
-    alert("유입종류명을 입력해주세요.");
+    alert(t("messages.warning.enterInflowTypeName"));
     return;
   }
 
@@ -1890,7 +1903,7 @@ const updateTab = async () => {
     console.log("수정할 탭의 flow_type_id:", flowTypeId);
 
     if (!flowTypeId) {
-      alert("수정할 수 없는 탭입니다.");
+      alert(t("messages.warning.cannotEditTab"));
       return;
     }
 
@@ -1953,17 +1966,21 @@ const updateTab = async () => {
     });
 
     // API 응답의 message를 사용하거나 기본 메시지 표시
-    const successMessage =
-      response?.message || "유입종류가 성공적으로 수정되었습니다.";
+    const successMessage = translateMessage(
+      response?.message,
+      "messages.success.waterFlowTypeUpdateSuccess"
+    );
     alert(successMessage);
   } catch (error: unknown) {
     console.error("유입종류 수정 실패:", error);
 
     // request 유틸리티에서 표준화된 에러 객체의 message 사용
-    const errorMessage =
+    const errorMessage = translateMessage(
       error && typeof error === "object" && "message" in error
         ? (error as { message: string }).message
-        : "수정에 실패했습니다.";
+        : undefined,
+      "messages.error.waterFlowTypeUpdateFailed"
+    );
     alert(errorMessage);
   }
 };

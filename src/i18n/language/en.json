@@ -804,7 +804,15 @@
       "deleteSuccess": "Deleted successfully.",
       "saveFailed": "Save failed.",
       "updateSuccess": "Updated successfully.",
-      "registerSuccess": "Registered successfully."
+      "registerSuccess": "Registered successfully.",
+      "inflowTypeRegistered": "Inflow type and parameters have been successfully registered.",
+      "inflowTypeUpdated": "Inflow type has been successfully updated.",
+      "outflowTypeRegistered": "Outflow type and parameters have been successfully registered.",
+      "outflowTypeUpdated": "Outflow type has been successfully updated.",
+      "waterFlowTypeCreateSuccess": "Inflow type and parameters have been successfully registered.",
+      "waterFlowTypeUpdateSuccess": "Inflow type has been successfully updated.",
+      "outflowTypeCreateSuccess": "Outflow type and parameters have been successfully registered.",
+      "outflowTypeUpdateSuccess": "Outflow type has been successfully updated."
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
@@ -816,7 +824,11 @@
       "saveFailed": "Save failed.",
       "updateFailed": "Update failed.",
       "duplicateCheckFailed": "Duplicate check failed.",
-      "loadFailed": "Failed to load data"
+      "loadFailed": "Failed to load data",
+      "registrationFailed": "Registration failed.",
+      "updateFailedGeneric": "Update failed.",
+      "waterFlowTypeCreateFailed": "Registration failed.",
+      "waterFlowTypeUpdateFailed": "Update failed."
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",
@@ -833,7 +845,16 @@
       "pleaseEnterUsername": "Please enter username.",
       "selectOneItemToEdit": "Please select one item to edit.",
       "pleaseCompleteRequiredFields": "Please complete required fields.",
-      "pleaseEnterTabName": "Please enter tab name."
+      "pleaseEnterTabName": "Please enter tab name.",
+      "pythonFileOnly": "Only Python files (.py) can be uploaded.",
+      "fileReadError": "An error occurred while reading the file.",
+      "selectTabToEdit": "Please select a tab to edit.",
+      "selectInflowType": "Please select an inflow type.",
+      "enterInflowTypeName": "Please enter an inflow type name.",
+      "cannotEditTab": "This tab cannot be edited.",
+      "selectOutflowType": "Please select an outflow type.",
+      "enterOutflowTypeName": "Please enter an outflow type name.",
+      "cannotFindDataToEdit": "Cannot find data to edit."
     },
     "info": {}
   }

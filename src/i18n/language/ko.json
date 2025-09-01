@@ -803,7 +803,15 @@
       "deleteSuccess": "삭제되었습니다.",
       "saveFailed": "저장에 실패했습니다.",
       "updateSuccess": "수정되었습니다.",
-      "registerSuccess": "등록되었습니다."
+      "registerSuccess": "등록되었습니다.",
+      "inflowTypeRegistered": "유입종류와 파라미터가 성공적으로 등록되었습니다.",
+      "inflowTypeUpdated": "유입종류가 성공적으로 수정되었습니다.",
+      "outflowTypeRegistered": "유출종류와 파라미터가 성공적으로 등록되었습니다.",
+      "outflowTypeUpdated": "유출종류가 성공적으로 수정되었습니다.",
+      "waterFlowTypeCreateSuccess": "유입종류와 파라미터가 성공적으로 등록되었습니다.",
+      "waterFlowTypeUpdateSuccess": "유입종류가 성공적으로 수정되었습니다.",
+      "outflowTypeCreateSuccess": "유출종류와 파라미터가 성공적으로 등록되었습니다.",
+      "outflowTypeUpdateSuccess": "유출종류가 성공적으로 수정되었습니다."
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
@@ -815,7 +823,11 @@
       "saveFailed": "저장에 실패했습니다.",
       "updateFailed": "수정에 실패했습니다.",
       "loadFailed": "데이터 로딩에 실패했습니다.",
-      "duplicateCheckFailed": "중복 확인에 실패했습니다."
+      "duplicateCheckFailed": "중복 확인에 실패했습니다.",
+      "registrationFailed": "등록에 실패했습니다.",
+      "updateFailedGeneric": "수정에 실패했습니다.",
+      "waterFlowTypeCreateFailed": "등록에 실패했습니다.",
+      "waterFlowTypeUpdateFailed": "수정에 실패했습니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
@@ -832,7 +844,16 @@
       "pleaseEnterUsername": "사용자명을 입력하세요.",
       "selectOneItemToEdit": "수정할 항목을 하나만 선택하세요.",
       "pleaseCompleteRequiredFields": "필수 필드를 입력해주세요.",
-      "pleaseEnterTabName": "탭 이름을 입력하세요."
+      "pleaseEnterTabName": "탭 이름을 입력하세요.",
+      "pythonFileOnly": "Python 파일(.py)만 업로드 가능합니다.",
+      "fileReadError": "파일을 읽는 중 오류가 발생했습니다.",
+      "selectTabToEdit": "수정할 탭을 선택해주세요.",
+      "selectInflowType": "유입종류를 선택해주세요.",
+      "enterInflowTypeName": "유입종류명을 입력해주세요.",
+      "cannotEditTab": "수정할 수 없는 탭입니다.",
+      "selectOutflowType": "유출종류를 선택해주세요.",
+      "enterOutflowTypeName": "유출종류명을 입력해주세요.",
+      "cannotFindDataToEdit": "수정할 데이터를 찾을 수 없습니다."
     },
     "info": {}
   }

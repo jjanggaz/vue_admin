@@ -595,7 +595,8 @@
     "attachFormulaFile": "Attach Formula File",
     "attachElectricFile": "Attach Electric File",
     "attachMccFile": "Attach MCC File",
-    "attachHydraulicFile": "Attach Hydraulic System Diagram File"
+    "attachHydraulicFile": "Attach Hydraulic System Diagram File",
+    "pfdFileAttachment": "Attach PFD File"
   },
   "error": {
     "notFound": "Page not found",

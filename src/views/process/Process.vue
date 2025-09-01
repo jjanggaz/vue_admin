@@ -3,86 +3,124 @@
     <!-- Add Button -->
     <div class="action-bar">
       <div class="search-bar">
-        <div class="group-form">
-          <label for="searchOption" class="label-title">{{
-            t("process.processType")
-          }}</label>
-          <div class="form-item">
-            <select
-              id="searchProcessType"
-              v-model="processStore.searchProcessType"
-              class="form-select"
-              @change="handleSearchProcessTypeChange"
-            >
-              <option :value="null">{{ t("common.select") }}</option>
-              <option
-                v-for="option in processStore.searchProcessTypeOptions"
-                :key="option.value"
-                :value="option.value"
+        <!-- 첫 번째 줄: 언어, 단위 -->
+        <div class="search-row first-row">
+          <div class="group-form">
+            <label for="searchLanguage" class="label-title">언어</label>
+            <div class="form-item">
+              <select
+                id="searchLanguage"
+                v-model="selectedLanguage"
+                class="form-select"
+                @change="handleLanguageChange"
               >
-                {{ option.label }}
-              </option>
-            </select>
+                <option value="ko">국문</option>
+                <option value="en">영어</option>
+              </select>
+            </div>
+          </div>
+          <div class="group-form">
+            <label for="searchUnit" class="label-title">단위</label>
+            <div class="form-item">
+              <select
+                id="searchUnit"
+                v-model="selectedUnit"
+                class="form-select"
+                @change="handleUnitChange"
+              >
+                <option value="METRIC">Metric</option>
+                <option value="IMPERIAL">Imperial</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div class="group-form">
-          <label for="searchSubCategory" class="label-title">{{
-            t("process.subCategory")
-          }}</label>
-          <div class="form-item">
-            <select
-              id="searchSubCategory"
-              v-model="processStore.searchSubCategoryInput"
-              class="form-select"
-              @change="handleSubCategoryChange"
-            >
-              <option :value="null">{{ t("common.select") }}</option>
-              <option
-                v-for="option in processStore.searchSubCategoryOptions"
-                :key="option.value"
-                :value="option.value"
+        
+        <!-- 두 번째 줄: 공정구분, 공정중분류, 공정명, 버튼들 -->
+        <div class="search-row second-row">
+          <div class="group-form">
+            <label for="searchOption" class="label-title">{{
+              t("process.processType")
+            }}</label>
+            <div class="form-item">
+              <select
+                id="searchProcessType"
+                v-model="processStore.searchProcessType"
+                class="form-select"
+                @change="handleSearchProcessTypeChange"
               >
-                {{ option.label }}
-              </option>
-            </select>
+                <option :value="null">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in processStore.searchProcessTypeOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="group-form">
+            <label for="searchSubCategory" class="label-title">{{
+              t("process.subCategory")
+            }}</label>
+            <div class="form-item">
+              <select
+                id="searchSubCategory"
+                v-model="processStore.searchSubCategoryInput"
+                class="form-select"
+                @change="handleSubCategoryChange"
+              >
+                <option :value="null">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in processStore.searchSubCategoryOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="group-form">
+            <label for="searchProcessName" class="label-title">{{
+              t("process.processName")
+            }}</label>
+            <div class="form-item">
+              <select
+                id="searchProcessName"
+                v-model="processStore.searchProcessName"
+                class="form-select"
+              >
+                <option :value="null">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in processStore.searchProcessNameOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="group-form">
+            <div class="form-item button-group">
+              <button class="btn btn-primary btn-search" @click="handleSearch">
+                {{ t("common.search") }}
+              </button>
+              <button class="btn btn-primary btn-regist" @click="handleRegist">
+                {{ t("common.register") }}
+              </button>
+              <button
+                class="btn btn-primary btn-delete"
+                @click="handleDelete"
+                :disabled="processStore.selectedItems.length === 0"
+              >
+                {{ t("process.deleteSelected") }}
+              </button>
+            </div>
           </div>
         </div>
-        <div class="group-form">
-          <label for="searchProcessName" class="label-title">{{
-            t("process.processName")
-          }}</label>
-          <div class="form-item">
-            <select
-              id="searchProcessName"
-              v-model="processStore.searchProcessName"
-              class="form-select"
-            >
-              <option :value="null">{{ t("common.select") }}</option>
-              <option
-                v-for="option in processStore.searchProcessNameOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-          <button class="btn-search" @click="handleSearch">
-            {{ t("common.search") }}
-          </button>
-        </div>
-      </div>
-      <div class="btns">
-        <button class="btn btn-primary btn-regist" @click="handleRegist">
-          {{ t("common.register") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleDelete"
-          :disabled="processStore.selectedItems.length === 0"
-        >
-          {{ t("process.deleteSelected") }}
-        </button>
       </div>
     </div>
 
@@ -104,19 +142,24 @@
     >
       <!-- 공정심볼 SVG 미리보기 + 파일명 슬롯 -->
       <template #cell-symbol_download="{ item }">
+        <!-- 디버깅: symbol_download 값 확인 -->
+        <div style="display: none;">
+          Debug: {{ JSON.stringify(item.symbol_download) }}
+        </div>
+        
         <!-- symbol_download가 없거나 null이거나 빈 문자열이거나 {}이거나 빈 객체인 경우 공백 표시 -->
         <div v-if="!item.symbol_download || item.symbol_download === '' || item.symbol_download === null || item.symbol_download === 'null' || item.symbol_download === '{}' || (typeof item.symbol_download === 'string' && item.symbol_download.trim() === '{}') || (typeof item.symbol_download === 'object' && Object.keys(item.symbol_download).length === 0)" class="empty-symbol">
           &nbsp;
         </div>
         
         <!-- symbol_download가 있는 경우 SVG 미리보기 + 파일명 표시 -->
-        <div v-else class="svg-preview-container" @click="handleSymbolDownload(item)">
+        <div v-else class="svg-preview-container">
           <!-- SVG 미리보기 -->
           <div class="svg-preview-section">
             <!-- SVG 코드가 직접 포함된 경우 -->
             <div 
               v-if="typeof item.symbol_download === 'string' && item.symbol_download.includes('<svg')"
-              class="svg-preview clickable"
+              class="svg-preview"
               v-html="item.symbol_download"
             ></div>
             
@@ -125,27 +168,21 @@
               v-else-if="typeof item.symbol_download === 'string' && item.symbol_download.toLowerCase().endsWith('.svg')"
               :src="`/${item.symbol_download}`" 
               :alt="item.symbol_download"
-              class="svg-preview clickable"
+              class="svg-preview"
               @error="handleSvgError"
+              @load="handleSvgLoad"
             />
             
             <!-- 그 외의 경우 -->
-            <span v-else class="svg-fallback clickable">
+            <span v-else class="svg-fallback">
               {{ item.symbol_download || '-' }}
             </span>
           </div>
           
           <!-- 파일명 표시 (symbol_uri에서 경로 제외) -->
           <span class="filename-text">
-            {{ getFileNameFromUri(item.process_symbol) }}
+            {{ getFileNameFromUri(item.process_symbol) || getFileNameFromUri(item.symbol_download) || 'symbol.svg' }}
           </span>
-          
-          <!-- 다운로드 아이콘 -->
-          <div class="download-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-            </svg>
-          </div>
         </div>
       </template>
       
@@ -168,213 +205,407 @@
 
       <!-- 등록 모달 -->
       <div v-if="isRegistModalOpen" class="modal-overlay">
-        <div class="modal-container">
+        <div class="modal-container large-modal">
           <div class="modal-header">
             <h3>{{ t("process.registerProcess") }}</h3>
             <button class="btn-close" @click="closeRegistModal">×</button>
           </div>
-                 <div class="modal-body">
-           <dl class="column-regist">
-             <div class="process-row-3col">
-               <div class="form-group">
-                 <dt class="essential">{{ t("process.processType") }}</dt>
-                 <dd>
-                   <select
-                     v-model="registForm.processType"
-                     class="form-select"
-                     required
-                     @change="handleRegistProcessTypeChange"
-                   >
-                     <option :value="null">{{ t("common.select") }}</option>
-                     <option
-                       v-for="option in processStore.searchProcessTypeOptions"
-                       :key="option.value"
-                       :value="option.value"
-                     >
-                       {{ option.label }}
-                     </option>
-                   </select>
-                 </dd>
-               </div>
-               <div class="form-group">
-                 <dt class="essential">{{ t("process.subCategory") }}</dt>
-                 <dd>
-                   <select
-                     v-model="registForm.processSubCategory"
-                     class="form-select"
-                     required
-                     @change="handleRegistSubCategoryChange"
-                   >
-                     <option :value="null">{{ t("common.select") }}</option>
-                     <option
-                       v-for="option in processStore.searchSubCategoryOptions"
-                       :key="option.value"
-                       :value="option.value"
-                     >
-                       {{ option.label }}
-                     </option>
-                   </select>
-                 </dd>
-               </div>
-               <div class="form-group">
-                 <dt class="essential">{{ t("process.processName") }}</dt>
-                 <dd>
-                   <select
-                     v-model="registForm.processNm"
-                     class="form-select"
-                     required
-                   >
-                     <option :value="null">{{ t("common.select") }}</option>
-                     <option
-                       v-for="option in processStore.searchProcessNameOptions"
-                       :key="option.value"
-                       :value="option.value"
-                     >
-                       {{ option.label }}
-                     </option>
-                   </select>
-                 </dd>
-               </div>
-             </div>
-             <!-- 공정심볼 -->
-             <dt class="essential">{{ t("process.processSymbol") }}</dt>
-             <dd class="process-symbol-row">
-               <input
-                 type="text"
-                 class="file-name-input"
-                 :value="selectedFiles.processSymbolFile?.name || ''"
-                 :placeholder="t('placeholder.selectFile')"
-                 readonly
-               />
-               <label class="file-select-btn">
-                 {{ t("common.selectFile") }}
-                 <input
-                   type="file"
-                   @change="handleFileChange('processSymbolFile', $event)"
-                   accept="image/*,.svg"
-                   style="display: none"
-                 />
-               </label>
-             </dd>
-             <!-- 파일 첨부 영역 -->
-             <div class="form-row">
-               <dt class="file-attachment-section">파일 첨부 영역</dt>
-               <dd class="file-attachment-area">
-                 <div class="attachment-grid">
-                   <!-- 계산식 파일 첨부 -->
-                   <div class="attachment-column">
-                     <div class="attachment-header">
-                       <span class="attachment-title essential">⊙ {{ t("process.calculation") }}</span>
-                     </div>
-                     <div class="file-input-row">
-                     <input
-                       type="text"
-                       class="file-name-input"
-                       :value="selectedFiles.calculationFile?.name || ''"
-                       placeholder="파일 선택"
-                       readonly
-                     />
-                     <label class="file-select-btn">
-                       파일선택
-                       <input
-                         type="file"
-                         @change="handleFileChange('calculationFile', $event)"
-                         accept=".xlsx,.xls,.csv"
-                         style="display: none"
-                       />
-                     </label>
-                   </div>
-                   <div class="attached-files-list">
-                     <div v-for="i in 5" :key="`calc-${i}`" class="file-row">
-                       <span class="file-number">{{ i }}</span>
-                       <span class="file-name">{{ getAttachedFileName('calculation', i) || '' }}</span>
-                       <button v-if="getAttachedFileName('calculation', i)" class="file-delete-btn" @click="removeAttachedFile('calculation', i)">×</button>
-                     </div>
-                   </div>
-                 </div>
+          <div class="modal-body">
+            <!-- 상단: 기본 정보 입력 -->
+            <div class="form-section">
+              <!-- 첫 번째 줄: 언어, 단위 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="essential">⊙ 언어</label>
+                  <select v-model="registForm.language" class="form-select">
+                    <option value="ko">국문</option>
+                    <option value="en">영어</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="essential">⊙ 단위</label>
+                  <select v-model="registForm.unit" class="form-select">
+                    <option value="metric">Metric</option>
+                    <option value="imperial">Imperial</option>
+                  </select>
+                </div>
+              </div>
+              <!-- 두 번째 줄: 공정구분, 공정 중분류, 공정명, 공정심볼 파일 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="essential">⊙ 공정구분</label>
+                  <select
+                    v-model="registForm.processType"
+                    class="form-select"
+                    @change="handleRegistProcessTypeChange"
+                  >
+                    <option :value="null">{{ t("common.select") }}</option>
+                    <option
+                      v-for="option in processStore.searchProcessTypeOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="essential">⊙ 공정 중분류</label>
+                  <select
+                    v-model="registForm.processSubCategory"
+                    class="form-select"
+                    @change="handleRegistSubCategoryChange"
+                  >
+                    <option :value="null">{{ t("common.select") }}</option>
+                    <option
+                      v-for="option in processStore.searchSubCategoryOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>⊙ 공정명</label>
+                  <select
+                    v-model="registForm.processNm"
+                    class="form-select"
+                  >
+                    <option :value="null">{{ t("common.select") }}</option>
+                    <option
+                      v-for="option in processStore.searchProcessNameOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="essential">⊙ 공정심볼 파일</label>
+                  <div class="file-input-group">
+                    <input
+                      type="file"
+                      accept=".svg"
+                      @change="handleProcessSymbolFileChange"
+                      style="display: none"
+                      ref="processSymbolFileInput"
+                    />
+                    <button type="button" @click="$refs.processSymbolFileInput.click()" class="file-select-btn">
+                      파일선택 (svg)
+                    </button>
+                    <span class="selected-file">{{ getProcessSymbolFileName() || '선택된 파일 없음' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                 <!-- PFD 파일 첨부 -->
-                                    <div class="attachment-column">
-                     <div class="attachment-header">
-                       <span class="attachment-title essential">⊙ {{ t("process.pfd") }}</span>
-                     </div>
-                   <div class="file-input-row">
-                     <input
-                       type="text"
-                       class="file-name-input"
-                       :value="selectedFiles.pfdFile?.name || ''"
-                       placeholder="파일 선택"
-                       readonly
-                     />
-                     <label class="file-select-btn">
-                       파일선택
-                       <input
-                         type="file"
-                         @change="handleFileChange('pfdFile', $event)"
-                         accept=".pfd"
-                         style="display: none"
-                       />
-                     </label>
-                   </div>
-                   <div class="attached-files-list">
-                     <div v-for="i in 5" :key="`pfd-${i}`" class="file-row">
-                       <span class="file-number">{{ i }}</span>
-                       <span class="file-name">{{ getAttachedFileName('pfd', i) || '' }}</span>
-                       <button v-if="getAttachedFileName('pfd', i)" class="file-delete-btn" @click="removeAttachedFile('pfd', i)">×</button>
-                     </div>
-                   </div>
-                 </div>
+            <!-- 중간: 파일 업로드 그리드 -->
+            <div class="file-upload-section">
+              <h4>⊙ 파일 업로드</h4>
+              <div class="grid-actions">
+                <button class="btn btn-primary btn-sm" @click="addFileUploadRow">+ 행 추가</button>
+                <button class="btn btn-danger btn-sm" @click="deleteSelectedFileRows" :disabled="selectedFileRows.length === 0">삭제</button>
+              </div>
+              <div class="file-upload-table">
+                <table class="upload-table">
+                  <thead>
+                    <tr>
+                      <th>
+                        <input 
+                          type="checkbox" 
+                          @change="handleSelectAllFileRows"
+                          :checked="selectedFileRows.length === fileUploadRows.length && fileUploadRows.length > 0"
+                          :indeterminate="selectedFileRows.length > 0 && selectedFileRows.length < fileUploadRows.length"
+                        />
+                      </th>
+                      <th>No.</th>
+                      <th>계산식(*)</th>
+                      <th>컨포넌트</th>
+                      <th>수리계통도 (*)</th>
+                      <th>PFD (*)</th>
+                      <th>P&ID (*)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in fileUploadRows" :key="row.id" :class="{ 'alternate-row': index % 2 === 1 }">
+                      <td>
+                        <input 
+                          type="checkbox" 
+                          :value="row"
+                          v-model="selectedFileRows"
+                        />
+                      </td>
+                      <td>{{ row.no }}</td>
+                      <td>
+                        <div class="file-selection-group">
+                          <button class="btn btn-primary btn-sm" @click="selectFormulaFile(row)">파일선택</button>
+                          <div class="file-info">
+                            <span v-if="row.formulaFile" class="selected-file">
+                              {{ row.formulaFile.name }}
+                              <button class="clear-file" @click="clearFormulaFile(row)">&times;</button>
+                            </span>
+                            <span v-else class="no-file">선택된 파일 없음</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <button class="btn btn-secondary btn-sm" @click="openComponentModal(row)">설정</button>
+                      </td>
+                      <td>
+                        <div class="file-selection-group">
+                          <button class="btn btn-primary btn-sm" @click="selectHydraulicFile(row)">파일선택</button>
+                          <div class="file-info">
+                            <span v-if="row.hydraulicFile" class="selected-file">
+                              {{ row.hydraulicFile.name }}
+                              <button class="clear-file" @click="clearHydraulicFile(row)">&times;</button>
+                            </span>
+                            <span v-else class="no-file">선택된 파일 없음</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="file-selection-group">
+                          <button class="btn btn-primary btn-sm" @click="selectPfdFile(row)">파일선택</button>
+                          <div class="file-info">
+                            <span v-if="row.pfdFile" class="selected-file">
+                              {{ row.pfdFile.name }}
+                              <button class="clear-file" @click="clearPfdFile(row)">&times;</button>
+                            </span>
+                            <span v-else class="no-file">선택된 파일 없음</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <button 
+                          v-if="row.pidStatus === 'completed'" 
+                          class="btn btn-success btn-sm"
+                          disabled
+                        >
+                          등록완료
+                        </button>
+                        <button 
+                          v-else 
+                          class="btn btn-secondary btn-sm" 
+                          @click="openPidListModal(row)"
+                        >
+                          등록
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-                 <!-- 수리계통도 파일 첨부 -->
-                                    <div class="attachment-column">
-                     <div class="attachment-header">
-                       <span class="attachment-title essential">⊙ {{ t("process.hydraulic") }}</span>
-                     </div>
-                   <div class="file-input-row">
-                     <input
-                       type="text"
-                       class="file-name-input"
-                       :value="selectedFiles.hydraulicFile?.name || ''"
-                       placeholder="파일 선택"
-                       readonly
-                     />
-                     <label class="file-select-btn">
-                       파일선택
-                       <input
-                         type="file"
-                         @change="handleFileChange('hydraulicFile', $event)"
-                         accept=".dwg,.dxf"
-                         style="display: none"
-                       />
-                     </label>
-                   </div>
-                   <div class="attached-files-list">
-                     <div v-for="i in 5" :key="`hydraulic-${i}`" class="file-row">
-                       <span class="file-number">{{ i }}</span>
-                       <span class="file-name" :class="{ 'error-file': isErrorFile('hydraulic', i) }">{{ getAttachedFileName('hydraulic', i) || '' }}</span>
-                       <button v-if="getAttachedFileName('hydraulic', i)" class="file-delete-btn" :class="{ 'error-delete': isErrorFile('hydraulic', i) }" @click="removeAttachedFile('hydraulic', i)">×</button>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </dd>
-           </div>
-         </dl>
-       </div>
-       <div class="modal-footer">
-         <button class="btn btn-secondary" @click="closeRegistModal">
-           {{ t("common.cancel") }}
-         </button>
-         <button
-           class="btn btn-primary"
-           @click="handleSave"
-           :disabled="!isFormValid"
-         >
-           {{ t("common.save") }}
-         </button>
-       </div>
-     </div>
-   </div>
+            <!-- Hidden file inputs -->
+            <input
+              type="file"
+              accept=".svg"
+              @change="handleProcessSymbolFileSelected"
+              style="display: none"
+              ref="processSymbolFileInput"
+            />
+            <input
+              type="file"
+              accept=".py,.xlsx,.xls,.csv"
+              @change="handleFormulaFileSelected"
+              style="display: none"
+              ref="formulaFileInput"
+            />
+            <input
+              type="file"
+              accept=".dwg,.dxf"
+              @change="handleHydraulicFileSelected"
+              style="display: none"
+              ref="hydraulicFileInput"
+            />
+            <input
+              type="file"
+              accept=".dwg,.dxf"
+              @change="handlePfdFileSelected"
+              style="display: none"
+              ref="pfdFileInput"
+            />
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" @click="saveProcessRegistration">저장</button>
+            <button class="btn btn-secondary" @click="closeRegistModal">닫기</button>
+          </div>
+        </div>
+      </div>
+
+    <!-- 컴포넌트 설정 모달 -->
+    <div v-if="showComponentModal" class="modal-overlay component-modal-overlay">
+      <div class="component-modal-container">
+        <div class="modal-header">
+          <h3>컴포넌트 설정</h3>
+          <button class="btn-close" @click="closeComponentModal">×</button>
+        </div>
+        <div class="component-modal-body">
+                  <div class="component-table-section">
+          <table class="component-table">
+            <thead>
+              <tr>
+                <th>
+                  구분
+                  <span class="sort-icon">▼</span>
+                </th>
+                <th>
+                  Components
+                  <span class="sort-icon">▼</span>
+                </th>
+                <th>
+                  유형
+                  <span class="sort-icon">▼</span>
+                </th>
+                <th>
+                  입력Item
+                  <span class="sort-icon">▼</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(comp, idx) in componentModalData.components" :key="idx">
+                <td>
+                  <input class="form-input" v-model="comp.division" placeholder="구분" />
+                </td>
+                <td>
+                  <input class="form-input" v-model="comp.components" placeholder="Components" />
+                </td>
+                <td>
+                  <input class="form-input" v-model="comp.type" placeholder="유형" />
+                </td>
+                <td>
+                  <input class="form-input" v-model="comp.inputItem" placeholder="입력Item" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
+                  <div class="modal-footer">
+            <button class="btn btn-primary" @click="saveComponentModal">저장</button>
+            <button class="btn btn-secondary" @click="resetComponentModal">초기화</button>
+          </div>
+      </div>
+    </div>
+
+    <!-- P&ID 목록 모달 -->
+    <div v-if="showPidListModal" class="modal-overlay pid-list-modal-overlay">
+      <div class="pid-list-modal-container">
+        <div class="modal-header">
+          <h3>P&ID 목록</h3>
+          <div class="modal-actions">
+            <button class="btn btn-primary">Zip 등록</button>
+            <button class="btn btn-primary" @click="addPidListRow">+ 행 추가</button>
+            <button 
+              class="btn btn-danger" 
+              @click="deleteSelectedPidListItems"
+              :disabled="selectedPidListItems.length === 0"
+            >
+              삭제
+            </button>
+            <button class="btn-close" @click="closePidListModal">×</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="pid-list-table">
+            <table class="pid-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input 
+                      type="checkbox" 
+                      @change="handleSelectAllPidList"
+                      :checked="selectedPidListItems.length === pidListItems.length && pidListItems.length > 0"
+                      :indeterminate="selectedPidListItems.length > 0 && selectedPidListItems.length < pidListItems.length"
+                    />
+                  </th>
+                  <th>No.</th>
+                  <th>P&ID (*)</th>
+                  <th>매핑 Excel (*)</th>
+                  <th>SVG 파일</th>
+                  <th>정보개요(기기명+대수)</th>
+                  <th>Svg 도면 미리보기</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in pidListItems" :key="item.id" :class="{ 'alternate-row': index % 2 === 1 }">
+                  <td>
+                    <input 
+                      type="checkbox" 
+                      :value="item"
+                      v-model="selectedPidListItems"
+                      @change="handlePidListSelectionChange"
+                    />
+                  </td>
+                  <td>{{ item.no }}</td>
+                  <td>
+                    <div class="file-selection-group">
+                      <button class="btn btn-sm btn-primary" @click="selectPidFile(item)">파일선택</button>
+                      <div class="file-info">
+                        <span v-if="item.pidFileName" class="selected-file">
+                          {{ item.pidFileName }}
+                          <button class="clear-file" @click="clearPidFile(item)">&times;</button>
+                        </span>
+                        <span v-else class="no-file">선택된 파일 없음</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="file-selection-group">
+                      <button class="btn btn-sm btn-primary" @click="selectExcelFile(item)">파일선택</button>
+                      <div class="file-info">
+                        <span v-if="item.excelFileName" class="selected-file">
+                          {{ item.excelFileName }}
+                          <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
+                        </span>
+                        <span v-else class="no-file">선택된 파일 없음</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="svg-conversion-group">
+                      <button class="btn btn-sm btn-primary" @click="convertSvg(item)">변환</button>
+                      <span class="conversion-status">{{ item.svgStatus || '대기' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <input 
+                      type="text" 
+                      v-model="item.infoOverview" 
+                      class="info-input"
+                      placeholder="예: 펌프, 2대"
+                    />
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Hidden file inputs -->
+          <input
+            type="file"
+            accept=".dwg"
+            @change="handlePidFileSelected"
+            style="display: none"
+            ref="pidFileInput"
+          />
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            @change="handleExcelFileSelected"
+            style="display: none"
+            ref="excelFileInput"
+          />
+        </div>
+      </div>
+    </div>
 
     <!-- ProcessDetail 모달 -->
     <div v-if="isDetailModalOpen" class="modal-overlay detail-modal-overlay">
@@ -414,7 +645,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import ProcessDetail from "./ProcessDetail.vue";
@@ -437,6 +668,17 @@ interface RegistForm {
   pfdFile: File | null;
   excelFile: File | null;
   hydraulicFile: File | null;
+  language: string;
+  unit: string;
+}
+
+interface FileUploadRow {
+  id: string;
+  no: number;
+  formulaFile: File | null;
+  hydraulicFile: File | null;
+  pfdFile: File | null;
+  pidStatus: 'pending' | 'completed';
 }
 
 // 첨부된 파일 목록을 관리하는 인터페이스
@@ -474,8 +716,10 @@ const tableColumns: TableColumn[] = [
  const selectedProcessId = ref<string | undefined>(undefined);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
  const isComponentMounted = ref(false);
- 
- 
+
+// 언어 및 단위 선택
+const selectedLanguage = ref<string>("ko");
+const selectedUnit = ref<string>("METRIC");
 
 // 등록 폼 데이터
 const registForm = ref<RegistForm>({
@@ -491,7 +735,37 @@ const registForm = ref<RegistForm>({
   pfdFile: null,
   excelFile: null,
   hydraulicFile: null,
+  language: "ko",
+  unit: "metric",
 });
+
+// 파일 업로드 그리드 관련 상태
+const fileUploadRows = ref<FileUploadRow[]>([]);
+const selectedFileRows = ref<FileUploadRow[]>([]);
+const currentFileRow = ref<FileUploadRow | null>(null);
+
+// 컴포넌트 설정 모달 상태
+const showComponentModal = ref(false);
+const componentModalData = reactive<{
+  row: FileUploadRow | null;
+  components: Array<{ division: string; components: string; type: string; inputItem: string }>;
+}>({
+  row: null,
+  components: []
+});
+
+// P&ID 목록 모달 상태
+const showPidListModal = ref(false);
+const pidListItems = ref<Array<{
+  id: string;
+  no: number;
+  pidFileName: string;
+  excelFileName: string;
+  svgStatus: string;
+  infoOverview: string;
+}>>([]);
+const selectedPidListItems = ref<any[]>([]);
+const currentPidItem = ref<any>(null);
 
 // 첨부된 파일 목록 상태
 const attachedFiles = ref<AttachedFiles>({
@@ -531,6 +805,12 @@ const handleSvgError = (event: Event) => {
   }
 };
 
+// SVG 로드 성공 처리 함수
+const handleSvgLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  console.log('SVG 로드 성공:', img.src);
+};
+
 // 상세 모달 저장 핸들러
 const handleDetailSave = async () => {
   try {
@@ -560,53 +840,17 @@ const getFileNameFromUri = (uri: string | null | undefined): string => {
   return fileName;
 };
 
-// 공정심볼 다운로드 처리 함수
-const handleSymbolDownload = async (item: any) => {
-  try {
-    // SVG 코드가 직접 포함된 경우
-    if (typeof item.symbol_download === 'string' && item.symbol_download.includes('<svg')) {
-      // SVG 코드를 Blob으로 변환하여 다운로드
-      const blob = new Blob([item.symbol_download], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${getFileNameFromUri(item.process_symbol) || 'symbol'}.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-    // SVG 파일 경로인 경우
-    else if (typeof item.symbol_download === 'string' && item.symbol_download.toLowerCase().endsWith('.svg')) {
-      // 파일 경로에서 직접 다운로드
-      const a = document.createElement('a');
-      a.href = `/${item.symbol_download}`;
-      a.download = getFileNameFromUri(item.symbol_download) || 'symbol.svg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-    // process_symbol 경로가 있는 경우
-    else if (item.process_symbol) {
-      // process_symbol 경로에서 다운로드
-      const a = document.createElement('a');
-      a.href = `/${item.process_symbol}`;
-      a.download = getFileNameFromUri(item.process_symbol) || 'symbol.svg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-    else {
-      alert('다운로드할 수 있는 파일이 없습니다.');
-    }
-  } catch (error) {
-    console.error('파일 다운로드 중 오류 발생:', error);
-    alert('파일 다운로드에 실패했습니다.');
-  }
-};
+
 
 const handleRegist = () => {
   isRegistModalOpen.value = true;
+  // 등록 모달용 공정구분 코드 로드
+  processStore.loadProcessTypeCodes();
+  
+  // 초기 파일 업로드 행 추가
+  if (fileUploadRows.value.length === 0) {
+    addFileUploadRow();
+  }
 };
 
  const closeRegistModal = () => {
@@ -625,6 +869,8 @@ const handleRegist = () => {
      pfdFile: null,
      excelFile: null,
      hydraulicFile: null,
+     language: "ko",
+     unit: "metric",
    };
    // 파일 선택 상태도 초기화
    selectedFiles.value = {};
@@ -634,6 +880,10 @@ const handleRegist = () => {
      pfd: [],
      hydraulic: [],
    };
+   // 파일 업로드 그리드 초기화
+   fileUploadRows.value = [];
+   selectedFileRows.value = [];
+   currentFileRow.value = null;
     };
 
 // 첨부된 파일명 가져오기
@@ -741,8 +991,6 @@ const handleDelete = async () => {
         (item) => item.process_id
       );
 
-  
-
       // processStore를 통한 삭제 처리
       const { successCount, failCount } = await processStore.deleteProcesses(
         selectedProcessIds
@@ -759,6 +1007,362 @@ const handleDelete = async () => {
       console.error("삭제 처리 중 오류:", error);
       alert(`삭제 처리 중 오류가 발생했습니다: ${error.message}`);
     }
+  }
+};
+
+// 새로운 등록 모달 관련 함수들
+const addFileUploadRow = () => {
+  const newRow: FileUploadRow = {
+    id: `row_${Date.now()}`,
+    no: fileUploadRows.value.length + 1,
+    formulaFile: null,
+    hydraulicFile: null,
+    pfdFile: null,
+    pidStatus: 'pending'
+  };
+  fileUploadRows.value.push(newRow);
+};
+
+const handleSelectAllFileRows = () => {
+  if (selectedFileRows.value.length === fileUploadRows.value.length) {
+    selectedFileRows.value = [];
+  } else {
+    selectedFileRows.value = [...fileUploadRows.value];
+  }
+};
+
+const deleteSelectedFileRows = () => {
+  if (selectedFileRows.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
+    return;
+  }
+  
+  if (confirm(`선택된 ${selectedFileRows.value.length}개 항목을 삭제하시겠습니까?`)) {
+    const selectedIds = selectedFileRows.value.map(row => row.id);
+    fileUploadRows.value = fileUploadRows.value.filter(row => !selectedIds.includes(row.id));
+    selectedFileRows.value = [];
+  }
+};
+
+
+
+const selectFormulaFile = (row: FileUploadRow) => {
+  currentFileRow.value = row;
+  (document.querySelector('input[ref="formulaFileInput"]') as HTMLInputElement)?.click();
+};
+
+const selectHydraulicFile = (row: FileUploadRow) => {
+  currentFileRow.value = row;
+  (document.querySelector('input[ref="hydraulicFileInput"]') as HTMLInputElement)?.click();
+};
+
+const selectPfdFile = (row: FileUploadRow) => {
+  currentFileRow.value = row;
+  (document.querySelector('input[ref="pfdFileInput"]') as HTMLInputElement)?.click();
+};
+
+const handleProcessSymbolFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+    
+    if (!file.name.toLowerCase().endsWith('.svg')) {
+      alert('SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.');
+      target.value = '';
+      return;
+    }
+    
+    registForm.value.processSymbolFile = file;
+    console.log('공정심볼 파일 선택됨:', file.name);
+  }
+};
+
+const getProcessSymbolFileName = () => {
+  const processSymbolFile = registForm.value.processSymbolFile;
+  if (processSymbolFile) {
+    // 경로 제외 파일명만 반환
+    return processSymbolFile.name.split('/').pop() || processSymbolFile.name;
+  }
+  return '';
+};
+
+const handleFormulaFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentFileRow.value) {
+    currentFileRow.value.formulaFile = target.files[0];
+  }
+};
+
+const handleHydraulicFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentFileRow.value) {
+    currentFileRow.value.hydraulicFile = target.files[0];
+  }
+};
+
+const handlePfdFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentFileRow.value) {
+    currentFileRow.value.pfdFile = target.files[0];
+  }
+};
+
+const clearFormulaFile = (row: FileUploadRow) => {
+  row.formulaFile = null;
+};
+
+const clearHydraulicFile = (row: FileUploadRow) => {
+  row.hydraulicFile = null;
+};
+
+const clearPfdFile = (row: FileUploadRow) => {
+  row.pfdFile = null;
+};
+
+const openComponentModal = (row: FileUploadRow) => {
+  componentModalData.row = row;
+  // 기존 데이터가 있으면 복사, 없으면 4줄 샘플 데이터 설정
+  componentModalData.components = Array.isArray((row as any).components)
+    ? JSON.parse(JSON.stringify((row as any).components))
+    : [
+        { division: "공용구조물", components: "구조물", type: "", inputItem: "SBR 반응조 구조물" },
+        { division: "공용구조물", components: "구조물", type: "", inputItem: "" },
+        { division: "공용구조물", components: "구조물", type: "", inputItem: "" },
+        { division: "공용기계", components: "송풍기", type: "터보블로워(VVVF)", inputItem: "반응조 송풍기" }
+      ];
+  showComponentModal.value = true;
+};
+
+const closeComponentModal = () => {
+  showComponentModal.value = false;
+  componentModalData.row = null;
+  componentModalData.components = [];
+};
+
+// 컴포넌트 설정 초기화
+const resetComponentModal = () => {
+  componentModalData.components = [
+    { division: "공용구조물", components: "구조물", type: "", inputItem: "SBR 반응조 구조물" },
+    { division: "공용구조물", components: "구조물", type: "", inputItem: "" },
+    { division: "공용구조물", components: "구조물", type: "", inputItem: "" },
+    { division: "공용기계", components: "송풍기", type: "터보블로워(VVVF)", inputItem: "반응조 송풍기" }
+  ];
+};
+
+// P&ID 목록 모달 관련 함수들
+const openPidListModal = (row: FileUploadRow) => {
+  showPidListModal.value = true;
+  // 초기 데이터 설정
+  pidListItems.value = [
+    {
+      id: '1',
+      no: 1,
+      pidFileName: '유량조정조 1번.dwg',
+      excelFileName: '유량조정조 1번.excel',
+      svgStatus: '대기',
+      infoOverview: '예: 펌프, 2대'
+    },
+    {
+      id: '2',
+      no: 2,
+      pidFileName: '',
+      excelFileName: '',
+      svgStatus: '대기',
+      infoOverview: '예: 펌프, 2대'
+    }
+  ];
+  selectedPidListItems.value = [];
+};
+
+const closePidListModal = () => {
+  showPidListModal.value = false;
+  pidListItems.value = [];
+  selectedPidListItems.value = [];
+};
+
+const addPidListRow = () => {
+  const newRow = {
+    id: `pid_${Date.now()}`,
+    no: pidListItems.value.length + 1,
+    pidFileName: '',
+    excelFileName: '',
+    svgStatus: '대기',
+    infoOverview: '예: 펌프, 2대'
+  };
+  pidListItems.value.push(newRow);
+};
+
+const handleSelectAllPidList = () => {
+  if (selectedPidListItems.value.length === pidListItems.value.length) {
+    selectedPidListItems.value = [];
+  } else {
+    selectedPidListItems.value = [...pidListItems.value];
+  }
+};
+
+const handlePidListSelectionChange = () => {
+  console.log('선택된 P&ID 항목들:', selectedPidListItems.value);
+};
+
+const deleteSelectedPidListItems = () => {
+  if (selectedPidListItems.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
+    return;
+  }
+  
+  if (confirm(`선택된 ${selectedPidListItems.value.length}개 항목을 삭제하시겠습니까?`)) {
+    const selectedIds = selectedPidListItems.value.map(item => item.id);
+    pidListItems.value = pidListItems.value.filter(item => !selectedIds.includes(item.id));
+    selectedPidListItems.value = [];
+    console.log('선택된 P&ID 항목들 삭제 완료');
+  }
+};
+
+const selectPidFile = (item: any) => {
+  currentPidItem.value = item;
+  (document.querySelector('input[ref="pidFileInput"]') as HTMLInputElement)?.click();
+};
+
+const selectExcelFile = (item: any) => {
+  currentPidItem.value = item;
+  (document.querySelector('input[ref="excelFileInput"]') as HTMLInputElement)?.click();
+};
+
+const handlePidFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentPidItem.value) {
+    const file = target.files[0];
+    currentPidItem.value.pidFileName = file.name;
+    console.log('P&ID 파일 선택됨:', file.name);
+  }
+};
+
+const handleExcelFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentPidItem.value) {
+    const file = target.files[0];
+    currentPidItem.value.excelFileName = file.name;
+    console.log('Excel 파일 선택됨:', file.name);
+  }
+};
+
+const clearPidFile = (item: any) => {
+  item.pidFileName = '';
+};
+
+const clearExcelFile = (item: any) => {
+  item.excelFileName = '';
+};
+
+const convertSvg = (item: any) => {
+  if (item.pidFileName) {
+    item.svgStatus = '변환 중...';
+    // 실제 SVG 변환 로직 구현 필요
+    setTimeout(() => {
+      item.svgStatus = '완료';
+    }, 2000);
+  } else {
+    alert('P&ID 파일을 먼저 선택해주세요.');
+  }
+};
+
+const previewSvg = (item: any) => {
+  if (item.svgStatus === '완료') {
+    alert('SVG 미리보기 기능을 구현하세요.');
+  } else {
+    alert('SVG 변환이 완료되지 않았습니다.');
+  }
+};
+
+// 컴포넌트 행 추가 (ProcessDetail.vue 컴포넌트 탭과 동일한 필드 구조)
+const addComponentRow = () => {
+  componentModalData.components.push({
+    division: "",
+    components: "",
+    type: "",
+    inputItem: ""
+  });
+};
+
+// 컴포넌트 행 삭제 (마지막 행 삭제)
+const removeComponentRow = () => {
+  if (componentModalData.components.length > 0) {
+    componentModalData.components.pop();
+  }
+};
+
+// 컴포넌트 설정 저장
+const saveComponentModal = () => {
+  if (componentModalData.row) {
+    // row에 컴포넌트 데이터 저장
+    (componentModalData.row as any).components = JSON.parse(JSON.stringify(componentModalData.components));
+  }
+  showComponentModal.value = false;
+};
+
+const registerPid = (row: FileUploadRow) => {
+  row.pidStatus = 'completed';
+  alert('P&ID 등록이 완료되었습니다.');
+};
+
+const saveProcessRegistration = async () => {
+  try {
+    // 기본 정보 검증
+    if (!registForm.value.language || !registForm.value.unit || !registForm.value.processType || !registForm.value.processNm) {
+      alert('필수 항목을 입력해주세요.');
+      return;
+    }
+
+    // 공정심볼 파일 검증
+    if (!registForm.value.processSymbolFile) {
+      alert('공정심볼 파일을 선택해주세요.');
+      return;
+    }
+
+    // 파일 업로드 검증
+    if (fileUploadRows.value.length === 0) {
+      alert('최소 하나의 파일 업로드 행을 추가해주세요.');
+      return;
+    }
+
+    // 선택된 공정명의 label과 value 찾기
+    const selectedProcessNameOption =
+      processStore.searchProcessNameOptions.find(
+        (option) => option.value === registForm.value.processNm
+      );
+
+    if (!selectedProcessNameOption) {
+      alert('유효하지 않은 공정명입니다.');
+      return;
+    }
+
+    // API 호출을 위한 데이터 준비
+    const requestData = {
+      language_code: registForm.value.language,
+      unit_system_code: registForm.value.unit,
+      process_code: selectedProcessNameOption.value,
+      process_name: selectedProcessNameOption.label,
+      process_type_code: registForm.value.processType,
+      process_category: registForm.value.processSubCategory,
+      process_symbol_file: registForm.value.processSymbolFile,
+      file_upload_rows: fileUploadRows.value
+    };
+
+    console.log('공정 등록 저장:', {
+      formData: registForm.value,
+      fileRows: fileUploadRows.value,
+      requestData: requestData
+    });
+
+    // 실제 API 호출
+    const result = await processStore.createProcess(requestData);
+    console.log('공정 등록 API 응답:', result);
+
+    alert('공정 등록이 완료되었습니다.');
+    closeRegistModal();
+  } catch (error) {
+    console.error('공정 등록 실패:', error);
+    alert('공정 등록에 실패했습니다.');
   }
 };
 
@@ -803,6 +1407,17 @@ const handleSortChange = (sortInfo: {
 // 선택된 항목 변경 핸들러
 const handleSelectionChange = (items: ProcessItem[]) => {
   processStore.setSelectedItems(items);
+};
+
+// 언어 및 단위 변경 핸들러
+const handleLanguageChange = () => {
+  console.log('언어 변경:', selectedLanguage.value);
+  // 언어 변경 시 필요한 로직 추가
+};
+
+const handleUnitChange = () => {
+  console.log('단위 변경:', selectedUnit.value);
+  // 단위 변경 시 필요한 로직 추가
 };
 
 // 검색 옵션 변경 핸들러
@@ -1100,6 +1715,84 @@ onMounted(async () => {
 .action-bar {
   display: flex;
   margin-bottom: $spacing-lg;
+  
+        .search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    
+    // 각 줄의 스타일
+    .search-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+      
+      &.first-row {
+        // 첫 번째 줄: 언어, 단위
+        .group-form {
+          flex: 0 0 auto;
+          min-width: 0;
+          
+          // 셀렉트 폭 조정
+          .form-select {
+            max-width: 100px;
+            min-width: 80px;
+          }
+          
+          // 라벨 폭 조정
+          .label-title {
+            font-size: 0.85rem;
+            white-space: nowrap;
+          }
+        }
+      }
+      
+      &.second-row {
+        // 두 번째 줄: 공정구분, 공정중분류, 공정명, 버튼들
+        .group-form {
+          flex: 0 0 auto;
+          min-width: 0;
+          
+          // 셀렉트 폭 조정
+          .form-select {
+            max-width: 100px;
+            min-width: 80px;
+          }
+          
+          // 라벨 폭 조정
+          .label-title {
+            font-size: 0.85rem;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+    
+    .group-form {
+      margin-bottom: 1rem;
+      min-width: 0;
+      
+      // 셀렉트 폭 조정
+      .form-select {
+        max-width: 180px;
+        min-width: 120px;
+      }
+      
+      // 버튼 그룹 스타일
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        
+        .btn {
+          margin-right: 0;
+        }
+      }
+    }
+  }
 }
 
 // ProcessDetail 모달 스타일
@@ -1423,5 +2116,386 @@ onMounted(async () => {
       }
     }
   }
+}
+
+// 새로운 등록 모달 스타일
+.large-modal {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 1200px;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+      
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #333;
+        
+        &.essential::after {
+          content: " (*)";
+          color: #dc3545;
+          font-weight: bold;
+        }
+      }
+      
+      .form-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: white;
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+.file-upload-section {
+  margin-bottom: 2rem;
+  
+  h4 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .grid-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .file-upload-table {
+    overflow-x: auto;
+    
+    .upload-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      
+      th, td {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        text-align: left;
+        vertical-align: middle;
+      }
+      
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .alternate-row {
+        background-color: #f8f9fa;
+      }
+      
+      .file-selection-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        .file-info {
+          .selected-file {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            
+            .clear-file {
+              border: none;
+              background: none;
+              color: #dc3545;
+              cursor: pointer;
+              font-size: 1rem;
+              padding: 0;
+              width: 16px;
+              height: 16px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              
+              &:hover {
+                background-color: #dc3545;
+                color: white;
+                border-radius: 50%;
+              }
+            }
+          }
+          
+          .no-file {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 컴포넌트 설정 팝업 스타일 - 최상단에 표시
+.component-modal-overlay {
+  z-index: 9999; // 최상단에 표시되도록 매우 높은 z-index 설정
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.component-modal-container {
+  z-index: 10000; // 오버레이보다 더 높게 설정
+  width: 80vw;
+  max-width: 1000px;
+  height: 80vh;
+  max-height: 700px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.component-modal-body {
+  padding: 2.5rem;
+  flex: 1 1 0;
+  overflow-y: auto;
+}
+
+.component-table-section {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.component-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+
+  th, td {
+    border: 1px solid #e0e0e0;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    text-align: left;
+    min-height: 60px;
+  }
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: relative;
+    font-size: 1.2rem;
+    
+    .sort-icon {
+      margin-left: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+  }
+  td {
+    background: #fff;
+    vertical-align: middle;
+  }
+  input.form-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    background: #fff;
+    height: 45px;
+    
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+  }
+}
+
+.component-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+// P&ID 목록 모달 스타일
+.pid-list-modal-overlay {
+  z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pid-list-modal-container {
+  z-index: 10000;
+  width: 70vw;
+  max-width: 900px;
+  height: 70vh;
+  max-height: 600px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.pid-list-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.pid-table th,
+.pid-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.pid-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.pid-table tr.alternate-row {
+  background-color: #f8f9fa;
+}
+
+.pid-table tr:hover {
+  background-color: #f0f0f0;
+}
+
+.file-selection-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-info {
+  margin-top: 4px;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #007bff;
+  font-size: 13px;
+}
+
+.clear-file {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+}
+
+.clear-file:hover {
+  color: #c82333;
+}
+
+.no-file {
+  color: #6c757d;
+  font-size: 13px;
+  font-style: italic;
+}
+
+// 공정심볼 파일 입력 그룹 스타일 (ProcessDetail.vue와 동일)
+.file-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-select-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.file-select-btn:hover {
+  background: #0056b3;
+}
+
+.selected-file {
+  color: #007bff;
+  font-size: 13px;
+  flex: 1;
+}
+
+.svg-conversion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.conversion-status {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.info-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.info-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 </style>

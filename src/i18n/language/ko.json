@@ -531,7 +531,8 @@
     "attachFormulaFile": "계산식 파일 첨부",
     "attachElectricFile": "전기도면 파일 첨부",
     "attachMccFile": "Mcc 구성도 파일 첨부",
-    "attachHydraulicFile": "수리계통도 파일 첨부"
+    "attachHydraulicFile": "수리계통도 파일 첨부",
+    "pfdFileAttachment": "PFD 파일 첨부"
   },
   "error": {
     "notFound": "페이지를 찾을 수 없습니다.",

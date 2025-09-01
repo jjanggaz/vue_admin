@@ -31,6 +31,8 @@ export interface ProcessDetail {
   symbolId?: string | null;  // 공정 심볼 ID (공정 심볼 API에서 받은 값)
   originalProcessSymbol?: string;  // 화면 로드 시 원본 공정심볼 파일명 (변경 감지용)
   originalSymbolId?: string | null;  // 화면 로드 시 원본 심볼 ID (변경 감지용)
+  language_code?: string | null;  // 언어 코드
+  unit_system_code?: string | null;  // 단위 시스템 코드
 }
 
 // ProcessDetail.vue에서 사용하는 추가 인터페이스들
@@ -42,7 +44,6 @@ export interface TableColumn {
 }
 
 export interface FormulaItem {
-  formula_id: string;
   id: string;
   no: string;
   registeredFormula: string;
@@ -50,6 +51,8 @@ export interface FormulaItem {
   registrationDate: string;
   infoOverview: string;
   remarks: string;
+  formula_id?: string; // API에서 받은 ID (선택적)
+  _file?: File; // hidden 속성으로 MultipartFile 정보 저장
 }
 
 export interface PidItem {
@@ -63,11 +66,13 @@ export interface PidItem {
 
 export interface PfdItem {
   id: string;
-  fileName: string;
+  pfdFileName: string;
   registrationDate: string;
-  info: string;
+  infoOverview: string;
   mappingPidList: string;
   remarks: string;
+  drawing_id?: string;
+  _file?: File;
 }
 
 export interface DesignItem {
@@ -109,18 +114,19 @@ export interface DesignEfficiencyItem {
 export interface HydraulicItem {
   id: string;
   dwg: string;
-  registrationDate: string;
-  info: string;
-  view: string;
+  xlsx: string;
+  csv: string;
+  remarks: string;
   _file?: File; // hidden 속성으로 MultipartFile 정보 저장
+  drawing_id?: string; // 히든컬럼으로 drawing_id 저장
 }
 
 export interface StructItem {
   id: string;
-  type: string;
-  components: string;
-  equipmentType: string;
-  item: string;
+  division: string;      // 구분
+  components: string;    // Components
+  type: string;          // 유형
+  inputItem: string;     // 입력Item
 }
 
 export interface GlobalProcessData {
@@ -192,6 +198,7 @@ export const useProcessStore = defineStore("process", () => {
   // PFD 탭 관련 상태
   const pfdList = ref<PfdItem[]>([]);
   const selectedPfdItems = ref<PfdItem[]>([]);
+  const initialPfdList = ref<PfdItem[]>([]); // 초기값 저장용
 
   // 계산식 관리 탭 관련 상태
   const formulaList = ref<FormulaItem[]>([]);
@@ -201,6 +208,7 @@ export const useProcessStore = defineStore("process", () => {
   // 수리계통도 탭 관련 상태
   const hydraulicList = ref<HydraulicItem[]>([]);
   const selectedHydraulicItems = ref<HydraulicItem[]>([]);
+  const initialHydraulicList = ref<HydraulicItem[]>([]); // 초기값 저장용
 
   // 공용구조물 탭 관련 상태
   const structList = ref<StructItem[]>([]);
@@ -299,6 +307,10 @@ export const useProcessStore = defineStore("process", () => {
     pfdList.value = list;
   };
 
+  const setInitialPfdList = (list: PfdItem[]) => {
+    initialPfdList.value = list;
+  };
+
   const setSelectedPfdItems = (items: PfdItem[]) => {
     selectedPfdItems.value = items;
   };
@@ -319,6 +331,10 @@ export const useProcessStore = defineStore("process", () => {
   // 수리계통도 관련 액션
   const setHydraulicList = (list: HydraulicItem[]) => {
     hydraulicList.value = list;
+  };
+
+  const setInitialHydraulicList = (list: HydraulicItem[]) => {
+    initialHydraulicList.value = list;
   };
 
   const setSelectedHydraulicItems = (items: HydraulicItem[]) => {
@@ -598,6 +614,7 @@ export const useProcessStore = defineStore("process", () => {
         // 검색된 데이터를 화면에 표시
         if (processData) {
           console.log("=== 검색된 공정 데이터 ===");
+          console.log("전체 API 응답 데이터:", JSON.stringify(processData, null, 2));
           console.log(
             "level2_code_value (공정구분):",
             processData.level2_code_value
@@ -607,6 +624,7 @@ export const useProcessStore = defineStore("process", () => {
             processData.level3_code_value
           );
           console.log("process_name (공정명):", processData.process_name);
+          console.log("process_name 타입:", typeof processData.process_name);
           console.log("symbol_uri (공정심볼):", processData.symbol_uri);
           console.log("================================");
 
@@ -626,11 +644,24 @@ export const useProcessStore = defineStore("process", () => {
           setProcessDetail({
             process_id: processData.process_id || processId,
             processType: processData.level2_code_key || null,
+            subCategory: processData.level3_code_key || null,
+            processName: processData.process_name || null,
+            processCode: processData.process_code || null,
             description: processData.process_description || "",
             processSymbol: processData.symbol_uri || "",
             originalProcessSymbol: processData.symbol_uri || "",  // 원본 공정심볼 파일명 저장
             originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
+            language_code: processData.language_code || null,   // 언어 코드
+            unit_system_code: processData.unit_system_code || null,  // 단위 시스템 코드
           });
+
+          // setProcessDetail 호출 후 값 확인
+          console.log("=== setProcessDetail 호출 후 확인 ===");
+          console.log("설정된 processName:", processData.process_name || null);
+          console.log("설정된 processName 타입:", typeof (processData.process_name || null));
+          console.log("설정된 subCategory:", processData.level3_code_key || null);
+          console.log("설정된 processType:", processData.level2_code_key || null);
+          console.log("=====================================");
 
           if (processData.symbol_uri) {
             // 파일 정보 설정 (실제 구현에서는 파일 객체로 변환 필요)
@@ -1188,10 +1219,12 @@ export const useProcessStore = defineStore("process", () => {
     designEfficiencyList,
     pfdList,
     selectedPfdItems,
+    initialPfdList,
     formulaList,
     selectedFormulaItems,
     initialFormulaList,
     hydraulicList,
+    initialHydraulicList,
     selectedHydraulicItems,
     structList,
     selectedFiles,
@@ -1232,11 +1265,13 @@ export const useProcessStore = defineStore("process", () => {
     setDesignParameterList,
     setDesignEfficiencyList,
     setPfdList,
+    setInitialPfdList,
     setSelectedPfdItems,
     setFormulaList,
     setSelectedFormulaItems,
     setInitialFormulaList,
     setHydraulicList,
+    setInitialHydraulicList,
     setSelectedHydraulicItems,
     setStructList,
     setSelectedFiles,

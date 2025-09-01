@@ -1,560 +1,466 @@
 <template>
-  <div class="process-page">
-    <!-- Add Button -->
-    <div class="action-bar">
-      <dl class="column-search">
-        <dt class="essential">{{ t("processDetail.processType") }}</dt>
-        <dd>
-          <select
-            v-model="processStore.processDetail.processType"
-            class="form-select"
-            @change="handleProcessTypeChange"
-          >
-            <option :value="null">{{ t("common.select") }}</option>
-            <option
-              v-for="option in processStore.searchProcessTypeOptions"
-              :key="option.value"
-              :value="option.value"
-            >
+  <div class="process-detail">
+    <!-- 공정 기본 정보 -->
+    <div class="process-info-section">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>언어</label>
+          <select v-model="selectedLanguage" @change="handleLanguageChange">
+            <option value="">{{ t("common.select") }}</option>
+            <option value="ko">국문</option>
+            <option value="en">영어</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>단위</label>
+          <select v-model="selectedUnit" @change="handleUnitChange">
+            <option value="">{{ t("common.select") }}</option>
+            <option value="METRIC">Metric</option>
+            <option value="IMPERIAL">Imperial</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>{{ t("process.processType") }}</label>
+          <select v-model="processStore.processDetail.processType" @change="handleProcessTypeChange">
+            <option value="">{{ t("common.select") }}</option>
+            <option v-for="option in processStore.processTypeOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
-        </dd>
-        <dt>{{ t("processDetail.subCategory") }}</dt>
-        <dd>
-          <select
-            v-model="processStore.processDetail.subCategory"
-            class="form-select"
-            @change="handleSubCategoryChange"
-          >
-            <option :value="null">{{ t("common.select") }}</option>
-            <option
-              v-for="option in processStore.searchSubCategoryOptions"
-              :key="option.value"
-              :value="option.value"
-            >
+        </div>
+        
+        <div class="form-group">
+          <label>{{ t("process.subCategory") }}</label>
+          <select v-model="processStore.processDetail.subCategory" @change="handleSubCategoryChange">
+            <option value="">{{ t("common.select") }}</option>
+            <option v-for="option in processStore.searchSubCategoryOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
-        </dd>
-        <dt class="essential">{{ t("processDetail.processName") }}</dt>
-        <dd>
-          <select
-            v-model="processStore.processDetail.processName"
-            class="form-select"
-            @change="handleProcessNameChange"
-          >
-            <option :value="null">{{ t("common.select") }}</option>
-            <option
-              v-for="option in processStore.searchProcessNameOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </dd>
-        <dt class="essential">{{ t("processDetail.processSymbol") }}</dt>
-        <dd>
-          <div class="file-upload-row">
+        </div>
+        
+                 <div class="form-group">
+           <label>{{ t("process.processName") }}</label>
+           <select v-model="processStore.processDetail.processName" @change="handleProcessNameChange">
+             <option value="">{{ t("common.select") }}</option>
+             <option v-for="option in processStore.searchProcessNameOptions" :key="option.value" :value="option.value">
+               {{ option.label }}
+             </option>
+           </select>
+           
+         </div>
+        
+        <div class="form-group">
+          <label>{{ t("process.processSymbol") }}</label>
+          <div class="file-input-group">
             <input
-              type="text"
-              class="file-name-input"
-              :value="getFileNameFromPath(processStore.processDetail.processSymbol) || ''"
-              placeholder="파일 선택"
-              readonly
+              type="file"
+              accept=".svg"
+              @change="handleFileChange('processSymbol', $event)"
+              style="display: none"
+              ref="processSymbolInput"
             />
-            <label class="file-select-btn">
+            <button type="button" @click="$refs.processSymbolInput.click()" class="file-select-btn">
               {{ t("common.selectFile") }}
-              <input
-                type="file"
-                accept=".svg"
-                @change="handleFileChange('processSymbol', $event)"
-                style="display: none"
-              />
-            </label>
+            </button>
+            <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFileSelected") }}</span>
           </div>
-        </dd>
-        <dt>{{ t("processDetail.description") }}</dt>
-        <dd class="extend-all">
-          <input
-            type="text"
-            class="form-input"
-            v-model="processStore.processDetail.description"
-            :placeholder="t('placeholder.projectDetail')"
-          />
-        </dd>
-      </dl>
-    </div>
-
-    <div class="action-bar tab-action-bar">
-      <div class="swiper-bar">
-        <div class="tabs-wrapper">
-          <button
-            v-if="canScrollLeft"
-            class="btn-scroll left"
-            @click="scrollTabs(-1)"
-          >
-            ◀
-          </button>
-          <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
-            <div
-              v-for="(tab, idx) in tabs"
-              :key="tab"
-              :class="['tab', { active: activeTab === idx }]"
-              @click="onTabClick(idx)"
-            >
-              {{ t("processDetail.tabs." + tab) }}
-            </div>
-          </div>
-          <button
-            v-if="canScrollRight"
-            class="btn-scroll right"
-            @click="scrollTabs(1)"
-          >
-            ▶
-          </button>
         </div>
       </div>
-
-    <!-- 탭별 버튼들 -->
-    <div class="tab-buttons">
-             <!-- PFD 탭 버튼들 -->
-       <div v-if="activeTab === 0" class="btns">
-         <button class="btn btn-primary btn-add" @click="openPfdModal">
-           {{ t("common.add") }}
-         </button>
-         <button
-           class="btn btn-primary btn-delete"
-           @click="handlePfdDelete"
-           :disabled="!processStore.selectedPfdItems || processStore.selectedPfdItems.length === 0"
-         >
-           {{ t("common.delete") }}
-         </button>
-       </div>
-
-                      
-
-
-
-                            <!-- 컴포넌트 탭 버튼들 -->
-         <div v-if="activeTab === 1" class="btns">
-           <button class="btn btn-primary btn-add" @click="openStructModal">
-             {{ t("common.add") }}
-           </button>
-           <button
-             class="btn btn-primary btn-delete"
-             @click="handleStructDelete"
-             :disabled="!processStore.selectedStructItems || processStore.selectedStructItems.length === 0"
-           >
-             {{ t("common.delete") }}
-           </button>
-         </div>
-
-                            <!-- 수리계통도 탭 버튼들 -->
-         <div v-if="activeTab === 2" class="btns">
-           <button class="btn btn-primary btn-add" @click="openHydraulicModal">
-             {{ t("common.add") }}
-           </button>
-           <button
-             class="btn btn-primary btn-delete"
-             @click="handleHydraulicDelete"
-             :disabled="!processStore.selectedHydraulicItems || processStore.selectedHydraulicItems.length === 0"
-           >
-             {{ t("common.delete") }}
-           </button>
-         </div>
-
-
     </div>
-  </div>
 
-     <div class="tab-content">
-           <div v-if="activeTab === 0" class="content">
+    <!-- 탭 네비게이션 -->
+    <div class="tabs-container">
+      <div class="tabs-header" ref="tabsContainer">
+        <button
+          v-for="(tab, index) in tabs"
+          :key="index"
+          :class="['tab-button', { active: activeTab === index }]"
+          @click="onTabClick(index)"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <!-- 탭 내용 -->
+      <div class="tab-content">
         <!-- 계산식 관리 탭 -->
-        <DataTable
-          :columns="formulaColumns"
-          :data="processStore.formulaList"
-          :loading="loading"
-          :selectable="true"
-          :selectedItems="processStore.selectedFormulaItems"
-          @selection-change="handleFormulaSelectionChange"
-          @sort-change="handleSortChange"
-          @row-click="handleRowClick"
-        />
-        <div class="pagination-container">
+        <div v-show="activeTab === 0" class="tab-panel">
+          <div class="tab-header">
+            <div class="tab-actions">
+              <button @click="openFormulaModal" class="btn btn-primary">
+                {{ t("common.add") }}
+              </button>
+              <button @click="handleFormulaDelete" class="btn btn-danger" :disabled="!selectedFormulaItems.length">
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+          
+          <DataTable
+            :columns="formulaColumns"
+            :data="processStore.formulaList"
+            :selectable="true"
+            @selection-change="handleFormulaSelectionChange"
+          />
+          
           <Pagination
-            :current-page="currentPageFormula"
-            :total-pages="totalPagesFormula"
-            @page-change="handlePageChangeFormula"
+            :current-page="1"
+            :total-pages="1"
+            :total-items="processStore.formulaList.length"
+            @page-change="handleFormulaPageChange"
+          />
+        </div>
+
+        <!-- 컴포넌트 탭 -->
+        <div v-show="activeTab === 1" class="tab-panel">
+          <div class="tab-header">
+          </div>
+          
+          <DataTable
+            :columns="structColumns"
+            :data="processStore.structList"
+            :selectable="false"
+          />
+          
+          <Pagination
+            :current-page="1"
+            :total-pages="1"
+            :total-items="processStore.structList.length"
+            @page-change="handleStructPageChange"
+          />
+        </div>
+
+        <!-- 수리계통도 탭 -->
+        <div v-show="activeTab === 2" class="tab-panel">
+          <div class="tab-header">
+            <div class="tab-actions">
+              <button @click="openHydraulicModal" class="btn btn-primary">
+                {{ t("common.add") }}
+              </button>
+              <button @click="handleHydraulicDelete" class="btn btn-danger" :disabled="!selectedHydraulicItems.length">
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+          
+          <DataTable
+            :columns="hydraulicColumns"
+            :data="processStore.hydraulicList"
+            :selectable="true"
+            @selection-change="handleHydraulicSelectionChange"
+          />
+          
+          <Pagination
+            :current-page="1"
+            :total-pages="1"
+            :total-items="processStore.hydraulicList.length"
+            @page-change="handleHydraulicPageChange"
+          />
+        </div>
+
+        <!-- PFD 탭 -->
+        <div v-show="activeTab === 3" class="tab-panel">
+          <div class="tab-header">
+            <div class="tab-actions">
+              <button @click="openPfdModal" class="btn btn-primary">
+                {{ t("common.add") }}
+              </button>
+              <button @click="handlePfdDelete" class="btn btn-danger" :disabled="!selectedPfdItems.length">
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+          
+          <DataTable
+            :columns="pfdColumns"
+            :data="processStore.pfdList"
+            :selectable="true"
+            @selection-change="handlePfdSelectionChange"
+          >
+            <template #cell-mappingPidList="{ item }">
+              <button 
+                class="btn btn-sm btn-outline-primary"
+                @click="openMappingPidModal(item)"
+              >
+                보기
+              </button>
+            </template>
+          </DataTable>
+          
+          <Pagination
+            :current-page="1"
+            :total-pages="1"
+            :total-items="processStore.pfdList.length"
+            @page-change="handlePfdPageChange"
           />
         </div>
       </div>
+    </div>
 
-     
-
-
-                                          <div v-if="activeTab === 1" class="content">
-           <!-- 컴포넌트 탭 -->
-        <DataTable
-          :columns="structColumns"
-          :data="processStore.structList"
-          :loading="loading"
-          @sort-change="handleSortChange"
-          @row-click="handleRowClick"
-        />
-        <div class="pagination-container">
-          <Pagination
-            :current-page="currentPageStruct"
-            :total-pages="totalPagesStruct"
-            @page-change="handlePageChangeStruct"
-          />
+    <!-- 계산식 파일 첨부 모달 -->
+    <div v-if="processStore.showFormulaModal" class="modal-overlay" @click="closeFormulaModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("process.formulaFileAttachment") }}</h3>
+          <button @click="closeFormulaModal" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".py"
+              @change="handleFormulaFilesSelected"
+              style="display: none"
+              ref="formulaFileInput"
+            />
+            <button @click="$refs.formulaFileInput.click()" class="btn btn-primary">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{ selectedFormulaFiles.length > 0 ? `${selectedFormulaFiles.length}개 파일 선택됨` : t("common.noFilesSelected") }}
+            </span>
+          </div>
+          
+          <div v-if="selectedFormulaFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedFormulaFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="uploadFormulaFiles" class="btn btn-primary" :disabled="!selectedFormulaFiles.length">
+            {{ t("common.upload") }}
+          </button>
+          <button @click="closeFormulaModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
         </div>
       </div>
-                       <div v-if="activeTab === 2" class="content">
-          <!-- 수리계통도 탭 -->
-         <DataTable
-           :columns="hydraulicColumns"
-           :data="processStore.hydraulicList"
-           :loading="loading"
-           :selectable="true"
-           :selectedItems="processStore.selectedHydraulicItems"
-           @selection-change="handleHydraulicSelectionChange"
-           @sort-change="handleSortChange"
-           @row-click="handleRowClick"
-         />
-         <div class="pagination-container">
-           <Pagination
-             :current-page="currentPageHydraulic"
-             :total-pages="totalPagesHydraulic"
-             @page-change="handlePageChangeHydraulic"
-           />
-         </div>
-                </div>
-         
-         <div v-if="activeTab === 3" class="content">
-           <!-- PFD 탭 -->
-           <div class="pfd-section">
-             <div class="section-header">
-               <h4>PFD 목록</h4>
-             </div>
-           </div>
-           <DataTable
-             :columns="pfdColumnsWithActions"
-             :data="processStore.pfdList"
-             :loading="loading"
-             :selectable="true"
-             :selectedItems="processStore.selectedPfdItems"
-             @selection-change="handlePfdSelectionChange"
-             @sort-change="handleSortChange"
-             @row-click="handleRowClick"
-           >
-             <!-- 매핑 P&ID 목록 컬럼에 "보기" 버튼 렌더링 -->
-             <template #cell-mappingPidList="{ item }">
-               <button 
-                 class="btn btn-link view-btn" 
-                 @click.stop="handlePfdViewClick(item.id)"
-               >
-                 보기
-               </button>
-             </template>
-           </DataTable>
-           <!-- P&ID 목록 섹션 -->
-           <div class="pid-section">
-             <div class="section-header">
-               <h4>P&ID 목록</h4>
-               <div class="section-actions">
-                 <button class="btn btn-primary" @click="handlePidAdd">
-                   {{ t("common.add") }}
-                 </button>
-                 <button 
-                   class="btn btn-danger" 
-                   @click="handlePidDelete"
-                   :disabled="!processStore.selectedPidItems || processStore.selectedPidItems.length === 0"
-                 >
-                   {{ t("common.delete") }}
-                 </button>
-               </div>
-             </div>
-             
-             <DataTable
-               :columns="pidColumns"
-               :data="processStore.pagedPidList"
-               :loading="loading"
-               :selectable="true"
-               :selectedItems="processStore.selectedPidItems"
-               @selection-change="handlePidSelectionChange"
-               @sort-change="handleSortChange"
-               @row-click="handleRowClick"
-             />
-           </div>
-         </div>
-         
-  </div>
+    </div>
 
-  <!-- P&ID 파일 첨부 모달 -->
-  <div v-if="showPidModal" class="modal-overlay">
-    <div class="modal-window">
-      <div class="modal-header">
-        <h3>{{ t("processDetail.attachPidFile") }}</h3>
-        <button
-          class="btn-close"
-          @click="closePidModal"
-          :aria-label="t('common.close')"
-        >
-          ×
-        </button>
-      </div>
-      <div class="modal-body">
-        <dl class="column-regist">
-          <dt class="essential">{{ t("processDetail.pidFile") }}</dt>
-          <dd>
-            <div class="file-upload-row">
-              <input
-                type="text"
-                class="file-name-input"
-                :value="getSelectedFilesText('pidFiles')"
-                placeholder="파일 선택"
-                readonly
-              />
-              <label class="file-select-btn">
-                {{ t("common.selectFile") }}
-                <input
-                  type="file"
-                  multiple
-                  @change="handlePidFilesSelected"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </dd>
-        </dl>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn" @click="closePidModal">
-          {{ t("common.cancel") }}
-        </button>
-        <button class="btn btn-primary" @click="uploadPidFiles">
-          {{ t("common.upload") }}
-        </button>
+    <!-- 수리계통도 파일 첨부 모달 -->
+    <div v-if="showHydraulicModal" class="modal-overlay" @click="closeHydraulicModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("process.hydraulicFileAttachment") }}</h3>
+          <button @click="closeHydraulicModal" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".dwg,.xlsx,.xls,.csv"
+              @change="handleHydraulicFilesSelected"
+              style="display: none"
+              ref="hydraulicFileInput"
+            />
+            <button @click="$refs.hydraulicFileInput.click()" class="btn btn-primary">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{ selectedHydraulicFiles.length > 0 ? `${selectedHydraulicFiles.length}개 파일 선택됨` : t("common.noFilesSelected") }}
+            </span>
+          </div>
+          
+          <div v-if="selectedHydraulicFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedHydraulicFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="uploadHydraulicFiles" class="btn btn-primary" :disabled="!selectedHydraulicFiles.length">
+            {{ t("common.upload") }}
+          </button>
+          <button @click="closeHydraulicModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  <!-- PFD 파일 첨부 모달 -->
-  <div v-if="showPfdModal" class="modal-overlay">
-    <div class="modal-window">
-      <div class="modal-header">
-        <h3>{{ t("processDetail.attachPfdFile") }}</h3>
-        <button
-          class="btn-close"
-          @click="closePfdModal"
-          :aria-label="t('common.close')"
-        >
-          ×
-        </button>
-      </div>
-      <div class="modal-body">
-        <dl class="column-regist">
-          <dt class="essential">{{ t("processDetail.attachPfdFile") }}</dt>
-          <dd>
-            <div class="file-upload-row">
-              <input
-                type="text"
-                class="file-name-input"
-                :value="getSelectedFilesText('pfdFiles')"
-                placeholder="파일 선택"
-                readonly
-              />
-              <label class="file-select-btn">
-                {{ t("common.selectFile") }}
-                <input
-                  type="file"
-                  multiple
-                  @change="handlePfdFilesSelected"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </dd>
-        </dl>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn" @click="closePfdModal">
-          {{ t("common.cancel") }}
-        </button>
-        <button class="btn btn-primary" @click="uploadPfdFiles">
-          {{ t("common.upload") }}
-        </button>
+
+    <!-- PFD 파일 첨부 모달 -->
+    <div v-if="showPfdModal" class="modal-overlay" @click="closePfdModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("process.pfdFileAttachment") }}</h3>
+          <button @click="closePfdModal" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".dwg,.pdf,.png,.jpg,.jpeg"
+              @change="handlePfdFilesSelected"
+              style="display: none"
+              ref="pfdFileInput"
+            />
+            <button @click="$refs.pfdFileInput.click()" class="btn btn-primary">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{ selectedPfdFiles.length > 0 ? `${selectedPfdFiles.length}개 파일 선택됨` : t("common.noFilesSelected") }}
+            </span>
+          </div>
+          
+          <div v-if="selectedPfdFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedPfdFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="uploadPfdFiles" class="btn btn-primary" :disabled="!selectedPfdFiles.length">
+            {{ t("common.upload") }}
+          </button>
+          <button @click="closePfdModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 계산식 관리 파일 첨부 모달 -->
-  <div v-if="processStore.showFormulaModal" class="modal-overlay">
-    <div class="modal-window">
+  <!-- P&ID 매핑 목록 모달 -->
+  <div v-if="showMappingPidModal" class="modal-overlay" @click="closeMappingPidModal">
+    <div class="modal-content large-modal" @click.stop>
       <div class="modal-header">
-        <h3>{{ t("processDetail.attachFormulaFile") }}</h3>
-        <button
-          class="btn-close"
-          @click="closeFormulaModal"
-          :aria-label="t('common.close')"
-        >
-          ×
-        </button>
+        <h3>P&ID 목록</h3>
+        <div class="modal-actions">
+          <button class="btn btn-primary">Zip 등록</button>
+          <button class="btn btn-primary" @click="addMappingPidRow">+ 행 추가</button>
+          <button 
+            class="btn btn-danger" 
+            @click="deleteSelectedMappingPidItems"
+            :disabled="selectedMappingPidItems.length === 0"
+          >
+            삭제
+          </button>
+          <button @click="closeMappingPidModal" class="modal-close">&times;</button>
+        </div>
       </div>
       <div class="modal-body">
-        <dl class="column-regist">
-          <dt class="essential">{{ t("processDetail.attachFormulaFile") }}</dt>
-          <dd>
-            <div class="file-upload-row">
-              <input
-                type="text"
-                class="file-name-input"
-                :value="getSelectedFilesText('formulaFiles')"
-                placeholder="파일 선택"
-                readonly
-              />
-              <label class="file-select-btn">
-                {{ t("common.selectFile") }}
-                <input
-                  type="file"
-                  multiple
-                  @change="handleFormulaFilesSelected"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </dd>
-        </dl>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn" @click="closeFormulaModal">
-          {{ t("common.cancel") }}
-        </button>
-        <button class="btn btn-primary" @click="uploadFormulaFiles">
-          {{ t("common.upload") }}
-        </button>
+        <div class="mapping-pid-table">
+          <table class="pid-table">
+            <thead>
+              <tr>
+                <th>
+                  <input 
+                    type="checkbox" 
+                    @change="handleSelectAllMappingPid"
+                    :checked="selectedMappingPidItems.length === mappingPidList.length && mappingPidList.length > 0"
+                    :indeterminate="selectedMappingPidItems.length > 0 && selectedMappingPidItems.length < mappingPidList.length"
+                  />
+                </th>
+                <th>No.</th>
+                <th>P&ID (*)</th>
+                <th>매핑 Excel (*)</th>
+                <th>SVG 파일</th>
+                <th>정보개요(기기명+대수)</th>
+                <th>Svg 도면 미리보기</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in mappingPidList" :key="item.id" :class="{ 'alternate-row': index % 2 === 1 }">
+                <td>
+                  <input 
+                    type="checkbox" 
+                    :value="item"
+                    v-model="selectedMappingPidItems"
+                    @change="handleMappingPidSelectionChange"
+                  />
+                </td>
+                <td>{{ item.no }}</td>
+                <td>
+                  <div class="file-selection-group">
+                    <button class="btn btn-sm btn-primary" @click="selectPidFile(item)">파일선택</button>
+                    <div class="file-info">
+                      <span v-if="item.pidFileName" class="selected-file">
+                        {{ item.pidFileName }}
+                        <button class="clear-file" @click="clearPidFile(item)">&times;</button>
+                      </span>
+                      <span v-else class="no-file">선택된 파일 없음</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="file-selection-group">
+                    <button class="btn btn-sm btn-primary" @click="selectExcelFile(item)">파일선택</button>
+                    <div class="file-info">
+                      <span v-if="item.excelFileName" class="selected-file">
+                        {{ item.excelFileName }}
+                        <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
+                      </span>
+                      <span v-else class="no-file">선택된 파일 없음</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="svg-conversion-group">
+                    <button class="btn btn-sm btn-primary" @click="convertSvg(item)">변환</button>
+                    <span class="conversion-status">{{ item.svgStatus || '대기' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <input 
+                    type="text" 
+                    v-model="item.infoOverview" 
+                    class="info-input"
+                    placeholder="예: 펌프, 2대"
+                  />
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Hidden file inputs -->
+        <input
+          type="file"
+          accept=".dwg"
+          @change="handlePidFileSelected"
+          style="display: none"
+          ref="pidFileInput"
+        />
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          @change="handleExcelFileSelected"
+          style="display: none"
+          ref="excelFileInput"
+        />
       </div>
     </div>
-  </div>
-  
-
-   
-
-   <!-- 수리계통도 파일 첨부 모달 -->
-   <div v-if="showHydraulicModal" class="modal-overlay">
-     <div class="modal-window">
-       <div class="modal-header">
-         <h3>{{ t("processDetail.attachHydraulicFile") }}</h3>
-         <button
-           class="btn-close"
-           @click="closeHydraulicModal"
-           :aria-label="t('common.close')"
-         >
-           ×
-         </button>
-       </div>
-       <div class="modal-body">
-         <dl class="column-regist">
-           <dt class="essential">{{ t("processDetail.attachHydraulicFile") }}</dt>
-           <dd>
-             <div class="file-upload-row">
-               <input
-                 type="text"
-                 class="file-name-input"
-                 :value="getSelectedFilesText('hydraulicFiles')"
-                 placeholder="파일 선택"
-                 readonly
-               />
-               <label class="file-select-btn">
-                 {{ t("common.selectFile") }}
-                 <input
-                   type="file"
-                   multiple
-                   accept=".dwg"
-                   @change="handleHydraulicFilesSelected"
-                   style="display: none"
-                 />
-               </label>
-             </div>
-           </dd>
-         </dl>
-       </div>
-             <div class="modal-buttons">
-        <button class="btn" @click="closeHydraulicModal">
-          {{ t("common.cancel") }}
-        </button>
-        <button class="btn btn-primary" @click="uploadHydraulicFiles">
-          {{ t("common.upload") }}
-        </button>
-      </div>
-     </div>
-   </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from "vue";
-import { useRoute } from "vue-router";
-import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
-import { useI18n } from "vue-i18n";
-import { useProcessStore } from "../../stores/processStore";
-import { request } from "../../utils/request";
-
-// API 상태 확인 함수
-const checkApiEndpoint = async (endpoint: string): Promise<boolean> => {
-  try {
-    const response = await fetch(endpoint, {
-      method: 'OPTIONS', // CORS preflight 요청
-      credentials: 'include'
-    });
-    console.log(`API 엔드포인트 ${endpoint} 상태:`, response.status, response.statusText);
-    return response.status !== 404;
-  } catch (error) {
-    console.warn(`API 엔드포인트 ${endpoint} 확인 실패:`, error);
-    return false;
-  }
-};
-
-// API 오류 처리 유틸리티 함수
-const handleApiError = (error: any, operation: string, fileName?: string) => {
-  console.error(`${operation} 실패:`, error);
-  
-  let errorMessage = '';
-  
-  if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-    errorMessage = `⚠️ ${operation} 중 네트워크 오류가 발생했습니다.\n\n`;
-    if (fileName) {
-      errorMessage += `파일: ${fileName}\n\n`;
-    }
-    errorMessage += `오류: ${error.message}\n\n`;
-    errorMessage += `가능한 원인:\n`;
-    errorMessage += `• 서버가 실행되지 않았습니다\n`;
-    errorMessage += `• API 엔드포인트가 존재하지 않습니다\n`;
-    errorMessage += `• 네트워크 연결에 문제가 있습니다\n\n`;
-    errorMessage += `서버 연결을 확인해주세요.`;
-  } else if (error.status === 401 || error.status === 400) {
-    const detailMessage = error?.message || error?.response?.detail || "인증이 만료되었습니다.";
-    if (detailMessage.includes("인증") || detailMessage.includes("만료")) {
-      errorMessage = "⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.";
-      // 로그인 페이지로 리다이렉트
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
-    } else {
-      errorMessage = `⚠️ ${operation} 실패: ${detailMessage}`;
-    }
-  } else {
-    errorMessage = `⚠️ ${operation} 실패: ${error.message || error.statusText || '알 수 없는 오류'}`;
-  }
-  
-  if (errorMessage) {
-    alert(errorMessage);
-  }
-  
-  return errorMessage;
-};
+<script lang="ts" setup>
+import { ref, onMounted, watch, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { useProcessStore } from '@/stores/processStore';
+import DataTable from '@/components/common/DataTable.vue';
+import Pagination from '@/components/common/Pagination.vue';
+import type { TableColumn } from '@/types/components';
+import { request } from '@/utils/request';
 
 // Props 정의
 interface Props {
@@ -562,324 +468,243 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  processId: undefined,
+  processId: ''
 });
 
 // Emits 정의
 const emit = defineEmits<{
-  close: [];
+  'update-success': [];
 }>();
 
-const { t } = useI18n();
+// Composables
 const route = useRoute();
+const { t } = useI18n();
 const processStore = useProcessStore();
 
-// 경로에서 파일명만 추출하는 함수
-const getFileNameFromPath = (path: string | null | undefined): string => {
-  if (!path || typeof path !== 'string') {
-    return '';
-  }
-  
-  // 경로 구분자로 분할하여 마지막 부분(파일명) 추출
-  const pathParts = path.split(/[/\\]/);
-  const fileName = pathParts[pathParts.length - 1];
-  
-  // 파일명이 비어있거나 경로가 없는 경우
-  if (!fileName || fileName === path) {
-    return path;
-  }
-  
-  return fileName;
-};
+// Reactive references
+const activeTab = ref(0);
+const selectedFormulaItems = ref<any[]>([]);
+const selectedHydraulicItems = ref<any[]>([]);
+const selectedPfdItems = ref<any[]>([]);
+const selectedFormulaFiles = ref<File[]>([]);
+const selectedHydraulicFiles = ref<File[]>([]);
+const selectedPfdFiles = ref<File[]>([]);
 
-// 공통 로딩 상태
-const loading = computed(() => processStore.loading);
+// P&ID 매핑 모달 관련 상태
+const showMappingPidModal = ref(false);
+const currentPfdItemForMapping = ref<any>(null);
+const mappingPidList = ref<any[]>([]);
+const selectedMappingPidItems = ref<any[]>([]);
 
-// 0: P&ID 탭용 컬럼/데이터
-const pidColumns: TableColumn[] = [
-  { key: "pfdFileName", title: "PFD 파일명" },
-  { key: "pidFileDwg", title: "P&ID 파일 DWG" },
-  { key: "mappingExcel", title: "매핑정보 엑셀파일" },
-  { key: "infoOverview", title: "정보개요(기기명+대수)" },
-  { key: "svgPreview", title: "Svg 도면 미리보기" },
+// 언어 및 단위 선택
+const selectedLanguage = ref('');
+const selectedUnit = ref('');
+
+// 탭 설정
+const tabs = ref([
+  "계산식 관리",
+  "컴포넌트",
+  "수리계통도",
+  "PFD",
+]);
+
+// 컬럼 정의
+const formulaColumns: TableColumn[] = [
+  { key: "no", title: "순번", sortable: true },
+  { key: "registeredFormula", title: "등록 계산식", sortable: true },
+  { key: "registrationDate", title: "등록일자", sortable: true, dateFormat: "YYYY-MM-DD" },
+  { key: "infoOverview", title: "정보 개요", sortable: true },
+  { key: "remarks", title: "비고", sortable: true }
 ];
-
-// 페이지 변경 핸들러
-const handlePageChangePid = (page: number) => {
-  processStore.setCurrentPagePid(page);
-};
-
-// 1: 설계조건 탭용 컬럼/데이터 (기존 복원)
-const designColumns: TableColumn[] = [
-  { key: "columnNm", title: t("columns.processDetail.item") },
-  { key: "influent", title: t("columns.processDetail.influent") },
-  { key: "effluent", title: t("columns.processDetail.effluent") },
-  { key: "sludge", title: t("columns.processDetail.sludge") },
-  { key: "unit", title: t("columns.processDetail.unit") },
-  { key: "remark", title: t("columns.processDetail.remark") },
-];
-
-const designCriteriaColumns: TableColumn[] = [
-  { key: "columnNm", title: t("columns.processDetail.item") },
-  { key: "value", title: t("columns.processDetail.value") },
-  { key: "min", title: t("columns.processDetail.min") },
-  { key: "max", title: t("columns.processDetail.max") },
-  { key: "unit", title: t("columns.processDetail.unit") },
-  { key: "remark", title: t("columns.processDetail.remark") },
-];
-
-const designParameterColumns: TableColumn[] = [
-  { key: "columnNm", title: t("columns.processDetail.item") },
-  { key: "view", title: t("columns.processDetail.view") },
-];
-
-// 5: 설계조건 효율 테이블용 컬럼/데이터
-const designEfficiencyColumns: TableColumn[] = [
-  { key: "columnNm", title: t("columns.processDetail.item") },
-  { key: "value", title: t("columns.processDetail.value") },
-  { key: "min", title: t("columns.processDetail.min") },
-  { key: "max", title: t("columns.processDetail.max") },
-  { key: "unit", title: t("columns.processDetail.unit") },
-  { key: "remark", title: t("columns.processDetail.remark") },
-];
-
-// 6: 계산식 관리 탭용 컬럼/데이터 (사용하지 않음 - formulaColumns로 대체)
-// const calculationColumns: TableColumn[] = [
-//   { key: "no", title: t("columns.processDetail.no") },
-//   { key: "formulaVersion", title: t("columns.processDetail.formulaVersion") },
-//   { key: "appliedVersion", title: t("columns.processDetail.appliedVersion") },
-//   { key: "remark", title: t("columns.processDetail.remarks") },
-// ];
-// const calculationList = ref<any[]>([]);
-
-  // 7: PFD 탭용 컬럼/데이터 (보기 버튼 포함)
-  const pfdColumnsWithActions: TableColumn[] = [
-    { key: "fileName", title: "PFD 파일명", sortable: true },
-    { key: "registrationDate", title: "등록일자", sortable: true },
-    {
-      key: "info",
-      title: "정보개요",
-      sortable: true,
-    },
-    { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: true },
-    { key: "remarks", title: "비고", sortable: true },
-  ];
-
-const handlePfdSelectionChange = (items: any[]) => {
-  processStore.setSelectedPfdItems(items);
-  console.log("PFD selection changed:", items);
-};
-
-  // 계산식 관리 탭용 컬럼/데이터
-  const formulaColumns: TableColumn[] = [
-    { key: "formula_id", title: "formula_id", hidden: true }, // hidden 컬럼으로 formula_id 추가
-    { key: "no", title: "순번", sortable: true },
-    { key: "registeredFormula", title: "등록계산식", sortable: true },
-    { key: "formula_code", title: "계산식 코드", sortable: true, hidden: true }, // 파일 내용을 표시하는 컬럼을 hidden으로 설정
-    { key: "registrationDate", title: "등록일자", sortable: true },
-    { key: "infoOverview", title: "정보개요", sortable: true },
-    { key: "remarks", title: "비고", sortable: true },
-  ];
-
-const handleFormulaSelectionChange = (items: any[]) => {
-  processStore.setSelectedFormulaItems(items);
-  console.log("Formula selection changed:", items);
-};
-
-// 8: 전기도면 탭용 컬럼/데이터 (현재 사용하지 않음)
-// const electricColumns: TableColumn[] = [
-//   { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-//   { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-//   {
-//     key: "info",
-//     title: t("columns.processDetail.infoOverview"),
-//     sortable: true,
-//   },
-//   { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-// ];
-// const electricList = ref<any[]>([]);
-// // 전기도면 탭 선택 상태
-// const selectedElectricItems = ref<any[]>([]);
-// const handleElectricSelectionChange = (items: any[]) => {
-//   selectedElectricItems.value = items;
-//   console.log("Electric drawing selection changed:", items);
-// };
 
 const structColumns: TableColumn[] = [
-  { key: "type", title: t("columns.processDetail.type"), sortable: true },
-  {
-    key: "components",
-    title: t("columns.processDetail.components"),
-    sortable: true,
-  },
-  {
-    key: "equipmentType",
-    title: t("columns.processDetail.equipmentType"),
-    sortable: true,
-  },
-  { key: "item", title: t("columns.processDetail.item"), sortable: true },
+  { key: "division", title: "구분", sortable: true },
+  { key: "components", title: "Components", sortable: true },
+  { key: "type", title: "유형", sortable: true },
+  { key: "inputItem", title: "입력Item", sortable: true }
 ];
 
-// PID 탭 선택 변경 핸들러
-const handlePidSelectionChange = (items: any[]) => {
-  processStore.setSelectedPidItems(items);
-  console.log("PID selection changed:", items);
+const hydraulicColumns: TableColumn[] = [
+  { key: "no", title: "순번", sortable: true },
+  { key: "dwg", title: "도면파일 DWG", sortable: true },
+  { key: "registrationDate", title: "등록일자", sortable: true, dateFormat: "YYYY-MM-DD" },
+  { key: "infoOverview", title: "정보개요", sortable: true },
+  { key: "svgPreview", title: "Svg 도면 미리보기", sortable: false },
+  { key: "drawing_id", title: "Drawing ID", sortable: false, hidden: true }
+];
+
+const pfdColumns: TableColumn[] = [
+  { key: "pfdFileName", title: "PFD 파일명", sortable: true },
+  { key: "registrationDate", title: "등록일자", sortable: true, dateFormat: "YYYY-MM-DD" },
+  { key: "infoOverview", title: "정보개요", sortable: true },
+  { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
+  { key: "remarks", title: "비고", sortable: true }
+];
+
+// P&ID 매핑 목록 컬럼 정의
+const mappingPidColumns: TableColumn[] = [
+  { key: "no", title: "No.", sortable: false },
+  { key: "pidFile", title: "P&ID (*)", sortable: false },
+  { key: "mappingExcel", title: "매핑 Excel (*)", sortable: false },
+  { key: "svgFile", title: "SVG 파일", sortable: false },
+  { key: "infoOverview", title: "정보개요(기기명+대수)", sortable: false },
+  { key: "svgPreview", title: "Svg 도면 미리보기", sortable: false }
+];
+
+// 유틸리티 함수들
+const extractFileNameFromUri = (uri: string): string => {
+  if (!uri) return '';
+  const parts = uri.split('/');
+  return parts[parts.length - 1] || uri;
 };
 
-// 9: Mcc 구성도 탭용 컬럼/데이터 (현재 사용하지 않음)
-// const mccColumns: TableColumn[] = [
-//   { key: "dwg", title: t("columns.processDetail.dwgFile"), sortable: true },
-//   { key: "excel", title: t("columns.processDetail.excel"), sortable: true },
-//   {
-//     key: "info",
-//     title: t("columns.processDetail.infoOverview"),
-//     sortable: true,
-//   },
-//   { key: "view", title: t("columns.processDetail.svgPreview"), sortable: true },
-// ];
-// const mccList = ref<any[]>([]);
-// // Mcc 구성도 탭 선택 상태
-// const selectedMccItems = ref<any[]>([]);
-// const handleMccSelectionChange = (items: any[]) => {
-//   selectedMccItems.value = items;
-//   console.log("MCC diagram selection changed:", items);
-// };
-
- // 10: 수리계통도 탭용 컬럼/데이터
- const hydraulicColumns: TableColumn[] = [
-   { key: "dwg", title: "도면파일 DWG", sortable: true },
-   { key: "registrationDate", title: "등록일자", sortable: true },
-   {
-     key: "info",
-     title: "정보개요",
-     sortable: true,
-   },
-   { key: "view", title: "Svg 도면 미리보기", sortable: true },
- ];
-
-const handleHydraulicSelectionChange = (items: any[]) => {
-  processStore.setSelectedHydraulicItems(items);
-  console.log("Hydraulic diagram selection changed:", items);
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
 };
 
-// 정렬 이벤트 핸들러
-const handleSortChange = (args: {
-  key: string | null;
-  direction: "asc" | "desc" | null;
-}) => {
-  console.log("Sort:", args.key, args.direction);
+// API 함수들
+const searchPfdDrawingAPI = async (processId: string) => {
+  try {
+    console.log('PFD 도면 검색 API 호출 시작 - 엔드포인트: /api/v1/minio/drawing_files/list');
+    
+    if (!processId) {
+      console.warn('processId가 없어서 PFD 도면 검색을 건너뜁니다.');
+      return [];
+    }
+    
+    const requestBody = {
+      process_id: processId,
+      drawing_type: 'PFD'
+    };
+    
+    console.log('PFD 도면 검색 요청 데이터:', requestBody);
+    
+    const response = await request('/api/v1/minio/drawing_files/list', {}, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('PFD 도면 검색 API 응답:', response);
+    console.log('PFD 도면 검색 API 응답.response:', response.response);
+    console.log('PFD 도면 검색 API 응답.response 타입:', typeof response.response);
+    console.log('PFD 도면 검색 API 응답.response 길이:', response.response?.length);
+
+    if (!response.success) {
+      console.error('PFD 도면 검색 API 응답 오류:', response);
+      return [];
+    }
+
+    const pfdItems = response.response?.map((item: any, index: number) => {
+      console.log(`PFD 아이템 ${index + 1}:`, item);
+      return {
+        id: `pfd-${index + 1}`,
+        pfdFileName: item.file_name || item.drawing_name || 'PFD 파일',
+        registrationDate: item.created_at || item.uploaded_at || formatDate(new Date()),
+        infoOverview: item.drawing_title || item.info_overview || '',
+        mappingPidList: '보기',
+        remarks: item.remarks || '',
+        drawing_id: item.drawing_id || item.id
+      };
+    }) || [];
+
+    console.log('PFD 도면 데이터 변환 결과:', pfdItems);
+    return pfdItems;
+  } catch (error) {
+    console.error('PFD 도면 검색 API 호출 실패:', error);
+    return [];
+  }
 };
 
-// 행 클릭 핸들러
-const handleRowClick = (item: any, index: number) => {
-  console.log("Row clicked:", item, index);
-};
+const searchHydraulicDrawingAPI = async (processId: string) => {
+  try {
+    console.log('수리계통도 도면 검색 API 호출 시작 - 엔드포인트: /api/v1/minio/drawing_files/list');
+    
+    if (!processId) {
+      console.warn('processId가 없어서 수리계통도 도면 검색을 건너뜁니다.');
+      return [];
+    }
+    
+    const requestBody = {
+      process_id: processId,
+      drawing_type: 'HYD_DIAG'
+    };
+    
+    console.log('수리계통도 도면 검색 요청 데이터:', requestBody);
+    
+    const response = await request('/api/v1/minio/drawing_files/list', {}, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-// PFD 그리드의 "보기" 버튼 클릭 핸들러 (현재는 사용하지 않음)
-const handlePfdViewClick = (itemId: string) => {
-  console.log("PFD 보기 버튼 클릭:", itemId);
-  // P&ID 목록이 PFD 탭 하단에 표시되므로 모달을 열 필요 없음
-};
+    console.log('수리계통도 도면 검색 API 응답:', response);
 
-// P&ID 추가 핸들러
-const handlePidAdd = () => {
-  console.log("P&ID 추가 버튼 클릭");
-  // TODO: P&ID 추가 로직 구현
-  alert("P&ID 추가 기능을 구현해야 합니다.");
-};
-
-
-
-// Process.vue와 동일한 구조의 핸들러 함수들
-// 공정구분 변경 핸들러
-const handleProcessTypeChange = () => {
-  const selectedValue = processStore.processDetail.processType;
-
-  if (selectedValue === null || selectedValue === "") {
-    // null 또는 공백값이 선택된 경우 중분류 옵션 초기화
-    processStore.searchSubCategoryOptions.length = 0;
-    processStore.setProcessDetail({ subCategory: null });
-    // 공정명 옵션도 초기화
-    processStore.searchProcessNameOptions.length = 0;
-    processStore.setProcessDetail({ processName: null });
-    console.log(
-      "검색 옵션 변경: null 또는 공백값 선택 - 중분류 및 공정명 옵션 초기화"
-    );
-  } else {
-    const selectedOption = processStore.searchProcessTypeOptions.find(
-      (option) => option.value === selectedValue
-    );
-
-    if (selectedOption) {
-      console.log("검색 옵션 변경:");
-      console.log("  key:", selectedOption.value);
-      console.log("  value:", selectedOption.label);
-      // 공정명 옵션 초기화
-      processStore.searchProcessNameOptions.length = 0;
-      processStore.setProcessDetail({ processName: null });
-      handleSubCategoryCode();
+    if (!response.success) {
+      console.error('수리계통도 도면 검색 API 응답 오류:', response);
+      
+      // 실제 인증 오류인지 확인
+      const isAuthError = response.status === 401 || 
+                         response.message?.includes('Authentication required') ||
+                         response.message?.includes('세션이 만료되었습니다') ||
+                         response.response?.error_code === 'SESSION_REQUIRED';
+      
+      if (isAuthError) {
+        console.warn('⚠️ 인증이 만료되었습니다. 로그인이 필요합니다.');
+        return [];
+      }
+      
+      // 404 오류인 경우 처리
+      if (response.status === 404 || (response.status === 400 && response.message?.includes('Not Found'))) {
+        console.log('수리계통도 도면 검색 API 엔드포인트가 존재하지 않습니다. 임시 더미 데이터로 초기화합니다.');
+        console.warn('⚠️ /api/v1/minio/drawing_files/list API가 구현되지 않았습니다. 백엔드 개발자에게 문의하세요.');
+        
+        // 임시로 더미 데이터 반환
+        return [
+          {
+            id: 'hydraulic_1',
+            file_name: 'HYD_DIAG_001.dwg',
+            file_uri: '/uploads/drawings/HYD_DIAG_001.dwg',
+            created_at: '2024-01-15',
+            info_overview: '수리계통도 도면 1',
+            svg_preview: '/previews/HYD_DIAG_001.svg'
+          },
+          {
+            id: 'hydraulic_2',
+            file_name: 'HYD_DIAG_002.dwg',
+            file_uri: '/uploads/drawings/HYD_DIAG_002.dwg',
+            created_at: '2024-01-20',
+            info_overview: '수리계통도 도면 2',
+            svg_preview: '/previews/HYD_DIAG_002.svg'
+          }
+        ];
+      }
+      
+      console.error('수리계통도 도면 검색 API 호출 실패:', response);
+      return [];
+    }
+    
+    // 성공적인 응답 처리
+    if (response.data && Array.isArray(response.data)) {
+      console.log('수리계통도 도면 검색 성공:', response.data.length, '개 파일');
+      return response.data;
+    } else if (response.response && Array.isArray(response.response)) {
+      console.log('수리계통도 도면 검색 성공 (response 필드):', response.response.length, '개 파일');
+      return response.response;
     } else {
-      console.log("검색 옵션 변경: 선택되지 않음");
+      console.log('수리계통도 도면 검색 응답에 데이터가 없습니다.');
+      return [];
     }
-  }
-};
-
-// 공정명 변경 핸들러
-const handleProcessNameChange = () => {
-  const selectedValue = processStore.processDetail.processName;
-
-  if (selectedValue === null || selectedValue === "") {
-    console.log("공정명 변경: null 또는 공백값 선택");
-  } else {
-    console.log("공정명 변경:", selectedValue);
-  }
-};
-
-// 공정 중분류(subCategory) 변경 핸들러
-const handleSubCategoryChange = () => {
-  const selectedValue = processStore.processDetail.subCategory;
-
-  if (selectedValue === null || selectedValue === "") {
-    // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    processStore.searchProcessNameOptions.length = 0;
-    processStore.setProcessDetail({ processName: null });
-    console.log("공정 중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
-  } else {
-    console.log("공정 중분류 변경:", selectedValue);
-    // 공정명 옵션 로드
-    handleProcessNameCode();
-  }
-};
-
-// Process.vue와 동일한 구조의 중분류 코드 검색 함수
-const handleSubCategoryCode = async () => {
-  try {
-    if (processStore.processDetail.processType) {
-      await processStore.loadSubCategoryCodes(
-        processStore.processDetail.processType
-      );
-    }
+    
   } catch (error: any) {
-    console.error("중분류 코드 검색 실패:", error);
-    const errorMessage =
-      error.message || error.response || "알 수 없는 오류가 발생했습니다.";
-    alert(`중분류 코드 검색 실패: ${errorMessage}`);
-  }
-};
-
-// Process.vue와 동일한 구조의 공정명 코드 검색 함수
-const handleProcessNameCode = async () => {
-  try {
-    if (processStore.processDetail.subCategory) {
-      await processStore.loadProcessNameCodes(
-        processStore.processDetail.subCategory
-      );
-    }
-  } catch (error: any) {
-    console.error("공정명 코드 검색 실패:", error);
-    const errorMessage =
-      error.message || error.response || "알 수 없는 오류가 발생했습니다.";
-    alert(`공정명 코드 검색 실패: ${errorMessage}`);
+    console.error('수리계통도 도면 검색 API 호출 실패:', error);
+    return [];
   }
 };
 
@@ -897,16 +722,16 @@ const searchFormulaAPI = async () => {
     }
     
     const requestBody = {
-      //search_field: "process_id",
-      //search_value: processId + "", // 동적으로 process_id 사용 (API에서 process_id 를 string으로 인식하고 있어 ""추가)
-      //order_by: "created_at"
-      process_id: processId // 동적으로 process_id 사용
+      search_field: "process_id",
+      search_value: processId + "", // 동적으로 process_id 사용 (API에서 process_id 를 string으로 인식하고 있어 ""추가)
+      order_by: "created_at"
+      //process_id: processId // 동적으로 process_id 사용
     };
     
     console.log('요청 데이터:', requestBody);
     console.log('사용된 processId:', processId);
     
-    const response = await request('/api/process/formula/search', null, {
+    const response = await request('/api/process/formula/search', {}, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -993,11 +818,11 @@ const searchFormulaAPI = async () => {
 
     console.log('계산식 검색 API 호출 성공:', response);
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('계산식 검색 API 호출 실패:', error);
     
     // 네트워크 오류나 기타 오류 시에도 빈 데이터 반환
-    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+    if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
       console.log('네트워크 오류로 인해 빈 데이터로 초기화합니다.');
       return { data: [] };
     }
@@ -1008,715 +833,98 @@ const searchFormulaAPI = async () => {
   }
 };
 
-// MinIO 업로드 함수는 제거됨 - createProcessSymbolAPI에서 직접 파일 전송
-
-// 공정 심볼 파일 생성/수정 API 호출 함수
-const createProcessSymbolAPI = async (symbolCode: string, symbolName: string, selectedFile: File, isUpdate: boolean = false, symbolId?: string) => {
+const createFormulaAPI = async (processId: string, formulaName: string, formulaCode: string, siteFile?: File) => {
   try {
-    console.log('createProcessSymbolAPI 호출:', {
-      symbolCode,
-      symbolName,
-      fileName: selectedFile.name,
-      fileSize: selectedFile.size,
-      fileType: selectedFile.type,
-      isUpdate,
-      symbolId
-    });
-    
-    // FormData 생성하여 MultipartFile 형식으로 전송
     const formData = new FormData();
-    formData.append('symbol_code', symbolCode);
-    formData.append('symbol_name', symbolName);
-    formData.append('siteFile', selectedFile); // 파일을 MultipartFile 형식으로 추가
-    
-    // FormData 내용 확인
-    console.log('FormData 내용 확인:');
-    console.log('symbol_code:', formData.get('symbol_code'));
-    console.log('symbol_name:', formData.get('symbol_name'));
-    console.log('siteFile:', formData.get('siteFile'));
-    
-    console.log('공정 심볼 API 요청 데이터 (FormData):', {
-      symbol_code: symbolCode,
-      symbol_name: symbolName,
-      siteFile: selectedFile.name
-    });
-    
-    // API 엔드포인트 결정 (생성 또는 수정)
-    const endpoint = isUpdate && symbolId 
-      ? `/api/process/symbol/update/${symbolId}` 
-      : '/api/process/symbol/create';
-    
-    const method = isUpdate ? 'PUT' : 'POST';
-    
-    console.log('API 엔드포인트:', endpoint);
-    console.log('HTTP 메서드:', method);
-    
-    const response = await request(endpoint, {}, {
-      method: method,
-      // Content-Type 헤더 제거 (FormData 사용 시 자동으로 설정됨)
-      body: formData,
-    });
-
-    if (!response.success) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    formData.append('process_id', processId);
+    formData.append('formula_name', formulaName);
+    formData.append('formula_code', formulaCode);
+    if (siteFile) {
+      formData.append('siteFile', siteFile);
     }
 
-    console.log('공정 심볼 API 호출 성공');
-    
-    // symbol_id 값 추출 (수정인 경우 기존 symbolId 반환, 생성인 경우 응답에서 추출)
-    let resultSymbolId = null;
-    if (isUpdate && symbolId) {
-      // 수정인 경우 기존 symbolId 반환
-      resultSymbolId = symbolId;
-    } else {
-      // 생성인 경우 응답에서 symbol_id 추출
-      if (response.response && response.response.data && response.response.data.symbol_id) {
-        resultSymbolId = response.response.data.symbol_id;
-      } else if (response.response && response.response.symbol_id) {
-        resultSymbolId = response.response.symbol_id;
-      } else if (response.response && response.response.id) {
-        resultSymbolId = response.response.id;
-      }
-    }
-    
-    return { success: true, symbol_id: resultSymbolId };
-  } catch (error) {
-    console.error('공정 심볼 API 호출 실패:', error);
-    throw error;
-  }
-};
-
-// 계산식 API 호출 함수
-const createFormulaAPI = async (processId: string, formulaName: string, formulaCode: string) => {
-  try {
-    console.log('createFormulaAPI 호출:', {
-      processId,
-      formulaName,
-      formulaCode_length: formulaCode ? formulaCode.length : 0,
-      formulaCode_preview: formulaCode ? formulaCode.substring(0, 100) : '없음'
-    });
-    
-    const requestBody = {
-      process_id: processId,
-      formula_name: formulaName,
-      formula_code: formulaCode, // formula_code 필드 추가
-    };
-    
-    console.log('API 요청 데이터:', requestBody);
-    
-    const response = await request('/api/process/formula/create', {}, {
+    const response = await request('/api/process/formula/create', formData, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+        'user_Id': localStorage.getItem('authUserId') || '',
+        'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+      }
     });
 
     if (!response.success) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('계산식 생성 API 호출 성공');
-    return true;
-  } catch (error) {
-    console.error('계산식 API 호출 실패:', error);
+    const data = response;
+    console.log('계산식 생성 API 응답:', data);
+    return data;
+  } catch (error: any) {
+    console.error('계산식 생성 API 호출 실패:', error);
     throw error;
   }
 };
 
-// 공정 수정 처리 함수
-const handleUpdate = async () => {
+const deleteFormulaAPI = async (formulaId: string) => {
   try {
-    console.log("공정 수정 처리 시작");
-    
-    // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
-    const processId = props.processId || (route.params.id as string);
-    
-    console.log("props.processId:", props.processId);
-    console.log("route.params.id:", route.params.id);
-    console.log("사용할 processId:", processId);
-    
-    if (!processId) {
-      throw new Error("공정 ID가 없습니다. props.processId와 route.params.id 모두 확인해주세요.");
+    const response = await request(`/api/process/formula/delete/${formulaId}`, {}, {
+      method: 'DELETE',
+      headers: {
+        'user_Id': localStorage.getItem('authUserId') || '',
+        'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+      }
+    });
+
+    if (!response.success) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
-    // processName의 label 값과 key(value) 값 찾기
-    // processStore.processDetail.processName에는 선택된 옵션의 value가 저장되어 있음
-    const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
-      option => option.value === processStore.processDetail.processName
-    );
-    
-    // processCode에는 value(내부 코드값)를, processName에는 label(표시값)을 사용
-    const processNameValue = selectedProcessNameOption?.value || processStore.processDetail.processName || "";
-    const processNameLabel = selectedProcessNameOption?.label || processStore.processDetail.processName || "";
-    
-    console.log("=== 선택된 공정명 옵션 정보 ===");
-    console.log("selectedProcessNameOption:", selectedProcessNameOption);
-    console.log("processNameValue (processCode용):", processNameValue);
-    console.log("processNameLabel (processName용):", processNameLabel);
-    
-    // globalProcessData 동기화 (processDetail의 현재 값으로 업데이트)
-    const newGlobalData = {
-      level2_code_key: processStore.processDetail.processType || "",
-      level3_code_key: processStore.processDetail.subCategory || "",
-      process_code: processStore.processDetail.processName || "",
-    };
-    
-    processStore.setGlobalProcessData(newGlobalData);
-    
-    let symbolId = null;
-    let hasAnyChanges = false; // 전체 변경사항 감지용
-    
-    // 공정 심볼 파일 변경 감지 및 API 호출
-    const selectedFile = processStore.selectedFiles['processSymbol'];
-    const originalProcessSymbol = processStore.processDetail.originalProcessSymbol;
-    const originalSymbolId = processStore.processDetail.originalSymbolId;
-    const currentProcessSymbol = processStore.processDetail.processSymbol;
-    
-    console.log("=== 공정심볼 변경 감지 ===");
-    console.log("원본 공정심볼 파일명:", originalProcessSymbol);
-    console.log("원본 심볼 ID:", originalSymbolId);
-    console.log("현재 공정심볼 파일명:", currentProcessSymbol);
-    console.log("선택된 파일:", selectedFile);
-    
-    if (selectedFile && selectedFile instanceof File) {
-      try {
-        console.log("공정 심볼 파일 발견, API 호출 시작");
-        console.log("selectedFile:", selectedFile);
-        console.log("파일명:", selectedFile.name);
-        console.log("파일 크기:", selectedFile.size);
-        
-        // 선택된 공정명 옵션에서 label 값 가져오기
-        const symbolCode = processNameValue; // processName의 value
-        const symbolName = processNameLabel; // processName의 label
-        
-        // 공정심볼 변경 여부 확인 (파일명, 크기, 마지막 수정시간 비교)
-        const isSymbolChanged = selectedFile.name !== originalProcessSymbol;
-        
-        // 추가 검증: 파일이 실제로 변경되었는지 더 정확하게 확인
-        let isActuallyChanged = isSymbolChanged;
-        
-        // 파일명이 같지만 다른 파일일 수 있으므로 추가 검증
-        if (!isSymbolChanged && originalProcessSymbol) {
-          // 파일명이 같으면 실제로는 변경되지 않은 것으로 간주
-          isActuallyChanged = false;
-          console.log("=== 파일 변경 감지 결과 ===");
-          console.log("파일명이 동일하므로 실제 변경사항 없음");
-        }
-        
-        const isUpdate = Boolean(isActuallyChanged && originalSymbolId && originalProcessSymbol);
-        
-        console.log("=== 공정심볼 변경 감지 상세 ===");
-        console.log("선택된 파일명:", selectedFile.name);
-        console.log("원본 심볼 파일명:", originalProcessSymbol);
-        console.log("선택된 파일 크기:", selectedFile.size);
-        console.log("선택된 파일 마지막 수정시간:", new Date(selectedFile.lastModified).toLocaleString());
-        console.log("공정심볼 변경 여부:", isSymbolChanged);
-        console.log("수정 여부:", isUpdate);
-        
-        // 기존 심볼파일과 동일한 경우 API 호출 불필요
-        // 파일명이 같고, 원본 심볼이 존재하는 경우
-        if (!isActuallyChanged && originalProcessSymbol) {
-          console.log("✅ 기존 심볼파일과 동일합니다. API 호출을 건너뜁니다.");
-          console.log("기존 symbol_id 사용:", originalSymbolId);
-          symbolId = originalSymbolId; // 기존 symbol_id 사용
-          
-          // 사용자에게 안내
-          console.log("💡 동일한 심볼파일이므로 저장/업데이트 API를 호출하지 않습니다.");
-          
-          // hasAnyChanges는 설정하지 않음 (변경사항이 없으므로)
-        } else {
-          // 실제로 심볼 파일이 변경된 경우에만 hasAnyChanges를 true로 설정
-          if (isActuallyChanged) {
-            hasAnyChanges = true; // 심볼 파일 변경됨
-            console.log("✅ 심볼 파일이 실제로 변경되어 hasAnyChanges를 true로 설정");
-          } else {
-            console.log("ℹ️ 심볼 파일 변경사항이 없어 hasAnyChanges를 설정하지 않습니다.");
-          }
-          
-          console.log("공정 심볼 API 매개변수:", { 
-            symbolCode, 
-            symbolName, 
-            fileName: selectedFile.name,
-            fileSize: selectedFile.size,
-            isUpdate,
-            originalSymbolId
-          });
-          
-          // API 호출 (생성 또는 수정)
-          const symbolResult = await createProcessSymbolAPI(
-            symbolCode, 
-            symbolName, 
-            selectedFile, 
-            isUpdate, 
-            isUpdate ? originalSymbolId : undefined
-          );
-          
-          console.log("공정 심볼 API 호출 완료");
-          
-          // symbol_id 값 확인 및 저장
-          if (symbolResult && symbolResult.success && symbolResult.symbol_id) {
-            symbolId = symbolResult.symbol_id;
-            const actionType = isUpdate ? "수정" : "생성";
-            alert(`✅ 공정 심볼 ${actionType} 성공!\n${actionType === "수정" ? "수정된" : "생성된"} symbol_id: ${symbolId}`);
-            console.log(`${actionType}된 symbol_id:`, symbolId);
-          } else {
-            const actionType = isUpdate ? "수정" : "생성";
-            alert(`⚠️ 공정 심볼은 ${actionType}되었으나 symbol_id를 확인할 수 없습니다.`);
-            console.warn("symbol_id를 확인할 수 없음:", symbolResult);
-            return; // symbol_id가 없으면 공정 수정도 중단
-          }
-        }
-      } catch (symbolError: any) {
-        console.error("공정 심볼 API 호출 실패:", symbolError);
-        
-        // 인증 오류인지 확인
-        if (symbolError?.status === 401 || symbolError?.status === 400) {
-          const errorMessage = symbolError?.message || symbolError?.response?.detail || "인증이 만료되었습니다.";
-          if (errorMessage.includes("인증") || errorMessage.includes("만료")) {
-            alert("⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.");
-            // 로그인 페이지로 리다이렉트
-            window.location.href = '/login';
-            return;
-          }
-        }
-        
-        alert("공정 심볼 파일 저장에 실패했습니다. 공정 수정을 중단합니다.");
-        return; // 공정 심볼 API 실패 시 공정 수정도 중단
-      }
-    } else if (originalProcessSymbol && !currentProcessSymbol) {
-      // 공정심볼이 삭제된 경우 (원본에는 있지만 현재는 없음)
-      console.log("공정 심볼이 삭제되었습니다.");
-      console.log("원본 공정심볼:", originalProcessSymbol);
-      console.log("현재 공정심볼:", currentProcessSymbol);
-    } else {
-      console.log("공정 심볼 파일이 없거나 File 객체가 아닙니다.");
-      console.log("processStore.selectedFiles['processSymbol']:", selectedFile);
-      console.log("processStore.processDetail.processSymbol:", processStore.processDetail.processSymbol);
-    }
-    
-    const processDetailData = {
-      processType: processStore.processDetail.processType || "",
-      processCode: processNameValue,      // value 값 사용 (내부 코드)
-      processName: processNameLabel,      // label 값 사용 (표시명)
-      subCategory: processStore.processDetail.subCategory || "",
-      processSymbol: processStore.processDetail.processSymbol || "",
-      description: processStore.processDetail.description || "",
-      symbolId: symbolId && symbolId.trim() !== "" ? symbolId : undefined,  // 공정 심볼 API에서 받은 symbol_id 추가 (유효한 경우만)
-    };
-    
-    console.log("=== processStore.processDetail에서 직접 가져온 데이터 ===");
-    console.log("processDetailData:", processDetailData);
-    
-    // 공정 정보 변경사항 감지 (심볼 변경 여부만 확인)
-    if (symbolId !== originalSymbolId) {
-      hasAnyChanges = true;
-      console.log("✅ 공정 심볼 변경사항이 발견되었습니다.");
-    }
-    
-    console.log("전체 변경사항 존재 여부:", hasAnyChanges);
-    
-    // 변경사항이 있는 경우에만 공정 정보 업데이트
-    if (hasAnyChanges) {
-      try {
-        await processStore.updateProcess(processId, processDetailData);
-        console.log("공정 정보 업데이트 완료");
-      } catch (updateError: any) {
-        console.error("공정 정보 업데이트 실패:", updateError);
-        
-        // 인증 오류인지 확인
-        if (updateError?.status === 401 || updateError?.status === 400) {
-          const errorMessage = updateError?.message || updateError?.response?.detail || "인증이 만료되었습니다.";
-          if (errorMessage.includes("인증") || errorMessage.includes("만료")) {
-            alert("⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.");
-            // 로그인 페이지로 리다이렉트
-            window.location.href = '/login';
-            return;
-          }
-        }
-        
-        throw updateError; // 다른 오류는 상위로 전파
-      }
-    } else {
-      console.log("공정 정보 변경사항이 없어 업데이트를 건너뜁니다.");
-    }
-    
-    // 계산식 관리 탭 그리드 데이터 비교하여 추가된 행 확인
-    console.log("계산식 그리드 데이터 비교 시작");
-    console.log("초기값:", processStore.initialFormulaList);
-    console.log("현재값:", processStore.formulaList);
-    
-    // 데이터 유효성 검증
-    const hasValidInitialData = processStore.initialFormulaList && 
-                               Array.isArray(processStore.initialFormulaList) && 
-                               processStore.initialFormulaList.length > 0;
-    
-    const hasValidCurrentData = processStore.formulaList && 
-                               Array.isArray(processStore.formulaList);
-    
-    console.log("초기값 유효성:", hasValidInitialData);
-    console.log("현재값 유효성:", hasValidCurrentData);
-    
-    // 초기값과 현재값이 모두 유효한 경우에만 비교 수행
-    if (hasValidInitialData && hasValidCurrentData) {
-      // 데이터 상세 로깅
-      console.log("=== 데이터 상세 분석 ===");
-      console.log("초기값 상세:", processStore.initialFormulaList.map(item => ({
-        formula_id: item.formula_id,
-        registeredFormula: item.registeredFormula,
-        id: item.id
-      })));
-      console.log("현재값 상세:", processStore.formulaList.map(item => ({
-        formula_id: item.formula_id,
-        registeredFormula: item.registeredFormula,
-        id: item.id
-      })));
-      
-      // formula_id 중복 검사
-      const initialIds = processStore.initialFormulaList.map(item => item.formula_id).filter(Boolean);
-      const currentIds = processStore.formulaList.map(item => item.formula_id).filter(Boolean);
-      
-      const duplicateInitialIds = initialIds.filter((id, index) => initialIds.indexOf(id) !== index);
-      const duplicateCurrentIds = currentIds.filter((id, index) => currentIds.indexOf(id) !== index);
-      
-      if (duplicateInitialIds.length > 0) {
-        console.warn("⚠️ 초기값에 중복된 formula_id 발견:", duplicateInitialIds);
-      }
-      if (duplicateCurrentIds.length > 0) {
-        console.warn("⚠️ 현재값에 중복된 formula_id 발견:", duplicateCurrentIds);
-      }
-      
-      // 삭제된 행 찾기 (초기값에는 있지만 현재값에는 없는 행)
-      const deletedRows = processStore.initialFormulaList.filter(initialItem => {
-        if (!initialItem.formula_id) {
-          console.warn("초기값에 formula_id가 없는 항목:", initialItem);
-          return false; // formula_id가 없으면 삭제 대상에서 제외
-        }
-        return !processStore.formulaList.some(currentItem => 
-          currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
-        );
-      });
-      
-      // 추가된 행 찾기 (현재값에는 있지만 초기값에는 없는 행)
-      const addedRows = processStore.formulaList.filter(currentItem => {
-        if (!currentItem.formula_id) {
-          console.warn("현재값에 formula_id가 없는 항목:", currentItem);
-          return false; // formula_id가 없으면 추가 대상에서 제외
-        }
-        return !processStore.initialFormulaList.some(initialItem => 
-          initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
-        );
-      });
-      
-      console.log("삭제된 행 수:", deletedRows.length);
-      console.log("추가된 행 수:", addedRows.length);
-      
-      // 실제 변경사항이 있는지 확인
-      const hasChanges = deletedRows.length > 0 || addedRows.length > 0;
-      console.log("실제 변경사항 존재 여부:", hasChanges);
-      
-      if (hasChanges) {
-        hasAnyChanges = true; // 계산식 변경사항이 있음
-        console.log("✅ 계산식 변경사항이 발견되었습니다.");
-      } else {
-        console.log("ℹ️ 계산식 변경사항이 없습니다.");
-      }
-      
-      // 삭제된 행이 있는 경우 삭제 API 호출
-      if (deletedRows.length > 0) {
-      console.log("삭제된 행 발견:", deletedRows);
-      const deletedFormulaIds = deletedRows.map(row => row.formula_id);
-      
-      try {
-        console.log("삭제된 행에 대한 API 호출 시작");
-        const deletePromises = deletedFormulaIds.map(formulaId => 
-          deleteFormulaAPI(formulaId)
-        );
-        
-        await Promise.all(deletePromises);
-        console.log("삭제된 행에 대한 API 호출 완료");
-      } catch (deleteError: any) {
-        console.error("삭제된 행 API 호출 실패:", deleteError);
-        
-        // 인증 오류인지 확인
-        if (deleteError?.status === 401 || deleteError?.status === 400) {
-          const errorMessage = deleteError?.message || deleteError?.response?.detail || "인증이 만료되었습니다.";
-          if (errorMessage.includes("인증") || errorMessage.includes("만료")) {
-            alert("⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.");
-            // 로그인 페이지로 리다이렉트
-            window.location.href = '/login';
-            return;
-          }
-        }
-        
-        alert("공정은 수정되었으나 삭제된 계산식 데이터 처리에 실패했습니다.");
-      }
-    } else {
-      console.log("삭제된 행이 없습니다.");
-    }
-    
-    if (addedRows.length > 0) {
-      console.log("추가된 행 발견:", addedRows);
-      const addedFormulaIds = addedRows.map(row => row.formula_id).join(', ');
-      //alert(`추가된 계산식 formula_id: ${addedFormulaIds}`);
-      
-      // 추가된 행에 대해서만 API 호출
-      console.log("추가된 행에 대해서만 API 호출 시작");
-      
-      try {
-        console.log("추가된 행들의 formula_code 확인:");
-        addedRows.forEach((formula, index) => {
-          console.log(`행 ${index + 1}:`, {
-            registeredFormula: formula.registeredFormula,
-            formula_code_length: formula.formula_code ? formula.formula_code.length : 0,
-            formula_code_preview: formula.formula_code ? formula.formula_code.substring(0, 100) : '없음'
-          });
-        });
-        
-        const formulaPromises = addedRows.map(formula => 
-          createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '')
-        );
-        
-        await Promise.all(formulaPromises);
-        console.log("추가된 행에 대한 API 호출 완료");
-      } catch (formulaError: any) {
-        console.error("추가된 행 API 호출 실패:", formulaError);
-        
-        // 인증 오류인지 확인
-        if (formulaError?.status === 401 || formulaError?.status === 400) {
-          const errorMessage = formulaError?.message || formulaError?.response?.detail || "인증이 만료되었습니다.";
-          if (errorMessage.includes("인증") || errorMessage.includes("만료")) {
-            alert("⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.");
-            // 로그인 페이지로 리다이렉트
-            window.location.href = '/login';
-            return;
-          }
-        }
-        
-        alert("공정은 수정되었으나 추가된 계산식 데이터 저장에 실패했습니다.");
-      }
-    } else {
-      console.log("추가된 행이 없습니다. API 호출을 건너뜁니다.");
-    }
-  } else {
-    console.log("데이터 유효성 검증 실패로 계산식 그리드 비교를 건너뜁니다.");
-    console.log("초기값 상태:", processStore.initialFormulaList);
-    console.log("현재값 상태:", processStore.formulaList);
+
+    const data = response;
+    console.log('계산식 삭제 API 응답:', data);
+    return data;
+  } catch (error: any) {
+    console.error('계산식 삭제 API 호출 실패:', error);
+    throw error;
   }
-  
-  // 수리계통도 도면 생성 API 호출
-  console.log("=== 수리계통도 도면 생성 시작 ===");
-  if (processStore.hydraulicList && processStore.hydraulicList.length > 0) {
-    console.log("수리계통도 그리드에 데이터가 있습니다. 도면 생성 API를 호출합니다.");
-    
-    try {
-      // searchProcessNameOptions에서 현재 선택된 공정명 정보 가져오기
-      const currentProcessName = processStore.processDetail.processName;
-      const processNameOption = processStore.searchProcessNameOptions.find(
-        option => option.value === currentProcessName
-      );
-      
-      if (!processNameOption) {
-        console.warn("현재 선택된 공정명에 대한 옵션을 찾을 수 없습니다:", currentProcessName);
-      } else {
-        console.log("공정명 옵션 정보:", processNameOption);
-        
-        // API 엔드포인트 상태 확인
-        const drawingApiExists = await checkApiEndpoint('/api/process/drawing/create');
-        if (!drawingApiExists) {
-          console.error('도면 생성 API 엔드포인트가 존재하지 않습니다: /api/process/drawing/create');
-          alert('⚠️ 도면 생성 API가 서버에 구현되지 않았습니다.\n\n관리자에게 문의해주세요.');
-          return;
-        }
-        
-        // 수리계통도 그리드의 각 항목에 대해 도면 생성 API 호출
-        const drawingPromises = processStore.hydraulicList.map(async (hydraulicItem) => {
-          if (!hydraulicItem._file) {
-            console.warn("File 객체가 없는 항목을 건너뜁니다:", hydraulicItem.id);
-            return null;
-          }
-          
-          const drawingData = {
-            process_id: processId,
-            drawing_type: "HYD_DIAG",
-            drawing_number: processNameOption.value,
-            drawing_title: processNameOption.label,
-            drawing_status: "DRAFT",
-            revision: "A",
-            description: processNameOption.label + "도면",
-            siteFile: hydraulicItem._file
-          };
-          
-                      console.log("도면 생성 API 호출 데이터:", {
-              ...drawingData,
-              siteFile: `File: ${hydraulicItem._file.name} (${hydraulicItem._file.size} bytes)`
-            });
-          
-          try {
-            // FormData 생성
-            const formData = new FormData();
-            formData.append('process_id', drawingData.process_id);
-            formData.append('drawing_type', drawingData.drawing_type);
-            formData.append('drawing_number', drawingData.drawing_number);
-            formData.append('drawing_title', drawingData.drawing_title);
-            formData.append('drawing_status', drawingData.drawing_status);
-            formData.append('revision', drawingData.revision);
-            formData.append('description', drawingData.description);
-            formData.append('siteFile', drawingData.siteFile);
-            
-            // FormData 내용 확인
-            console.log('FormData 내용:');
-            try {
-              for (let [key, value] of (formData as any).entries()) {
-                if (value instanceof File) {
-                  console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-                } else {
-                  console.log(`${key}: ${value}`);
-                }
-              }
-            } catch (e) {
-              console.log('FormData 내용 확인 실패:', e);
-            }
-            
-            // API 호출 (FormData는 직접 fetch 사용)
-            console.log('도면 생성 API 호출 시작:', '/api/process/drawing/create');
-            
-            const response = await fetch('/api/process/drawing/create', {
-              method: 'POST',
-              body: formData,
-              credentials: 'include', // 쿠키 포함
-              headers: {
-                // FormData 사용 시 Content-Type은 자동 설정되므로 제거
-                'user_Id': localStorage.getItem('authUserId') || '',
-                'wai_lang': localStorage.getItem('wai_lang') || 'ko'
-              }
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const responseData = await response.json();
-            
-            console.log(`도면 생성 API 호출 성공 (${hydraulicItem.dwg}):`, responseData);
-            return { success: true, item: hydraulicItem, response: responseData };
-            
-          } catch (drawingError: any) {
-            // 새로운 에러 처리 유틸리티 함수 사용
-            handleApiError(drawingError, '도면 생성', hydraulicItem.dwg);
-            return { success: false, item: hydraulicItem, error: drawingError };
-          }
-        });
-        
-        // 모든 도면 생성 API 호출 완료 대기
-        const drawingResults = await Promise.all(drawingPromises);
-        const successfulDrawings = drawingResults.filter(result => result && result.success);
-        const failedDrawings = drawingResults.filter(result => result && !result.success);
-        
-        console.log("도면 생성 결과:", {
-          성공: successfulDrawings.length,
-          실패: failedDrawings.length,
-          전체: processStore.hydraulicList.length
-        });
-        
-        if (failedDrawings.length > 0) {
-          console.warn("일부 도면 생성에 실패했습니다:", failedDrawings);
-        }
-      }
-      
-    } catch (hydraulicError: any) {
-      // 새로운 에러 처리 유틸리티 함수 사용
-      handleApiError(hydraulicError, '수리계통도 도면 생성');
-      console.warn("수리계통도 도면 생성에 실패했지만 공정 수정은 완료되었습니다.");
-    }
-  } else {
-    console.log("수리계통도 그리드에 데이터가 없습니다. 도면 생성 API를 호출하지 않습니다.");
-  }
-  
-  console.log("공정 수정 완료");
-  console.log("=== 최종 변경사항 체크 ===");
-  console.log("hasAnyChanges:", hasAnyChanges);
-  console.log("symbolId:", symbolId);
-  console.log("originalSymbolId:", originalSymbolId);
-  console.log("계산식 변경사항:", processStore.formulaList.length, "vs", processStore.initialFormulaList.length);
-  
-  // 변경사항 존재 여부에 따른 메시지
-  if (!hasAnyChanges) {
-    console.log("변경사항이 없어 저장을 건너뜁니다.");
-    alert("ℹ️ 변경사항이 없습니다.\n\n현재 공정 정보와 동일하여 저장할 내용이 없습니다.");
-    return; // 변경사항이 없으면 함수 종료
-  }
-  
-  // 공정 수정 완료 메시지
-  alert("✅ 공정이 성공적으로 수정되었습니다.");
-  
-        // 변경사항이 있는 경우에만 목록 새로고침
-  if (hasAnyChanges) {
-    console.log("목록 새로고침 시작");
-    try {
-      await processStore.searchProcesses();
-      console.log("목록 새로고침 완료");
-    } catch (searchError: any) {
-      console.error("목록 새로고침 실패:", searchError);
-      
-      // 인증 오류인지 확인
-      if (searchError?.status === 401 || searchError?.status === 400) {
-        const errorMessage = searchError?.message || searchError?.response?.detail || "인증이 만료되었습니다.";
-        if (errorMessage.includes("인증") || errorMessage.includes("만료")) {
-          alert("⚠️ 인증이 만료되었습니다.\n\n다시 로그인해주세요.");
-          // 로그인 페이지로 리다이렉트
-          window.location.href = '/login';
-          return;
-        }
-      }
-      
-      console.warn("목록 새로고침 실패했지만 공정 수정은 완료되었습니다.");
-    }
-  } else {
-    console.log("변경사항이 없어 목록 새로고침을 건너뜁니다.");
-  }
-  
-  // 부모 컴포넌트에 성공 이벤트 전달 (필요시)
-  // emit('update-success');
-  
-} catch (error: any) {
-  console.error("공정 수정 실패:", error);
-  const errorMessage = error?.message || "공정 수정 중 오류가 발생했습니다.";
-  alert(`공정 수정 실패: ${errorMessage}`);
-}
 };
 
-
-
-// 컴포넌트 외부에서 사용할 수 있는 메서드들
-defineExpose({ t, handleUpdate });
-
-const tabs = ref([
-  "계산식 관리",
-  "컴포넌트",
-  "수리계통도",
-  "PFD",
-]);
-const activeTab = ref(0);
-const canScrollLeft = ref(false);
-const canScrollRight = ref(false);
-const tabsContainer = ref<HTMLElement | null>(null);
-
-const onTabClick = (index: number) => {
-  activeTab.value = index;
+// 이벤트 핸들러들
+const handleProcessTypeChange = () => {
+  if (processStore.processDetail.processType) {
+    processStore.loadSubCategoryCodes(processStore.processDetail.processType);
+  }
+  processStore.processDetail.subCategory = '';
+  processStore.processDetail.processName = '';
 };
 
-// 파일 선택 핸들러
+const handleSubCategoryChange = () => {
+  if (processStore.processDetail.processType && processStore.processDetail.subCategory) {
+    processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
+  }
+  processStore.processDetail.processName = '';
+};
+
+const handleProcessNameChange = () => {
+  console.log('공정명 변경:', processStore.processDetail.processName);
+};
+
+const handleLanguageChange = () => {
+  console.log('언어 변경:', selectedLanguage.value);
+  // 언어 변경 시 필요한 로직 추가
+};
+
+const handleUnitChange = () => {
+  console.log('단위 변경:', selectedUnit.value);
+  // 단위 변경 시 필요한 로직 추가
+};
+
 const handleFileChange = async (key: string, event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
     
-    // processSymbol인 경우 SVG 파일인지 확인
     if (key === 'processSymbol') {
       if (!file.name.toLowerCase().endsWith('.svg')) {
         alert('SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.');
-        // 파일 선택 초기화
         target.value = '';
         return;
       }
@@ -1724,11 +932,9 @@ const handleFileChange = async (key: string, event: Event) => {
     
     processStore.setSelectedFile(key, file);
     
-    // processSymbol인 경우 파일 선택 완료 처리
     if (key === 'processSymbol') {
       console.log('공정심볼 파일 선택됨:', file.name);
       
-      // 원본 정보가 아직 저장되지 않은 경우에만 저장 (화면 로드 시 한 번만)
       if (!processStore.processDetail.originalProcessSymbol) {
         const currentSymbol = processStore.processDetail.processSymbol;
         const currentSymbolId = processStore.processDetail.symbolId;
@@ -1737,1535 +943,1609 @@ const handleFileChange = async (key: string, event: Event) => {
           originalProcessSymbol: currentSymbol,
           originalSymbolId: currentSymbolId
         });
-        
-        console.log('공정심볼 원본 정보 저장:', {
-          originalProcessSymbol: currentSymbol,
-          originalSymbolId: currentSymbolId
-        });
       }
       
-      // processStore에는 파일명만 표시 (사용자에게는 파일명만 보여줌)
-      processStore.setProcessDetail({ processSymbol: file.name });
-      
-      console.log('공정심볼 파일 선택 완료:', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        lastModified: new Date(file.lastModified).toLocaleString(),
-        originalProcessSymbol: processStore.processDetail.originalProcessSymbol,
-        originalSymbolId: processStore.processDetail.originalSymbolId,
-        isSameFile: file.name === processStore.processDetail.originalProcessSymbol
-      });
-      
-      // 파일이 제대로 저장되었는지 확인
-      console.log('processStore.selectedFiles 확인:', processStore.selectedFiles);
-      console.log('processStore.selectedFiles[processSymbol] 확인:', processStore.selectedFiles['processSymbol']);
+      // 경로 제외 파일명만 저장
+      const fileName = file.name.split('/').pop() || file.name;
+      processStore.setProcessDetail({ processSymbol: fileName });
     }
   }
 };
 
-// 여러 파일 선택 시 파일명 텍스트 생성
 const getSelectedFilesText = (key: string) => {
-  if (key === "pidFiles" && selectedPidFiles.value.length > 0) {
-    return selectedPidFiles.value.length === 1
-      ? selectedPidFiles.value[0].name
-      : t("common.filesSelected", { count: selectedPidFiles.value.length });
+  if (key === 'processSymbol' && processStore.selectedFiles['processSymbol']) {
+    const fileName = processStore.selectedFiles['processSymbol'].name;
+    // 경로 제외 파일명만 반환
+    return fileName.split('/').pop() || fileName;
   }
-  if (key === "pfdFiles" && selectedPfdFiles.value.length > 0) {
-    return selectedPfdFiles.value.length === 1
-      ? selectedPfdFiles.value[0].name
-      : t("common.filesSelected", { count: selectedPfdFiles.value.length });
+  return '';
+};
+
+const getProcessSymbolFileName = () => {
+  const processSymbol = processStore.processDetail.processSymbol;
+  if (processSymbol) {
+    // 경로 제외 파일명만 반환
+    return processSymbol.split('/').pop() || processSymbol;
   }
-  if (key === "formulaFiles" && processStore.selectedFormulaFiles.length > 0) {
-    return processStore.selectedFormulaFiles.length === 1
-      ? processStore.selectedFormulaFiles[0].name
-      : t("common.filesSelected", { count: processStore.selectedFormulaFiles.length });
-  }
-  if (key === "hydraulicFiles" && selectedHydraulicFiles.value.length > 0) {
-    return selectedHydraulicFiles.value.length === 1
-      ? selectedHydraulicFiles.value[0].name
-      : t("common.filesSelected", { count: selectedHydraulicFiles.value.length });
-  }
-  if (key === "electricFiles" && selectedElectricFiles.value.length > 0) {
-    return selectedElectricFiles.value.length === 1
-      ? selectedElectricFiles.value[0].name
-      : t("common.filesSelected", {
-          count: selectedElectricFiles.value.length,
-        });
-  }
-  if (key === "mccFiles" && selectedMccFiles.value.length > 0) {
-    return selectedMccFiles.value.length === 1
-      ? selectedMccFiles.value[0].name
-      : t("common.filesSelected", { count: selectedMccFiles.value.length });
-  }
-  return processStore.selectedFiles[key]?.name || "";
+  return '';
 };
 
-const updateScrollButtons = () => {
-  if (!tabsContainer.value) return;
-  const { scrollLeft, clientWidth, scrollWidth } = tabsContainer.value;
-  canScrollLeft.value = scrollLeft > 0;
-  canScrollRight.value = scrollLeft + clientWidth < scrollWidth;
+// 탭 관련 함수들
+const onTabClick = (index: number) => {
+  activeTab.value = index;
 };
 
-const scrollTabs = (direction: number) => {
-  if (!tabsContainer.value) return;
-  const { scrollLeft, clientWidth } = tabsContainer.value;
-  const newScrollLeft = scrollLeft + direction * clientWidth;
-  tabsContainer.value.scrollTo({ left: newScrollLeft, behavior: "smooth" });
-};
-
-// 데이터 로드 함수 (임시 데이터 할당)
-const loadData = () => {
-      processStore.setPidList([
-      {
-        id: "1",
-        pfdFileName: "PFD_001",
-        pidFileDwg: "PID_001.dwg",
-        mappingExcel: "PID_001.xlsx",
-        infoOverview: "펌프 2대, 밸브 5개",
-        svgPreview: "PID_001.svg",
-      },
-      {
-        id: "2",
-        pfdFileName: "PFD_002",
-        pidFileDwg: "PID_002.dwg",
-        mappingExcel: "PID_002.xlsx",
-        infoOverview: "탱크 1개, 파이프 3개",
-        svgPreview: "PID_002.svg",
-      },
-    ]);
-  processStore.setDesignList([
-    {
-      id: "1",
-      columnNm: "",
-      influent: "324",
-      effluent: "245",
-      sludge: "",
-      unit: "mg/L",
-      remark: "Remark A",
-    },
-    {
-      id: "2",
-      columnNm: "",
-      influent: "645",
-      effluent: "134",
-      sludge: "",
-      unit: "mg/L",
-      remark: "Remark B",
-    },
-  ]);
-  processStore.setDesignCriteriaList([
-    {
-      id: "1",
-      columnNm: "",
-      value: "10",
-      min: "5",
-      max: "15",
-      unit: "hr",
-      remark: "기본",
-    },
-    {
-      id: "2",
-      columnNm: "",
-      value: "20",
-      min: "10",
-      max: "30",
-      unit: "℃",
-      remark: "고온",
-    },
-  ]);
-  processStore.setDesignParameterList([
-            { id: "1", columnNm: "param1", view: "view1" },
-        { id: "2", columnNm: "param2", view: "view2" },
-  ]);
-  processStore.setDesignEfficiencyList([
-    {
-      id: "1",
-      columnNm: "",
-      value: "30",
-      min: "20",
-      max: "40",
-      unit: "%",
-      remark: "",
-    },
-    {
-      id: "2",
-      columnNm: "",
-      value: "50",
-      min: "45",
-      max: "55",
-      unit: "%",
-      remark: "",
-    },
-  ]);
-  // calculationList는 formulaColumns로 대체되어 사용하지 않음
-  // calculationList.value = [
-  //   {
-  //     id: "1",
-  //     no: "1",
-  //     formulaVersion: "v1.0",
-  //     appliedVersion: "v1.1",
-  //     remark: "초기",
-  //   },
-  //   {
-  //     id: "2",
-  //     no: "2",
-  //     formulaVersion: "v2.0",
-  //     appliedVersion: "v2.1",
-  //     remark: "업데이트",
-  //   },
-  // ];
-      processStore.setPfdList([
-      {
-        id: "1",
-        fileName: "PFD_001.dwg",
-        registrationDate: "2024-01-15",
-        info: "중력식 농축설비 PFD",
-        mappingPidList: "보기",
-        remarks: "초기 설계",
-      },
-      {
-        id: "2",
-        fileName: "PFD_002.dwg",
-        registrationDate: "2024-01-20",
-        info: "기계식 농축설비 PFD",
-        mappingPidList: "보기",
-        remarks: "수정 설계",
-      },
-      {
-        id: "3",
-        fileName: "PFD_003.dwg",
-        registrationDate: "2024-01-25",
-        info: "SBR 반응조 PFD",
-        mappingPidList: "보기",
-        remarks: "신규 설계",
-      },
-    ]);
-      processStore.setFormulaList([]);
-      processStore.setInitialFormulaList([]);
-      processStore.setHydraulicList([]);
-      processStore.setStructList([
-      { 
-        id: "1", 
-        type: "공용구조물", 
-        components: "구조물", 
-        equipmentType: "서스 원형", 
-        item: "SBR 반응조 구조물" 
-      },
-      { 
-        id: "2", 
-        type: "공용구조물", 
-        components: "구조물", 
-        equipmentType: "서스 사각", 
-        item: "" 
-      },
-      { 
-        id: "3", 
-        type: "공용구조물", 
-        components: "구조물", 
-        equipmentType: "콘크리트 사각", 
-        item: "" 
-      },
-      { 
-        id: "4", 
-        type: "공용기계", 
-        components: "송풍기", 
-        equipmentType: "터보블로워(VVWF)", 
-        item: "반응조 송풍기" 
-      }
-    ]);
-   // mccList는 현재 사용하지 않음
-   // mccList.value = [
-   //   {
-   //     id: "1",
-   //     dwg: "mcc1.dwg",
-   //     excel: "mcc1.xlsx",
-   //     info: "Mcc 정보 1",
-   //     view: "mcc1.svg",
-   //   },
-   //   {
-   //     id: "2",
-   //     dwg: "mcc2.dwg",
-   //     excel: "mcc2.xlsx",
-   //     info: "Mcc 정보 2",
-   //     view: "mcc2.svg",
-   //   },
-   // ];
-   // electricList는 현재 사용하지 않음
-   // electricList.value = [
-   //   {
-   //     id: "1",
-   //     dwg: "elec1.dwg",
-   //     excel: "elec1.xlsx",
-   //     info: "전도개요1",
-   //     view: "elec1.svg",
-   //   },
-   //   {
-   //     id: "2",
-   //     dwg: "elec2.dwg",
-   //     excel: "elec2.xlsx",
-   //     info: "전도개요2",
-   //     view: "elec2.svg",
-   //   },
-   // ];
-};
-
-onMounted(async () => {
-  try {
-    console.log("=== ProcessDetail.vue onMounted 시작 ===");
-
-    // 기본 데이터 로드
-    loadData();
-    console.log("기본 데이터 로드 완료");
-
-
-
-    // props에서 processId를 우선 사용하고, 없으면 라우터 매개변수 사용
-    const processId = props.processId || (route.params.id as string);
-
-    console.log("=== ProcessDetail.vue processId 확인 ===");
-    console.log("props.processId:", props.processId);
-    console.log("props.processId 타입:", typeof props.processId);
-    console.log("route.params.id:", route.params.id);
-    console.log("route.params.id 타입:", typeof route.params.id);
-    console.log("사용할 processId:", processId);
-    console.log("사용할 processId 타입:", typeof processId);
-
-    if (!processId || processId === "undefined" || processId === "null") {
-      console.log("processId가 없거나 유효하지 않아서 초기화를 건너뜁니다.");
-      return;
-    }
-
-    // processId가 문자열이 아닌 경우 문자열로 변환
-    const validProcessId = String(processId).trim();
-    
-    if (!validProcessId) {
-      console.log("processId가 빈 문자열이어서 초기화를 건너뜁니다.");
-      return;
-    }
-
-    console.log("유효한 processId:", validProcessId);
-
-    // 0. 계산식 검색 API 호출하여 그리드 데이터 초기화
-    console.log("계산식 검색 API 호출 시작");
-    console.log("searchFormulaAPI 함수 타입:", typeof searchFormulaAPI);
-    console.log("searchFormulaAPI 함수:", searchFormulaAPI);
-    
-    try {
-      console.log("searchFormulaAPI 함수 호출 전");
-      const formulaResult = await searchFormulaAPI();
-      console.log("searchFormulaAPI 함수 호출 후, 결과:", formulaResult);
-      
-      // API 응답 구조에 따라 데이터 추출
-      let formulasData: any[] = [];
-      
-      if (formulaResult && formulaResult.success) {
-        // 성공 응답인 경우
-        if ('data' in formulaResult && formulaResult.data && 'formulas' in formulaResult.data && Array.isArray(formulaResult.data.formulas)) {
-          // 새로운 API 응답 구조: { success: true, data: { formulas: [...] } }
-          formulasData = formulaResult.data.formulas;
-          console.log("새로운 API 응답 구조에서 formulas 데이터 추출:", formulasData);
-        } else if ('response' in formulaResult && formulaResult.response && Array.isArray(formulaResult.response)) {
-          // 기존 API 응답 구조: { success: true, response: [...] }
-          formulasData = formulaResult.response;
-          console.log("기존 API 응답 구조에서 response 데이터 추출:", formulasData);
-        } else if (Array.isArray(formulaResult)) {
-          // 배열 형태 응답: [...]
-          formulasData = formulaResult;
-          console.log("배열 형태 응답에서 데이터 추출:", formulasData);
-        }
-      }
-      
-      if (formulasData.length > 0) {
-        console.log("API 응답 데이터가 있습니다. 그리드 변환 시작");
-        console.log("추출된 formulas 데이터:", formulasData);
-        
-        processStore.setFormulaList(formulasData.map((item: any, index: number) => ({
-          formula_id: item.formula_id || item.id || (index + 1).toString(), // formula_id 컬럼에 실제 formula_id 값 설정
-          id: item.id || (index + 1).toString(),
-          no: (index + 1).toString(),
-          registeredFormula: item.formula_name || '',
-          formula_code: item.formula_code || '',
-          registrationDate: formatDate(item.created_at) || new Date().toISOString().split('T')[0], // created_at이 없으면 현재 날짜 사용
-          infoOverview: item.formula_scope || '',
-          remarks: item.output_type || '',
-        })));
-        
-        // 초기값을 별도로 저장 (깊은 복사)
-        const currentFormulaList = processStore.formulaList;
-        const initialData = JSON.parse(JSON.stringify(currentFormulaList));
-        
-        // formula_id 중복 검사 및 정리
-        const formulaIds = initialData.map(item => item.formula_id).filter(Boolean);
-        const duplicateIds = formulaIds.filter((id, index) => formulaIds.indexOf(id) !== index);
-        
-        if (duplicateIds.length > 0) {
-          console.warn("⚠️ API 응답에 중복된 formula_id 발견:", duplicateIds);
-          // 중복 제거 (첫 번째 항목만 유지)
-          const uniqueData = initialData.filter((item, index, arr) => {
-            if (!item.formula_id) return true;
-            const firstIndex = arr.findIndex(x => x.formula_id === item.formula_id);
-            return index === firstIndex;
-          });
-          processStore.setInitialFormulaList(uniqueData);
-          console.log("중복 제거된 초기값:", uniqueData);
-        } else {
-          processStore.setInitialFormulaList(initialData);
-        }
-        
-        console.log("계산식 그리드 데이터 초기화 완료:", processStore.formulaList);
-        console.log("초기값 저장 완료:", processStore.initialFormulaList);
-        console.log("초기값 항목 수:", processStore.initialFormulaList.length);
-      } else if (formulaResult && !formulaResult.success && 'status' in formulaResult && formulaResult.status === 401) {
-        console.warn("⚠️ 인증이 필요합니다. 계산식 데이터를 로드할 수 없습니다.");
-        console.log("인증 오류 응답:", formulaResult);
-        console.log("인증 오류 메시지:", formulaResult.message);
-        
-        processStore.setFormulaList([]);
-        processStore.setInitialFormulaList([]);
-        
-        // 사용자에게 인증 필요 알림
-        console.warn("⚠️ 세션이 만료되었습니다. 다시 로그인해주세요.");
-        
-        // 인증 오류 시 사용자에게 명확한 안내 (선택사항)
-        // alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-        
-        // 인증 오류가 발생했지만 화면은 정상적으로 로드되도록 계속 진행
-        console.log("인증 오류가 발생했지만 화면 초기화를 계속 진행합니다.");
-      } else {
-        console.log("API 응답 데이터가 없거나 빈 배열입니다. 빈 배열로 초기화");
-        console.log("formulaResult:", formulaResult);
-        processStore.setFormulaList([]);
-        processStore.setInitialFormulaList([]); // 초기값도 빈 배열로 설정
-      }
-    } catch (error) {
-      console.error("계산식 검색 API 호출 중 예외 발생:", error);
-      console.error("에러 상세:", error);
-      processStore.setFormulaList([]);
-    }
-    console.log("계산식 검색 API 호출 완료");
-
-    // 1. 공정구분 코드 리스트 로드
-    try {
-      await processStore.loadProcessTypeCodes();
-      console.log("1. searchProcessTypeOptions 리스트 로드 완료");
-    } catch (error) {
-      console.error("공정구분 코드 로드 실패:", error);
-    }
-
-    // 2. 화면 로드 시 handleSearch 함수 수행하여 입력 필드 값들 초기화
-    try {
-      const processData = await processStore.searchProcessById(validProcessId);
-      console.log("2. handleSearch 완료");
-      console.log("검색된 공정 데이터:", processData);
-      
-      // 2-1. 공정구분(processType) 초기값 설정
-      if (processStore.globalProcessData.level2_code_key) {
-        processStore.setProcessDetail({
-          processType: processStore.globalProcessData.level2_code_key,
-        });
-        console.log(
-          "2-1. processType 초기값 설정:",
-          processStore.globalProcessData.level2_code_key
-        );
-      }
-      
-      // 2-2. processDetail의 다른 필드들도 명시적으로 설정
-      if (processData) {
-        processStore.setProcessDetail({
-          process_id: processData.process_id || validProcessId,
-          processType: processData.level2_code_key || null,
-          subCategory: processData.level3_code_key || null,
-          processName: processData.process_code || null,
-          description: processData.process_description || "",
-          processSymbol: processData.symbol_uri || "",
-          originalProcessSymbol: processData.symbol_uri || "",  // 원본 공정심볼 파일명 저장
-          originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
-        });
-        console.log("2-2. processDetail 모든 필드 설정 완료:", processStore.processDetail);
-      }
-    } catch (error) {
-      console.error("handleSearch 실패:", error);
-    }
-
-    // 3. 중분류 코드 리스트 로드 (공정구분이 설정된 경우에만)
-    if (processStore.globalProcessData.level2_code_key) {
-      try {
-        await processStore.loadSubCategoryCodes(
-          processStore.globalProcessData.level2_code_key
-        );
-        console.log("3. searchSubCategoryOptions 리스트 로드 완료");
-      } catch (error) {
-        console.error("중분류 코드 로드 실패:", error);
-      }
-    }
-
-    // 4. 중분류 입력 필드 초기값 설정
-    if (processStore.globalProcessData.level3_code_key) {
-      try {
-        // 해당 옵션이 실제로 존재하는지 확인
-        const subCategoryExists = processStore.searchSubCategoryOptions.some(
-          (option) =>
-            option.value === processStore.globalProcessData.level3_code_key
-        );
-        if (subCategoryExists) {
-          processStore.setProcessDetail({
-            subCategory: processStore.globalProcessData.level3_code_key,
-          });
-          console.log(
-            "4. searchSubCategoryInput 초기값 설정:",
-            processStore.globalProcessData.level3_code_key
-          );
-        } else {
-          console.log(
-            "4. searchSubCategoryInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:",
-            processStore.globalProcessData.level3_code_key
-          );
-          console.log(
-            "현재 searchSubCategoryOptions:",
-            processStore.searchSubCategoryOptions
-          );
-        }
-      } catch (error) {
-        console.error("중분류 입력 필드 초기값 설정 실패:", error);
-      }
-    }
-
-    // 5. 공정명 코드 리스트 로드 (중분류가 설정된 경우에만)
-    if (processStore.globalProcessData.level3_code_key) {
-      try {
-        await processStore.loadProcessNameCodes(
-          processStore.globalProcessData.level3_code_key
-        );
-        console.log("5. searchProcessNameOptions 리스트 로드 완료");
-      } catch (error) {
-        console.error("공정명 코드 로드 실패:", error);
-      }
-    }
-
-    // 6. 공정명 입력 필드 초기값 설정
-    if (processStore.globalProcessData.process_code) {
-      try {
-        // 해당 옵션이 실제로 존재하는지 확인
-        const processNameExists = processStore.searchProcessNameOptions.some(
-          (option) =>
-            option.value === processStore.globalProcessData.process_code
-        );
-        if (processNameExists) {
-          processStore.setProcessDetail({
-            processName: processStore.globalProcessData.process_code,
-          });
-          console.log(
-            "6. searchProcessNameInput 초기값 설정:",
-            processStore.globalProcessData.process_code
-          );
-        } else {
-          console.log(
-            "6. searchProcessNameInput 초기값 설정 실패: 해당 옵션이 존재하지 않음:",
-            processStore.globalProcessData.process_code
-          );
-          console.log(
-            "현재 searchProcessNameOptions:",
-            processStore.searchProcessNameOptions
-          );
-        }
-      } catch (error) {
-        console.error("공정명 입력 필드 초기값 설정 실패:", error);
-      }
-    }
-
-    console.log("=== ProcessDetail.vue 초기화 완료 ===");
-  } catch (error) {
-    console.error("ProcessDetail.vue 초기화 중 오류 발생:", error);
-  } finally {
-    // 스크롤 버튼 상태 업데이트
-    nextTick(() => {
-      try {
-        updateScrollButtons();
-      } catch (error) {
-        console.error("스크롤 버튼 상태 업데이트 실패:", error);
-      }
-    });
-  }
-});
-
-// PFD pagination state - processStore 사용
-const currentPagePfd = ref(1);
-const totalPagesPfd = computed(
-  () => Math.ceil(processStore.pfdList.length / processStore.pageSize) || 1
-);
-const pagedPfdList = computed(() =>
-  processStore.pfdList.slice(
-    (currentPagePfd.value - 1) * processStore.pageSize,
-    currentPagePfd.value * processStore.pageSize
-  )
-);
-const handlePageChangePfd = (page: number) => {
-  currentPagePfd.value = page;
-};
-
-// Formula pagination state
-const currentPageFormula = ref(1);
-const totalPagesFormula = computed(
-  () => Math.ceil(processStore.formulaList.length / processStore.pageSize) || 1
-);
-const pagedFormulaList = computed(() =>
-  processStore.formulaList.slice(
-    (currentPageFormula.value - 1) * processStore.pageSize,
-    currentPageFormula.value * processStore.pageSize
-  )
-);
-const handlePageChangeFormula = (page: number) => {
-  currentPageFormula.value = page;
-};
-
-// Electric pagination state (현재 사용하지 않음)
-// const currentPageElectric = ref(1);
-// const totalPagesElectric = computed(
-//   () => Math.ceil(electricList.value.length / pageSize.value) || 1
-// );
-// const pagedElectricList = computed(() =>
-//   electricList.value.slice(
-//     (currentPageElectric.value - 1) * pageSize.value,
-//     currentPageElectric.value * pageSize.value
-//   )
-// );
-// const handlePageChangeElectric = (page: number) => {
-//   currentPageElectric.value = page;
-// };
-
-// Mcc pagination state
-const currentPageMcc = ref(1);
-// mccList는 현재 사용하지 않음
-// const totalPagesMcc = computed(
-//   () => Math.ceil(processStore.mccList.length / processStore.pageSize) || 1
-// );
-// const pagedMccList = computed(() =>
-//   processStore.mccList.slice(
-//     (currentPageMcc.value - 1) * processStore.pageSize,
-//     currentPageMcc.value * processStore.pageSize
-//   )
-// );
-const handlePageChangeMcc = (page: number) => {
-  currentPageMcc.value = page;
-};
-
-// Hydraulic pagination state
-const currentPageHydraulic = ref(1);
-// hydraulicList는 현재 사용하지 않음
-// const totalPagesHydraulic = computed(
-//   () => Math.ceil(processStore.hydraulicList.length / processStore.pageSize) || 1
-// );
-// const pagedHydraulicList = computed(() =>
-//   processStore.hydraulicList.slice(
-//     (currentPageHydraulic.value - 1) * processStore.pageSize,
-//     currentPageHydraulic.value * processStore.pageSize
-//   )
-// );
-const handlePageChangeHydraulic = (page: number) => {
-  currentPageHydraulic.value = page;
-};
-
-// Struct pagination state
-const currentPageStruct = ref(1);
-// structList는 현재 사용하지 않음
-// const totalPagesStruct = computed(
-//   () => Math.ceil(processStore.structList.length / processStore.pageSize) || 1
-// );
-// const pagedStructList = computed(() =>
-//   processStore.structList.slice(
-//     (currentPageStruct.value - 1) * processStore.pageSize,
-//     currentPageStruct.value * processStore.pageSize
-//   )
-// );
-const handlePageChangeStruct = (page: number) => {
-  currentPageStruct.value = page;
-};
-
-// Modal state for P&ID file upload
-const showPidModal = ref(false);
-const selectedPidFiles = ref<File[]>([]);
-const openPidModal = () => {
-  showPidModal.value = true;
-};
-const closePidModal = () => {
-  showPidModal.value = false;
-  selectedPidFiles.value = [];
-};
-const handlePidFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  selectedPidFiles.value = files ? Array.from(files) : [];
-  console.log("Selected P&ID files:", selectedPidFiles.value);
-};
-const uploadPidFiles = () => {
-  // TODO: implement actual upload
-  console.log("Upload executed:", selectedPidFiles.value);
-  closePidModal();
-};
-
-// Modal state for PFD, Electric, and Mcc file upload
-const showPfdModal = ref(false);
-const selectedPfdFiles = ref<File[]>([]);
-const openPfdModal = () => {
-  showPfdModal.value = true;
-};
-const closePfdModal = () => {
-  showPfdModal.value = false;
-  selectedPfdFiles.value = [];
-};
-const handlePfdFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  selectedPfdFiles.value = files ? Array.from(files) : [];
-  console.log("Selected PFD files:", selectedPidFiles.value);
-};
-const uploadPfdFiles = () => {
-  console.log("PFD upload executed:", selectedPfdFiles.value);
-  closePfdModal();
-};
-
-// Modal state for Formula file upload
+// 모달 관련 함수들
 const openFormulaModal = () => {
   processStore.setShowFormulaModal(true);
-};
-// 날짜 포맷팅 함수
-const formatDate = (dateString: string | null | undefined): string => {
-  if (!dateString) return '';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  } catch (error) {
-    console.error('날짜 포맷팅 오류:', error);
-    return '';
-  }
-};
-
-// 계산식 삭제 API 함수
-const deleteFormulaAPI = async (formulaId: string) => {
-  try {
-    const response = await request(`/api/process/formula/delete/${formulaId}`, {}, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
-    if (!response.success) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    console.log('계산식 삭제 API 호출 성공:', formulaId);
-    return true;
-  } catch (error) {
-    console.error('계산식 삭제 API 호출 실패:', error);
-    throw error;
-  }
+  selectedFormulaFiles.value = [];
 };
 
 const closeFormulaModal = () => {
   processStore.setShowFormulaModal(false);
-  processStore.setSelectedFormulaFiles([]);
-};
-const handleFormulaFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  processStore.setSelectedFormulaFiles(files ? Array.from(files) : []);
-  console.log("Selected formula files:", processStore.selectedFormulaFiles);
-};
-const uploadFormulaFiles = async () => {
-  console.log("Formula upload executed:", processStore.selectedFormulaFiles);
-  
-  // 선택된 파일들을 formulaList에 추가
-  if (processStore.selectedFormulaFiles.length > 0) {
-    try {
-      // 각 파일을 순차적으로 처리
-      for (let index = 0; index < processStore.selectedFormulaFiles.length; index++) {
-        const file = processStore.selectedFormulaFiles[index];
-        
-        // 파일 내용 읽기
-        const fileContent = await readFileContent(file);
-        
-        // .py 확장자를 제외한 파일명 추출
-        const fileNameWithoutExt = file.name.replace(/\.py$/i, '');
-        
-        // 새로운 계산식 항목 생성
-        const newFormula = {
-          formula_id: Date.now().toString() + index, // formula_id 컬럼에 고유 ID 설정
-          id: Date.now().toString() + index, // 고유 ID 생성
-          no: (processStore.formulaList.length + index + 1).toString(),
-          registeredFormula: fileNameWithoutExt,
-          formula_code: fileContent, // 파일 내용을 formula_code에 저장
-          registrationDate: new Date().toISOString().split('T')[0], // 현재 날짜
-          infoOverview: "",
-          remarks: "",
-        };
-        
-        console.log(`새로운 계산식 항목 생성:`, newFormula);
-        console.log(`formula_code 길이:`, fileContent.length);
-        console.log(`formula_code 내용 일부:`, fileContent.substring(0, 100));
-        
-        processStore.formulaList.push(newFormula);
-      }
-      
-      console.log("계산식 파일 업로드 완료:", processStore.formulaList);
-    } catch (error) {
-      console.error("파일 읽기 중 오류 발생:", error);
-      alert("파일 내용을 읽는 중 오류가 발생했습니다.");
-    }
-  }
-  
-  closeFormulaModal();
+  selectedFormulaFiles.value = [];
 };
 
-// 파일 내용을 읽는 함수
-const readFileContent = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onload = (event) => {
-      try {
-        const content = event.target?.result as string;
-        resolve(content);
-      } catch (error) {
-        reject(new Error("파일 내용을 읽을 수 없습니다."));
-      }
-    };
-    
-    reader.onerror = () => {
-      reject(new Error("파일 읽기 중 오류가 발생했습니다."));
-    };
-    
-    // 텍스트 파일로 읽기
-    reader.readAsText(file, 'UTF-8');
-  });
-};
-
-const showElectricModal = ref(false);
-const selectedElectricFiles = ref<File[]>([]);
-const openElectricModal = () => {
-  showElectricModal.value = true;
-};
-const closeElectricModal = () => {
-  showElectricModal.value = false;
-  selectedElectricFiles.value = [];
-};
-const handleElectricFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  selectedElectricFiles.value = files ? Array.from(files) : [];
-  console.log("Selected electric drawing files:", selectedElectricFiles.value);
-};
-const uploadElectricFiles = () => {
-  console.log("Electric drawing upload executed:", selectedElectricFiles.value);
-  closeElectricModal();
-};
-
-const showMccModal = ref(false);
-const selectedMccFiles = ref<File[]>([]);
-const openMccModal = () => {
-  showMccModal.value = true;
-};
-const closeMccModal = () => {
-  showMccModal.value = false;
-  selectedMccFiles.value = [];
-};
-const handleMccFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  selectedMccFiles.value = files ? Array.from(files) : [];
-  console.log("Selected MCC diagram files:", selectedMccFiles.value);
-};
-const uploadMccFiles = () => {
-  console.log("MCC upload executed:", selectedMccFiles.value);
-  closeMccModal();
-};
-
-// Modal state for P&ID list popup
-
-
-// Modal state for Hydraulic diagram file upload
 const showHydraulicModal = ref(false);
-const selectedHydraulicFiles = ref<File[]>([]);
+const showPfdModal = ref(false);
+
 const openHydraulicModal = () => {
   showHydraulicModal.value = true;
+  selectedHydraulicFiles.value = [];
 };
+
 const closeHydraulicModal = () => {
   showHydraulicModal.value = false;
   selectedHydraulicFiles.value = [];
 };
-const handleHydraulicFilesSelected = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  if (files) {
-    const fileArray = Array.from(files);
+
+const openPfdModal = () => {
+  showPfdModal.value = true;
+  selectedPfdFiles.value = [];
+};
+
+const closePfdModal = () => {
+  showPfdModal.value = false;
+  selectedPfdFiles.value = [];
+};
+
+// 파일 선택 핸들러들
+const handleFormulaFilesSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const fileArray = Array.from(target.files);
     
-    // dwg 파일만 필터링
-    const dwgFiles = fileArray.filter(file => 
-      file.name.toLowerCase().endsWith('.dwg')
+    // Python 파일만 필터링
+    const formulaFiles = fileArray.filter(file =>
+      file.name.toLowerCase().endsWith('.py')
     );
     
-    // dwg가 아닌 파일이 선택된 경우 경고
-    if (dwgFiles.length !== fileArray.length) {
-      const nonDwgFiles = fileArray.filter(file => 
-        !file.name.toLowerCase().endsWith('.dwg')
-      );
-      alert(`DWG 파일만 선택 가능합니다.\n\n선택된 파일 중 DWG가 아닌 파일:\n${nonDwgFiles.map(f => f.name).join('\n')}`);
+    const unsupportedFiles = fileArray.filter(file =>
+      !file.name.toLowerCase().endsWith('.py')
+    );
+    
+    if (unsupportedFiles.length > 0) {
+      alert(`Python 파일(.py)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles.map(f => f.name).join('\n')}`);
     }
     
-    selectedHydraulicFiles.value = dwgFiles;
-    console.log("Selected Hydraulic diagram files (DWG only):", selectedHydraulicFiles.value);
-  } else {
-    selectedHydraulicFiles.value = [];
+    selectedFormulaFiles.value = formulaFiles;
+    console.log("Selected Formula files (Python only):", selectedFormulaFiles.value);
   }
 };
-const uploadHydraulicFiles = () => {
-  console.log("Hydraulic diagram upload executed:", selectedHydraulicFiles.value);
-  
-  if (selectedHydraulicFiles.value.length === 0) {
-    alert("업로드할 파일을 선택해주세요.");
+
+const handleHydraulicFilesSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const fileArray = Array.from(target.files);
+    selectedHydraulicFiles.value = fileArray;
+    console.log("Selected Hydraulic files:", selectedHydraulicFiles.value);
+  }
+};
+
+const handlePfdFilesSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const fileArray = Array.from(target.files);
+    
+    // PFD 관련 파일만 필터링
+    const pfdFiles = fileArray.filter(file => {
+      const fileName = file.name.toLowerCase();
+      return fileName.endsWith('.dwg') || 
+             fileName.endsWith('.pdf') || 
+             fileName.endsWith('.png') || 
+             fileName.endsWith('.jpg') || 
+             fileName.endsWith('.jpeg');
+    });
+    
+    const unsupportedFiles = fileArray.filter(file => {
+      const fileName = file.name.toLowerCase();
+      return !fileName.endsWith('.dwg') && 
+             !fileName.endsWith('.pdf') && 
+             !fileName.endsWith('.png') && 
+             !fileName.endsWith('.jpg') && 
+             !fileName.endsWith('.jpeg');
+    });
+    
+    if (unsupportedFiles.length > 0) {
+      alert(`PFD 관련 파일(.dwg, .pdf, .png, .jpg, .jpeg)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles.map(f => f.name).join('\n')}`);
+    }
+    
+    selectedPfdFiles.value = pfdFiles;
+    console.log("Selected PFD files:", selectedPfdFiles.value);
+  }
+};
+
+// 파일 업로드 함수들
+const uploadFormulaFiles = () => {
+  if (selectedFormulaFiles.value.length === 0) {
+    alert('업로드할 파일을 선택해주세요.');
     return;
   }
-  
-  // 선택된 파일들을 hydraulicList에 추가
-  const newHydraulicItems = selectedHydraulicFiles.value.map((file, index) => {
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    
+
+  const newFormulaItems = selectedFormulaFiles.value.map((file, index) => {
     return {
-      id: `hydraulic_${Date.now()}_${index}`, // 고유 ID 생성
-      dwg: file.name, // 파일명
-      registrationDate: currentDate, // 현재 날짜
-      info: `수리계통도 파일: ${file.name}`, // 파일 정보
-      view: "미리보기", // SVG 미리보기 (현재는 텍스트로 표시)
-      _file: file // hidden 속성으로 MultipartFile 정보 저장
+      id: `formula_${Date.now()}_${index}`,
+      no: (processStore.formulaList.length + index + 1).toString().padStart(3, '0'),
+      registeredFormula: file.name.replace('.py', ''),
+      formula_code: '',
+      registrationDate: formatDate(new Date()),
+      infoOverview: '',
+      remarks: '',
+      _file: file
     };
   });
+
+  const updatedFormulaList = [...processStore.formulaList, ...newFormulaItems];
+  processStore.setFormulaList(updatedFormulaList);
   
-  // 기존 리스트에 새 항목들 추가
-  const currentList = [...processStore.hydraulicList];
-  const updatedList = [...currentList, ...newHydraulicItems];
-  processStore.setHydraulicList(updatedList);
+  console.log('계산식 파일 업로드 완료:', newFormulaItems.length, '개');
+  alert(`계산식 파일 ${newFormulaItems.length}개가 그리드에 추가되었습니다.`);
   
-  console.log("수리계통도 파일 업로드 완료:", newHydraulicItems);
-  console.log("전체 수리계통도 리스트:", updatedList);
-  
-  // 저장된 File 객체 정보 확인
-  newHydraulicItems.forEach((item, index) => {
-    if (item._file) {
-      console.log(`항목 ${index + 1}의 File 객체 정보:`, {
-        name: item._file.name,
-        size: item._file.size,
-        type: item._file.type,
-        lastModified: new Date(item._file.lastModified).toLocaleString()
-      });
-    }
+  closeFormulaModal();
+};
+
+const uploadHydraulicFiles = () => {
+  if (selectedHydraulicFiles.value.length === 0) {
+    alert('업로드할 파일을 선택해주세요.');
+    return;
+  }
+
+  const newHydraulicItems = selectedHydraulicFiles.value.map((file, index) => {
+    return {
+      id: `hydraulic_${Date.now()}_${index}`,
+      dwg: file.name.toLowerCase().endsWith('.dwg') ? file.name : '',
+      xlsx: file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls') ? file.name : '',
+      csv: file.name.toLowerCase().endsWith('.csv') ? file.name : '',
+      remarks: '',
+      _file: file,
+      drawing_id: `temp_drawing_${Date.now()}_${index}`
+    };
   });
+
+  const updatedHydraulicList = [...processStore.hydraulicList, ...newHydraulicItems];
+  processStore.setHydraulicList(updatedHydraulicList);
+  
+  console.log('수리계통도 파일 업로드 완료:', newHydraulicItems.length, '개');
+  alert(`수리계통도 파일 ${newHydraulicItems.length}개가 그리드에 추가되었습니다.`);
   
   closeHydraulicModal();
 };
 
-// 저장된 File 객체를 사용하여 실제 서버 업로드하는 예시 함수
-const uploadHydraulicToServer = async (itemId: string) => {
-  const item = processStore.hydraulicList.find(h => h.id === itemId);
-  if (!item || !item._file) {
-    console.error("File 객체를 찾을 수 없습니다:", itemId);
+const uploadPfdFiles = () => {
+  if (selectedPfdFiles.value.length === 0) {
+    alert('업로드할 파일을 선택해주세요.');
     return;
   }
+
+  const newPfdItems = selectedPfdFiles.value.map((file, index) => {
+    return {
+      id: `pfd_${Date.now()}_${index}`,
+      pfdFileName: file.name,
+      registrationDate: formatDate(new Date()),
+      infoOverview: '',
+      mappingPidList: '보기',
+      remarks: '',
+      _file: file,
+      drawing_id: `temp_pfd_drawing_${Date.now()}_${index}`
+    };
+  });
+
+  const updatedPfdList = [...processStore.pfdList, ...newPfdItems];
+  processStore.setPfdList(updatedPfdList);
   
-  try {
-    const formData = new FormData();
-    formData.append('file', item._file);
-    formData.append('fileName', item.dwg);
-    formData.append('registrationDate', item.registrationDate);
-    formData.append('info', item.info);
-    
-    console.log("서버 업로드 준비 완료:", {
-      fileName: item.dwg,
-      fileSize: item._file.size,
-      fileType: item._file.type
-    });
-    
-    // 실제 서버 업로드 로직은 여기에 구현
-    // const response = await fetch('/api/hydraulic/upload', {
-    //   method: 'POST',
-    //   body: formData
-    // });
-    
-  } catch (error) {
-    console.error("서버 업로드 실패:", error);
-  }
+  console.log('PFD 파일 업로드 완료:', newPfdItems.length, '개');
+  alert(`PFD 파일 ${newPfdItems.length}개가 그리드에 추가되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.`);
+  
+  closePfdModal();
 };
 
-// 삭제 핸들러 함수들
-const handlePidDelete = () => {
-  if (processStore.selectedPidItems.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
+// 선택 관련 함수들
+const handleFormulaSelectionChange = (items: any[]) => {
+  selectedFormulaItems.value = items;
+};
+
+const handleHydraulicSelectionChange = (items: any[]) => {
+  selectedHydraulicItems.value = items;
+};
+
+const handlePfdSelectionChange = (items: any[]) => {
+  selectedPfdItems.value = items;
+};
+
+// 삭제 함수들
+const handleFormulaDelete = () => {
+  if (selectedFormulaItems.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
     return;
   }
 
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: processStore.selectedPidItems.length,
-      })
-    )
-  ) {
-    // 선택된 항목들을 pidList에서 제거
-    const selectedIds = processStore.selectedPidItems.map((item) => item.pidFileDwg);
-    const updatedPidList = processStore.pidList.filter(
-      (item) => !selectedIds.includes(item.pidFileDwg)
-    );
-    processStore.setPidList(updatedPidList);
-    processStore.setSelectedPidItems([]);
-    alert(t("messages.success.pidItemDeleted"));
+  const confirmed = confirm(`선택된 계산식 ${selectedFormulaItems.value.length}개를 삭제하시겠습니까?`);
+  if (!confirmed) return;
+
+  const updatedList = processStore.formulaList.filter(
+    item => !selectedFormulaItems.value.some(selected => selected.id === item.id)
+  );
+  processStore.setFormulaList(updatedList);
+  selectedFormulaItems.value = [];
+  
+  console.log('계산식 그리드에서 삭제 완료:', selectedFormulaItems.value.length, '개');
+  alert('선택된 계산식이 그리드에서 삭제되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.');
+};
+
+
+
+const handleHydraulicDelete = () => {
+  if (selectedHydraulicItems.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
+    return;
   }
+
+  const confirmed = confirm(`선택된 수리계통도 ${selectedHydraulicItems.value.length}개를 삭제하시겠습니까?`);
+  if (!confirmed) return;
+
+  const updatedList = processStore.hydraulicList.filter(
+    item => !selectedHydraulicItems.value.some(selected => selected.id === item.id)
+  );
+  processStore.setHydraulicList(updatedList);
+  selectedHydraulicItems.value = [];
+  
+  console.log('수리계통도 그리드에서 삭제 완료:', selectedHydraulicItems.value.length, '개');
+  alert('선택된 수리계통도가 그리드에서 삭제되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.');
 };
 
 const handlePfdDelete = () => {
-  if (processStore.selectedPfdItems.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
+  if (selectedPfdItems.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
     return;
   }
 
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: processStore.selectedPfdItems.length,
-      })
-    )
-  ) {
-    // 선택된 항목들을 pfdList에서 제거
-    const selectedIds = processStore.selectedPfdItems.map((item) => item.fileName);
-    const updatedPfdList = processStore.pfdList.filter(
-      (item) => !selectedIds.includes(item.fileName)
-    );
-    processStore.setPfdList(updatedPfdList);
-    processStore.setSelectedPfdItems([]);
-    alert(t("messages.success.pfdItemDeleted"));
+  const confirmed = confirm(`선택된 PFD ${selectedPfdItems.value.length}개를 삭제하시겠습니까?`);
+  if (!confirmed) return;
+
+  const updatedList = processStore.pfdList.filter(
+    item => !selectedPfdItems.value.some(selected => selected.id === item.id)
+  );
+  processStore.setPfdList(updatedList);
+  selectedPfdItems.value = [];
+  
+  console.log('PFD 그리드에서 삭제 완료:', selectedPfdItems.value.length, '개');
+  alert('선택된 PFD가 그리드에서 삭제되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.');
+};
+
+// 페이지네이션 핸들러들
+const handleFormulaPageChange = (page: number) => {
+  console.log('계산식 페이지 변경:', page);
+};
+
+const handleStructPageChange = (page: number) => {
+  console.log('컴포넌트 페이지 변경:', page);
+};
+
+const handleHydraulicPageChange = (page: number) => {
+  console.log('수리계통도 페이지 변경:', page);
+};
+
+const handlePfdPageChange = (page: number) => {
+  console.log('PFD 페이지 변경:', page);
+};
+
+
+
+// 메인 업데이트 함수
+const handleUpdate = async () => {
+  try {
+    console.log("공정 수정 처리 시작");
+    
+    const processId = props.processId || (route.params.id as string);
+    
+    if (!processId) {
+      throw new Error("공정 ID가 없습니다.");
+    }
+    
+    let hasAnyChanges = false;
+    
+    // 공정 정보 업데이트
+    if (hasAnyChanges) {
+      try {
+        await processStore.updateProcess(processId, processStore.processDetail);
+        console.log("공정 정보 업데이트 완료");
+      } catch (updateError: any) {
+        console.error("공정 정보 업데이트 실패:", updateError);
+        throw updateError;
+      }
+    }
+    
+    // 계산식 그리드 처리
+    if (processStore.initialFormulaList && processStore.formulaList) {
+             const deletedRows = processStore.initialFormulaList.filter(initialItem => {
+         return initialItem.formula_id && !processStore.formulaList.some(currentItem => 
+           currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
+         );
+       });
+       
+       const addedRows = processStore.formulaList.filter(currentItem => {
+         if (currentItem.id.startsWith('formula_')) return true;
+         return currentItem.formula_id && !processStore.initialFormulaList.some(initialItem => 
+           initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
+         );
+       });
+      
+      if (deletedRows.length > 0 || addedRows.length > 0) {
+        hasAnyChanges = true;
+        
+                 // 삭제된 행 처리
+         if (deletedRows.length > 0) {
+           try {
+             const deletePromises = deletedRows.map(row => {
+               if (row.formula_id) {
+                 return deleteFormulaAPI(row.formula_id);
+               }
+               return Promise.resolve();
+             }).filter(promise => promise !== Promise.resolve());
+             await Promise.all(deletePromises);
+             console.log("삭제된 계산식 처리 완료");
+           } catch (error) {
+             console.error("계산식 삭제 실패:", error);
+           }
+         }
+        
+        // 추가된 행 처리
+        if (addedRows.length > 0) {
+          try {
+            const formulaPromises = addedRows.map(formula => 
+              createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file)
+            );
+            await Promise.all(formulaPromises);
+            console.log("추가된 계산식 처리 완료");
+          } catch (error) {
+            console.error("계산식 추가 실패:", error);
+          }
+        }
+      }
+    }
+    
+    // 수리계통도 그리드 처리
+    if (processStore.initialHydraulicList && processStore.hydraulicList) {
+      const deletedHydraulicRows = processStore.initialHydraulicList.filter(initialItem => {
+        if (!initialItem.drawing_id) return false;
+        return !processStore.hydraulicList.some(currentItem => 
+          currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id
+        );
+      });
+      
+      const addedHydraulicRows = processStore.hydraulicList.filter(currentItem => {
+        if (currentItem.id.startsWith('hydraulic_')) return true;
+        if (!currentItem.drawing_id) return false;
+        return !processStore.initialHydraulicList.some(initialItem => 
+          initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
+        );
+      });
+      
+      if (deletedHydraulicRows.length > 0 || addedHydraulicRows.length > 0) {
+        hasAnyChanges = true;
+        
+        // 삭제된 행 처리
+        if (deletedHydraulicRows.length > 0) {
+          try {
+            const deletePromises = deletedHydraulicRows.map(async (row) => {
+              if (!row.drawing_id) return null;
+              const response = await request(`/api/process/drawing/delete/${row.drawing_id}`, {}, {
+                method: 'DELETE',
+                headers: {
+                  'user_Id': localStorage.getItem('authUserId') || '',
+                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+                }
+              });
+              if (!response.success) throw new Error(`HTTP error! status: ${response.status}`);
+              return { success: true, drawing_id: row.drawing_id };
+            });
+            await Promise.all(deletePromises);
+            console.log("삭제된 수리계통도 처리 완료");
+          } catch (error) {
+            console.error("수리계통도 삭제 실패:", error);
+          }
+        }
+        
+        // 추가된 행 처리
+        if (addedHydraulicRows.length > 0) {
+          try {
+            for (const hydraulicItem of addedHydraulicRows) {
+              if (!hydraulicItem._file) continue;
+              
+              const formData = new FormData();
+              formData.append('process_id', processId);
+              formData.append('siteFile', hydraulicItem._file);
+              formData.append('remarks', hydraulicItem.remarks || '');
+              
+              // FormData 디버깅
+              console.log('FormData 내용:');
+              console.log('process_id:', processId);
+              console.log('file:', hydraulicItem._file);
+              console.log('file name:', hydraulicItem._file.name);
+              console.log('file size:', hydraulicItem._file.size);
+              console.log('file type:', hydraulicItem._file.type);
+              console.log('remarks:', hydraulicItem.remarks || '');
+              
+              // FormData entries 확인
+              for (let [key, value] of (formData as any).entries()) {
+                console.log(`${key}:`, value);
+              }
+              
+              const response = await request('/api/process/drawing/create', formData, {
+                method: 'POST',
+                headers: {
+                  'user_Id': localStorage.getItem('authUserId') || '',
+                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+                },
+                skipContentType: true // FormData 전송 시 Content-Type 헤더 자동 설정 방지
+              });
+              
+              if (!response.success) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              
+              const responseData = response;
+              console.log('수리계통도 도면 생성 API 응답:', responseData);
+              
+              if (responseData.drawing_id) {
+                const updatedHydraulicList = processStore.hydraulicList.map(item => {
+                  if (item.id === hydraulicItem.id) {
+                    return { ...item, drawing_id: responseData.drawing_id };
+                  }
+                  return item;
+                });
+                processStore.setHydraulicList(updatedHydraulicList);
+              }
+            }
+            console.log("추가된 수리계통도 처리 완료");
+          } catch (error) {
+            console.error("수리계통도 추가 실패:", error);
+          }
+        }
+      }
+    }
+    
+    // PFD 그리드 처리
+    if (processStore.initialPfdList && processStore.pfdList) {
+      const deletedPfdRows = processStore.initialPfdList.filter(initialItem => {
+        if (!initialItem.drawing_id) return false;
+        return !processStore.pfdList.some(currentItem => 
+          currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id
+        );
+      });
+      
+      const addedPfdRows = processStore.pfdList.filter(currentItem => {
+        if (currentItem.id.startsWith('pfd_')) return true;
+        if (!currentItem.drawing_id) return false;
+        return !processStore.initialPfdList.some(initialItem => 
+          initialItem.drawing_id && initialItem.drawing_id === initialItem.drawing_id
+        );
+      });
+      
+      if (deletedPfdRows.length > 0 || addedPfdRows.length > 0) {
+        hasAnyChanges = true;
+        
+        // 삭제된 행 처리
+        if (deletedPfdRows.length > 0) {
+          try {
+            const deletePromises = deletedPfdRows.map(async (row) => {
+              if (!row.drawing_id) return null;
+              const response = await request(`/api/process/drawing/delete/${row.drawing_id}`, {}, {
+                method: 'DELETE',
+                headers: {
+                  'user_Id': localStorage.getItem('authUserId') || '',
+                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+                }
+              });
+              if (!response.success) throw new Error(`HTTP error! status: ${response.status}`);
+              return { success: true, drawing_id: row.drawing_id };
+            });
+            await Promise.all(deletePromises);
+            console.log("삭제된 PFD 처리 완료");
+          } catch (error) {
+            console.error("PFD 삭제 실패:", error);
+          }
+        }
+        
+        // 추가된 행 처리
+        if (addedPfdRows.length > 0) {
+          try {
+            for (const pfdItem of addedPfdRows) {
+              if (!pfdItem._file) continue;
+              
+              const formData = new FormData();
+              formData.append('process_id', processId);
+              formData.append('siteFile', pfdItem._file);
+              formData.append('remarks', pfdItem.remarks || '');
+              
+              // FormData 디버깅
+              console.log('PFD FormData 내용:');
+              console.log('process_id:', processId);
+              console.log('file:', pfdItem._file);
+              console.log('file name:', pfdItem._file.name);
+              console.log('file size:', pfdItem._file.size);
+              console.log('file type:', pfdItem._file.type);
+              console.log('remarks:', pfdItem.remarks || '');
+              
+              // FormData entries 확인
+              for (let [key, value] of (formData as any).entries()) {
+                console.log(`${key}:`, value);
+              }
+              
+              const response = await request('/api/process/drawing/create', formData, {
+                method: 'POST',
+                headers: {
+                  'user_Id': localStorage.getItem('authUserId') || '',
+                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+                },
+                skipContentType: true // FormData 전송 시 Content-Type 헤더 자동 설정 방지
+              });
+              
+              if (!response.success) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              
+              const responseData = response;
+              console.log('PFD 도면 생성 API 응답:', responseData);
+              
+              if (responseData.drawing_id) {
+                const updatedPfdList = processStore.pfdList.map(item => {
+                  if (item.id === pfdItem.id) {
+                    return { ...item, drawing_id: responseData.drawing_id };
+                  }
+                  return item;
+                });
+                processStore.setPfdList(updatedPfdList);
+              }
+            }
+            console.log("추가된 PFD 처리 완료");
+          } catch (error) {
+            console.error("PFD 추가 실패:", error);
+          }
+        }
+      }
+    }
+    
+    if (hasAnyChanges) {
+      alert("공정 수정이 완료되었습니다.");
+      emit('update-success');
+    } else {
+      alert("변경사항이 없습니다.");
+    }
+    
+  } catch (error: any) {
+    console.error("공정 수정 실패:", error);
+    alert(`공정 수정 실패: ${error.message}`);
   }
 };
 
-// 계산식 관리 탭 삭제 함수
-const handleFormulaDelete = () => {
-  if (processStore.selectedFormulaItems.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
-    return;
-  }
+// P&ID 매핑 모달 관련 함수들
+const openMappingPidModal = async (pfdItem: any) => {
+  console.log('P&ID 매핑 모달 열기:', pfdItem);
+  currentPfdItemForMapping.value = pfdItem;
+  selectedMappingPidItems.value = []; // 선택된 항목들 초기화
+  showMappingPidModal.value = true;
+  
+  // P&ID 목록 데이터 로드
+  await loadMappingPidList(pfdItem);
+};
 
-  // 선택된 항목들의 formula_id 속성을 alert로 출력
-  processStore.selectedFormulaItems.forEach((item, index) => {
-    const formulaId = item.formula_id || 'formula_id 속성이 없습니다';
-    //alert(`선택된 행 ${index + 1}: formula_id = ${formulaId}`);
-  });
+const closeMappingPidModal = () => {
+  showMappingPidModal.value = false;
+  currentPfdItemForMapping.value = null;
+  mappingPidList.value = [];
+  selectedMappingPidItems.value = []; // 선택된 항목들 초기화
+};
 
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: processStore.selectedFormulaItems.length,
-      })
-    )
-  ) {
-    // 선택된 항목들을 formulaList에서 제거
-    const selectedIds = processStore.selectedFormulaItems.map((item) => item.no);
-    const updatedFormulaList = processStore.formulaList.filter(
-      (item) => !selectedIds.includes(item.no)
-    );
-    processStore.setFormulaList(updatedFormulaList);
-    processStore.setSelectedFormulaItems([]);
-    alert(t("messages.success.formulaItemDeleted"));
+const loadMappingPidList = async (pfdItem: any) => {
+  try {
+    console.log('P&ID 매핑 목록 로드 시작:', pfdItem);
+    
+    // 임시 데이터 (실제 API 호출로 대체 필요)
+    const mockData = [
+      {
+        id: '1',
+        no: 1,
+        pidFileName: '유량조정조 1번.dwg',
+        excelFileName: '유량조정조 1번.excel',
+        svgStatus: '대기',
+        infoOverview: '예: 펌프, 2대'
+      },
+      {
+        id: '2',
+        no: 2,
+        pidFileName: '',
+        excelFileName: '',
+        svgStatus: '대기',
+        infoOverview: '예: 펌프, 2대'
+      }
+    ];
+    
+    mappingPidList.value = mockData;
+    console.log('P&ID 매핑 목록 로드 완료:', mappingPidList.value);
+  } catch (error) {
+    console.error('P&ID 매핑 목록 로드 실패:', error);
+    mappingPidList.value = [];
   }
 };
 
-const handleHydraulicDelete = () => {
-  if (processStore.selectedHydraulicItems.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
+// P&ID 매핑 모달 추가 함수들
+const addMappingPidRow = () => {
+  const newRow = {
+    id: `mapping_${Date.now()}`,
+    no: mappingPidList.value.length + 1,
+    pidFileName: '',
+    excelFileName: '',
+    svgStatus: '대기',
+    infoOverview: '예: 펌프, 2대'
+  };
+  mappingPidList.value.push(newRow);
+};
+
+const selectPidFile = (item: any) => {
+  currentPfdItemForMapping.value = item;
+  (document.querySelector('input[ref="pidFileInput"]') as HTMLInputElement)?.click();
+};
+
+const selectExcelFile = (item: any) => {
+  currentPfdItemForMapping.value = item;
+  (document.querySelector('input[ref="excelFileInput"]') as HTMLInputElement)?.click();
+};
+
+const handlePidFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentPfdItemForMapping.value) {
+    const file = target.files[0];
+    currentPfdItemForMapping.value.pidFileName = file.name;
+    console.log('P&ID 파일 선택됨:', file.name);
+  }
+};
+
+const handleExcelFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0] && currentPfdItemForMapping.value) {
+    const file = target.files[0];
+    currentPfdItemForMapping.value.excelFileName = file.name;
+    console.log('Excel 파일 선택됨:', file.name);
+  }
+};
+
+const clearPidFile = (item: any) => {
+  item.pidFileName = '';
+};
+
+const clearExcelFile = (item: any) => {
+  item.excelFileName = '';
+};
+
+const convertSvg = (item: any) => {
+  if (item.pidFileName) {
+    item.svgStatus = '변환 중...';
+    // 실제 SVG 변환 로직 구현 필요
+    setTimeout(() => {
+      item.svgStatus = '완료';
+    }, 2000);
+  } else {
+    alert('P&ID 파일을 먼저 선택해주세요.');
+  }
+};
+
+const previewSvg = (item: any) => {
+  if (item.svgStatus === '완료') {
+    alert('SVG 미리보기 기능을 구현하세요.');
+  } else {
+    alert('SVG 변환이 완료되지 않았습니다.');
+  }
+};
+
+// P&ID 매핑 목록 체크박스 관련 함수들
+const handleSelectAllMappingPid = () => {
+  if (selectedMappingPidItems.value.length === mappingPidList.value.length) {
+    selectedMappingPidItems.value = [];
+  } else {
+    selectedMappingPidItems.value = [...mappingPidList.value];
+  }
+};
+
+const handleMappingPidSelectionChange = () => {
+  console.log('선택된 P&ID 항목들:', selectedMappingPidItems.value);
+};
+
+const deleteSelectedMappingPidItems = () => {
+  if (selectedMappingPidItems.value.length === 0) {
+    alert('삭제할 항목을 선택해주세요.');
     return;
   }
-
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: processStore.selectedHydraulicItems.length,
-      })
-    )
-  ) {
-    // 선택된 항목들을 hydraulicList에서 제거
-    const selectedIds = processStore.selectedHydraulicItems.map((item) => item.dwg);
-    const updatedHydraulicList = processStore.hydraulicList.filter(
-      (item) => !selectedIds.includes(item.dwg)
-    );
-    processStore.setHydraulicList(updatedHydraulicList);
-    processStore.setSelectedHydraulicItems([]);
-    alert(t("messages.success.hydraulicDiagramItemDeleted"));
+  
+  if (confirm(`선택된 ${selectedMappingPidItems.value.length}개 항목을 삭제하시겠습니까?`)) {
+    const selectedIds = selectedMappingPidItems.value.map(item => item.id);
+    mappingPidList.value = mappingPidList.value.filter(item => !selectedIds.includes(item.id));
+    selectedMappingPidItems.value = [];
+    console.log('선택된 P&ID 항목들 삭제 완료');
   }
 };
 
 // 컴포넌트 외부에서 사용할 수 있는 메서드들
+defineExpose({ t, handleUpdate });
+
+// 컴포넌트 마운트 시 실행
+onMounted(async () => {
+  try {
+    const processId = props.processId || (route.params.id as string);
+    console.log('ProcessDetail 컴포넌트 마운트 - processId:', processId);
+    
+    if (processId) {
+             // 공정 상세 정보 로드
+       console.log('공정 상세 정보 로드 시작...');
+       await processStore.searchProcessById(processId);
+       console.log('공정 상세 정보 로드 완료:', processStore.processDetail);
+       console.log('공정 타입:', processStore.processDetail.processType);
+       console.log('공정 중분류:', processStore.processDetail.subCategory);
+       console.log('공정명:', processStore.processDetail.processName);
+       console.log('언어 코드:', processStore.processDetail.language_code);
+       console.log('단위 시스템 코드:', processStore.processDetail.unit_system_code);
+       console.log('전체 processDetail 객체:', JSON.stringify(processStore.processDetail, null, 2));
+       
+       // 언어 및 단위 시스템 코드를 화면에 매핑
+       if (processStore.processDetail.language_code) {
+         selectedLanguage.value = processStore.processDetail.language_code;
+         console.log('언어 코드 매핑 완료:', selectedLanguage.value);
+       }
+       
+       if (processStore.processDetail.unit_system_code) {
+         selectedUnit.value = processStore.processDetail.unit_system_code;
+         console.log('단위 시스템 코드 매핑 완료:', selectedUnit.value);
+       }
+       
+       // 드롭다운 옵션 상태 확인
+       console.log('공정 타입 옵션:', processStore.processTypeOptions);
+       console.log('중분류 옵션:', processStore.searchSubCategoryOptions);
+       console.log('공정명 옵션:', processStore.searchProcessNameOptions);
+       
+       // 공정명 값이 제대로 설정되었는지 확인
+       console.log('=== 공정명 디버깅 ===');
+       console.log('processStore.processDetail.processName 값:', processStore.processDetail.processName);
+       console.log('processStore.processDetail.processName 타입:', typeof processStore.processDetail.processName);
+       console.log('processStore.processDetail.processName === null:', processStore.processDetail.processName === null);
+       console.log('processStore.processDetail.processName === undefined:', processStore.processDetail.processName === undefined);
+       console.log('processStore.processDetail.processName === ""', processStore.processDetail.processName === "");
+       console.log('========================');
+      
+             // 공정 타입 옵션들 먼저 로드
+       await processStore.loadProcessTypeCodes();
+       
+               // 공정 타입, 중분류, 공정명 옵션들 로드
+        if (processStore.processDetail.processType) {
+          console.log('공정 타입 옵션 로드:', processStore.processDetail.processType);
+          // 중분류 옵션 로드
+          await processStore.loadSubCategoryCodes(processStore.processDetail.processType);
+          
+          if (processStore.processDetail.subCategory) {
+            console.log('중분류 옵션 로드:', processStore.processDetail.subCategory);
+            // 공정명 옵션 로드
+            await processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
+            
+            // 공정명 옵션들이 완전히 로드될 때까지 대기
+            await nextTick();
+            
+                         // 공정명 옵션 상태 확인
+             console.log('공정명 옵션 로드 완료 후 상태:', {
+               optionsCount: processStore.searchProcessNameOptions?.length || 0,
+               options: processStore.searchProcessNameOptions,
+               currentValue: processStore.processDetail.processName
+             });
+             
+             // 옵션의 실제 내용을 상세히 로깅
+             if (processStore.searchProcessNameOptions?.length > 0) {
+               console.log('=== 공정명 옵션 상세 내용 ===');
+               processStore.searchProcessNameOptions.forEach((option, index) => {
+                 console.log(`옵션 ${index + 1}:`, {
+                   value: option.value,
+                   label: option.label,
+                   valueType: typeof option.value,
+                   currentValue: processStore.processDetail.processName,
+                   currentValueType: typeof processStore.processDetail.processName,
+                   isEqual: option.value === processStore.processDetail.processName,
+                   isEqualStrict: option.value === processStore.processDetail.processName,
+                   isEqualLoose: option.value == processStore.processDetail.processName
+                 });
+               });
+               console.log('============================');
+             }
+             
+                           // 공정명 셀렉트박스 값이 옵션에 존재하는지 확인
+              if (processStore.processDetail.processName && processStore.searchProcessNameOptions?.length > 0) {
+                // 현재 공정명 값이 옵션에 존재하는지 확인 (여러 방법으로 시도)
+                let matchedOption = null;
+                
+                // 1. 정확한 값 비교
+                matchedOption = processStore.searchProcessNameOptions.find(
+                  option => option.value === processStore.processDetail.processName
+                );
+                
+                if (!matchedOption) {
+                  // 2. 문자열 변환 후 비교
+                  matchedOption = processStore.searchProcessNameOptions.find(
+                    option => String(option.value) === String(processStore.processDetail.processName)
+                  );
+                  
+                  if (!matchedOption) {
+                    // 3. 라벨로 비교
+                    matchedOption = processStore.searchProcessNameOptions.find(
+                      option => option.label === processStore.processDetail.processName
+                    );
+                    
+                    if (matchedOption) {
+                      console.log('라벨로 매칭된 옵션:', matchedOption);
+                      // 라벨이 일치하면 value로 업데이트
+                      processStore.setProcessDetail({ processName: matchedOption.value });
+                    }
+                  }
+                }
+                
+                if (matchedOption) {
+                  console.log('공정명 옵션이 존재함:', matchedOption);
+                } else {
+                  console.warn('공정명 옵션에 해당 값이 존재하지 않음:', processStore.processDetail.processName);
+                  console.log('사용 가능한 옵션들:', processStore.searchProcessNameOptions.map(opt => ({ value: opt.value, label: opt.label })));
+                }
+              } else {
+                console.log('공정명 값이 없거나 옵션이 로드되지 않음');
+              }
+          }
+        }
+      
+      // 계산식 검색 API 호출하여 계산식 데이터 로드
+      try {
+        console.log('계산식 검색 API 호출 시작...');
+        const formulaResult = await searchFormulaAPI();
+        
+        if (formulaResult && formulaResult.response && Array.isArray(formulaResult.response)) {
+          const formulaItems = formulaResult.response.map((item: any, index: number) => ({
+            id: `formula_${Date.now()}_${index}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            registeredFormula: item.formula_name || item.name || '',
+            formula_code: item.formula_code || item.code || '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.formula_scope || item.scope || '',
+            remarks: item.output_type || item.type || '',
+            formula_id: item.id || null,
+            _file: undefined
+          }));
+          
+          processStore.setFormulaList(formulaItems);
+          const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
+          processStore.setInitialFormulaList(initialFormulaData);
+          
+          console.log('계산식 데이터 로드 완료:', formulaItems.length, '개');
+        } else if (formulaResult && 'data' in formulaResult && Array.isArray(formulaResult.data)) {
+          const formulaItems = formulaResult.data.map((item: any, index: number) => ({
+            id: `formula_${Date.now()}_${index}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            registeredFormula: item.formula_name || item.name || '',
+            formula_code: item.formula_code || item.code || '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.formula_scope || item.scope || '',
+            remarks: item.output_type || item.type || '',
+            formula_id: item.id || null,
+            _file: undefined
+          }));
+          
+          processStore.setFormulaList(formulaItems);
+          const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
+          processStore.setInitialFormulaList(initialFormulaData);
+          
+          console.log('계산식 데이터 로드 완료 (data 필드):', formulaItems.length, '개');
+        } else {
+          console.log('계산식 데이터가 없습니다.');
+          processStore.setFormulaList([]);
+          processStore.setInitialFormulaList([]);
+        }
+      } catch (error) {
+        console.error('계산식 데이터 로드 실패:', error);
+        processStore.setFormulaList([]);
+        processStore.setInitialFormulaList([]);
+      }
+      
+      // 수리계통도 도면 검색 API 호출하여 데이터 로드
+      try {
+        console.log('수리계통도 도면 검색 API 호출 시작...');
+        const drawingsData = await searchHydraulicDrawingAPI(processId);
+        
+        if (drawingsData && Array.isArray(drawingsData)) {
+          const hydraulicItems = drawingsData.map((item: any, index: number) => ({
+            id: `hydraulic_${index + 1}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            dwg: item.file_uri ? extractFileNameFromUri(item.file_uri) : '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.info_overview || item.overview || '',
+            svgPreview: item.svg_preview || item.preview || '',
+            drawing_id: item.drawing_id || item.id || `drawing_${index + 1}`
+          }));
+          
+          processStore.setHydraulicList(hydraulicItems);
+          const initialHydraulicData = JSON.parse(JSON.stringify(hydraulicItems));
+          processStore.setInitialHydraulicList(initialHydraulicData);
+          
+          console.log('수리계통도 데이터 로드 완료:', hydraulicItems.length, '개');
+        } else {
+          console.log('수리계통도 데이터가 없습니다.');
+          processStore.setHydraulicList([]);
+          processStore.setInitialHydraulicList([]);
+        }
+      } catch (error) {
+        console.error('수리계통도 데이터 로드 실패:', error);
+        processStore.setHydraulicList([]);
+        processStore.setInitialHydraulicList([]);
+      }
+      
+      // 컴포넌트 데이터 초기화 (예시 데이터)
+      console.log('컴포넌트 데이터 초기화 시작...');
+      const componentData = [
+        {
+          id: '1',
+          division: '공용구조물',
+          components: '구조물',
+          type: '',
+          inputItem: 'SBR 반응조 구조물'
+        },
+        {
+          id: '2',
+          division: '공용구조물',
+          components: '구조물',
+          type: '',
+          inputItem: ''
+        },
+        {
+          id: '3',
+          division: '공용구조물',
+          components: '구조물',
+          type: '',
+          inputItem: ''
+        },
+        {
+          id: '4',
+          division: '공용기계',
+          components: '송풍기',
+          type: '터보블로워(VVVF)',
+          inputItem: '반응조 송풍기'
+        }
+      ];
+      processStore.setStructList(componentData);
+      console.log('컴포넌트 데이터 초기화 완료:', componentData);
+
+      // PFD 도면 검색 API 호출하여 데이터 로드
+      try {
+        console.log('PFD 도면 검색 API 호출 시작...');
+        const pfdDrawingsData = await searchPfdDrawingAPI(processId);
+        
+        if (pfdDrawingsData && Array.isArray(pfdDrawingsData)) {
+          const pfdItems = pfdDrawingsData.map((item: any, index: number) => ({
+            id: `pfd_${index + 1}`,
+            pfdFileName: item.pfd || item.file_name || item.drawing_name || 'PFD 파일',
+            registrationDate: item.created_at || item.uploaded_at || formatDate(new Date()),
+            infoOverview: item.drawing_title || item.info_overview || '',
+            mappingPidList: '보기',
+            remarks: item.remarks || '',
+            drawing_id: item.drawing_id || item.id || `pfd_drawing_${index + 1}`
+          }));
+          
+          processStore.setPfdList(pfdItems);
+          const initialPfdData = JSON.parse(JSON.stringify(pfdItems));
+          processStore.setInitialPfdList(initialPfdData);
+          
+          console.log('PFD 데이터 로드 완료:', pfdItems.length, '개');
+        } else {
+          console.log('PFD 데이터가 없습니다.');
+          processStore.setPfdList([]);
+          processStore.setInitialPfdList([]);
+        }
+      } catch (error) {
+        console.error('PFD 데이터 로드 실패:', error);
+        processStore.setPfdList([]);
+        processStore.setInitialPfdList([]);
+      }
+      
+      console.log('ProcessDetail 컴포넌트 초기화 완료');
+    } else {
+      console.warn('processId가 없습니다.');
+    }
+  } catch (error) {
+    console.error('컴포넌트 초기화 실패:', error);
+  }
+});
+
+// props 변경 감지
+watch(() => props.processId, async (newProcessId, oldProcessId) => {
+  if (newProcessId && newProcessId !== oldProcessId) {
+    console.log('processId 변경 감지:', oldProcessId, '->', newProcessId);
+    try {
+             // 새로운 공정 정보 로드
+       await processStore.searchProcessById(newProcessId);
+       
+       // 언어 및 단위 시스템 코드를 화면에 매핑 (watch)
+       if (processStore.processDetail.language_code) {
+         selectedLanguage.value = processStore.processDetail.language_code;
+         console.log('언어 코드 매핑 완료 (watch):', selectedLanguage.value);
+       }
+       
+       if (processStore.processDetail.unit_system_code) {
+         selectedUnit.value = processStore.processDetail.unit_system_code;
+         console.log('단위 시스템 코드 매핑 완료 (watch):', selectedUnit.value);
+       }
+       
+       // 공정 타입 옵션들 먼저 로드
+       await processStore.loadProcessTypeCodes();
+       
+               // 공정 타입, 중분류, 공정명 옵션들 로드
+        if (processStore.processDetail.processType) {
+          // 중분류 옵션 로드
+          await processStore.loadSubCategoryCodes(processStore.processDetail.processType);
+          
+          if (processStore.processDetail.subCategory) {
+            // 공정명 옵션 로드
+            await processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
+            
+            // 공정명 옵션들이 완전히 로드될 때까지 대기
+            await nextTick();
+            
+                         // 공정명 옵션 상태 확인
+             console.log('공정명 옵션 로드 완료 후 상태 (watch):', {
+               optionsCount: processStore.searchProcessNameOptions?.length || 0,
+               options: processStore.searchProcessNameOptions,
+               currentValue: processStore.processDetail.processName
+             });
+             
+             // 옵션의 실제 내용을 상세히 로깅 (watch)
+             if (processStore.searchProcessNameOptions?.length > 0) {
+               console.log('=== 공정명 옵션 상세 내용 (watch) ===');
+               processStore.searchProcessNameOptions.forEach((option, index) => {
+                 console.log(`옵션 ${index + 1}:`, {
+                   value: option.value,
+                   label: option.label,
+                   valueType: typeof option.value,
+                   currentValue: processStore.processDetail.processName,
+                   currentValueType: typeof processStore.processDetail.processName,
+                   isEqual: option.value === processStore.processDetail.processName,
+                   isEqualStrict: option.value === processStore.processDetail.processName,
+                   isEqualLoose: option.value == processStore.processDetail.processName
+                 });
+               });
+               console.log('====================================');
+             }
+             
+             // 공정명 셀렉트박스 값이 옵션에 존재하는지 확인 (watch)
+             if (processStore.processDetail.processName && processStore.searchProcessNameOptions?.length > 0) {
+               // 현재 공정명 값이 옵션에 존재하는지 확인 (여러 방법으로 시도)
+               let matchedOption = null;
+               
+               // 1. 정확한 값 비교
+               matchedOption = processStore.searchProcessNameOptions.find(
+                 option => option.value === processStore.processDetail.processName
+               );
+               
+               if (!matchedOption) {
+                 // 2. 문자열 변환 후 비교
+                 matchedOption = processStore.searchProcessNameOptions.find(
+                   option => String(option.value) === String(processStore.processDetail.processName)
+                 );
+                 
+                 if (!matchedOption) {
+                   // 3. 라벨로 비교
+                   matchedOption = processStore.searchProcessNameOptions.find(
+                     option => option.label === processStore.processDetail.processName
+                   );
+                   
+                   if (matchedOption) {
+                     console.log('라벨로 매칭된 옵션 (watch):', matchedOption);
+                     // 라벨이 일치하면 value로 업데이트
+                     processStore.setProcessDetail({ processName: matchedOption.value });
+                   }
+                 }
+               }
+               
+               if (matchedOption) {
+                 console.log('공정명 옵션이 존재함 (watch):', matchedOption);
+               } else {
+                 console.warn('공정명 옵션에 해당 값이 존재하지 않음 (watch):', processStore.processDetail.processName);
+                 console.log('사용 가능한 옵션들 (watch):', processStore.searchProcessNameOptions.map(opt => ({ value: opt.value, label: opt.label })));
+               }
+             } else {
+               console.log('공정명 값이 없거나 옵션이 로드되지 않음 (watch)');
+             }
+                  }
+      }
+      
+      // 계산식 검색 API 호출하여 계산식 데이터 로드
+      try {
+        console.log('계산식 검색 API 호출 시작 (watch)...');
+        const formulaResult = await searchFormulaAPI();
+        
+        if (formulaResult && formulaResult.response && Array.isArray(formulaResult.response)) {
+          const formulaItems = formulaResult.response.map((item: any, index: number) => ({
+            id: `formula_${Date.now()}_${index}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            registeredFormula: item.formula_name || item.name || '',
+            formula_code: item.formula_code || item.code || '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.formula_scope || item.scope || '',
+            remarks: item.output_type || item.type || '',
+            formula_id: item.id || null,
+            _file: undefined
+          }));
+          
+          processStore.setFormulaList(formulaItems);
+          const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
+          processStore.setInitialFormulaList(initialFormulaData);
+          
+          console.log('계산식 데이터 로드 완료 (watch):', formulaItems.length, '개');
+        } else if (formulaResult && 'data' in formulaResult && Array.isArray(formulaResult.data)) {
+          const formulaItems = formulaResult.data.map((item: any, index: number) => ({
+            id: `formula_${Date.now()}_${index}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            registeredFormula: item.formula_name || item.name || '',
+            formula_code: item.formula_code || item.code || '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.formula_scope || item.scope || '',
+            remarks: item.output_type || item.type || '',
+            formula_id: item.id || null,
+            _file: undefined
+          }));
+          
+          processStore.setFormulaList(formulaItems);
+          const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
+          processStore.setInitialFormulaList(initialFormulaData);
+          
+          console.log('계산식 데이터 로드 완료 (watch, data 필드):', formulaItems.length, '개');
+        } else {
+          console.log('계산식 데이터가 없습니다 (watch).');
+          processStore.setFormulaList([]);
+          processStore.setInitialFormulaList([]);
+        }
+      } catch (error) {
+        console.error('계산식 데이터 로드 실패 (watch):', error);
+        processStore.setFormulaList([]);
+        processStore.setInitialFormulaList([]);
+      }
+      
+      // 수리계통도 도면 검색 API 호출하여 데이터 로드
+      try {
+        const drawingsData = await searchHydraulicDrawingAPI(newProcessId);
+        
+        if (drawingsData && Array.isArray(drawingsData)) {
+          const hydraulicItems = drawingsData.map((item: any, index: number) => ({
+            id: `hydraulic_${index + 1}`,
+            no: (index + 1).toString().padStart(3, '0'),
+            dwg: item.file_uri ? extractFileNameFromUri(item.file_uri) : '',
+            registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+            infoOverview: item.info_overview || item.overview || '',
+            svgPreview: item.svg_preview || item.preview || '',
+            drawing_id: item.drawing_id || item.id || `drawing_${index + 1}`
+          }));
+          
+          processStore.setHydraulicList(hydraulicItems);
+          const initialHydraulicData = JSON.parse(JSON.stringify(hydraulicItems));
+          processStore.setInitialHydraulicList(initialHydraulicData);
+        } else {
+          processStore.setHydraulicList([]);
+          processStore.setInitialHydraulicList([]);
+        }
+      } catch (error) {
+        console.error('수리계통도 데이터 로드 실패:', error);
+        processStore.setHydraulicList([]);
+        processStore.setInitialHydraulicList([]);
+      }
+      
+      // 계산식 초기값 저장
+      const initialFormulaData = JSON.parse(JSON.stringify(processStore.formulaList));
+      processStore.setInitialFormulaList(initialFormulaData);
+      
+    } catch (error) {
+      console.error('새로운 공정 정보 로드 실패:', error);
+    }
+  }
+}, { immediate: false });
 </script>
 
-<style scoped lang="scss">
-@use "sass:color";
-
-.public-management-layout {
-  height: 100%;
-  padding: $spacing-lg;
+<style scoped>
+.process-detail {
+  padding: 20px;
 }
 
-// action-bar 스타일
-.action-bar {
-  margin-bottom: 1rem;
-
-  .btns {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-
-    .btn-edit {
-      margin-left: auto;
-    }
-  }
+.process-info-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
-// 탭과 버튼이 동일선상에 배치되는 스타일
-.tab-action-bar {
+.process-info-section h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-grid {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-
-
-  .swiper-bar {
-    flex: 1;
-  }
-
-  .tab-buttons {
-    display: flex;
-    align-items: center;
-
-    .btns {
-      display: flex;
-      gap: 0.5rem;
-    }
-  }
+  flex-wrap: nowrap;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
 }
 
-// 기존 탭 스타일
-.tabs-wrapper {
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.form-group select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  min-width: 140px;
+}
+
+.file-input-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
+  width: 100%;
+  min-width: 160px;
+}
 
-  .tabs {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
+.file-select-btn {
+  padding: 8px 14px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+.file-select-btn:hover {
+  background: #0056b3;
+}
 
-    .tab {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
+.selected-file {
+  color: #666;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 80px;
+}
 
-      &:hover {
-        background-color: rgba($primary-color, 0.05);
-      }
+.tabs-container {
+  margin-top: 20px;
+}
 
-      &.active {
-        border-bottom-color: $primary-color;
-        color: $primary-color;
-        font-weight: 600;
-      }
-    }
-  }
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 20px;
+  position: relative;
+}
 
-  .btn-scroll {
-    padding: 0.5rem;
-    border: 1px solid $border-color;
-    background: white;
-    cursor: pointer;
-    border-radius: 4px;
+.tab-button {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s ease;
+}
 
-    &:hover {
-      background-color: $background-light;
-    }
-  }
+.tab-button:hover {
+  color: #007bff;
+}
+
+.tab-button.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+.tab-content {
+  min-height: 400px;
+}
+
+.tab-panel {
+  padding: 20px 0;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tab-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.tab-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.btn-danger:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
 }
 
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
-.modal-window {
-  background: #fff;
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 20px;
-  border-radius: 4px;
-  width: 400px;
+  border-bottom: 1px solid #e9ecef;
 }
-.modal-buttons {
-  margin-top: 10px;
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
 }
 
-.pagination-container {
+.selected-files-info {
+  color: #666;
+  font-size: 14px;
+}
+
+.selected-files-list {
+  margin-top: 20px;
+}
+
+.selected-files-list h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.selected-files-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.selected-files-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  color: #666;
+}
+
+/* P&ID 매핑 모달 스타일 */
+.large-modal {
+  max-width: 1200px !important;
+  width: 95% !important;
+}
+
+.modal-actions {
   display: flex;
-  justify-content: center;
+  gap: 10px;
+  align-items: center;
 }
 
-// 버튼 스타일
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-
-  &.btn-primary {
-    background-color: $primary-color;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: #0056b3; // Darken primary color for hover
-    }
-
-    &:disabled {
-      background-color: $text-light;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-  }
-
-  &.btn-delete {
-    background-color: #dc3545;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: color.scale(#dc3545, $lightness: -10%);
-    }
-
-    &:disabled {
-      background-color: $text-light;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-  }
+.mapping-pid-table {
+  width: 100%;
+  overflow-x: auto;
 }
 
-.file-upload-row {
+.pid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.pid-table th,
+.pid-table td {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.pid-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.pid-table tr.alternate-row {
+  background-color: #f8f9fa;
+}
+
+.pid-table tr:hover {
+  background-color: #f0f0f0;
+}
+
+.file-selection-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-info {
+  margin-top: 4px;
+}
+
+.selected-file {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  max-width: 100%;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  gap: 8px;
+  color: #007bff;
+  font-size: 13px;
 }
 
-.file-name-input {
-  flex: 1 1 0%;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.clear-file {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
 }
 
- .file-select-btn {
-   white-space: nowrap;
- }
+.clear-file:hover {
+  color: #c82333;
+}
 
- .pid-section {
-   margin-top: 1rem;
-   
-   h4 {
-     margin-bottom: 1rem;
-     color: #333;
-     font-size: 1.1rem;
-     font-weight: 600;
-   }
- }
+.no-file {
+  color: #6c757d;
+  font-size: 13px;
+  font-style: italic;
+}
 
- .tab-content .content {
-   // 팝업 사이즈에 맞게 유연하게 조정
-   max-height: calc(100vh - 150px); // 상단 여백 줄임
-   min-height: 500px; // 최소 높이 증가
-   overflow-y: auto; // 필요시에만 스크롤바 표시
-   
-   // 스크롤바 스타일링
-   &::-webkit-scrollbar {
-     width: 8px;
-   }
-   
-   &::-webkit-scrollbar-track {
-     background: #f1f1f1;
-     border-radius: 4px;
-   }
-   
-   &::-webkit-scrollbar-thumb {
-     background: #c1c1c1;
-     border-radius: 4px;
-     
-     &:hover {
-       background: #a8a8a8;
-     }
-   }
-   
-   // Firefox 스크롤바 스타일링
-   scrollbar-width: thin;
-   scrollbar-color: #c1c1c1 #f1f1f1;
- }
+.svg-conversion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
- // PFD 탭 전용 스타일 (P&ID 섹션 포함)
- .tab-content .content:first-child {
-   // 팝업 크기에 관계없이 항상 스크롤 가능하도록 설정
-   position: relative;
-   height: auto !important;
-   max-height: none !important;
-   overflow-y: auto !important;
-   
-   // 내부 요소들이 높이를 차지하도록 설정
-   .pagination-container {
-     margin-bottom: 1rem;
-   }
-   
-   .pfd-section {
-     margin-bottom: 1rem;
-     
-     .section-header {
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       margin-bottom: 1rem;
-       
-       h4 {
-         margin: 0;
-         font-size: 1.1rem;
-         font-weight: 600;
-         color: #333;
-       }
-     }
-   }
-   
-   .pid-section {
-     margin-bottom: 2rem;
-     display: block !important;
-     visibility: visible !important;
-     height: auto !important;
-     min-height: 200px !important;
-     position: relative;
-   }
-   
-   // 스크롤바가 제대로 작동하도록 내부 콘텐츠 높이 보장
-   > * {
-     min-height: fit-content;
-   }
-   
-   // 스크롤바 스타일링
-   &::-webkit-scrollbar {
-     width: 8px;
-   }
-   
-   &::-webkit-scrollbar-track {
-     background: #f1f1f1;
-     border-radius: 4px;
-   }
-   
-   &::-webkit-scrollbar-thumb {
-     background: #c1c1c1;
-     border-radius: 4px;
-     
-     &:hover {
-       background: #a8a8a8;
-     }
-   }
-   
-   // Firefox 스크롤바 스타일링
-   scrollbar-width: thin;
-   scrollbar-color: #c1c1c1 #f1f1f1;
- }
+.conversion-status {
+  font-size: 12px;
+  color: #6c757d;
+}
 
- // 팝업 환경에서 스크롤이 제대로 작동하도록 추가 설정
- .tab-content {
-   position: relative;
-   height: auto;
-   overflow: visible;
- }
+.info-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+}
 
- .tab-content .content {
-   position: relative;
-   height: auto;
-   overflow-y: auto;
- }
+.info-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
 
- // 팝업 크기 제한 해제를 위한 추가 설정
- .process-page {
-   height: auto;
-   overflow: visible;
-   
-   // 팝업 환경에서 스크롤바 설정
-   &.popup-mode {
-     height: auto;
-     overflow: visible;
-     
-     // 하위 요소들도 스크롤바 설정
-     .action-bar,
-     .tab-action-bar,
-     .tab-content {
-       max-height: none;
-       overflow: visible;
-     }
-     
-     // 탭 컨텐츠 영역 스크롤바 설정
-     .tab-content .content {
-       max-height: none;
-       overflow: visible;
-     }
-   }
- }
-
- .action-bar {
-   height: auto;
-   overflow: visible;
- }
-
- .tab-action-bar {
-   height: auto;
-   overflow: visible;
- }
-
- // P&ID 섹션 스타일
- .pid-section {
-   margin-top: 0.5rem;
-   padding-top: 0.5rem;
-   
-   .section-header {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     margin-bottom: 0.5rem;
-     
-     h4 {
-       margin: 0;
-       font-size: 1.1rem;
-       font-weight: 600;
-       color: #333;
-     }
-     
-     .section-actions {
-       display: flex;
-       gap: 0.5rem;
-       
-       .btn {
-         padding: 0.5rem 1rem;
-         border-radius: 0.25rem;
-         font-size: 0.875rem;
-         cursor: pointer;
-         border: 1px solid transparent;
-         
-         &.btn-primary {
-           background-color: #007bff;
-           color: white;
-           
-           &:hover {
-             background-color: #0056b3;
-           }
-         }
-         
-         &.btn-danger {
-           background-color: #dc3545;
-           color: white;
-           
-           &:disabled {
-             background-color: #6c757d;
-             cursor: not-allowed;
-           }
-           
-           &:hover:not(:disabled) {
-             background-color: #c82333;
-           }
-         }
-       }
-     }
-   }
- }
-
- // "보기" 버튼 스타일
- .view-btn {
-   background: none;
-   border: none;
-   color: #007bff;
-   text-decoration: underline;
-   cursor: pointer;
-   padding: 0;
-   font-size: inherit;
-   
-   &:hover {
-     color: #0056b3;
-     text-decoration: none;
-   }
-   
-   &:focus {
-     outline: none;
-     text-decoration: none;
-   }
- }
-
- // 모달 액션 바 스타일
- .modal-action-bar {
-   display: flex;
-   justify-content: flex-end;
-   gap: 0.5rem;
-   margin-bottom: 1rem;
-   padding: 0.5rem 0;
-   border-bottom: 1px solid #e0e0e0;
-   
-   .btn {
-     padding: 0.5rem 1rem;
-     border-radius: 0.25rem;
-     font-size: 0.875rem;
-     cursor: pointer;
-     border: 1px solid transparent;
-     
-     &.btn-primary {
-       background-color: #007bff;
-       color: white;
-       
-       &:hover {
-         background-color: #0056b3;
-       }
-     }
-     
-     &.btn-danger {
-       background-color: #dc3545;
-       color: white;
-       
-       &:disabled {
-         background-color: #6c757d;
-         cursor: not-allowed;
-       }
-       
-       &:hover:not(:disabled) {
-         background-color: #c82333;
-       }
-     }
-   }
- }
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+}
 </style>

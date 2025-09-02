@@ -65,7 +65,7 @@
             <button type="button" @click="$refs.processSymbolInput.click()" class="file-select-btn">
               {{ t("common.selectFile") }}
             </button>
-            <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFileSelected") }}</span>
+            <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFile") }}</span>
           </div>
         </div>
       </div>
@@ -394,7 +394,7 @@
                         {{ item.pidFileName }}
                         <button class="clear-file" @click="clearPidFile(item)">&times;</button>
                       </span>
-                      <span v-else class="no-file">선택된 파일 없음</span>
+                      <span v-else class="no-file">{{ t("common.noFile") }}</span>
                     </div>
                   </div>
                 </td>
@@ -406,7 +406,7 @@
                         {{ item.excelFileName }}
                         <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
                       </span>
-                      <span v-else class="no-file">선택된 파일 없음</span>
+                      <span v-else class="no-file">{{ t("common.noFile") }}</span>
                     </div>
                   </div>
                 </td>
@@ -565,7 +565,7 @@ const formatDate = (date: Date): string => {
 // API 함수들
 const searchPfdDrawingAPI = async (processId: string) => {
   try {
-    console.log('PFD 도면 검색 API 호출 시작 - 엔드포인트: /api/v1/minio/drawing_files/list');
+    console.log('PFD 도면 검색 API 호출 시작 - 엔드포인트: /process/drawing_files/list');
     
     if (!processId) {
       console.warn('processId가 없어서 PFD 도면 검색을 건너뜁니다.');
@@ -579,7 +579,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
     
     console.log('PFD 도면 검색 요청 데이터:', requestBody);
     
-    const response = await request('/api/v1/minio/drawing_files/list', {}, {
+    const response = await request('/process/drawing_files/list', {}, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -963,10 +963,16 @@ const getSelectedFilesText = (key: string) => {
 
 const getProcessSymbolFileName = () => {
   const processSymbol = processStore.processDetail.processSymbol;
-  if (processSymbol) {
-    // 경로 제외 파일명만 반환
-    return processSymbol.split('/').pop() || processSymbol;
+  console.log('getProcessSymbolFileName - processSymbol:', processSymbol);
+  console.log('getProcessSymbolFileName - processSymbol 타입:', typeof processSymbol);
+  
+  // null, undefined, 빈 문자열 체크
+  if (processSymbol && processSymbol !== null && processSymbol !== undefined && processSymbol.trim() !== '') {
+    // symbol_uri 전체 경로를 그대로 반환 (API 응답의 실제 저장 경로)
+    console.log('getProcessSymbolFileName - symbol_uri 전체 경로:', processSymbol);
+    return processSymbol;
   }
+  console.log('getProcessSymbolFileName - processSymbol이 null이거나 빈 값');
   return '';
 };
 
@@ -1264,10 +1270,39 @@ const handleUpdate = async () => {
     
     let hasAnyChanges = false;
     
+    // 공정심볼 파일 변경 감지
+    const hasProcessSymbolChanged = processStore.selectedFiles['processSymbol'] !== undefined;
+    if (hasProcessSymbolChanged) {
+      hasAnyChanges = true;
+      console.log('공정심볼 파일 변경 감지됨');
+      
+      // processDetail에 siteFile 추가
+      const symbolFile = processStore.selectedFiles['processSymbol'];
+      processStore.setProcessDetail({
+        siteFile: symbolFile
+      });
+      
+      console.log('processDetail에 siteFile 설정:', symbolFile.name);
+    }
+    
     // 공정 정보 업데이트
     if (hasAnyChanges) {
       try {
         await processStore.updateProcess(processId, processStore.processDetail);
+        
+        // 업데이트 성공 후 선택된 파일 상태 초기화
+        if (hasProcessSymbolChanged) {
+          const updatedSelectedFiles = { ...processStore.selectedFiles };
+          delete updatedSelectedFiles['processSymbol'];
+          processStore.setSelectedFiles(updatedSelectedFiles);
+          
+          // processDetail에서 siteFile 제거
+          processStore.setProcessDetail({
+            siteFile: null
+          });
+          
+          console.log('업데이트 성공 후 파일 상태 초기화 완료');
+        }
         console.log("공정 정보 업데이트 완료");
       } catch (updateError: any) {
         console.error("공정 정보 업데이트 실패:", updateError);
@@ -1702,9 +1737,22 @@ onMounted(async () => {
        console.log('공정 타입:', processStore.processDetail.processType);
        console.log('공정 중분류:', processStore.processDetail.subCategory);
        console.log('공정명:', processStore.processDetail.processName);
+       console.log('공정심볼 (symbol_uri):', processStore.processDetail.processSymbol);
+       console.log('원본 공정심볼:', processStore.processDetail.originalProcessSymbol);
+       console.log('심볼 ID:', processStore.processDetail.symbolId);
        console.log('언어 코드:', processStore.processDetail.language_code);
        console.log('단위 시스템 코드:', processStore.processDetail.unit_system_code);
        console.log('전체 processDetail 객체:', JSON.stringify(processStore.processDetail, null, 2));
+       
+       // 공정심볼 파일명 표시 확인
+       if (processStore.processDetail.processSymbol && processStore.processDetail.processSymbol !== null && processStore.processDetail.processSymbol.trim() !== '') {
+         console.log('공정심볼 파일명이 설정됨:', processStore.processDetail.processSymbol);
+         console.log('getProcessSymbolFileName() 결과:', getProcessSymbolFileName());
+       } else {
+         console.log('공정심볼 파일명이 설정되지 않음 (null 또는 빈 값)');
+         console.log('processSymbol 값:', processStore.processDetail.processSymbol);
+         console.log('processSymbol 타입:', typeof processStore.processDetail.processSymbol);
+       }
        
        // 언어 및 단위 시스템 코드를 화면에 매핑
        if (processStore.processDetail.language_code) {

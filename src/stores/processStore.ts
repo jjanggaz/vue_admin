@@ -12,6 +12,7 @@ export interface ProcessItem {
   sub_category_nm: string;
   process_code: string;
   process_symbol: string;
+  symbol_id?: string | null;  // 심볼 ID 추가
   viewDetail: string | null;
 }
 
@@ -33,6 +34,7 @@ export interface ProcessDetail {
   originalSymbolId?: string | null;  // 화면 로드 시 원본 심볼 ID (변경 감지용)
   language_code?: string | null;  // 언어 코드
   unit_system_code?: string | null;  // 단위 시스템 코드
+  siteFile?: File | null;  // 공정심볼 파일 (업로드용)
 }
 
 // ProcessDetail.vue에서 사용하는 추가 인터페이스들
@@ -400,15 +402,20 @@ export const useProcessStore = defineStore("process", () => {
           search_value: searchProcessType.value,
         };
       }
-      // 4. 모든 값이 null인 경우
+      // 4. 모든 값이 null인 경우 - 기본 검색
       else {
         requestData = {
-          search_field: "process_code",
+          search_field: "process_name",
           search_value: "",
         };
       }
 
       console.log("검색 요청 데이터:", requestData);
+      console.log("검색 조건 상태:", {
+        searchProcessName: searchProcessName.value,
+        searchSubCategoryInput: searchSubCategoryInput.value,
+        searchProcessType: searchProcessType.value
+      });
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -448,6 +455,10 @@ export const useProcessStore = defineStore("process", () => {
 
         // 검색 결과를 processList에 설정
         if (processDataArray.length > 0) {
+          // API 응답 데이터 구조 확인
+          console.log("API 응답 데이터 샘플 (첫 번째 항목):", processDataArray[0]);
+          console.log("API 응답에서 symbol_id 확인:", processDataArray[0]?.symbol_id);
+          
           processList.value = processDataArray.map((item: any) => ({
             id:
               item.id ||
@@ -462,6 +473,7 @@ export const useProcessStore = defineStore("process", () => {
             sub_category_nm: item.level3_code_value || "",
             process_code: item.process_code || "",
             process_symbol: item.symbol_uri || "📄",
+            symbol_id: item.symbol_id || null,
             symbol_download: (() => {
               const value = item.symbol_download || item.symbol_uri;
               // null, undefined, 빈 문자열, '{}', 'null', 빈 객체 등의 경우 null 반환
@@ -522,9 +534,27 @@ export const useProcessStore = defineStore("process", () => {
       // 오류 상세 정보 로깅
       if (error.response) {
         console.error("응답 오류:", error.response);
+        console.error("응답 상태:", error.response.status);
+        console.error("응답 데이터:", error.response.data);
       }
       if (error.request) {
         console.error("요청 오류:", error.request);
+      }
+
+      // 400 에러인 경우 특별 처리
+      if (error.response && error.response.status === 400) {
+        console.error("400 Bad Request - 요청 데이터 형식 오류");
+        console.error("요청 데이터:", requestData);
+        
+        // 빈 목록으로 초기화하고 에러를 던지지 않음
+        processList.value = [];
+        totalCount.value = 0;
+        totalPages.value = 1;
+        currentPage.value = 1;
+        selectedItems.value = [];
+        
+        // 사용자에게 알림
+        throw new Error("검색 조건이 올바르지 않습니다. 검색 조건을 확인해주세요.");
       }
 
       // 오류 발생 시 테이블 초기화
@@ -648,8 +678,8 @@ export const useProcessStore = defineStore("process", () => {
             processName: processData.process_name || null,
             processCode: processData.process_code || null,
             description: processData.process_description || "",
-            processSymbol: processData.symbol_uri || "",
-            originalProcessSymbol: processData.symbol_uri || "",  // 원본 공정심볼 파일명 저장
+            processSymbol: processData.symbol_uri && processData.symbol_uri !== null ? processData.symbol_uri : "",
+            originalProcessSymbol: processData.symbol_uri && processData.symbol_uri !== null ? processData.symbol_uri : "",  // 원본 공정심볼 파일명 저장
             originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
             language_code: processData.language_code || null,   // 언어 코드
             unit_system_code: processData.unit_system_code || null,  // 단위 시스템 코드
@@ -842,22 +872,62 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
-  const deleteProcesses = async (processIds: string[]) => {
+  const deleteProcesses = async (processIds: string[], symbolIds?: string[]) => {
     try {
       setLoading(true);
       console.log("삭제할 process_id 목록:", processIds);
+      console.log("삭제할 symbol_id 목록:", symbolIds);
 
       // 각 process_id에 대해 삭제 API 호출
-      const deletePromises = processIds.map(async (processId) => {
+      const deletePromises = processIds.map(async (processId, index) => {
         if (!processId) {
           console.warn("process_id가 없는 항목:", processId);
           return { success: false, message: "process_id가 없습니다." };
         }
 
         try {
+          // 해당 process_id에 대응하는 symbol_id 찾기
+          const symbolId = symbolIds && symbolIds[index] ? symbolIds[index] : null;
+          
+          console.log(`삭제 처리 중 - index: ${index}, processId: ${processId}, symbolId: ${symbolId}`);
+          console.log(`symbolIds 배열:`, symbolIds);
+          console.log(`symbolIds[${index}]:`, symbolIds ? symbolIds[index] : 'symbolIds is null/undefined');
+          console.log(`symbolId 상세 정보:`, {
+            value: symbolId,
+            type: typeof symbolId,
+            isNull: symbolId === null,
+            isUndefined: symbolId === undefined,
+            isEmpty: symbolId === '',
+            isWhitespace: symbolId && symbolId.trim() === '',
+            length: symbolId ? symbolId.length : 'N/A',
+            charCodeAt: symbolId ? symbolId.split('').map(c => c.charCodeAt(0)) : 'N/A'
+          });
+          
+          // 삭제 요청 데이터 준비
+          const deleteData: any = {
+            process_id: processId
+          };
+          
+          if (symbolId && symbolId !== null && symbolId !== undefined && symbolId !== '') {
+            deleteData.symbol_id = symbolId;
+            console.log(`process_id ${processId}와 symbol_id ${symbolId} 삭제 요청`);
+          } else {
+            console.log(`process_id ${processId} 삭제 요청 (symbol_id 없음: ${symbolId})`);
+          }
+          
+          console.log('최종 deleteData:', deleteData);
+
+          // request 함수의 두 번째 파라미터로 쿼리 파라미터 전달
+          const queryParams = symbolIds && symbolIds[index] ? { symbol_id: symbolIds[index] } : undefined;
+          
+          console.log('=== DELETE 요청 시작 ===');
+          console.log('processId:', processId);
+          console.log('queryParams:', queryParams);
+          console.log('request 함수 호출 전');
+          
           const result = await request(
             `/api/process/master/delete/${processId}`,
-            undefined,
+            queryParams,
             {
               method: "DELETE",
               headers: {
@@ -865,6 +935,8 @@ export const useProcessStore = defineStore("process", () => {
               },
             }
           );
+          
+          console.log('request 함수 호출 후');
 
           console.log(`process_id ${processId} 삭제 결과:`, result);
           return result;
@@ -922,13 +994,54 @@ export const useProcessStore = defineStore("process", () => {
     try {
       setLoading(true);
       console.log("공정 등록 요청 데이터:", processData);
+      console.log("processData.siteFile:", processData.siteFile);
+      console.log("processData.process_name:", processData.process_name);
+      console.log("processData.process_code:", processData.process_code);
 
+      // siteFile이 있는 경우 FormData로 전송, 없으면 JSON으로 전송
+      if (processData.siteFile) {
+        console.log("=== FormData로 전송 (siteFile 포함) ===");
+        console.log("siteFile:", processData.siteFile.name);
+        console.log("siteFile 크기:", processData.siteFile.size);
+        console.log("siteFile 타입:", processData.siteFile.type);
+        
+        // FormData로 공정 생성 API 호출
+        const formData = new FormData();
+        formData.append('language_code', processData.language_code || '');
+        formData.append('unit_system_code', processData.unit_system_code || '');
+        formData.append('process_code', processData.process_code || '');
+        formData.append('process_name', processData.process_name || '');
+        formData.append('process_type_code', processData.process_type_code || '');
+        formData.append('process_category', processData.process_category || '');
+        formData.append('siteFile', processData.siteFile);
+        
+        if (processData.file_upload_rows) {
+          formData.append('file_upload_rows', JSON.stringify(processData.file_upload_rows));
+        }
+        
+        console.log('FormData 내용:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        
+        const result = await request("/api/process/master/create", undefined, {
+          method: "POST",
+          body: formData,
+        });
+        
+        console.log("공정 등록 API 응답 (FormData):", result);
+        return result;
+      }
+
+      // siteFile이 없는 경우 JSON으로 전송
+      const { siteFile, ...createData } = processData;
+      
       const result = await request("/api/process/master/create", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(processData),
+        body: JSON.stringify(createData),
       });
 
       console.log("공정 등록 API 응답:", result);
@@ -1030,6 +1143,41 @@ export const useProcessStore = defineStore("process", () => {
       console.log("processData.subCategory:", processData.subCategory);
       console.log("processData.processSymbol:", processData.processSymbol);
       console.log("processData.description:", processData.description);
+      console.log("processData.siteFile:", processData.siteFile);
+      
+      // siteFile이 있는 경우 FormData로 전송, 없으면 JSON으로 전송
+      if (processData.siteFile) {
+        console.log("=== FormData로 전송 (siteFile 포함) ===");
+        console.log("siteFile:", processData.siteFile.name);
+        console.log("siteFile 크기:", processData.siteFile.size);
+        console.log("siteFile 타입:", processData.siteFile.type);
+        
+        // FormData로 공정 업데이트 API 호출
+        const formData = new FormData();
+        formData.append('process_code', processData.processCode || '');
+        formData.append('process_type_code', processData.processType || '');
+        formData.append('process_name', processData.processName || '');
+        formData.append('process_category', processData.subCategory || '');
+        formData.append('process_description', processData.description || '');
+        formData.append('siteFile', processData.siteFile);
+        
+        if (processData.symbolId) {
+          formData.append('symbol_id', processData.symbolId);
+        }
+        
+        console.log('FormData 내용:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        
+        const result = await request(`/api/process/master/update/${processId}`, undefined, {
+          method: "PUT",
+          body: formData,
+        });
+        
+        console.log("공정 수정 API 응답 (FormData):", result);
+        return result;
+      }
       
       // API 서버에서 요구하는 필드명으로 데이터 구조 변환
       const updateData: any = {

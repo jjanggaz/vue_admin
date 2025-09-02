@@ -316,6 +316,7 @@
     "close": "Close",
     "selectFile": "Select File",
     "chooseFile": "Choose File",
+    "noFile": "No file selected",
     "name": "Name",
     "code": "Code",
     "type": "Type",

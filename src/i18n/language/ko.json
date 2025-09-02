@@ -316,6 +316,7 @@
     "close": "닫기",
     "selectFile": "파일 선택",
     "chooseFile": "파일 선택하기",
+    "noFile": "선택된 파일 없음",
     "name": "이름",
     "code": "코드",
     "type": "타입",

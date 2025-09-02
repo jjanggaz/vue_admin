@@ -6,7 +6,7 @@
         <!-- 첫 번째 줄: 언어, 단위 -->
         <div class="search-row first-row">
           <div class="group-form">
-            <label for="searchLanguage" class="label-title">언어</label>
+            <label for="searchLanguage" class="label-title">{{ t("codeManagement.categories.language") }}</label>
             <div class="form-item">
               <select
                 id="searchLanguage"
@@ -20,7 +20,7 @@
             </div>
           </div>
           <div class="group-form">
-            <label for="searchUnit" class="label-title">단위</label>
+            <label for="searchUnit" class="label-title">{{ t("codeManagement.categories.unit") }}</label>
             <div class="form-item">
               <select
                 id="searchUnit"
@@ -216,14 +216,14 @@
               <!-- 첫 번째 줄: 언어, 단위 -->
               <div class="form-row">
                 <div class="form-group">
-                  <label class="essential">⊙ 언어</label>
+                  <label class="essential">{{ t("codeManagement.categories.language") }}</label>
                   <select v-model="registForm.language" class="form-select">
                     <option value="ko">국문</option>
                     <option value="en">영어</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="essential">⊙ 단위</label>
+                  <label class="essential">{{ t("codeManagement.categories.unit") }}</label>
                   <select v-model="registForm.unit" class="form-select">
                     <option value="metric">Metric</option>
                     <option value="imperial">Imperial</option>
@@ -233,7 +233,7 @@
               <!-- 두 번째 줄: 공정구분, 공정 중분류, 공정명, 공정심볼 파일 -->
               <div class="form-row">
                 <div class="form-group">
-                  <label class="essential">⊙ 공정구분</label>
+                  <label class="essential">{{ t("process.processType") }}</label>
                   <select
                     v-model="registForm.processType"
                     class="form-select"
@@ -250,7 +250,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="essential">⊙ 공정 중분류</label>
+                  <label class="essential">{{ t("process.subCategory") }}</label>
                   <select
                     v-model="registForm.processSubCategory"
                     class="form-select"
@@ -267,7 +267,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>⊙ 공정명</label>
+                  <label>{{ t("process.processName") }}</label>
                   <select
                     v-model="registForm.processNm"
                     class="form-select"
@@ -283,7 +283,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="essential">⊙ 공정심볼 파일</label>
+                  <label class="essential">공정심볼 파일</label>
                   <div class="file-input-group">
                     <input
                       type="file"
@@ -291,11 +291,12 @@
                       @change="handleProcessSymbolFileChange"
                       style="display: none"
                       ref="processSymbolFileInput"
+                      id="processSymbolFileInput"
                     />
-                    <button type="button" @click="$refs.processSymbolFileInput.click()" class="file-select-btn">
-                      파일선택 (svg)
-                    </button>
-                    <span class="selected-file">{{ getProcessSymbolFileName() || '선택된 파일 없음' }}</span>
+                    <label for="processSymbolFileInput" class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                    </label>
+                    <span class="selected-file">{{ getProcessSymbolFileName() || t("common.noFile") }}</span>
                   </div>
                 </div>
               </div>
@@ -303,7 +304,7 @@
 
             <!-- 중간: 파일 업로드 그리드 -->
             <div class="file-upload-section">
-              <h4>⊙ 파일 업로드</h4>
+              <h4>파일 업로드</h4>
               <div class="grid-actions">
                 <button class="btn btn-primary btn-sm" @click="addFileUploadRow">+ 행 추가</button>
                 <button class="btn btn-danger btn-sm" @click="deleteSelectedFileRows" :disabled="selectedFileRows.length === 0">삭제</button>
@@ -346,7 +347,7 @@
                               {{ row.formulaFile.name }}
                               <button class="clear-file" @click="clearFormulaFile(row)">&times;</button>
                             </span>
-                            <span v-else class="no-file">선택된 파일 없음</span>
+                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
                           </div>
                         </div>
                       </td>
@@ -361,7 +362,7 @@
                               {{ row.hydraulicFile.name }}
                               <button class="clear-file" @click="clearHydraulicFile(row)">&times;</button>
                             </span>
-                            <span v-else class="no-file">선택된 파일 없음</span>
+                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
                           </div>
                         </div>
                       </td>
@@ -373,7 +374,7 @@
                               {{ row.pfdFile.name }}
                               <button class="clear-file" @click="clearPfdFile(row)">&times;</button>
                             </span>
-                            <span v-else class="no-file">선택된 파일 없음</span>
+                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
                           </div>
                         </div>
                       </td>
@@ -550,7 +551,7 @@
                           {{ item.pidFileName }}
                           <button class="clear-file" @click="clearPidFile(item)">&times;</button>
                         </span>
-                        <span v-else class="no-file">선택된 파일 없음</span>
+                        <span v-else class="no-file">{{ t("common.noFile") }}</span>
                       </div>
                     </div>
                   </td>
@@ -562,7 +563,7 @@
                           {{ item.excelFileName }}
                           <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
                         </span>
-                        <span v-else class="no-file">선택된 파일 없음</span>
+                        <span v-else class="no-file">{{ t("common.noFile") }}</span>
                       </div>
                     </div>
                   </td>
@@ -622,7 +623,6 @@
             v-else
             :key="`process-detail-${selectedProcessId}`"
             :process-id="String(selectedProcessId)"
-            @close="closeDetailModal"
             ref="processDetailRef"
             class="popup-mode"
           />
@@ -691,6 +691,7 @@ interface AttachedFiles {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "process_id", title: "Process ID", sortable: false, hidden: true }, // process_id (숨김)
+  { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true }, // symbol_id (숨김)
   { key: "process_type_nm", title: t("process.processType"), sortable: true }, // 공정구분
   { key: "sub_category_nm", title: t("process.subCategory"), sortable: true }, // 공정 중분류
   { key: "process_nm", title: t("process.processName"), sortable: true }, // 공정명
@@ -712,7 +713,11 @@ const tableColumns: TableColumn[] = [
  const sortColumn = ref<string | null>(null);
  const sortOrder = ref<"asc" | "desc" | null>(null);
  const isRegistModalOpen = ref(false);
- const isDetailModalOpen = ref(false);
+const isDetailModalOpen = ref(false);
+
+// 파일 입력 ref
+const processSymbolFileInput = ref<HTMLInputElement | null>(null);
+const selectedProcessSymbolFile = ref<File | null>(null);
  const selectedProcessId = ref<string | undefined>(undefined);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
  const isComponentMounted = ref(false);
@@ -847,6 +852,12 @@ const handleRegist = () => {
   // 등록 모달용 공정구분 코드 로드
   processStore.loadProcessTypeCodes();
   
+  // 파일 입력 초기화
+  if (processSymbolFileInput.value) {
+    processSymbolFileInput.value.value = '';
+  }
+  selectedProcessSymbolFile.value = null;
+  
   // 초기 파일 업로드 행 추가
   if (fileUploadRows.value.length === 0) {
     addFileUploadRow();
@@ -872,6 +883,12 @@ const handleRegist = () => {
      language: "ko",
      unit: "metric",
    };
+   
+   // 파일 입력 초기화
+   if (processSymbolFileInput.value) {
+     processSymbolFileInput.value.value = '';
+   }
+   selectedProcessSymbolFile.value = null;
    // 파일 선택 상태도 초기화
    selectedFiles.value = {};
    // 첨부된 파일 목록도 초기화
@@ -990,10 +1007,29 @@ const handleDelete = async () => {
       const selectedProcessIds = processStore.selectedItems.map(
         (item) => item.process_id
       );
+      
+      const selectedSymbolIds = processStore.selectedItems.map(
+        (item) => item.symbol_id || null
+      );
+
+      console.log('삭제할 항목들 상세 정보:');
+      console.log('selectedItems:', processStore.selectedItems);
+      console.log('processIds:', selectedProcessIds);
+      console.log('symbolIds:', selectedSymbolIds);
+      
+      // 각 항목별 상세 정보 출력
+      processStore.selectedItems.forEach((item, index) => {
+        console.log(`항목 ${index}:`, {
+          process_id: item.process_id,
+          symbol_id: item.symbol_id,
+          process_nm: item.process_nm
+        });
+      });
 
       // processStore를 통한 삭제 처리
       const { successCount, failCount } = await processStore.deleteProcesses(
-        selectedProcessIds
+        selectedProcessIds,
+        selectedSymbolIds
       );
 
       if (failCount > 0) {
@@ -1061,10 +1097,16 @@ const selectPfdFile = (row: FileUploadRow) => {
   (document.querySelector('input[ref="pfdFileInput"]') as HTMLInputElement)?.click();
 };
 
+
+
 const handleProcessSymbolFileChange = async (event: Event) => {
+  console.log('handleProcessSymbolFileChange 호출됨');
   const target = event.target as HTMLInputElement;
+  console.log('target.files:', target.files);
+  
   if (target.files && target.files[0]) {
     const file = target.files[0];
+    console.log('선택된 파일:', file.name, file.size, file.type);
     
     if (!file.name.toLowerCase().endsWith('.svg')) {
       alert('SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.');
@@ -1073,16 +1115,34 @@ const handleProcessSymbolFileChange = async (event: Event) => {
     }
     
     registForm.value.processSymbolFile = file;
+    selectedProcessSymbolFile.value = file; // 반응성을 위해 추가
     console.log('공정심볼 파일 선택됨:', file.name);
+    console.log('registForm.processSymbolFile:', registForm.value.processSymbolFile);
+    console.log('selectedProcessSymbolFile:', selectedProcessSymbolFile.value);
+  } else {
+    console.log('파일이 선택되지 않음');
   }
 };
 
 const getProcessSymbolFileName = () => {
+  console.log('getProcessSymbolFileName 호출됨');
+  console.log('selectedProcessSymbolFile.value:', selectedProcessSymbolFile.value);
+  console.log('registForm.value.processSymbolFile:', registForm.value.processSymbolFile);
+  
+  // selectedProcessSymbolFile을 우선적으로 사용 (반응성 보장)
+  if (selectedProcessSymbolFile.value) {
+    console.log('selectedProcessSymbolFile 사용:', selectedProcessSymbolFile.value.name);
+    return selectedProcessSymbolFile.value.name;
+  }
+  
+  // fallback: registForm의 processSymbolFile 사용
   const processSymbolFile = registForm.value.processSymbolFile;
   if (processSymbolFile) {
-    // 경로 제외 파일명만 반환
-    return processSymbolFile.name.split('/').pop() || processSymbolFile.name;
+    console.log('registForm.processSymbolFile 사용:', processSymbolFile.name);
+    return processSymbolFile.name;
   }
+  
+  console.log('파일명 없음');
   return '';
 };
 
@@ -1314,7 +1374,13 @@ const saveProcessRegistration = async () => {
     }
 
     // 공정심볼 파일 검증
-    if (!registForm.value.processSymbolFile) {
+    console.log('공정심볼 파일 검증:', {
+      registFormProcessSymbolFile: registForm.value.processSymbolFile,
+      selectedProcessSymbolFile: selectedProcessSymbolFile.value
+    });
+    
+    const symbolFile = selectedProcessSymbolFile.value || registForm.value.processSymbolFile;
+    if (!symbolFile) {
       alert('공정심볼 파일을 선택해주세요.');
       return;
     }
@@ -1344,13 +1410,15 @@ const saveProcessRegistration = async () => {
       process_name: selectedProcessNameOption.label,
       process_type_code: registForm.value.processType,
       process_category: registForm.value.processSubCategory,
-      process_symbol_file: registForm.value.processSymbolFile,
+      process_symbol_file: symbolFile,
+      siteFile: symbolFile, // createProcess에서 사용할 siteFile 추가
       file_upload_rows: fileUploadRows.value
     };
 
     console.log('공정 등록 저장:', {
       formData: registForm.value,
       fileRows: fileUploadRows.value,
+      symbolFile: symbolFile,
       requestData: requestData
     });
 
@@ -2299,7 +2367,7 @@ onMounted(async () => {
     padding: 1rem 1.5rem;
     font-size: 1.1rem;
     text-align: left;
-    min-height: 60px;
+          vertical-align: middle;
   }
   th {
     background: #f8f9fa;
@@ -2456,6 +2524,8 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 14px;
   white-space: nowrap;
+  display: inline-block;
+  text-align: center;
 }
 
 .file-select-btn:hover {

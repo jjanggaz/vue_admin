@@ -563,82 +563,35 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 유입종류 등록
-    async createWaterFlowType(waterFlowTypeData: WaterFlowTypeFormData) {
+    async createWaterFlowType(requestData: {
+      waterFlowTypeData: WaterFlowTypeFormData;
+      symbolFile?: File;
+    }) {
       this.loading = true;
       this.error = null;
 
       try {
-        // 새로운 API 스펙에 맞게 데이터 변환
-        const requestData: any = {
-          flow_type_code: waterFlowTypeData.flow_type_code,
-          flow_type_name: waterFlowTypeData.flow_type_name,
-          flow_direction: waterFlowTypeData.flow_direction,
-        };
+        const formData = new FormData();
 
-        // 선택적 필드들 추가
-        if (waterFlowTypeData.flow_type_name_en) {
-          requestData.flow_type_name_en = waterFlowTypeData.flow_type_name_en;
-        }
-
-        if (waterFlowTypeData.description) {
-          requestData.description = waterFlowTypeData.description;
-        }
-
-        if (waterFlowTypeData.svg_symbol_id) {
-          requestData.svg_symbol_id = waterFlowTypeData.svg_symbol_id;
-        }
-
-        if (waterFlowTypeData.symbol_color) {
-          requestData.symbol_color = waterFlowTypeData.symbol_color;
-        }
-
-        if (waterFlowTypeData.is_active !== undefined) {
-          requestData.is_active = waterFlowTypeData.is_active;
-        }
-
-        // Metric 파라미터 추가
-        if (
-          waterFlowTypeData.metric_parameters &&
-          waterFlowTypeData.metric_parameters.length > 0
-        ) {
-          requestData.metric_parameters =
-            waterFlowTypeData.metric_parameters.map((param) => ({
-              parameter_name: param.parameter_name,
-              is_required: param.is_required || false,
-              default_value: param.default_value,
-              parameter_unit: param.parameter_unit,
-              remarks: param.remarks,
-              unit_system_code: "METRIC",
-            }));
-        }
-
-        // Imperial 파라미터 추가
-        if (
-          waterFlowTypeData.imperial_parameters &&
-          waterFlowTypeData.imperial_parameters.length > 0
-        ) {
-          requestData.imperial_parameters =
-            waterFlowTypeData.imperial_parameters.map((param) => ({
-              parameter_name: param.parameter_name,
-              is_required: param.is_required || false,
-              default_value: param.default_value,
-              parameter_unit: param.parameter_unit,
-              remarks: param.remarks,
-              unit_system_code: "IMPERIAL",
-            }));
-        }
-
-        console.log(
-          "유입종류 등록 요청 데이터:",
-          JSON.stringify(requestData, null, 2)
+        // waterFlowTypeData를 JSON 문자열로 변환하여 추가
+        formData.append(
+          "waterFlowTypeData",
+          JSON.stringify(requestData.waterFlowTypeData)
         );
+
+        // 파일이 있으면 symbolFile로 추가
+        if (requestData.symbolFile) {
+          formData.append("symbolFile", requestData.symbolFile);
+        }
+
+        console.log("유입종류 등록 요청 데이터:", {
+          waterFlowTypeData: requestData.waterFlowTypeData,
+          symbolFile: requestData.symbolFile?.name || "none",
+        });
 
         const response = await request("/api/inflow/create", undefined, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestData),
+          body: formData,
         });
 
         // 등록 후 유입종류 목록 새로고침
@@ -703,54 +656,39 @@ export const useInflowStore = defineStore("inflow", {
     // 유입종류 수정
     async updateWaterFlowType(
       flowTypeId: string,
-      waterFlowTypeData: Partial<WaterFlowTypeFormData>
+      requestData: {
+        waterFlowTypeData: Partial<WaterFlowTypeFormData>;
+        symbolFile?: File;
+      }
     ) {
       this.loading = true;
       this.error = null;
 
       try {
-        const requestData: any = {};
+        const formData = new FormData();
 
-        // 필드별로 값이 있는 경우에만 추가
-        if (waterFlowTypeData.flow_type_code) {
-          requestData.flow_type_code = waterFlowTypeData.flow_type_code;
-        }
-        if (waterFlowTypeData.flow_type_name) {
-          requestData.flow_type_name = waterFlowTypeData.flow_type_name;
-        }
-        if (waterFlowTypeData.flow_type_name_en) {
-          requestData.flow_type_name_en = waterFlowTypeData.flow_type_name_en;
-        }
-        if (waterFlowTypeData.flow_direction) {
-          requestData.flow_direction = waterFlowTypeData.flow_direction;
-        }
-        if (waterFlowTypeData.description) {
-          requestData.description = waterFlowTypeData.description;
-        }
-        if (waterFlowTypeData.svg_symbol_id) {
-          requestData.svg_symbol_id = waterFlowTypeData.svg_symbol_id;
-        }
-        if (waterFlowTypeData.symbol_color) {
-          requestData.symbol_color = waterFlowTypeData.symbol_color;
-        }
-        if (waterFlowTypeData.is_active !== undefined) {
-          requestData.is_active = waterFlowTypeData.is_active;
-        }
-
-        console.log(
-          "유입종류 수정 요청 데이터:",
-          JSON.stringify(requestData, null, 2)
+        // waterFlowTypeData를 JSON 문자열로 변환하여 추가
+        formData.append(
+          "waterFlowTypeData",
+          JSON.stringify(requestData.waterFlowTypeData)
         );
+
+        // 파일이 있으면 symbolFile로 추가
+        if (requestData.symbolFile) {
+          formData.append("symbolFile", requestData.symbolFile);
+        }
+
+        console.log("유입종류 수정 요청 데이터:", {
+          waterFlowTypeData: requestData.waterFlowTypeData,
+          symbolFile: requestData.symbolFile?.name || "none",
+        });
 
         const response = await request(
           `/api/inflow/update/${flowTypeId}`,
           undefined,
           {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestData),
+            method: "POST",
+            body: formData,
           }
         );
 
@@ -771,6 +709,23 @@ export const useInflowStore = defineStore("inflow", {
         throw error;
       } finally {
         this.loading = false;
+      }
+    },
+
+    // 심볼 파일 정보 조회
+    async fetchSymbolFileInfo(symbolId: string) {
+      try {
+        const response = await request(
+          `/api/inflow/fileInfo/${symbolId}`,
+          undefined,
+          {
+            method: "GET",
+          }
+        );
+        return response;
+      } catch (error) {
+        console.error("심볼 파일 정보 조회 실패:", error);
+        throw error;
       }
     },
 

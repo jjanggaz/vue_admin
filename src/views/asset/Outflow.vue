@@ -204,7 +204,11 @@
               <div class="file-upload-row">
                 <input
                   type="text"
-                  :value="uploadForm.file ? uploadForm.file.name : ''"
+                  :value="
+                    uploadForm.file
+                      ? uploadForm.file.name
+                      : uploadForm.existingFileName || ''
+                  "
                   :placeholder="t('placeholder.selectFile')"
                   readonly
                   class="file-name-input"
@@ -214,7 +218,7 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".3ds,.obj,.fbx,.dae"
+                    accept=".svg,.png,.jpg,.jpeg,.gif"
                     style="display: none"
                   />
                 </label>
@@ -404,7 +408,11 @@
               <div class="file-upload-row">
                 <input
                   type="text"
-                  :value="uploadForm.file ? uploadForm.file.name : ''"
+                  :value="
+                    uploadForm.file
+                      ? uploadForm.file.name
+                      : uploadForm.existingFileName || ''
+                  "
                   :placeholder="t('placeholder.selectFile')"
                   readonly
                   class="file-name-input"
@@ -414,7 +422,7 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".3ds,.obj,.fbx,.dae"
+                    accept=".svg,.png,.jpg,.jpeg,.gif"
                     style="display: none"
                   />
                 </label>
@@ -661,6 +669,7 @@ interface UploadForm {
   title: string;
   category: string;
   file: File | null;
+  existingFileName?: string; // 기존 파일명 표시용
 }
 
 const uploadForm = ref<UploadForm>({
@@ -768,7 +777,7 @@ const loadWaterFlowTypes = async () => {
 
     // 조회된 데이터를 탭 형태로 변환
     if (outflowStore.waterFlowTypes && outflowStore.waterFlowTypes.length > 0) {
-      tabs.value = outflowStore.waterFlowTypes.map((waterFlowType, index) => ({
+      tabs.value = outflowStore.waterFlowTypes.map((waterFlowType) => ({
         name: waterFlowType.flow_type_name,
         flow_type_id: waterFlowType.flow_type_id,
         flow_type_code: waterFlowType.flow_type_code,
@@ -832,81 +841,23 @@ const gridColumns: TableColumn[] = [
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    uploadForm.value.file = target.files[0];
+    const file = target.files[0];
+
+    // 허용된 파일 확장자 체크
+    const allowedExtensions = [".svg", ".png", ".jpg", ".jpeg", ".gif"];
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert("SVG, PNG, JPG, JPEG, GIF 파일만 업로드 가능합니다.");
+      target.value = ""; // 파일 선택 초기화
+      return;
+    }
+
+    uploadForm.value.file = file;
   }
 };
-
-// Metric 파일 업로드 핸들러 (현재 사용하지 않음)
-// const handleMetricFileUpload = async (event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   if (target.files && target.files[0]) {
-//     const file = target.files[0];
-
-//     // .py 파일인지 확인
-//     if (!file.name.endsWith('.py')) {
-//       alert('Python 파일(.py)만 업로드 가능합니다.');
-//       return;
-//     }
-
-//     metricFileName.value = file.name;
-
-//     try {
-//       const fileContent = await readFileContent(file);
-//       const parsedData = parsePythonFile(fileContent);
-//       metricFileData.value = parsedData;
-//     } catch (error) {
-//       console.error('파일 파싱 에러:', error);
-//       alert('파일을 읽는 중 오류가 발생했습니다.');
-//     }
-//   }
-// };
-
-// Imperial 파일 업로드 핸들러 (현재 사용하지 않음)
-// const handleImperialFileUpload = async (event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   if (target.files && target.files[0]) {
-//     const file = target.files[0];
-
-//     // .py 파일인지 확인
-//     if (!file.name.endsWith('.py')) {
-//       alert('Python 파일(.py)만 업로드 가능합니다.');
-//       return;
-//     }
-
-//     imperialFileName.value = file.name;
-
-//     try {
-//       const fileContent = await readFileContent(file);
-//       const parsedData = parsePythonFile(fileContent);
-//       imperialFileData.value = parsedData;
-//     } catch (error) {
-//       console.error('파일 파싱 에러:', error);
-//       alert('파일을 읽는 중 오류가 발생했습니다.');
-//     }
-//   }
-// };
-
-// 파일 내용 읽기 (현재 사용하지 않음)
-// const readFileContent = (file: File): Promise<string> => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.onload = (e) => {
-//       if (e.target?.result) {
-//         resolve(e.target.result as string);
-//       } else {
-//         reject(new Error('파일을 읽을 수 없습니다.'));
-//       }
-//     };
-//     reader.onerror = () => reject(new Error('파일 읽기 실패'));
-//     reader.readAsText(file);
-//   });
-// };
-
-// Python 파일 파싱 (현재 사용하지 않음)
-// const parsePythonFile = (content: string): GridRow[] => {
-//   // ... 파싱 로직 (생략)
-//   return [];
-// };
 
 // 색상 업데이트 함수
 const updateColor = (event: Event) => {
@@ -945,70 +896,6 @@ Object.keys(tabGridData.value).forEach((key) => {
   metricTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
   imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
-
-// Metric 데이터 추가 함수 (현재 사용하지 않음 - 메인 탭용)
-// const addMetricRow = () => {
-//   const currentData = metricTabGridData.value[activeTab.value] || [];
-//   const newId = currentData.length > 0 ? Math.max(...currentData.map(item => item.id)) + 1 : 1;
-
-//   const newRow: GridRow = {
-//     id: newId,
-//     item: "", // 빈 값으로 시작, 선택 시 채워짐
-//     effluent: 0,
-//     unit: "",
-//     display: "Y",
-//     remarks: "",
-//   };
-
-//   metricTabGridData.value[activeTab.value] = [...currentData, newRow];
-//   console.log('Metric 행 추가됨:', newRow);
-
-//   // 새로 추가된 행이 보이도록 스크롤 조정
-//   nextTick(() => {
-//     const metricTabContent = document.querySelector('.tab-content-metric .data-table-container.with-scroll');
-//     if (metricTabContent) {
-//       metricTabContent.scrollTop = metricTabContent.scrollHeight;
-//     } else {
-//       // fallback: 일반적인 스크롤 컨테이너 찾기
-//       const scrollContainer = document.querySelector('.tab-content-metric .data-table-container');
-//       if (scrollContainer) {
-//         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-//       }
-//     }
-//   });
-// };
-
-// Imperial 데이터 추가 함수 (현재 사용하지 않음 - 메인 탭용)
-// const addImperialRow = () => {
-//   const currentData = imperialTabGridData.value[activeTab.value] || [];
-//   const newId = currentData.length > 0 ? Math.max(...currentData.map(item => item.id)) + 1 : 1;
-
-//   const newRow: GridRow = {
-//     id: newId,
-//     item: "", // 빈 값으로 시작, 선택 시 채워짐
-//     effluent: 0,
-//     unit: "",
-//     display: "Y",
-//     remarks: "",
-//   };
-
-//   imperialTabGridData.value[activeTab.value] = [...currentData, newRow];
-//   console.log('Imperial 행 추가됨:', newRow);
-
-//   // 새로 추가된 행이 보이도록 스크롤 조정
-//   nextTick(() => {
-//     const imperialTabContent = document.querySelector('.tab-content-imperial .data-table-container.with-scroll');
-//     if (imperialTabContent) {
-//       imperialTabContent.scrollTop = imperialTabContent.scrollHeight;
-//     } else {
-//       // fallback: 일반적인 스크롤 컨테이너 찾기
-//       const scrollContainer = document.querySelector('.tab-content-imperial .data-table-container');
-//       if (scrollContainer) {
-//         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-//       }
-//     }
-//   });
-// };
 
 // 모달용 Metric 데이터 추가 함수
 const addModalMetricRow = () => {
@@ -1151,21 +1038,6 @@ const currentImperialGridData = computed(() => {
   return imperialTabGridData.value[activeTab.value] || [];
 });
 
-// 수질 검색 (임시 주석 처리)
-// const searchWaterQuality = async () => {
-//   try {
-//     await waterQualityStore.fetchWaterQuality({
-//       search_field:
-//         searchField.value && searchValue.value ? searchField.value : undefined,
-//       search_value: searchValue.value || undefined,
-//       page: waterQualityStore.page,
-//       page_size: waterQualityStore.page_size,
-//     });
-//   } catch (error) {
-//     console.error("수질 검색 실패:", error);
-//   }
-// };
-
 // 모달 관련 함수
 const openModal = async () => {
   isModalOpen.value = true;
@@ -1240,6 +1112,7 @@ const closeModal = () => {
   newOutflowTypeName.value = "";
   newOutflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
@@ -1267,6 +1140,32 @@ const openUpdateModal = async () => {
     originalWaterFlowType?.symbol_info?.symbol_color || "#3b82f6";
   uploadForm.value.title = originalWaterFlowType?.description || ""; // description을 비고 input에 설정
 
+  // 심볼 파일 정보 조회하여 첨부파일 input에 표시
+  if (originalWaterFlowType?.svg_symbol_id) {
+    try {
+      const fileInfoResponse = await outflowStore.fetchSymbolFileInfo(
+        originalWaterFlowType.svg_symbol_id
+      );
+      if (
+        fileInfoResponse?.response?.uploaded_files &&
+        fileInfoResponse.response.uploaded_files.length > 0
+      ) {
+        // uploaded_at 기준으로 정렬하여 가장 최신 파일 찾기
+        const latestFile = fileInfoResponse.response.uploaded_files.sort(
+          (a: any, b: any) =>
+            new Date(b.uploaded_at).getTime() -
+            new Date(a.uploaded_at).getTime()
+        )[0];
+
+        // 파일명을 input에 표시하기 위해 별도 상태 추가
+        uploadForm.value.existingFileName = latestFile.original_filename;
+      }
+    } catch (error) {
+      console.error("파일 정보 조회 실패:", error);
+      // 에러가 발생해도 모달은 계속 진행
+    }
+  }
+
   // flow_type_code에서 공통코드 찾기
   if (currentTab.flow_type_code && outflowStore.commonCodes.length > 0) {
     const matchedCode = outflowStore.commonCodes.find(
@@ -1286,16 +1185,6 @@ const openUpdateModal = async () => {
     imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
   }
 
-  // // 현재 탭의 데이터로 폼 초기화
-  // selectedOutputType.value = currentTab.flow_type_code || "";
-  // newOutflowTypeName.value = currentTab.name || "";
-  // newOutflowTypeNameEn.value = ""; // 영문명은 API에서 가져와야 함
-
-  // // 현재 탭의 파라미터 데이터 로드
-  // if (currentTab.flow_type_code) {
-  //   await loadWaterFlowTypeParameters(currentTab.flow_type_code);
-  // }
-
   // 모달 열기
   isUpdateModalOpen.value = true;
 
@@ -1313,6 +1202,7 @@ const closeUpdateModal = () => {
   newOutflowTypeName.value = "";
   newOutflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
@@ -1334,19 +1224,22 @@ const updateTab = async () => {
     );
 
     // 수정할 데이터 준비
-    const updateData = {
-      flow_type_name: newOutflowTypeName.value.trim(),
-      flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
-      description: uploadForm.value.title || undefined,
-      svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
-      symbol_color: selectedColor.value, // 심볼 색상 추가
-      is_active: true,
+    const requestData = {
+      waterFlowTypeData: {
+        flow_type_name: newOutflowTypeName.value.trim(),
+        flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
+        description: uploadForm.value.title || undefined,
+        svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
+        symbol_color: selectedColor.value, // 심볼 색상 추가
+        is_active: true,
+      },
+      symbolFile: uploadForm.value.file || undefined, // 파일첨부
     };
 
     // 수정 API 호출
     const response = await outflowStore.updateWaterFlowType(
       currentTab.flow_type_id,
-      updateData
+      requestData
     );
 
     // 수정 완료 후 목록 새로고침
@@ -1412,17 +1305,22 @@ const createNewTab = async () => {
         : undefined;
 
     // 유출종류와 파라미터를 한 번에 등록
-    const response = await outflowStore.createWaterFlowType({
-      flow_type_code: selectedOutputType.value, // 선택된 공통코드의 code_key 사용
-      flow_type_name: newOutflowTypeName.value.trim(),
-      flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
-      flow_direction: "EFFLUENT",
-      description: uploadForm.value.title || undefined,
-      symbol_color: selectedColor.value, // 심볼 색상 추가
-      is_active: true,
-      metric_parameters: metricParameters,
-      imperial_parameters: imperialParameters,
-    });
+    const requestData = {
+      waterFlowTypeData: {
+        flow_type_code: selectedOutputType.value, // 선택된 공통코드의 code_key 사용
+        flow_type_name: newOutflowTypeName.value.trim(),
+        flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
+        flow_direction: "EFFLUENT",
+        description: uploadForm.value.title || undefined,
+        symbol_color: selectedColor.value, // 심볼 색상 추가
+        is_active: true,
+        metric_parameters: metricParameters,
+        imperial_parameters: imperialParameters,
+      },
+      symbolFile: uploadForm.value.file || undefined, // 파일첨부
+    };
+
+    const response = await outflowStore.createWaterFlowType(requestData);
 
     // 폼 초기화
     selectedOutputType.value = "";

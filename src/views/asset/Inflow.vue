@@ -274,7 +274,11 @@
               <div class="file-upload-row">
                 <input
                   type="text"
-                  :value="uploadForm.file ? uploadForm.file.name : ''"
+                  :value="
+                    uploadForm.file
+                      ? uploadForm.file.name
+                      : uploadForm.existingFileName || ''
+                  "
                   :placeholder="t('placeholder.selectFile')"
                   readonly
                   class="file-name-input"
@@ -284,7 +288,7 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".3ds,.obj,.fbx,.dae"
+                    accept=".svg,.png,.jpg,.jpeg,.gif"
                     style="display: none"
                   />
                 </label>
@@ -533,7 +537,11 @@
               <div class="file-upload-row">
                 <input
                   type="text"
-                  :value="uploadForm.file ? uploadForm.file.name : ''"
+                  :value="
+                    uploadForm.file
+                      ? uploadForm.file.name
+                      : uploadForm.existingFileName || ''
+                  "
                   :placeholder="t('placeholder.selectFile')"
                   readonly
                   class="file-name-input"
@@ -543,7 +551,7 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".3ds,.obj,.fbx,.dae"
+                    accept=".svg,.png,.jpg,.jpeg,.gif"
                     style="display: none"
                   />
                 </label>
@@ -924,6 +932,7 @@ interface UploadForm {
   title: string;
   category: string;
   file: File | null;
+  existingFileName?: string; // 기존 파일명 표시용
 }
 
 const uploadForm = ref<UploadForm>({
@@ -1111,7 +1120,21 @@ const gridColumns2: TableColumn[] = [
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    uploadForm.value.file = target.files[0];
+    const file = target.files[0];
+
+    // 허용된 파일 확장자 체크
+    const allowedExtensions = [".svg", ".png", ".jpg", ".jpeg", ".gif"];
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert("SVG, PNG, JPG, JPEG, GIF 파일만 업로드 가능합니다.");
+      target.value = ""; // 파일 선택 초기화
+      return;
+    }
+
+    uploadForm.value.file = file;
   }
 };
 
@@ -1418,70 +1441,6 @@ Object.keys(tabGridData.value).forEach((key) => {
   imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
 
-// Metric 데이터 추가 함수 (현재 사용하지 않음 - 메인 탭에서는 파라미터 추가 기능 비활성화)
-// const addMetricRow = () => {
-//   const currentData = metricTabGridData.value[activeTab.value] || [];
-//   const newId = currentData.length > 0 ? Math.max(...currentData.map(item => item.id)) + 1 : 1;
-
-//   const newRow: GridRow = {
-//     id: newId,
-//     item: "", // 빈 값으로 시작, 선택 시 채워짐
-//     influent: 0,
-//     unit: "",
-//     display: "Y",
-//     remarks: "",
-//   };
-
-//   metricTabGridData.value[activeTab.value] = [...currentData, newRow];
-//   console.log('Metric 행 추가됨:', newRow);
-
-//   // 새로 추가된 행이 보이도록 스크롤 조정
-//   nextTick(() => {
-//     const metricTabContent = document.querySelector('.tab-content-metric .data-table-container.with-scroll');
-//     if (metricTabContent) {
-//       metricTabContent.scrollTop = metricTabContent.scrollHeight;
-//     } else {
-//       // fallback: 일반적인 스크롤 컨테이너 찾기
-//       const scrollContainer = document.querySelector('.tab-content-metric .data-table-container');
-//       if (scrollContainer) {
-//         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-//       }
-//     }
-//   });
-// };
-
-// Imperial 데이터 추가 함수 (현재 사용하지 않음 - 메인 탭에서는 파라미터 추가 기능 비활성화)
-// const addImperialRow = () => {
-//   const currentData = imperialTabGridData.value[activeTab.value] || [];
-//   const newId = currentData.length > 0 ? Math.max(...currentData.map(item => item.id)) + 1 : 1;
-
-//   const newRow: GridRow = {
-//     id: newId,
-//     item: "", // 빈 값으로 시작, 선택 시 채워짐
-//     influent: 0,
-//     unit: "",
-//     display: "Y",
-//     remarks: "",
-//   };
-
-//   imperialTabGridData.value[activeTab.value] = [...currentData, newRow];
-//   console.log('Imperial 행 추가됨:', newRow);
-
-//   // 새로 추가된 행이 보이도록 스크롤 조정
-//   nextTick(() => {
-//     const imperialTabContent = document.querySelector('.tab-content-imperial .data-table-container.with-scroll');
-//     if (imperialTabContent) {
-//       imperialTabContent.scrollTop = imperialTabContent.scrollHeight;
-//     } else {
-//       // fallback: 일반적인 스크롤 컨테이너 찾기
-//       const scrollContainer = document.querySelector('.tab-content-imperial .data-table-container');
-//       if (scrollContainer) {
-//         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-//       }
-//     }
-//   });
-// };
-
 // 모달용 Metric 데이터 추가 함수
 const addModalMetricRow = () => {
   const currentData =
@@ -1678,6 +1637,32 @@ const openUpdateModal = async () => {
     selectedColor.value =
       originalWaterFlowType?.symbol_info?.symbol_color || "#3b82f6";
     uploadForm.value.title = originalWaterFlowType?.description || ""; // description을 비고 input에 설정
+
+    // 심볼 파일 정보 조회하여 첨부파일 input에 표시
+    if (originalWaterFlowType?.svg_symbol_id) {
+      try {
+        const fileInfoResponse = await inflowStore.fetchSymbolFileInfo(
+          originalWaterFlowType.svg_symbol_id
+        );
+        if (
+          fileInfoResponse?.response?.uploaded_files &&
+          fileInfoResponse.response.uploaded_files.length > 0
+        ) {
+          // uploaded_at 기준으로 정렬하여 가장 최신 파일 찾기
+          const latestFile = fileInfoResponse.response.uploaded_files.sort(
+            (a: any, b: any) =>
+              new Date(b.uploaded_at).getTime() -
+              new Date(a.uploaded_at).getTime()
+          )[0];
+
+          // 파일명을 input에 표시하기 위해 별도 상태 추가
+          uploadForm.value.existingFileName = latestFile.original_filename;
+        }
+      } catch (error) {
+        console.error("파일 정보 조회 실패:", error);
+        // 에러가 발생해도 모달은 계속 진행
+      }
+    }
     // flow_type_code에서 공통코드 찾기
     if (currentTab.flow_type_code && inflowStore.commonCodes.length > 0) {
       const matchedCode = inflowStore.commonCodes.find(
@@ -1708,6 +1693,7 @@ const closeModal = () => {
   newInflowTypeName.value = "";
   newInflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
@@ -1722,6 +1708,7 @@ const closeUpdateModal = () => {
   newInflowTypeName.value = "";
   newInflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
@@ -1766,17 +1753,22 @@ const createNewTab = async () => {
         : undefined;
 
     // 유입종류와 파라미터를 한 번에 등록
-    const response = await inflowStore.createWaterFlowType({
-      flow_type_code: selectedInputType.value, // 선택된 공통코드의 code_key 사용
-      flow_type_name: newInflowTypeName.value.trim(),
-      flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
-      flow_direction: "INFLUENT",
-      description: uploadForm.value.title || undefined,
-      symbol_color: selectedColor.value, // 심볼 색상 추가
-      is_active: true,
-      metric_parameters: metricParameters,
-      imperial_parameters: imperialParameters,
-    });
+    const requestData = {
+      waterFlowTypeData: {
+        flow_type_code: selectedInputType.value, // 선택된 공통코드의 code_key 사용
+        flow_type_name: newInflowTypeName.value.trim(),
+        flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
+        flow_direction: "INFLUENT",
+        description: uploadForm.value.title || undefined,
+        symbol_color: selectedColor.value, // 심볼 색상 추가
+        is_active: true,
+        metric_parameters: metricParameters,
+        imperial_parameters: imperialParameters,
+      },
+      symbolFile: uploadForm.value.file || undefined, // 파일첨부
+    };
+
+    const response = await inflowStore.createWaterFlowType(requestData);
 
     // 폼 초기화
     selectedInputType.value = "";
@@ -1860,44 +1852,30 @@ const updateTab = async () => {
       return;
     }
 
-    // Metric 파라미터 데이터 준비 (현재 사용하지 않음 - 파라미터 수정 API 미구현)
-    // const metricParameters = metricFileData.value.length > 0
-    //   ? metricFileData.value.map(item => ({
-    //       parameter_name: item.item,
-    //       is_required: item.display === 'Y',
-    //       default_value: item.influent,
-    //       parameter_unit: item.unit,
-    //       remarks: item.remarks || undefined
-    //     }))
-    //   : undefined;
-
-    // Imperial 파라미터 데이터 준비 (현재 사용하지 않음 - 파라미터 수정 API 미구현)
-    // const imperialParameters = imperialFileData.value.length > 0
-    //   ? imperialFileData.value.map(item => ({
-    //       parameter_name: item.item,
-    //       is_required: item.display === 'Y',
-    //       default_value: item.influent,
-    //       parameter_unit: item.unit,
-    //       remarks: item.remarks || undefined
-    //     }))
-    //   : undefined;
-
     // 현재 탭의 원본 데이터에서 svg_symbol_id 가져오기
     const originalWaterFlowType = inflowStore.waterFlowTypes.find(
       (wft) => wft.flow_type_id === currentTab.flow_type_id
     );
 
     // 유입종류 수정
-    const response = await inflowStore.updateWaterFlowType(flowTypeId, {
-      flow_type_code: selectedInputType.value,
-      flow_type_name: newInflowTypeName.value.trim(),
-      flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
-      flow_direction: "INFLUENT",
-      description: uploadForm.value.title || undefined,
-      svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
-      symbol_color: selectedColor.value, // 심볼 색상 추가
-      is_active: true,
-    });
+    const requestData = {
+      waterFlowTypeData: {
+        flow_type_code: selectedInputType.value,
+        flow_type_name: newInflowTypeName.value.trim(),
+        flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
+        flow_direction: "INFLUENT",
+        description: uploadForm.value.title || undefined,
+        svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
+        symbol_color: selectedColor.value, // 심볼 색상 추가
+        is_active: true,
+      },
+      symbolFile: uploadForm.value.file || undefined, // 파일첨부
+    };
+
+    const response = await inflowStore.updateWaterFlowType(
+      flowTypeId,
+      requestData
+    );
 
     // 파라미터는 별도로 처리 (기존 파라미터 삭제 후 재등록이 필요할 수 있음)
     // TODO: 파라미터 수정 로직 구현

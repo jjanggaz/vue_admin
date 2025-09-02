@@ -15,7 +15,11 @@
               <div
                 v-for="(tab, idx) in tabs"
                 :key="tab.flow_type_id || tab.name"
-                :class="['tab', tab.className, { active: activeTab === idx }]"
+                :class="['tab', { active: activeTab === idx }]"
+                :style="{
+                  backgroundColor: tab.symbol_color || '#f0f0f0',
+                  color: getTextColor(tab.symbol_color || '#f0f0f0'),
+                }"
                 @click="onTabClick(idx)"
                 :title="
                   tab.flow_type_code ? `코드: ${tab.flow_type_code}` : tab.name
@@ -648,9 +652,9 @@ interface GridRow {
 
 interface TabInfo {
   name: string;
-  className: string;
   flow_type_id?: string; // 데이터베이스 ID 추가
   flow_type_code?: string; // 코드 추가
+  symbol_color?: string; // 심볼 색상 추가
 }
 
 interface UploadForm {
@@ -766,9 +770,9 @@ const loadWaterFlowTypes = async () => {
     if (outflowStore.waterFlowTypes && outflowStore.waterFlowTypes.length > 0) {
       tabs.value = outflowStore.waterFlowTypes.map((waterFlowType, index) => ({
         name: waterFlowType.flow_type_name,
-        className: `tab-type-${(index % 3) + 1}`,
         flow_type_id: waterFlowType.flow_type_id,
         flow_type_code: waterFlowType.flow_type_code,
+        symbol_color: waterFlowType.symbol_info?.symbol_color,
       }));
 
       console.log("로드된 유출종류 탭:", tabs.value);
@@ -778,7 +782,7 @@ const loadWaterFlowTypes = async () => {
       );
     } else {
       // 데이터가 없으면 기본 탭 설정
-      tabs.value = [{ name: "데이터 없음", className: "tab-type-1" }];
+      tabs.value = [{ name: "데이터 없음" }];
     }
 
     // 첫 번째 탭을 활성화하고 파라미터 로드
@@ -795,7 +799,7 @@ const loadWaterFlowTypes = async () => {
     console.error("유출종류 데이터 로드 실패:", error);
 
     // 에러 발생 시 기본 탭 설정
-    tabs.value = [{ name: "로드 실패", className: "tab-type-1" }];
+    tabs.value = [{ name: "로드 실패" }];
   } finally {
     isLoadingTabs.value = false;
 
@@ -909,6 +913,21 @@ const updateColor = (event: Event) => {
   const target = event.target as HTMLInputElement;
   selectedColor.value = target.value;
   showColorPicker.value = false;
+};
+
+// 배경색에 따른 텍스트 색상 계산 함수
+const getTextColor = (backgroundColor: string): string => {
+  // hex 색상을 RGB로 변환
+  const hex = backgroundColor.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  // 휘도 계산 (0.299 * R + 0.587 * G + 0.114 * B)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  // 휘도가 0.5보다 크면 검은색, 작으면 흰색
+  return luminance > 0.5 ? "#000000" : "#ffffff";
 };
 
 // 각 탭별 데이터
@@ -1221,6 +1240,7 @@ const closeModal = () => {
   newOutflowTypeName.value = "";
   newOutflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
   metricFileName.value = "";
@@ -1235,6 +1255,16 @@ const openUpdateModal = async () => {
   }
 
   const currentTab = tabs.value[activeTab.value];
+
+  // 현재 탭의 데이터를 폼에 설정
+  newOutflowTypeName.value = currentTab.name || "";
+
+  // 원본 데이터에서 색상 정보 가져오기
+  const originalWaterFlowType = outflowStore.waterFlowTypes.find(
+    (wft) => wft.flow_type_id === currentTab.flow_type_id
+  );
+  selectedColor.value =
+    originalWaterFlowType?.symbol_info?.symbol_color || "#3b82f6";
 
   // flow_type_code에서 공통코드 찾기
   if (currentTab.flow_type_code && outflowStore.commonCodes.length > 0) {
@@ -1277,7 +1307,16 @@ const openUpdateModal = async () => {
 
 const closeUpdateModal = () => {
   isUpdateModalOpen.value = false;
-  // 폼 데이터는 유지 (취소 시에만 초기화)
+  // 수정 폼 초기화
+  selectedOutputType.value = "";
+  newOutflowTypeName.value = "";
+  newOutflowTypeNameEn.value = "";
+  uploadForm.value.title = "";
+  selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
+  metricFileData.value = [];
+  imperialFileData.value = [];
+  metricFileName.value = "";
+  imperialFileName.value = "";
 };
 
 const updateTab = async () => {
@@ -1293,6 +1332,7 @@ const updateTab = async () => {
       flow_type_name: newOutflowTypeName.value.trim(),
       flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
       description: uploadForm.value.title || undefined,
+      symbol_color: selectedColor.value, // 심볼 색상 추가
       is_active: true,
     };
 
@@ -1371,6 +1411,7 @@ const createNewTab = async () => {
       flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
       flow_direction: "EFFLUENT",
       description: uploadForm.value.title || undefined,
+      symbol_color: selectedColor.value, // 심볼 색상 추가
       is_active: true,
       metric_parameters: metricParameters,
       imperial_parameters: imperialParameters,
@@ -1381,6 +1422,7 @@ const createNewTab = async () => {
     newOutflowTypeName.value = "";
     newOutflowTypeNameEn.value = "";
     uploadForm.value.title = "";
+    selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
     metricFileData.value = [];
     imperialFileData.value = [];
     metricFileName.value = "";

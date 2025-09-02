@@ -37,6 +37,15 @@ export interface Role {
   updated_by: string | null;
 }
 
+// 심볼 정보 인터페이스
+export interface SymbolInfo {
+  symbol_name: string;
+  symbol_code: string;
+  symbol_type: string;
+  symbol_color: string;
+  svg_content: string;
+}
+
 // 유입종류 인터페이스
 export interface WaterFlowType {
   flow_type_id: string;
@@ -46,6 +55,7 @@ export interface WaterFlowType {
   flow_direction: string;
   description?: string;
   svg_symbol_id?: string;
+  symbol_info?: SymbolInfo;
   is_active: boolean;
   created_at: string;
   updated_at?: string;
@@ -104,7 +114,7 @@ export interface WaterFlowTypeParameterFormData {
   max_value?: number;
   parameter_unit?: string;
   remarks?: string;
-  unit_system_code: 'METRIC' | 'IMPERIAL';
+  unit_system_code: "METRIC" | "IMPERIAL";
   unit_id?: string;
 }
 
@@ -118,7 +128,7 @@ export interface WaterFlowTypeParameterCreateRequest {
     max_value?: number;
     parameter_unit?: string;
     remarks?: string;
-    unit_system_code: 'METRIC' | 'IMPERIAL';
+    unit_system_code: "METRIC" | "IMPERIAL";
     unit_id?: string;
   }>;
 }
@@ -132,6 +142,7 @@ export interface WaterFlowTypeFormData {
   flow_direction: string; // 유입 방향 (필수)
   description?: string; // 설명 (선택)
   svg_symbol_id?: string; // SVG 심볼 ID (선택)
+  symbol_color?: string; // 심볼 색상 (선택)
   is_active?: boolean; // 활성 상태 (기본값: true)
   metric_parameters?: Array<{
     parameter_name: string;
@@ -350,48 +361,51 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 유입종류별 파라미터 조회
-    async fetchWaterFlowTypeParameters(flowDirection: string, flowTypeCode: string) {
+    async fetchWaterFlowTypeParameters(
+      flowDirection: string,
+      flowTypeCode: string
+    ) {
       this.loading = true;
       this.error = null;
 
       try {
-        console.log('fetchWaterFlowTypeParameters 호출됨:', {
+        console.log("fetchWaterFlowTypeParameters 호출됨:", {
           flowDirection: flowDirection,
           flowDirectionType: typeof flowDirection,
           flowDirectionLength: flowDirection?.length,
           flowTypeCode: flowTypeCode,
           flowTypeCodeType: typeof flowTypeCode,
-          flowTypeCodeLength: flowTypeCode?.length
+          flowTypeCodeLength: flowTypeCode?.length,
         });
 
         // flowDirection 유효성 검사
-        if (!flowDirection || flowDirection.trim() === '') {
-          console.error('flowDirection가 비어있습니다:', flowDirection);
+        if (!flowDirection || flowDirection.trim() === "") {
+          console.error("flowDirection가 비어있습니다:", flowDirection);
           this.waterFlowTypeParameters = [];
           return { items: [], total: 0 };
         }
 
         // flowTypeCode 유효성 검사
-        if (!flowTypeCode || flowTypeCode.trim() === '') {
-          console.error('flowTypeCode가 비어있습니다:', flowTypeCode);
+        if (!flowTypeCode || flowTypeCode.trim() === "") {
+          console.error("flowTypeCode가 비어있습니다:", flowTypeCode);
           this.waterFlowTypeParameters = [];
           return { items: [], total: 0 };
         }
-        
+
         const encodedFlowTypeCode = encodeURIComponent(flowTypeCode);
-        console.log('인코딩된 flowTypeCode:', encodedFlowTypeCode);
+        console.log("인코딩된 flowTypeCode:", encodedFlowTypeCode);
 
         // 요청 본문 설정
         const requestBody = {
           flowDirection: flowDirection,
-          flowTypeCode: encodedFlowTypeCode
+          flowTypeCode: encodedFlowTypeCode,
         };
-        console.log('요청 본문:', requestBody);
-        console.log('요청 본문(JSON):', JSON.stringify(requestBody));
+        console.log("요청 본문:", requestBody);
+        console.log("요청 본문(JSON):", JSON.stringify(requestBody));
 
-        const url = '/api/inflow/parameters';
-        console.log('요청 URL:', url);
-        
+        const url = "/api/inflow/parameters";
+        console.log("요청 URL:", url);
+
         const response = await request(url, undefined, {
           method: "POST",
           headers: {
@@ -400,10 +414,10 @@ export const useInflowStore = defineStore("inflow", {
           body: JSON.stringify(requestBody),
         });
 
-        console.log('API 응답 상태:', {
+        console.log("API 응답 상태:", {
           response: response,
           status: response?.status,
-          success: response?.success
+          success: response?.success,
         });
 
         // API 응답 처리
@@ -435,25 +449,29 @@ export const useInflowStore = defineStore("inflow", {
       this.error = null;
 
       try {
-        const response = await request("/api/inflow/water-quality-parameters", undefined, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await request(
+          "/api/inflow/water-quality-parameters",
+          undefined,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         // API 응답 처리
         if (response.response && response.response.items) {
           // this.waterQualityParameters = response.response.items;
           // console.log("수질 파라미터 조회 성공:", response.response.items);
 
-           // 임시로 biogas, CH4 parameter_code만 필터링
-          const filteredItems = response.response.items.filter((item: any) => 
-            item.parameter_code === 'biogas' || item.parameter_code === 'CH4'
+          // 임시로 biogas, CH4 parameter_code만 필터링
+          const filteredItems = response.response.items.filter(
+            (item: any) =>
+              item.parameter_code === "biogas" || item.parameter_code === "CH4"
           );
           this.waterQualityParameters = filteredItems;
           console.log("수질 파라미터 조회 성공 (필터링됨):", filteredItems);
-
         } else {
           this.waterQualityParameters = [];
           console.log("수질 파라미터가 비어있습니다.");
@@ -474,19 +492,25 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 공통코드 조회
-    async fetchCommonCodes(codeGroup?: string, parentKey?: string, isActive?: boolean) {
+    async fetchCommonCodes(
+      codeGroup?: string,
+      parentKey?: string,
+      isActive?: boolean
+    ) {
       this.loading = true;
       this.error = null;
       console.log("공통코드 조회 시작");
       try {
         const queryParams: Record<string, string> = {};
-        
+
         if (codeGroup) queryParams.code_group = codeGroup;
         if (parentKey) queryParams.parent_key = parentKey;
         if (isActive !== undefined) queryParams.is_active = isActive.toString();
 
         const queryString = new URLSearchParams(queryParams).toString();
-        const url = `/api/inflow/common/codes${queryString ? `?${queryString}` : ''}`;
+        const url = `/api/inflow/common/codes${
+          queryString ? `?${queryString}` : ""
+        }`;
         console.log("공통코드 조회 URL:", url);
         const response = await request(url, undefined, {
           method: "GET",
@@ -564,32 +588,44 @@ export const useInflowStore = defineStore("inflow", {
           requestData.svg_symbol_id = waterFlowTypeData.svg_symbol_id;
         }
 
+        if (waterFlowTypeData.symbol_color) {
+          requestData.symbol_color = waterFlowTypeData.symbol_color;
+        }
+
         if (waterFlowTypeData.is_active !== undefined) {
           requestData.is_active = waterFlowTypeData.is_active;
         }
 
         // Metric 파라미터 추가
-        if (waterFlowTypeData.metric_parameters && waterFlowTypeData.metric_parameters.length > 0) {
-          requestData.metric_parameters = waterFlowTypeData.metric_parameters.map(param => ({
-            parameter_name: param.parameter_name,
-            is_required: param.is_required || false,
-            default_value: param.default_value,
-            parameter_unit: param.parameter_unit,
-            remarks: param.remarks,
-            unit_system_code: 'METRIC'
-          }));
+        if (
+          waterFlowTypeData.metric_parameters &&
+          waterFlowTypeData.metric_parameters.length > 0
+        ) {
+          requestData.metric_parameters =
+            waterFlowTypeData.metric_parameters.map((param) => ({
+              parameter_name: param.parameter_name,
+              is_required: param.is_required || false,
+              default_value: param.default_value,
+              parameter_unit: param.parameter_unit,
+              remarks: param.remarks,
+              unit_system_code: "METRIC",
+            }));
         }
 
         // Imperial 파라미터 추가
-        if (waterFlowTypeData.imperial_parameters && waterFlowTypeData.imperial_parameters.length > 0) {
-          requestData.imperial_parameters = waterFlowTypeData.imperial_parameters.map(param => ({
-            parameter_name: param.parameter_name,
-            is_required: param.is_required || false,
-            default_value: param.default_value,
-            parameter_unit: param.parameter_unit,
-            remarks: param.remarks,
-            unit_system_code: 'IMPERIAL'
-          }));
+        if (
+          waterFlowTypeData.imperial_parameters &&
+          waterFlowTypeData.imperial_parameters.length > 0
+        ) {
+          requestData.imperial_parameters =
+            waterFlowTypeData.imperial_parameters.map((param) => ({
+              parameter_name: param.parameter_name,
+              is_required: param.is_required || false,
+              default_value: param.default_value,
+              parameter_unit: param.parameter_unit,
+              remarks: param.remarks,
+              unit_system_code: "IMPERIAL",
+            }));
         }
 
         console.log(
@@ -626,7 +662,9 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 유입종류 파라미터 등록
-    async createWaterFlowTypeParameters(parameterData: WaterFlowTypeParameterCreateRequest) {
+    async createWaterFlowTypeParameters(
+      parameterData: WaterFlowTypeParameterCreateRequest
+    ) {
       this.loading = true;
       this.error = null;
 
@@ -636,13 +674,17 @@ export const useInflowStore = defineStore("inflow", {
           JSON.stringify(parameterData, null, 2)
         );
 
-        const response = await request("/api/inflow/parameters/create", undefined, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(parameterData),
-        });
+        const response = await request(
+          "/api/inflow/parameters/create",
+          undefined,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(parameterData),
+          }
+        );
 
         console.log("유입종류 파라미터 등록 성공:", response);
         return response;
@@ -659,7 +701,10 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 유입종류 수정
-    async updateWaterFlowType(flowTypeId: string, waterFlowTypeData: Partial<WaterFlowTypeFormData>) {
+    async updateWaterFlowType(
+      flowTypeId: string,
+      waterFlowTypeData: Partial<WaterFlowTypeFormData>
+    ) {
       this.loading = true;
       this.error = null;
 
@@ -684,6 +729,9 @@ export const useInflowStore = defineStore("inflow", {
         }
         if (waterFlowTypeData.svg_symbol_id) {
           requestData.svg_symbol_id = waterFlowTypeData.svg_symbol_id;
+        }
+        if (waterFlowTypeData.symbol_color) {
+          requestData.symbol_color = waterFlowTypeData.symbol_color;
         }
         if (waterFlowTypeData.is_active !== undefined) {
           requestData.is_active = waterFlowTypeData.is_active;
@@ -780,42 +828,49 @@ export const useInflowStore = defineStore("inflow", {
 
   getters: {
     // 필터링된 유입종류 목록 (클라이언트 측 검색용)
-    filteredWaterFlowTypes: (state) => (searchOption: string, searchQuery: string) => {
-      if (!searchOption || !searchQuery) {
-        return state.waterFlowTypes;
-      }
-
-      return state.waterFlowTypes.filter((waterFlowType) => {
-        const key = searchOption as keyof WaterFlowType;
-        const value = waterFlowType[key];
-
-        if (value === null || value === undefined) return false;
-
-        // 활성 상태 검색 시 특별 처리
-        if (key === "is_active") {
-          const statusText = value ? "활성" : "비활성";
-          return statusText.toLowerCase().includes(searchQuery.toLowerCase());
+    filteredWaterFlowTypes:
+      (state) => (searchOption: string, searchQuery: string) => {
+        if (!searchOption || !searchQuery) {
+          return state.waterFlowTypes;
         }
 
-        // 유입 방향 검색 시 특별 처리
-        if (key === "flow_direction") {
-          const directionText = 
-            value === "IN" ? "유입" : 
-            value === "OUT" ? "유출" : 
-            value === "BOTH" ? "양방향" : String(value);
-          return directionText.toLowerCase().includes(searchQuery.toLowerCase());
-        }
+        return state.waterFlowTypes.filter((waterFlowType) => {
+          const key = searchOption as keyof WaterFlowType;
+          const value = waterFlowType[key];
 
-        return value
-          .toString()
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      });
-    },
+          if (value === null || value === undefined) return false;
+
+          // 활성 상태 검색 시 특별 처리
+          if (key === "is_active") {
+            const statusText = value ? "활성" : "비활성";
+            return statusText.toLowerCase().includes(searchQuery.toLowerCase());
+          }
+
+          // 유입 방향 검색 시 특별 처리
+          if (key === "flow_direction") {
+            const directionText =
+              value === "IN"
+                ? "유입"
+                : value === "OUT"
+                ? "유출"
+                : value === "BOTH"
+                ? "양방향"
+                : String(value);
+            return directionText
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase());
+          }
+
+          return value
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+        });
+      },
 
     // 활성화된 유입종류 목록만 가져오기
     activeWaterFlowTypes: (state) => {
-      return state.waterFlowTypes.filter(item => item.is_active);
+      return state.waterFlowTypes.filter((item) => item.is_active);
     },
 
     // 총 페이지 수 계산

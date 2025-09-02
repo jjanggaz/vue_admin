@@ -1265,6 +1265,7 @@ const openUpdateModal = async () => {
   );
   selectedColor.value =
     originalWaterFlowType?.symbol_info?.symbol_color || "#3b82f6";
+  uploadForm.value.title = originalWaterFlowType?.description || ""; // description을 비고 input에 설정
 
   // flow_type_code에서 공통코드 찾기
   if (currentTab.flow_type_code && outflowStore.commonCodes.length > 0) {
@@ -1327,11 +1328,17 @@ const updateTab = async () => {
       return;
     }
 
+    // 현재 탭의 원본 데이터에서 svg_symbol_id 가져오기
+    const originalWaterFlowType = outflowStore.waterFlowTypes.find(
+      (wft) => wft.flow_type_id === currentTab.flow_type_id
+    );
+
     // 수정할 데이터 준비
     const updateData = {
       flow_type_name: newOutflowTypeName.value.trim(),
       flow_type_name_en: newOutflowTypeNameEn.value.trim() || undefined,
       description: uploadForm.value.title || undefined,
+      svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
       symbol_color: selectedColor.value, // 심볼 색상 추가
       is_active: true,
     };

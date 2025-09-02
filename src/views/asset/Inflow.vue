@@ -1036,7 +1036,7 @@ const loadWaterFlowTypes = async () => {
 
     // 조회된 데이터를 탭 형태로 변환
     if (inflowStore.waterFlowTypes && inflowStore.waterFlowTypes.length > 0) {
-      tabs.value = inflowStore.waterFlowTypes.map((waterFlowType, index) => ({
+      tabs.value = inflowStore.waterFlowTypes.map((waterFlowType) => ({
         name: waterFlowType.flow_type_name,
         flow_type_id: waterFlowType.flow_type_id,
         flow_type_code: waterFlowType.flow_type_code,
@@ -1677,6 +1677,7 @@ const openUpdateModal = async () => {
     );
     selectedColor.value =
       originalWaterFlowType?.symbol_info?.symbol_color || "#3b82f6";
+    uploadForm.value.title = originalWaterFlowType?.description || ""; // description을 비고 input에 설정
     // flow_type_code에서 공통코드 찾기
     if (currentTab.flow_type_code && inflowStore.commonCodes.length > 0) {
       const matchedCode = inflowStore.commonCodes.find(
@@ -1881,6 +1882,11 @@ const updateTab = async () => {
     //     }))
     //   : undefined;
 
+    // 현재 탭의 원본 데이터에서 svg_symbol_id 가져오기
+    const originalWaterFlowType = inflowStore.waterFlowTypes.find(
+      (wft) => wft.flow_type_id === currentTab.flow_type_id
+    );
+
     // 유입종류 수정
     const response = await inflowStore.updateWaterFlowType(flowTypeId, {
       flow_type_code: selectedInputType.value,
@@ -1888,6 +1894,7 @@ const updateTab = async () => {
       flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
       flow_direction: "INFLUENT",
       description: uploadForm.value.title || undefined,
+      svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
       symbol_color: selectedColor.value, // 심볼 색상 추가
       is_active: true,
     });

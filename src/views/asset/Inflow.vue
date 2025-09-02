@@ -5,11 +5,11 @@
         <div class="swiper-bar">
           <div class="tabs-wrapper">
             <button
-              v-if="canScrollLeft"
               class="btn-scroll left"
+              :disabled="!canScrollLeft"
               @click="scrollTabs(-1)"
             >
-              ◀
+              <img src="/images/icons/leftArrow.svg" alt="이전" />
             </button>
             <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
               <div
@@ -29,11 +29,11 @@
               </div>
             </div>
             <button
-              v-if="canScrollRight"
               class="btn-scroll right"
+              :disabled="!canScrollRight"
               @click="scrollTabs(1)"
             >
-              ▶
+              <img src="/images/icons/rightArrow.svg" alt="다음" />
             </button>
           </div>
         </div>
@@ -821,7 +821,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed, onMounted } from "vue";
+import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
@@ -850,13 +850,24 @@ onMounted(async () => {
   await loadWaterFlowTypes();
   await loadInputTypes(); // 공통코드 로드 추가
   await loadWaterQualityParameters(); // 수질 파라미터 로드 추가
+  // 초기 렌더 후 스크롤 버튼 상태 계산 및 리사이즈 관찰 시작
+  nextTick(() => {
+    updateScrollButtons();
+    if (tabsContainer.value && "ResizeObserver" in window) {
+      resizeObserver.value = new ResizeObserver(() => {
+        updateScrollButtons();
+      });
+      resizeObserver.value.observe(tabsContainer.value);
+    }
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+  });
 });
 
 // 유입 종류 공통코드 로드
 const loadInputTypes = async () => {
   try {
     await inflowStore.fetchCommonCodes("INPUT_TYPE", "IN_TYPE", true);
-    console.log("유입 종류 공통코드 로드 완료:", inflowStore.commonCodes);
   } catch (error) {
     console.error("유입 종류 공통코드 로드 실패:", error);
   }
@@ -865,21 +876,13 @@ const loadInputTypes = async () => {
 // 수질 파라미터 로드
 const loadWaterQualityParameters = async () => {
   try {
-    console.log("수질 파라미터 로드 시작");
-    console.log("inflowStore 객체:", inflowStore);
-    console.log(
-      "fetchWaterQualityParameters 함수:",
-      inflowStore.fetchWaterQualityParameters
-    );
-
     if (typeof inflowStore.fetchWaterQualityParameters !== "function") {
       console.error("fetchWaterQualityParameters가 함수가 아닙니다!");
-      console.log("inflowStore의 모든 프로퍼티:", Object.keys(inflowStore));
+
       return;
     }
 
     await inflowStore.fetchWaterQualityParameters();
-    console.log("수질 파라미터 로드 완료:", inflowStore.waterQualityParameters);
   } catch (error) {
     console.error("수질 파라미터 로드 실패:", error);
   }
@@ -949,17 +952,14 @@ const activeTab = ref(0);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
+const resizeObserver = ref<ResizeObserver | null>(null);
+const handleResize = () => {
+  nextTick(() => updateScrollButtons());
+};
 
 // 유입종류별 파라미터 데이터 로드
 const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
   try {
-    console.log("파라미터 조회 시작:", {
-      flowTypeCode: flowTypeCode,
-      flowTypeCodeType: typeof flowTypeCode,
-      flowTypeCodeValue: flowTypeCode,
-      flowTypeCodeLength: flowTypeCode?.length,
-    });
-
     // 유입종류별 파라미터 조회
     await inflowStore.fetchWaterFlowTypeParameters("INFLUENT", flowTypeCode);
 
@@ -985,11 +985,9 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
 
         // unit_system_code에 따라 분류
         if (param.unit_system_code === "IMPERIAL") {
-          console.log("IMPERIAL 파라미터:", param);
           // IMPERIAL인 경우
           imperialParams.push(gridRow);
         } else {
-          console.log("METRIC 파라미터:", param);
           // METRIC이거나 기본값
           metricParams.push(gridRow);
         }
@@ -1007,19 +1005,10 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
       // Metric과 Imperial 데이터를 각각 저장
       metricTabGridData.value[activeTab.value] = metricParams;
       imperialTabGridData.value[activeTab.value] = imperialParams;
-
-      console.log("파라미터 데이터 변환 완료:", {
-        total: inflowStore.waterFlowTypeParameters.length,
-        metric: metricParams.length,
-        imperial: imperialParams.length,
-        metricData: metricParams,
-        imperialData: imperialParams,
-      });
     } else {
       // 파라미터가 없으면 빈 배열
       metricTabGridData.value[activeTab.value] = [];
       imperialTabGridData.value[activeTab.value] = [];
-      console.log("파라미터 데이터 없음");
     }
   } catch (error) {
     console.error("파라미터 데이터 로드 실패:", error);
@@ -1051,12 +1040,6 @@ const loadWaterFlowTypes = async () => {
         flow_type_code: waterFlowType.flow_type_code,
         symbol_color: waterFlowType.symbol_info?.symbol_color,
       }));
-
-      console.log("로드된 유입종류 탭:", tabs.value);
-      console.log(
-        "첫 번째 탭의 flow_type_code:",
-        tabs.value[0]?.flow_type_code
-      );
     } else {
       // 데이터가 없으면 기본 탭 설정
       tabs.value = [{ name: "데이터 없음" }];
@@ -1210,23 +1193,12 @@ const parsePythonFile = (content: string): GridRow[] => {
   const data: GridRow[] = [];
   let idCounter = 1;
 
-  console.log("=== Python File Parsing Started ===");
-  console.log("File content length:", content.length);
-  console.log("Total lines:", lines.length);
-  console.log("First 500 chars:", content.substring(0, 500));
-
   for (let i = 0; i < lines.length; i++) {
     const originalLine = lines[i];
     const line = originalLine.trim();
 
-    console.log(`\n--- Line ${i} ---`);
-    console.log(`Original: "${originalLine}"`);
-    console.log(`Trimmed: "${line}"`);
-    console.log(`Length: ${line.length}`);
-
     // 빈 라인이나 특수 라인 건너뛰기
     if (line === "") {
-      console.log("Skipped: Empty line");
       continue;
     }
 
@@ -1242,41 +1214,30 @@ const parsePythonFile = (content: string): GridRow[] => {
       line.startsWith("except") ||
       line.startsWith("finally")
     ) {
-      console.log("Skipped: Python keyword line");
       continue;
     }
 
     // 주석 처리
     if (line.startsWith("#")) {
-      console.log("Found comment:", line);
       continue;
     }
 
     // = 기호가 있는지 확인
     if (line.includes("=")) {
-      console.log("Found assignment operator");
-
       // 가장 단순한 분할 방식
       const parts = line.split("=");
       if (parts.length >= 2) {
         const varName = parts[0].trim();
         const value = parts.slice(1).join("=").trim(); // 여러 = 가 있을 경우 대비
 
-        console.log(`Variable name: "${varName}"`);
-        console.log(`Value: "${value}"`);
-
         // 변수명이 유효한지 확인 (객체 속성 접근도 허용: DCN.influents.bod)
         if (
           /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/.test(varName)
         ) {
-          console.log("Valid variable name (including object properties)");
-
           // influents가 포함된 변수명만 허용
           const hasInfluents = varName.toLowerCase().includes("influents");
-          console.log("Contains 'influents':", hasInfluents);
 
           if (!hasInfluents) {
-            console.log("Skipped: Variable does not contain 'influents'");
             continue;
           }
 
@@ -1305,8 +1266,6 @@ const parsePythonFile = (content: string): GridRow[] => {
             varName.toUpperCase().includes(keyword)
           );
 
-          console.log("Is water quality parameter:", isWaterQuality);
-
           if (isWaterQuality) {
             // 값에서 숫자 추출
             let numericValue = 0;
@@ -1319,7 +1278,6 @@ const parsePythonFile = (content: string): GridRow[] => {
             const numberMatch = cleanValue.match(/([0-9]+\.?[0-9]*)/);
             if (numberMatch) {
               numericValue = parseFloat(numberMatch[1]);
-              console.log(`Extracted number: ${numericValue}`);
 
               // 단위 추출 시도
               if (cleanValue.includes("mg/L")) unit = "mg/L";
@@ -1344,34 +1302,21 @@ const parsePythonFile = (content: string): GridRow[] => {
               };
 
               data.push(item);
-              console.log("Added item:", item);
             } else {
-              console.log("No numeric value found in:", cleanValue);
             }
           } else {
-            console.log("Not a water quality parameter");
           }
         } else {
-          console.log("Invalid variable name format");
         }
       }
     } else {
-      console.log("No assignment operator found");
     }
   }
 
-  console.log("\n=== Parsing Summary ===");
-  console.log(`Total items parsed: ${data.length}`);
-  console.log("Parsed items:", data);
-
   // 파싱된 데이터가 없으면 파일에서 모든 숫자 추출
   if (data.length === 0) {
-    console.log("No structured data found, extracting all numbers...");
-
     const allNumbers = content.match(/\b([0-9]+\.?[0-9]*)\b/g);
     if (allNumbers && allNumbers.length > 0) {
-      console.log("Found numbers:", allNumbers.slice(0, 10)); // 처음 10개만 로그
-
       allNumbers.slice(0, 8).forEach((num, index) => {
         data.push({
           id: index + 1,
@@ -1396,9 +1341,6 @@ const parsePythonFile = (content: string): GridRow[] => {
       });
     }
   }
-
-  console.log("Final data:", data);
-  console.log("=== Python File Parsing Completed ===\n");
 
   return data;
 };
@@ -1467,7 +1409,6 @@ const addModalMetricRow = () => {
   } else {
     metricFileData.value = [...currentGridData.value, newRow];
   }
-  console.log("모달 Metric 행 추가됨:", newRow);
 
   // 새로 추가된 행이 보이도록 스크롤 조정
   nextTick(() => {
@@ -1514,7 +1455,6 @@ const addModalImperialRow = () => {
   } else {
     imperialFileData.value = [...currentGridData.value, newRow];
   }
-  console.log("모달 Imperial 행 추가됨:", newRow);
 
   // 새로 추가된 행이 보이도록 스크롤 조정
   nextTick(() => {
@@ -1562,14 +1502,6 @@ const onParameterSelect = (
       // influent 값은 기본값이 있으면 설정, 없으면 0
       targetData[rowIndex].influent = 0;
       targetData[rowIndex].remarks = selectedParameter.description || "";
-
-      console.log("파라미터 선택됨:", {
-        parameter: selectedParameter,
-        rowIndex,
-        isMetric,
-        isModal,
-        updatedRow: targetData[rowIndex],
-      });
     }
   }
 };
@@ -1625,8 +1557,6 @@ const openUpdateModal = async () => {
   // 현재 선택된 탭의 정보로 수정 폼 초기화
   const currentTab = tabs.value[activeTab.value];
   if (currentTab) {
-    console.log("수정할 탭:", currentTab);
-
     // 현재 탭의 데이터를 폼에 설정
     newInflowTypeName.value = currentTab.name || "";
 
@@ -1693,6 +1623,7 @@ const closeModal = () => {
   newInflowTypeName.value = "";
   newInflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.file = null; // 파일 첨부 초기화
   uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   metricFileData.value = [];
@@ -1844,9 +1775,6 @@ const updateTab = async () => {
     const currentTab = tabs.value[activeTab.value];
     const flowTypeId = currentTab.flow_type_id;
 
-    console.log("수정할 탭 정보:", currentTab);
-    console.log("수정할 탭의 flow_type_id:", flowTypeId);
-
     if (!flowTypeId) {
       alert(t("messages.warning.cannotEditTab"));
       return;
@@ -1954,6 +1882,15 @@ const scrollTabs = (direction: number) => {
   const newScrollLeft = scrollLeft + direction * clientWidth;
   tabsContainer.value.scrollTo({ left: newScrollLeft, behavior: "smooth" });
 };
+
+onBeforeUnmount(() => {
+  if (resizeObserver.value) {
+    resizeObserver.value.disconnect();
+    resizeObserver.value = null;
+  }
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("orientationchange", handleResize);
+});
 </script>
 
 <style scoped lang="scss">
@@ -1973,8 +1910,11 @@ const scrollTabs = (direction: number) => {
 
 .inflow {
   padding: $spacing-xl;
+  min-width: 0; // 전체 컨테이너가 축소될 수 있도록 허용
 
   .page-content {
+    min-width: 0; // 페이지 컨텐츠가 축소될 수 있도록 허용
+
     h2 {
       margin-bottom: $spacing-lg;
       color: $text-color;
@@ -1990,7 +1930,7 @@ const scrollTabs = (direction: number) => {
   .modal-content-wrapper {
     display: flex;
     gap: $spacing-lg;
-    overflow-x: auto;
+    min-width: 0; // flex 컨테이너가 축소될 수 있도록 허용
 
     // 반응형 처리: 작은 화면에서는 세로 배치
     @media (max-width: 1024px) {
@@ -2009,10 +1949,12 @@ const scrollTabs = (direction: number) => {
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
       overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
+      max-width: 100%; // 최대 너비 제한
 
       // 반응형 처리
       @media (max-width: 1024px) {
         min-width: 100%;
+        max-width: 100%;
       }
 
       .section-header {
@@ -2040,6 +1982,8 @@ const scrollTabs = (direction: number) => {
 
       .content,
       .action-bar {
+        min-width: 0; // 컨텐츠 영역이 축소될 수 있도록 허용
+
         .action-bar {
           margin: $spacing-sm 0;
         }
@@ -2250,4 +2194,94 @@ const scrollTabs = (direction: number) => {
 }
 
 // 모달 내부 파일 업로드 폼 스타일은 상단의 dt/dd 구조와 동일하게 적용
+
+// 탭 스크롤 관련 스타일
+.action-bar {
+  min-width: 0; // 액션 바가 축소될 수 있도록 허용
+}
+
+.tab-action-bar {
+  min-width: 0; // 탭 액션 바가 축소될 수 있도록 허용
+}
+
+.swiper-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex: 1; // 전체 공간을 차지하도록
+  min-width: 0; // 스와이퍼 바가 축소될 수 있도록 허용
+}
+
+.tabs-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1; // swiper-bar 내에서 전체 공간 차지
+  overflow: hidden;
+  min-width: 0; // flex 아이템이 축소될 수 있도록 허용
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  flex: 1;
+  min-width: 0; // flex 아이템이 축소될 수 있도록 허용
+  max-width: calc(100% - 76px); // 좌우 버튼(30px+여백 8px씩) 제외
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari
+  }
+
+  .tab {
+    flex-shrink: 0; // 탭이 축소되지 않도록
+    white-space: nowrap; // 텍스트 줄바꿈 방지
+    max-width: 200px; // 개별 탭의 최대 너비 제한
+    overflow: hidden; // 넘치는 텍스트 숨김
+  }
+}
+
+.btn-scroll {
+  background: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  min-width: 30px;
+
+  img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1); // 흰색으로 변경
+  }
+
+  &:hover:not(:disabled) {
+    background: color.scale($primary-color, $lightness: -10%);
+  }
+
+  &:disabled {
+    background: $background-light;
+    cursor: not-allowed;
+
+    img {
+      filter: brightness(0) invert(0.5); // 회색으로 변경
+    }
+  }
+
+  &.left {
+    margin-right: 8px;
+  }
+
+  &.right {
+    margin-left: 8px;
+  }
+}
 </style>

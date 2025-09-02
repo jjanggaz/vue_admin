@@ -83,13 +83,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
             </div>
@@ -126,13 +124,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
             </div>
@@ -272,13 +268,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
             </div>
@@ -317,13 +311,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
             </div>
@@ -476,13 +468,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
 
@@ -529,13 +519,11 @@
                   </select>
                   <span v-else>{{ item.item }}</span>
                 </template>
-                <template #cell-active="{ item }: { item: GridRow }">
-                  <input
-                    type="checkbox"
-                    v-model="item.active"
-                    true-value="Y"
-                    false-value="N"
-                  />
+                <template #cell-is_active="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_active" />
+                </template>
+                <template #cell-is_required="{ item }: { item: GridRow }">
+                  <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
 
@@ -654,7 +642,8 @@ interface GridRow {
   item: string;
   effluent: number;
   unit: string;
-  active: "Y" | "N";
+  is_active: boolean;
+  is_required: boolean;
   remarks: string;
 }
 
@@ -711,7 +700,8 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
           item: param.parameter_name,
           effluent: parseFloat(param.default_value) || 0,
           unit: param.parameter_unit || "",
-          active: param.is_active ? "Y" : "N",
+          is_active: param.is_active,
+          is_required: param.is_required,
           remarks: param.remarks || "",
         };
 
@@ -816,7 +806,8 @@ const gridColumns: TableColumn[] = [
   { key: "item", title: t("columns.outflow.item") },
   { key: "effluent", title: t("columns.outflow.effluent") },
   { key: "unit", title: t("columns.outflow.unit") },
-  { key: "active", title: t("columns.outflow.active") },
+  { key: "is_active", title: t("columns.outflow.active") },
+  { key: "is_required", title: t("columns.outflow.isRequired") },
   { key: "remarks", title: t("columns.outflow.remarks") },
 ];
 
@@ -895,7 +886,8 @@ const addModalMetricRow = () => {
     item: "", // 빈 값으로 시작, 선택 시 채워짐
     effluent: 0,
     unit: "",
-    active: "Y",
+    is_active: true,
+    is_required: false,
     remarks: "",
   };
 
@@ -940,7 +932,8 @@ const addModalImperialRow = () => {
     item: "", // 빈 값으로 시작, 선택 시 채워짐
     effluent: 0,
     unit: "",
-    active: "Y",
+    is_active: true,
+    is_required: false,
     remarks: "",
   };
 
@@ -1040,7 +1033,8 @@ const openModal = async () => {
           item: param.parameter_name,
           effluent: 0, // 기본값
           unit: param.default_unit || "mg/L",
-          active: "Y",
+          is_active: true,
+          is_required: false,
           remarks: param.description || "",
         };
         metricData.push(metricRow);
@@ -1051,7 +1045,8 @@ const openModal = async () => {
           item: param.parameter_name,
           effluent: 0, // 기본값
           unit: param.default_unit || "mg/L", // 실제로는 Imperial 단위로 변환해야 함
-          active: "Y",
+          is_active: true,
+          is_required: false,
           remarks: param.description || "",
         };
         imperialData.push(imperialRow);
@@ -1065,7 +1060,6 @@ const openModal = async () => {
       if (imperialFileData.value.length === 0) {
         imperialFileData.value = imperialData;
       }
-    } else {
     }
   } catch (error) {
     console.error("모달 오픈 시 수질 파라미터 로드 실패:", error);
@@ -1247,7 +1241,8 @@ const createNewTab = async () => {
       metricFileData.value.length > 0
         ? metricFileData.value.map((item) => ({
             parameter_name: item.item,
-            is_required: item.active === "Y",
+            is_active: item.is_active,
+            is_required: item.is_active,
             default_value: item.effluent,
             parameter_unit: item.unit,
             remarks: item.remarks || undefined,
@@ -1259,7 +1254,8 @@ const createNewTab = async () => {
       imperialFileData.value.length > 0
         ? imperialFileData.value.map((item) => ({
             parameter_name: item.item,
-            is_required: item.active === "Y",
+            is_active: item.is_active,
+            is_required: item.is_active,
             default_value: item.effluent,
             parameter_unit: item.unit,
             remarks: item.remarks || undefined,
@@ -1764,7 +1760,7 @@ onBeforeUnmount(() => {
 
 // 수정 모달 스타일
 .update-modal-content {
-  max-width: 1440px !important;
+  max-width: 1700px !important;
   max-height: 890px !important;
   overflow-y: auto;
 }

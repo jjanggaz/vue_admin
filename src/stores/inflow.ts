@@ -363,15 +363,7 @@ export const useInflowStore = defineStore("inflow", {
 
         // API 응답 처리
         if (response.response && response.response.items) {
-          // this.waterQualityParameters = response.response.items;
-          // console.log("수질 파라미터 조회 성공:", response.response.items);
-
-          // 임시로 biogas, CH4 parameter_code만 필터링
-          const filteredItems = response.response.items.filter(
-            (item: any) =>
-              item.parameter_code === "biogas" || item.parameter_code === "CH4"
-          );
-          this.waterQualityParameters = filteredItems;
+          this.waterQualityParameters = response.response.items;
         } else {
           this.waterQualityParameters = [];
         }
@@ -636,6 +628,35 @@ export const useInflowStore = defineStore("inflow", {
           error instanceof Error
             ? error.message
             : "유입종류 삭제에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 수질 파라미터 등록
+    async createWaterQualityParameter(
+      parameterData: Partial<WaterQualityParameter>
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request("/api/inflow/codeInsert", undefined, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(parameterData),
+        });
+
+        return response;
+      } catch (error) {
+        console.error("수질 파라미터 등록 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "수질 파라미터 등록에 실패했습니다.";
         throw error;
       } finally {
         this.loading = false;

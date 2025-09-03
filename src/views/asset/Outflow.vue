@@ -46,6 +46,12 @@
             <button class="btn btn-update" @click="openUpdateModal">
               {{ t("outflow.update") }}
             </button>
+            <button
+              class="btn btn-code-management"
+              @click="openCodeManagementModal"
+            >
+              {{ t("outflow.codeManagement") }}
+            </button>
           </div>
         </div>
       </div>
@@ -338,7 +344,7 @@
       class="modal-overlay"
       @click="closeUpdateModal"
     >
-      <div class="modal-content update-modal-content" @click.stop>
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ t("outflow.update") }}</h3>
           <button
@@ -349,7 +355,7 @@
             ×
           </button>
         </div>
-        <div class="modal-body update-modal-body">
+        <div class="modal-body">
           <dl class="column-regist">
             <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
             <dd>
@@ -454,7 +460,7 @@
                     ? metricFileData
                     : currentMetricGridData
                 "
-                maxHeight="200px"
+                maxHeight="300px"
                 :stickyHeader="true"
               >
                 <template
@@ -506,7 +512,7 @@
                     ? imperialFileData
                     : currentImperialGridData
                 "
-                maxHeight="200px"
+                maxHeight="300px"
                 :stickyHeader="true"
               >
                 <template
@@ -549,6 +555,34 @@
         </div>
       </div>
     </div>
+
+    <!-- 코드 관리 모달 -->
+    <div
+      v-if="isCodeManagementModalOpen"
+      class="modal-overlay"
+      @click="closeCodeManagementModal"
+    >
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("outflow.codeManagement") }}</h3>
+          <button
+            class="close-btn"
+            @click="closeCodeManagementModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <WaterCodeManagement />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-cancel" @click="closeCodeManagementModal">
+            {{ t("common.close") }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -557,6 +591,7 @@ import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
+import WaterCodeManagement from "./WaterCodeManagement.vue";
 
 const { t } = useI18n();
 const outflowStore = useInflowStore();
@@ -795,6 +830,7 @@ const loadWaterFlowTypes = async () => {
 
 // 모달 관련 상태
 const isModalOpen = ref(false);
+const isCodeManagementModalOpen = ref(false);
 const newTabName = ref("");
 
 // 파일 선택 관련 상태
@@ -1082,6 +1118,14 @@ const closeModal = () => {
   imperialFileData.value = [];
   metricFileName.value = "";
   imperialFileName.value = "";
+};
+
+const openCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = true;
+};
+
+const closeCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = false;
 };
 
 // 수정 모달 관련 함수
@@ -1532,7 +1576,6 @@ onBeforeUnmount(() => {
 
   max-width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
   width: 100%;
 
   // 반응형 처리
@@ -1589,8 +1632,8 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   gap: $spacing-md;
-  margin-top: $spacing-xl;
-  padding-top: $spacing-lg;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
   border-top: 1px solid $border-color;
 
   .btn {
@@ -1761,17 +1804,5 @@ onBeforeUnmount(() => {
   &.right {
     margin-left: 8px;
   }
-}
-
-// 수정 모달 스타일
-.update-modal-content {
-  max-width: 1700px !important;
-  max-height: 890px !important;
-  overflow-y: auto;
-}
-
-.update-modal-body {
-  max-height: 750px;
-  overflow-y: auto;
 }
 </style>

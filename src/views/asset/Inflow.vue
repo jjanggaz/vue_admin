@@ -2188,7 +2188,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 4px;
   width: 30px;
-  height: 30px;
+  height: 2.5rem; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   display: flex;
   align-items: center;
   justify-content: center;

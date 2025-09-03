@@ -93,6 +93,15 @@
       "components": "Components",
       "equipmentType": "Equipment Type"
     },
+    "waterCode": {
+      "parameterCode": "Parameter Code",
+      "parameterName": "Parameter Name",
+      "parameterNameEn": "Parameter Name (EN)",
+      "parameterType": "Parameter Type",
+      "defaultUnit": "Default Unit",
+      "isActive": "Active",
+      "description": "Description"
+    },
     "project": {
       "id": "ID",
       "name": "Project Name",
@@ -142,6 +151,7 @@
       "active": "Active",
       "isRequired": "Editable",
       "remarks": "Remarks",
+      "select": "Select",
       "formula": "Formula",
       "uploadDate": "Upload Date",
       "author": "Author",
@@ -303,6 +313,7 @@
     "add": "Add",
     "cancel": "Cancel",
     "save": "Save",
+    "processing": "Processing...",
     "selectAll": "-- All --",
     "select": "-- Select --",
     "selectItem": "Please select an item",
@@ -460,6 +471,11 @@
     "costCost": "Enter target cost",
     "costPeriod": "Enter target period (e.g. 2025.01-2025.12)",
     "costDescription": "Enter description",
+    "parameterCode": "Enter parameter code",
+    "parameterName": "Enter parameter name",
+    "parameterNameEn": "Enter English parameter name",
+    "defaultUnit": "Enter default unit",
+    "description": "Enter description",
     "codeGroup": "Enter code group",
     "codeHighCode": "Enter high code",
     "codeCodeName": "Enter code name",
@@ -710,7 +726,8 @@
     "symbolColor": "Symbol Color",
     "uploadFormula": "Upload Formula",
     "register": "Register",
-    "delete": "Delete"
+    "delete": "Delete",
+    "codeManagement": "Code Management"
   },
   "outflow": {
     "registerNew": "Register New",
@@ -724,7 +741,22 @@
     "symbolColor": "Symbol Color",
     "uploadFormula": "Upload Formula",
     "register": "Register",
-    "delete": "Delete"
+    "delete": "Delete",
+    "codeManagement": "Code Management"
+  },
+  "waterCode": {
+    "parameterList": "Water Quality Parameter List",
+    "parameterSettings": "Parameter Settings",
+    "parameterCode": "Parameter Code",
+    "parameterName": "Parameter Name",
+    "parameterNameEn": "Parameter Name (English)",
+    "parameterType": "Parameter Type",
+    "defaultUnit": "Default Unit",
+    "description": "Description",
+    "isActive": "Active",
+    "chemical": "Chemical",
+    "physical": "Physical",
+    "biological": "Biological"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -816,7 +848,10 @@
       "waterFlowTypeCreateSuccess": "Inflow type and parameters have been successfully registered.",
       "waterFlowTypeUpdateSuccess": "Inflow type has been successfully updated.",
       "outflowTypeCreateSuccess": "Outflow type and parameters have been successfully registered.",
-      "outflowTypeUpdateSuccess": "Outflow type has been successfully updated."
+      "outflowTypeUpdateSuccess": "Outflow type has been successfully updated.",
+      "parameterRegistered": "Parameter has been successfully registered.",
+      "parameterUpdated": "Parameter has been successfully updated.",
+      "parameterDeleted": "Parameter has been successfully deleted."
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
@@ -832,12 +867,14 @@
       "registrationFailed": "Registration failed.",
       "updateFailedGeneric": "Update failed.",
       "waterFlowTypeCreateFailed": "Registration failed.",
-      "waterFlowTypeUpdateFailed": "Update failed."
+      "waterFlowTypeUpdateFailed": "Update failed.",
+      "parameterCreateFailed": "Parameter registration failed."
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",
       "deleteItem": "Are you sure you want to delete the selected item?",
-      "confirmDelete": "Are you sure you want to delete this item?"
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "deleteParameter": "Are you sure you want to delete the selected parameter?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "Please select items to delete.",
@@ -858,8 +895,19 @@
       "cannotEditTab": "This tab cannot be edited.",
       "selectOutflowType": "Please select an outflow type.",
       "enterOutflowTypeName": "Please enter an outflow type name.",
-      "cannotFindDataToEdit": "Cannot find data to edit."
+      "cannotFindDataToEdit": "Cannot find data to edit.",
+      "parameterRegisterFailed": "Parameter registration failed.",
+      "parameterUpdateFailed": "Parameter update failed.",
+      "parameterDeleteFailed": "Parameter deletion failed."
     },
     "info": {}
+  },
+  "validation": {
+    "required": "{field} is required.",
+    "minLength": "{field} must be at least {min} characters long.",
+    "maxLength": "{field} must be no more than {max} characters long.",
+    "email": "Please enter a valid email address.",
+    "numeric": "{field} must contain only numbers.",
+    "alphanumeric": "{field} must contain only letters and numbers."
   }
 }

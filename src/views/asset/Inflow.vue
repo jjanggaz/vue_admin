@@ -21,9 +21,7 @@
                   color: getTextColor(tab.symbol_color || '#f0f0f0'),
                 }"
                 @click="onTabClick(idx)"
-                :title="
-                  tab.flow_type_code ? `코드: ${tab.flow_type_code}` : tab.name
-                "
+                :title="tab.flow_type_code ? tab.flow_type_code : tab.name"
               >
                 {{ tab.name }}
               </div>
@@ -45,6 +43,12 @@
             </button>
             <button class="btn btn-update" @click="openUpdateModal">
               {{ t("inflow.update") }}
+            </button>
+            <button
+              class="btn btn-code-management"
+              @click="openCodeManagementModal"
+            >
+              {{ t("inflow.codeManagement") }}
             </button>
           </div>
         </div>
@@ -106,25 +110,16 @@
                 maxHeight="300px"
                 :stickyHeader="true"
               >
+                <template #cell-select="{ item }: { item: GridRow2 }">
+                  <input
+                    type="radio"
+                    :name="'formula-select-metric'"
+                    v-model="selectedFormulaId"
+                    :value="item.id"
+                  />
+                </template>
                 <template #cell-formula="{ item }">
                   <span>{{ item.formula }}</span>
-                </template>
-                <template #cell-apply="{ item }: { item: GridRow2 }">
-                  <input
-                    type="checkbox"
-                    v-model="item.apply"
-                    true-value="Y"
-                    false-value="N"
-                  />
-                </template>
-                <template #cell-remarks="{ item, index }">
-                  <input
-                    v-if="index === currentGridData2.length - 1"
-                    type="text"
-                    v-model="item.remarks"
-                    class="form-input"
-                  />
-                  <span v-else>{{ item.remarks }}</span>
                 </template>
               </DataTable>
             </div>
@@ -184,25 +179,16 @@
                 maxHeight="300px"
                 :stickyHeader="true"
               >
+                <template #cell-select="{ item }: { item: GridRow2 }">
+                  <input
+                    type="radio"
+                    :name="'formula-select-imperial'"
+                    v-model="selectedFormulaId"
+                    :value="item.id"
+                  />
+                </template>
                 <template #cell-formula="{ item }">
                   <span>{{ item.formula }}</span>
-                </template>
-                <template #cell-apply="{ item }: { item: GridRow2 }">
-                  <input
-                    type="checkbox"
-                    v-model="item.apply"
-                    true-value="Y"
-                    false-value="N"
-                  />
-                </template>
-                <template #cell-remarks="{ item, index }">
-                  <input
-                    v-if="index === currentGridData2.length - 1"
-                    type="text"
-                    v-model="item.remarks"
-                    class="form-input"
-                  />
-                  <span v-else>{{ item.remarks }}</span>
                 </template>
               </DataTable>
             </div>
@@ -330,6 +316,7 @@
                   </div>
                 </dd>
               </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -365,14 +352,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
@@ -402,6 +381,7 @@
                   </div>
                 </dd>
               </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -439,14 +419,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -467,7 +439,7 @@
       class="modal-overlay"
       @click="closeUpdateModal"
     >
-      <div class="modal-content update-modal-content" @click.stop>
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ t("inflow.update") }}</h3>
           <button
@@ -478,7 +450,7 @@
             ×
           </button>
         </div>
-        <div class="modal-body update-modal-body">
+        <div class="modal-body">
           <dl class="column-regist">
             <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
             <dd>
@@ -589,6 +561,7 @@
                   </div>
                 </dd>
               </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -626,56 +599,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Metric 계산식 목록 -->
-              <div class="modal-metric-formula-section">
-                <div class="action-bar">
-                  <div class="title">
-                    <h5>{{ t("inflow.formulaList") }} (Metric)</h5>
-                  </div>
-                  <div class="btns">
-                    <button class="btn btn-delete">
-                      {{ t("inflow.delete") }}
-                    </button>
-                  </div>
-                </div>
-
-                <DataTable
-                  :columns="gridColumns2"
-                  :data="currentGridData2"
-                  maxHeight="300px"
-                  :stickyHeader="true"
-                >
-                  <template #cell-formula="{ item }">
-                    <span>{{ item.formula }}</span>
-                  </template>
-                  <template #cell-apply="{ item }: { item: GridRow2 }">
-                    <input
-                      type="checkbox"
-                      v-model="item.apply"
-                      true-value="Y"
-                      false-value="N"
-                    />
-                  </template>
-                  <template #cell-remarks="{ item, index }">
-                    <input
-                      v-if="index === currentGridData2.length - 1"
-                      type="text"
-                      v-model="item.remarks"
-                      class="form-input"
-                    />
-                    <span v-else>{{ item.remarks }}</span>
-                  </template>
-                </DataTable>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
@@ -705,6 +628,7 @@
                   </div>
                 </dd>
               </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -742,56 +666,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Imperial 계산식 목록 -->
-              <div class="modal-imperial-formula-section">
-                <div class="action-bar">
-                  <div class="title">
-                    <h5>{{ t("inflow.formulaList") }} (Imperial)</h5>
-                  </div>
-                  <div class="btns">
-                    <button class="btn btn-add">
-                      {{ t("inflow.delete") }}
-                    </button>
-                  </div>
-                </div>
-
-                <DataTable
-                  :columns="gridColumns2"
-                  :data="currentGridData2"
-                  maxHeight="300px"
-                  :stickyHeader="true"
-                >
-                  <template #cell-formula="{ item }">
-                    <span>{{ item.formula }}</span>
-                  </template>
-                  <template #cell-apply="{ item }: { item: GridRow2 }">
-                    <input
-                      type="checkbox"
-                      v-model="item.apply"
-                      true-value="Y"
-                      false-value="N"
-                    />
-                  </template>
-                  <template #cell-remarks="{ item, index }">
-                    <input
-                      v-if="index === currentGridData2.length - 1"
-                      type="text"
-                      v-model="item.remarks"
-                      class="form-input"
-                    />
-                    <span v-else>{{ item.remarks }}</span>
-                  </template>
-                </DataTable>
-              </div>
             </div>
           </div>
         </div>
@@ -805,6 +679,34 @@
         </div>
       </div>
     </div>
+
+    <!-- 코드 관리 모달 -->
+    <div
+      v-if="isCodeManagementModalOpen"
+      class="modal-overlay"
+      @click="closeCodeManagementModal"
+    >
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("inflow.codeManagement") }}</h3>
+          <button
+            class="close-btn"
+            @click="closeCodeManagementModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <WaterCodeManagement />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-cancel" @click="closeCodeManagementModal">
+            {{ t("common.close") }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -813,6 +715,7 @@ import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
+import WaterCodeManagement from "./WaterCodeManagement.vue";
 
 const { t } = useI18n();
 const inflowStore = useInflowStore();
@@ -916,8 +819,6 @@ interface GridRow2 {
   formula: string;
   uploadDate: string;
   author: string;
-  apply: "Y" | "N";
-  remarks: string;
 }
 
 interface UploadForm {
@@ -942,6 +843,7 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
 const resizeObserver = ref<ResizeObserver | null>(null);
+const selectedFormulaId = ref<number | null>(null);
 const handleResize = () => {
   nextTick(() => updateScrollButtons());
 };
@@ -1063,6 +965,7 @@ const loadWaterFlowTypes = async () => {
 // 모달 관련 상태
 const isModalOpen = ref(false);
 const isUpdateModalOpen = ref(false);
+const isCodeManagementModalOpen = ref(false);
 const newTabName = ref("");
 
 // 파일 선택 관련 상태
@@ -1070,6 +973,8 @@ const metricFileData = ref<GridRow[]>([]);
 const imperialFileData = ref<GridRow[]>([]);
 const metricFileName = ref<string>("");
 const imperialFileName = ref<string>("");
+const metricFile = ref<File | null>(null);
+const imperialFile = ref<File | null>(null);
 
 // 여기2
 const gridColumns: TableColumn[] = [
@@ -1083,12 +988,11 @@ const gridColumns: TableColumn[] = [
 ];
 
 const gridColumns2: TableColumn[] = [
+  { key: "select", title: t("columns.inflow.select"), width: "60px" },
   { key: "id", title: t("columns.inflow.no"), width: "80px" },
   { key: "formula", title: t("columns.inflow.formula") },
   { key: "uploadDate", title: t("columns.inflow.uploadDate") },
   { key: "author", title: t("columns.inflow.author") },
-  { key: "apply", title: t("columns.inflow.apply") },
-  { key: "remarks", title: t("columns.inflow.remarks") },
 ];
 
 const handleFileUpload = (event: Event) => {
@@ -1125,6 +1029,7 @@ const handleMetricFileUpload = async (event: Event) => {
     }
 
     metricFileName.value = file.name;
+    metricFile.value = file; // 파일 저장
 
     try {
       const fileContent = await readFileContent(file);
@@ -1150,6 +1055,7 @@ const handleImperialFileUpload = async (event: Event) => {
     }
 
     imperialFileName.value = file.name;
+    imperialFile.value = file; // 파일 저장
 
     try {
       const fileContent = await readFileContent(file);
@@ -1373,100 +1279,6 @@ Object.keys(tabGridData.value).forEach((key) => {
   imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
 
-// 모달용 Metric 데이터 추가 함수
-const addModalMetricRow = () => {
-  const currentData =
-    metricFileData.value.length > 0
-      ? metricFileData.value
-      : currentGridData.value;
-  const newId =
-    currentData.length > 0
-      ? Math.max(...currentData.map((item) => item.id)) + 1
-      : 1;
-
-  const newRow: GridRow = {
-    id: newId,
-    mapping_id: "",
-    item: "", // 빈 값으로 시작, 선택 시 채워짐
-    influent: 0,
-    unit: "",
-    is_active: true,
-    is_required: false,
-    remarks: "",
-  };
-
-  if (metricFileData.value.length > 0) {
-    metricFileData.value = [...metricFileData.value, newRow];
-  } else {
-    metricFileData.value = [...currentGridData.value, newRow];
-  }
-
-  // 새로 추가된 행이 보이도록 스크롤 조정
-  nextTick(() => {
-    const modalMetricTable = document.querySelector(
-      ".modal-tab-content-metric .data-table-container.with-scroll"
-    );
-    if (modalMetricTable) {
-      modalMetricTable.scrollTop = modalMetricTable.scrollHeight;
-    } else {
-      // fallback: 일반적인 스크롤 컨테이너 찾기
-      const scrollContainer = document.querySelector(
-        ".modal-tab-content-metric .data-table-container"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  });
-};
-
-// 모달용 Imperial 데이터 추가 함수
-const addModalImperialRow = () => {
-  const currentData =
-    imperialFileData.value.length > 0
-      ? imperialFileData.value
-      : currentGridData.value;
-  const newId =
-    currentData.length > 0
-      ? Math.max(...currentData.map((item) => item.id)) + 1
-      : 1;
-
-  const newRow: GridRow = {
-    id: newId,
-    mapping_id: "",
-    item: "", // 빈 값으로 시작, 선택 시 채워짐
-    influent: 0,
-    unit: "",
-    is_active: true,
-    is_required: false,
-    remarks: "",
-  };
-
-  if (imperialFileData.value.length > 0) {
-    imperialFileData.value = [...imperialFileData.value, newRow];
-  } else {
-    imperialFileData.value = [...currentGridData.value, newRow];
-  }
-
-  // 새로 추가된 행이 보이도록 스크롤 조정
-  nextTick(() => {
-    const modalImperialTable = document.querySelector(
-      ".modal-tab-content-imperial .data-table-container.with-scroll"
-    );
-    if (modalImperialTable) {
-      modalImperialTable.scrollTop = modalImperialTable.scrollHeight;
-    } else {
-      // fallback: 일반적인 스크롤 컨테이너 찾기
-      const scrollContainer = document.querySelector(
-        ".modal-tab-content-imperial .data-table-container"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  });
-};
-
 // 수질 파라미터 선택 시 처리 함수
 const onParameterSelect = (
   parameterCode: string,
@@ -1538,6 +1350,14 @@ const currentGridData2 = computed(() => {
 const openModal = () => {
   isModalOpen.value = true;
   newTabName.value = "";
+};
+
+const openCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = true;
+};
+
+const closeCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = false;
 };
 
 const openUpdateModal = async () => {
@@ -1622,6 +1442,8 @@ const closeModal = () => {
   imperialFileData.value = [];
   metricFileName.value = "";
   imperialFileName.value = "";
+  metricFile.value = null;
+  imperialFile.value = null;
 };
 
 const closeUpdateModal = () => {
@@ -1637,6 +1459,8 @@ const closeUpdateModal = () => {
   imperialFileData.value = [];
   metricFileName.value = "";
   imperialFileName.value = "";
+  metricFile.value = null;
+  imperialFile.value = null;
 };
 
 const createNewTab = async () => {
@@ -1692,6 +1516,8 @@ const createNewTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
+      metricFile: metricFile.value || undefined, // Metric 계산식 파일
+      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일
     };
 
     const response = await inflowStore.createWaterFlowType(requestData);
@@ -1706,6 +1532,8 @@ const createNewTab = async () => {
     imperialFileData.value = [];
     metricFileName.value = "";
     imperialFileName.value = "";
+    metricFile.value = null;
+    imperialFile.value = null;
 
     closeModal();
 
@@ -1793,6 +1621,8 @@ const updateTab = async () => {
         is_active: true,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
+      metricFile: metricFile.value || undefined, // Metric 계산식 파일
+      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일
     };
 
     const response = await inflowStore.updateWaterFlowType(
@@ -2052,7 +1882,6 @@ onBeforeUnmount(() => {
 
   max-width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
   width: 100%;
 
   // 반응형 처리
@@ -2193,6 +2022,9 @@ onBeforeUnmount(() => {
 // 탭 스크롤 관련 스타일
 .action-bar {
   min-width: 0; // 액션 바가 축소될 수 있도록 허용
+  display: flex;
+  justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
+  margin-bottom: $spacing-sm;
 }
 
 .tab-action-bar {
@@ -2243,7 +2075,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 4px;
   width: 30px;
-  height: 30px;
+  height: 2.5rem; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   display: flex;
   align-items: center;
   justify-content: center;

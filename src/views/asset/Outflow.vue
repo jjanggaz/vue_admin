@@ -21,9 +21,7 @@
                   color: getTextColor(tab.symbol_color || '#f0f0f0'),
                 }"
                 @click="onTabClick(idx)"
-                :title="
-                  tab.flow_type_code ? `코드: ${tab.flow_type_code}` : tab.name
-                "
+                :title="tab.flow_type_code ? tab.flow_type_code : tab.name"
               >
                 {{ tab.name }}
               </div>
@@ -45,6 +43,12 @@
             </button>
             <button class="btn btn-update" @click="openUpdateModal">
               {{ t("outflow.update") }}
+            </button>
+            <button
+              class="btn btn-code-management"
+              @click="openCodeManagementModal"
+            >
+              {{ t("outflow.codeManagement") }}
             </button>
           </div>
         </div>
@@ -338,7 +342,7 @@
       class="modal-overlay"
       @click="closeUpdateModal"
     >
-      <div class="modal-content update-modal-content" @click.stop>
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ t("outflow.update") }}</h3>
           <button
@@ -349,7 +353,7 @@
             ×
           </button>
         </div>
-        <div class="modal-body update-modal-body">
+        <div class="modal-body">
           <dl class="column-regist">
             <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
             <dd>
@@ -438,6 +442,15 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
+
+              <div class="action-bar">
+                <div class="btns">
+                  <button class="btn btn-add" @click="addModalMetricRow">
+                    {{ t("outflow.addItem") }}
+                  </button>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -445,7 +458,7 @@
                     ? metricFileData
                     : currentMetricGridData
                 "
-                maxHeight="200px"
+                maxHeight="300px"
                 :stickyHeader="true"
               >
                 <template
@@ -475,20 +488,21 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
+
+              <div class="action-bar">
+                <div class="btns">
+                  <button class="btn btn-add" @click="addModalImperialRow">
+                    {{ t("outflow.addItem") }}
+                  </button>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -496,7 +510,7 @@
                     ? imperialFileData
                     : currentImperialGridData
                 "
-                maxHeight="200px"
+                maxHeight="300px"
                 :stickyHeader="true"
               >
                 <template
@@ -526,14 +540,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -547,6 +553,34 @@
         </div>
       </div>
     </div>
+
+    <!-- 코드 관리 모달 -->
+    <div
+      v-if="isCodeManagementModalOpen"
+      class="modal-overlay"
+      @click="closeCodeManagementModal"
+    >
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("outflow.codeManagement") }}</h3>
+          <button
+            class="close-btn"
+            @click="closeCodeManagementModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <WaterCodeManagement />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-cancel" @click="closeCodeManagementModal">
+            {{ t("common.close") }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -555,6 +589,7 @@ import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
+import WaterCodeManagement from "./WaterCodeManagement.vue";
 
 const { t } = useI18n();
 const outflowStore = useInflowStore();
@@ -793,6 +828,7 @@ const loadWaterFlowTypes = async () => {
 
 // 모달 관련 상태
 const isModalOpen = ref(false);
+const isCodeManagementModalOpen = ref(false);
 const newTabName = ref("");
 
 // 파일 선택 관련 상태
@@ -1080,6 +1116,14 @@ const closeModal = () => {
   imperialFileData.value = [];
   metricFileName.value = "";
   imperialFileName.value = "";
+};
+
+const openCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = true;
+};
+
+const closeCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = false;
 };
 
 // 수정 모달 관련 함수
@@ -1430,8 +1474,8 @@ onBeforeUnmount(() => {
       }
 
       .section-header {
-        margin-bottom: $spacing-lg;
-        padding-bottom: $spacing-md;
+        margin-bottom: $spacing-sm;
+        padding-bottom: $spacing-sm;
         border-bottom: 2px solid $primary-color;
 
         h3 {
@@ -1530,7 +1574,6 @@ onBeforeUnmount(() => {
 
   max-width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
   width: 100%;
 
   // 반응형 처리
@@ -1587,8 +1630,8 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   gap: $spacing-md;
-  margin-top: $spacing-xl;
-  padding-top: $spacing-lg;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
   border-top: 1px solid $border-color;
 
   .btn {
@@ -1671,6 +1714,9 @@ onBeforeUnmount(() => {
 // 탭 스크롤 관련 스타일
 .action-bar {
   min-width: 0; // 액션 바가 축소될 수 있도록 허용
+  display: flex;
+  justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
+  margin-bottom: $spacing-sm;
 }
 
 .tab-action-bar {
@@ -1721,7 +1767,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 4px;
   width: 30px;
-  height: 30px;
+  height: 2.5rem; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1756,17 +1802,5 @@ onBeforeUnmount(() => {
   &.right {
     margin-left: 8px;
   }
-}
-
-// 수정 모달 스타일
-.update-modal-content {
-  max-width: 1700px !important;
-  max-height: 890px !important;
-  overflow-y: auto;
-}
-
-.update-modal-body {
-  max-height: 750px;
-  overflow-y: auto;
 }
 </style>

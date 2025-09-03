@@ -93,6 +93,15 @@
       "components": "Components",
       "equipmentType": "장비유형"
     },
+    "waterCode": {
+      "parameterCode": "파라미터 코드",
+      "parameterName": "파라미터명",
+      "parameterNameEn": "파라미터명(영문)",
+      "parameterType": "파라미터 유형",
+      "defaultUnit": "기본 단위",
+      "isActive": "사용여부",
+      "description": "비고"
+    },
     "project": {
       "id": "순번",
       "name": "프로젝트명",
@@ -142,6 +151,7 @@
       "active": "사용여부",
       "isRequired": "편집여부",
       "remarks": "비고",
+      "select": "선택",
       "formula": "계산식",
       "uploadDate": "업로드 일자",
       "author": "작성자",
@@ -303,6 +313,7 @@
     "add": "추가",
     "cancel": "취소",
     "save": "저장",
+    "processing": "처리중...",
     "selectAll": "-- 전체 --",
     "select": "-- 선택 --",
     "selectItem": "항목을 선택해주세요",
@@ -571,6 +582,11 @@
     "costCost": "목표비용을 입력하세요",
     "costPeriod": "목표기간을 입력하세요 (예: 2025.01-2025.12)",
     "costDescription": "설명을 입력하세요",
+    "parameterCode": "파라미터 코드를 입력하세요",
+    "parameterName": "파라미터명을 입력하세요",
+    "parameterNameEn": "영문 파라미터명을 입력하세요",
+    "defaultUnit": "기본 단위를 입력하세요",
+    "description": "설명을 입력하세요",
     "codeGroup": "코드그룹을 입력하세요",
     "codeHighCode": "상위코드명을 입력하세요",
     "codeCodeName": "코드명을 입력하세요",
@@ -709,7 +725,22 @@
     "symbolColor": "심볼색상",
     "uploadFormula": "계산식 업로드",
     "register": "등록",
-    "delete": "삭제"
+    "delete": "삭제",
+    "codeManagement": "코드 관리"
+  },
+  "waterCode": {
+    "parameterList": "수질 파라미터 목록",
+    "parameterSettings": "파라미터 설정",
+    "parameterCode": "파라미터 코드",
+    "parameterName": "파라미터명",
+    "parameterNameEn": "파라미터명(영문)",
+    "parameterType": "파라미터 유형",
+    "defaultUnit": "기본 단위",
+    "description": "설명",
+    "isActive": "사용여부",
+    "chemical": "화학적",
+    "physical": "물리적",
+    "biological": "생물학적"
   },
   "outflow": {
     "registerNew": "신규등록",
@@ -723,7 +754,8 @@
     "symbolColor": "심볼색상",
     "uploadFormula": "계산식 업로드",
     "register": "등록",
-    "delete": "삭제"
+    "delete": "삭제",
+    "codeManagement": "코드 관리"
   },
   "sidebar": {
     "dashboard": "대시보드",
@@ -815,7 +847,10 @@
       "waterFlowTypeCreateSuccess": "유입종류와 파라미터가 성공적으로 등록되었습니다.",
       "waterFlowTypeUpdateSuccess": "유입종류가 성공적으로 수정되었습니다.",
       "outflowTypeCreateSuccess": "유출종류와 파라미터가 성공적으로 등록되었습니다.",
-      "outflowTypeUpdateSuccess": "유출종류가 성공적으로 수정되었습니다."
+      "outflowTypeUpdateSuccess": "유출종류가 성공적으로 수정되었습니다.",
+      "parameterRegistered": "파라미터가 성공적으로 등록되었습니다.",
+      "parameterUpdated": "파라미터가 성공적으로 수정되었습니다.",
+      "parameterDeleted": "파라미터가 성공적으로 삭제되었습니다."
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
@@ -831,12 +866,14 @@
       "registrationFailed": "등록에 실패했습니다.",
       "updateFailedGeneric": "수정에 실패했습니다.",
       "waterFlowTypeCreateFailed": "등록에 실패했습니다.",
-      "waterFlowTypeUpdateFailed": "수정에 실패했습니다."
+      "waterFlowTypeUpdateFailed": "수정에 실패했습니다.",
+      "parameterCreateFailed": "파라미터 등록에 실패했습니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
       "deleteItem": "선택된 항목을 삭제하시겠습니까?",
-      "confirmDelete": "다음 항목을 삭제하시겠습니까?"
+      "confirmDelete": "다음 항목을 삭제하시겠습니까?",
+      "deleteParameter": "선택한 파라미터를 삭제하시겠습니까?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",
@@ -857,8 +894,19 @@
       "cannotEditTab": "수정할 수 없는 탭입니다.",
       "selectOutflowType": "유출종류를 선택해주세요.",
       "enterOutflowTypeName": "유출종류명을 입력해주세요.",
-      "cannotFindDataToEdit": "수정할 데이터를 찾을 수 없습니다."
+      "cannotFindDataToEdit": "수정할 데이터를 찾을 수 없습니다.",
+      "parameterRegisterFailed": "파라미터 등록에 실패했습니다.",
+      "parameterUpdateFailed": "파라미터 수정에 실패했습니다.",
+      "parameterDeleteFailed": "파라미터 삭제에 실패했습니다."
     },
     "info": {}
+  },
+  "validation": {
+    "required": "{field}은(는) 필수 입력 항목입니다.",
+    "minLength": "{field}은(는) 최소 {min}자 이상 입력해주세요.",
+    "maxLength": "{field}은(는) 최대 {max}자까지 입력 가능합니다.",
+    "email": "올바른 이메일 형식을 입력해주세요.",
+    "numeric": "{field}은(는) 숫자만 입력 가능합니다.",
+    "alphanumeric": "{field}은(는) 영문자와 숫자만 입력 가능합니다."
   }
 }

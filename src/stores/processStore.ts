@@ -483,7 +483,6 @@ export const useProcessStore = defineStore("process", () => {
               }
               return value;
             })(),
-            symbol_id: item.symbol_id || null,
             viewDetail: "",
           }));
 
@@ -544,7 +543,7 @@ export const useProcessStore = defineStore("process", () => {
       // 400 에러인 경우 특별 처리
       if (error.response && error.response.status === 400) {
         console.error("400 Bad Request - 요청 데이터 형식 오류");
-        console.error("요청 데이터:", requestData);
+        console.error("요청 데이터:", error.config?.data || "데이터 없음");
         
         // 빈 목록으로 초기화하고 에러를 던지지 않음
         processList.value = [];
@@ -990,13 +989,85 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
+  // 계산식 파일 저장 함수
+  const saveFormulaFiles = async (processId: string, formulaFiles: any[]) => {
+    try {
+      console.log('=== 계산식 파일 저장 시작 ===');
+      console.log('processId:', processId);
+      console.log('formulaFiles:', formulaFiles);
+      console.log('formulaFiles.length:', formulaFiles.length);
+      
+      if (!processId) {
+        console.error('processId가 없습니다. processId:', processId);
+        throw new Error('processId가 없습니다.');
+      }
+      
+      console.log('processId 검증 통과:', processId);
+      
+      if (!formulaFiles || formulaFiles.length === 0) {
+        console.log('저장할 계산식 파일이 없습니다.');
+        return;
+      }
+      
+      for (let i = 0; i < formulaFiles.length; i++) {
+        const formulaItem = formulaFiles[i];
+        console.log(`계산식 파일 ${i + 1}/${formulaFiles.length} 처리:`, formulaItem);
+        
+        if (formulaItem._file) {
+          const formData = new FormData();
+          formData.append('process_id', processId); // process_id 사용
+          formData.append('formula_file', formulaItem._file);
+          formData.append('registered_formula', formulaItem.registeredFormula);
+          formData.append('formula_code', formulaItem.formula_code || '');
+          formData.append('info_overview', formulaItem.infoOverview || '');
+          formData.append('remarks', formulaItem.remarks || '');
+          
+                  console.log('=== 계산식 파일 저장 요청 ===');
+        console.log('process_id:', processId);
+        console.log('process_id 타입:', typeof processId);
+        console.log('file_name:', formulaItem._file.name);
+        console.log('file_size:', formulaItem._file.size);
+        console.log('file_type:', formulaItem._file.type);
+        console.log('registered_formula:', formulaItem.registeredFormula);
+        console.log('formula_code:', formulaItem.formula_code);
+        console.log('info_overview:', formulaItem.infoOverview);
+        console.log('remarks:', formulaItem.remarks);
+          
+          const result = await request("/api/process/formula/upload", undefined, {
+            method: "POST",
+            body: formData,
+          });
+          
+          console.log('계산식 파일 저장 응답:', result);
+          
+          if (!result.success) {
+            console.error('계산식 파일 저장 실패:', result);
+            throw new Error(`계산식 파일 저장 실패: ${result.message || '알 수 없는 오류'}`);
+          }
+        } else {
+          console.warn('계산식 파일에 _file이 없습니다:', formulaItem);
+        }
+      }
+      
+      console.log('=== 모든 계산식 파일 저장 완료 ===');
+    } catch (error) {
+      console.error('계산식 파일 저장 중 오류:', error);
+      throw error;
+    }
+  };
+
   const createProcess = async (processData: any) => {
     try {
       setLoading(true);
+      console.log("=== processStore createProcess 시작 ===");
       console.log("공정 등록 요청 데이터:", processData);
       console.log("processData.siteFile:", processData.siteFile);
       console.log("processData.process_name:", processData.process_name);
       console.log("processData.process_code:", processData.process_code);
+      console.log("processData.formula_files:", processData.formula_files);
+      console.log("processData.formula_files?.length:", processData.formula_files?.length);
+      console.log("processData 키들:", Object.keys(processData));
+      console.log("=== processStore createProcess 데이터 확인 완료 ===");
 
       // siteFile이 있는 경우 FormData로 전송, 없으면 JSON으로 전송
       if (processData.siteFile) {
@@ -1019,6 +1090,13 @@ export const useProcessStore = defineStore("process", () => {
           formData.append('file_upload_rows', JSON.stringify(processData.file_upload_rows));
         }
         
+        if (processData.formula_files) {
+          console.log('FormData에 formula_files 추가:', processData.formula_files);
+          formData.append('formula_files', JSON.stringify(processData.formula_files));
+        } else {
+          console.log('processData.formula_files가 없어서 FormData에 추가하지 않음');
+        }
+        
         console.log('FormData 내용:');
         for (let [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
@@ -1030,11 +1108,123 @@ export const useProcessStore = defineStore("process", () => {
         });
         
         console.log("공정 등록 API 응답 (FormData):", result);
+        console.log("=== API 응답 상세 분석 ===");
+        console.log("result 타입:", typeof result);
+        console.log("result 구조:", result);
+        console.log("result.response 타입:", typeof result.response);
+        console.log("result.response 구조:", result.response);
+        console.log("result.response 키들:", result.response ? Object.keys(result.response) : 'response 없음');
+        
+        // API 응답의 모든 레벨에서 process_id 검색
+        console.log("=== process_id 검색 시작 ===");
+        console.log("result.process_id:", result.process_id);
+        console.log("result.response.process_id:", result.response?.process_id);
+        console.log("result.response.id:", result.response?.id);
+        console.log("result.response.data:", result.response?.data);
+        console.log("result.response.data.process_id:", result.response?.data?.process_id);
+        console.log("result.response.data.id:", result.response?.data?.id);
+        
+        // process_id 추출 로직 강화 (모든 가능한 위치에서 process_id 찾기)
+        let processId = null;
+        
+        // 1단계: result.response에서 직접 찾기
+        if (result.response) {
+          const directIds = [
+            result.response.process_id,
+            result.response.id,
+            result.response.processId
+          ];
+          
+          processId = directIds.find(id => id != null && id !== '');
+          console.log("1단계 - result.response에서 직접 검색:", {
+            directIds: directIds,
+            found: processId
+          });
+        }
+        
+        // 2단계: result.response.data에서 찾기
+        if (!processId && result.response?.data) {
+          const dataIds = [
+            result.response.data.process_id,
+            result.response.data.id,
+            result.response.data.processId
+          ];
+          
+          processId = dataIds.find(id => id != null && id !== '');
+          console.log("2단계 - result.response.data에서 검색:", {
+            dataIds: dataIds,
+            found: processId
+          });
+        }
+        
+        // 3단계: result.response.data.response에서 찾기
+        if (!processId && result.response?.data?.response) {
+          const nestedIds = [
+            result.response.data.response.process_id,
+            result.response.data.response.id,
+            result.response.data.response.processId
+          ];
+          
+          processId = nestedIds.find(id => id != null && id !== '');
+          console.log("3단계 - result.response.data.response에서 검색:", {
+            nestedIds: nestedIds,
+            found: processId
+          });
+        }
+        
+        // 4단계: result 전체에서 찾기
+        if (!processId) {
+          const resultIds = [
+            result.process_id,
+            result.id,
+            result.processId
+          ];
+          
+          processId = resultIds.find(id => id != null && id !== '');
+          console.log("4단계 - result 전체에서 검색:", {
+            resultIds: resultIds,
+            found: processId
+          });
+        }
+        
+        console.log("=== 최종 process_id 추출 결과 ===");
+        console.log("추출된 process_id:", processId);
+        console.log("process_id 타입:", typeof processId);
+        
+        // process_id를 찾지 못한 경우
+        if (!processId) {
+          console.error('❌ API 응답에서 process_id를 찾을 수 없습니다!');
+          console.log('서버 개발자에게 /api/process/master/create API 응답에 process_id를 포함하도록 요청이 필요합니다.');
+          throw new Error('process_id를 찾을 수 없습니다. API 응답에 process_id가 포함되어야 합니다.');
+        }
+        
+        console.log("계산식 파일 저장 조건 확인:", {
+          resultSuccess: result.success,
+          formulaFiles: processData.formula_files,
+          formulaFilesLength: processData.formula_files?.length,
+          extractedProcessId: processId,
+          response: result.response
+        });
+        
+        // 공정 등록 성공 후 계산식 파일들 별도 저장
+        if (result.success && processData.formula_files && processData.formula_files.length > 0 && processId) {
+          console.log('공정 등록 성공 후 계산식 파일들 저장 시작, processId:', processId);
+          await saveFormulaFiles(processId, processData.formula_files);
+        } else {
+          console.log('계산식 파일 저장 조건 미충족:', {
+            resultSuccess: result.success,
+            hasFormulaFiles: !!processData.formula_files,
+            formulaFilesLength: processData.formula_files?.length,
+            hasProcessId: !!processId,
+            processId: processId
+          });
+        }
+        
         return result;
       }
 
       // siteFile이 없는 경우 JSON으로 전송
-      const { siteFile, ...createData } = processData;
+      const { siteFile, formula_files, ...createData } = processData;
       
       const result = await request("/api/process/master/create", undefined, {
         method: "POST",
@@ -1045,6 +1235,117 @@ export const useProcessStore = defineStore("process", () => {
       });
 
       console.log("공정 등록 API 응답:", result);
+      console.log("=== API 응답 상세 분석 (JSON) ===");
+      console.log("result 타입:", typeof result);
+      console.log("result 구조:", result);
+      console.log("result.response 타입:", typeof result.response);
+      console.log("result.response 구조:", result.response);
+      console.log("result.response 키들:", result.response ? Object.keys(result.response) : 'response 없음');
+      
+      // API 응답의 모든 레벨에서 process_id 검색
+      console.log("=== process_id 검색 시작 (JSON) ===");
+      console.log("result.process_id:", result.process_id);
+      console.log("result.response.process_id:", result.response?.process_id);
+      console.log("result.response.id:", result.response?.id);
+      console.log("result.response.data:", result.response?.data);
+      console.log("result.response.data.process_id:", result.response?.data?.process_id);
+      console.log("result.response.data.id:", result.response?.data?.id);
+      
+      // process_id 추출 로직 강화 (모든 가능한 위치에서 process_id 찾기)
+      let processId = null;
+      
+      // 1단계: result.response에서 직접 찾기
+      if (result.response) {
+        const directIds = [
+          result.response.process_id,
+          result.response.id,
+          result.response.processId
+        ];
+        
+        processId = directIds.find(id => id != null && id !== '');
+        console.log("1단계 - result.response에서 직접 검색 (JSON):", {
+          directIds: directIds,
+          found: processId
+        });
+      }
+      
+      // 2단계: result.response.data에서 찾기
+      if (!processId && result.response?.data) {
+        const dataIds = [
+          result.response.data.process_id,
+          result.response.data.id,
+          result.response.data.processId
+        ];
+        
+        processId = dataIds.find(id => id != null && id !== '');
+        console.log("2단계 - result.response.data에서 검색 (JSON):", {
+          dataIds: dataIds,
+          found: processId
+        });
+      }
+      
+      // 3단계: result.response.data.response에서 찾기
+      if (!processId && result.response?.data?.response) {
+        const nestedIds = [
+          result.response.data.response.process_id,
+          result.response.data.response.id,
+          result.response.data.response.processId
+        ];
+        
+        processId = nestedIds.find(id => id != null && id !== '');
+        console.log("3단계 - result.response.data.response에서 검색 (JSON):", {
+          nestedIds: nestedIds,
+          found: processId
+        });
+      }
+      
+      // 4단계: result 전체에서 찾기
+      if (!processId) {
+        const resultIds = [
+          result.process_id,
+          result.id,
+          result.processId
+        ];
+        
+        processId = resultIds.find(id => id != null && id !== '');
+        console.log("4단계 - result 전체에서 검색 (JSON):", {
+          resultIds: resultIds,
+          found: processId
+        });
+      }
+      
+      console.log("=== 최종 process_id 추출 결과 (JSON) ===");
+      console.log("추출된 process_id:", processId);
+      console.log("process_id 타입:", typeof processId);
+      
+      // process_id를 찾지 못한 경우
+      if (!processId) {
+        console.error('❌ API 응답에서 process_id를 찾을 수 없습니다!');
+        console.log('서버 개발자에게 /api/process/master/create API 응답에 process_id를 포함하도록 요청이 필요합니다.');
+        throw new Error('process_id를 찾을 수 없습니다. API 응답에 process_id가 포함되어야 합니다.');
+      }
+      
+      console.log("계산식 파일 저장 조건 확인 (JSON):", {
+        resultSuccess: result.success,
+        formulaFiles: formula_files,
+        formulaFilesLength: formula_files?.length,
+        extractedProcessId: processId,
+        response: result.response
+      });
+      
+      // 공정 등록 성공 후 계산식 파일들 별도 저장
+      if (result.success && formula_files && formula_files.length > 0 && processId) {
+        console.log('공정 등록 성공 후 계산식 파일들 저장 시작 (JSON), processId:', processId);
+        await saveFormulaFiles(processId, formula_files);
+      } else {
+        console.log('계산식 파일 저장 조건 미충족 (JSON):', {
+          resultSuccess: result.success,
+          hasFormulaFiles: !!formula_files,
+          formulaFilesLength: formula_files?.length,
+          hasProcessId: !!processId,
+          processId: processId
+        });
+      }
 
       // HTTP 상태 코드 확인 (409 Conflict 등)
       if (result.status && result.status >= 400) {
@@ -1402,6 +1703,7 @@ export const useProcessStore = defineStore("process", () => {
     deleteProcesses,
     createProcess,
     updateProcess,
+    saveFormulaFiles,
     resetState,
 
     // ProcessDetail.vue에서 이동한 액션들

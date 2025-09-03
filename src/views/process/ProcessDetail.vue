@@ -1,5 +1,5 @@
 <template>
-  <div class="process-detail">
+  <div class="process-detail" :class="props.class">
     <!-- 공정 기본 정보 -->
     <div class="process-info-section">
       <div class="form-grid">
@@ -465,10 +465,12 @@ import { request } from '@/utils/request';
 // Props 정의
 interface Props {
   processId?: string;
+  class?: string; // class 속성 추가
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  processId: ''
+  processId: '',
+  class: ''
 });
 
 // Emits 정의
@@ -579,7 +581,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
     
     console.log('PFD 도면 검색 요청 데이터:', requestBody);
     
-    const response = await request('/process/drawing_files/list', {}, {
+    const response = await request('/api/process/drawing_files/list', {}, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -621,7 +623,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
 
 const searchHydraulicDrawingAPI = async (processId: string) => {
   try {
-    console.log('수리계통도 도면 검색 API 호출 시작 - 엔드포인트: /api/v1/minio/drawing_files/list');
+    console.log('수리계통도 도면 검색 API 호출 시작 - 엔드포인트: /api/process/drawing_files/list');
     
     if (!processId) {
       console.warn('processId가 없어서 수리계통도 도면 검색을 건너뜁니다.');
@@ -635,7 +637,7 @@ const searchHydraulicDrawingAPI = async (processId: string) => {
     
     console.log('수리계통도 도면 검색 요청 데이터:', requestBody);
     
-    const response = await request('/api/v1/minio/drawing_files/list', {}, {
+    const response = await request('/api/process/drawing_files/list', {}, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -662,28 +664,9 @@ const searchHydraulicDrawingAPI = async (processId: string) => {
       
       // 404 오류인 경우 처리
       if (response.status === 404 || (response.status === 400 && response.message?.includes('Not Found'))) {
-        console.log('수리계통도 도면 검색 API 엔드포인트가 존재하지 않습니다. 임시 더미 데이터로 초기화합니다.');
-        console.warn('⚠️ /api/v1/minio/drawing_files/list API가 구현되지 않았습니다. 백엔드 개발자에게 문의하세요.');
-        
-        // 임시로 더미 데이터 반환
-        return [
-          {
-            id: 'hydraulic_1',
-            file_name: 'HYD_DIAG_001.dwg',
-            file_uri: '/uploads/drawings/HYD_DIAG_001.dwg',
-            created_at: '2024-01-15',
-            info_overview: '수리계통도 도면 1',
-            svg_preview: '/previews/HYD_DIAG_001.svg'
-          },
-          {
-            id: 'hydraulic_2',
-            file_name: 'HYD_DIAG_002.dwg',
-            file_uri: '/uploads/drawings/HYD_DIAG_002.dwg',
-            created_at: '2024-01-20',
-            info_overview: '수리계통도 도면 2',
-            svg_preview: '/previews/HYD_DIAG_002.svg'
-          }
-        ];
+        console.log('수리계통도 도면 검색 API 엔드포인트가 존재하지 않습니다.');
+        console.warn('⚠️ /api/process/drawing_files/list API가 구현되지 않았습니다. 백엔드 개발자에게 문의하세요.');
+        return [];
       }
       
       console.error('수리계통도 도면 검색 API 호출 실패:', response);
@@ -843,12 +826,10 @@ const createFormulaAPI = async (processId: string, formulaName: string, formulaC
       formData.append('siteFile', siteFile);
     }
 
-    const response = await request('/api/process/formula/create', formData, {
+    const response = await request('/api/process/formula/create', undefined, {
       method: 'POST',
-      headers: {
-        'user_Id': localStorage.getItem('authUserId') || '',
-        'wai_lang': localStorage.getItem('wai_lang') || 'ko'
-      }
+      body: formData
+      // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
     });
 
     if (!response.success) {
@@ -968,9 +949,10 @@ const getProcessSymbolFileName = () => {
   
   // null, undefined, 빈 문자열 체크
   if (processSymbol && processSymbol !== null && processSymbol !== undefined && processSymbol.trim() !== '') {
-    // symbol_uri 전체 경로를 그대로 반환 (API 응답의 실제 저장 경로)
-    console.log('getProcessSymbolFileName - symbol_uri 전체 경로:', processSymbol);
-    return processSymbol;
+    // 파일명만 추출하여 반환
+    const fileName = processSymbol.split('/').pop() || processSymbol;
+    console.log('getProcessSymbolFileName - 추출된 파일명:', fileName);
+    return fileName;
   }
   console.log('getProcessSymbolFileName - processSymbol이 null이거나 빈 값');
   return '';
@@ -1409,16 +1391,22 @@ const handleUpdate = async () => {
               
               const formData = new FormData();
               formData.append('process_id', processId);
-              formData.append('siteFile', hydraulicItem._file);
+              formData.append('drawing_type', 'HYD_DIAG'); // 수리계통도 도면 타입 추가
+              // DWG 파일의 경우 MIME 타입을 명시적으로 설정
+              const fileBlob = new Blob([hydraulicItem._file], { 
+                type: hydraulicItem._file.type || 'application/octet-stream' 
+              });
+              formData.append('siteFile', fileBlob, hydraulicItem._file.name);
               formData.append('remarks', hydraulicItem.remarks || '');
               
               // FormData 디버깅
-              console.log('FormData 내용:');
+              console.log('수리계통도 FormData 내용:');
               console.log('process_id:', processId);
+              console.log('drawing_type:', 'HYD_DIAG');
               console.log('file:', hydraulicItem._file);
               console.log('file name:', hydraulicItem._file.name);
               console.log('file size:', hydraulicItem._file.size);
-              console.log('file type:', hydraulicItem._file.type);
+              console.log('file type:', hydraulicItem._file.type || 'application/octet-stream');
               console.log('remarks:', hydraulicItem.remarks || '');
               
               // FormData entries 확인
@@ -1426,13 +1414,10 @@ const handleUpdate = async () => {
                 console.log(`${key}:`, value);
               }
               
-              const response = await request('/api/process/drawing/create', formData, {
+              const response = await request('/api/process/drawing/create', undefined, {
                 method: 'POST',
-                headers: {
-                  'user_Id': localStorage.getItem('authUserId') || '',
-                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
-                },
-                skipContentType: true // FormData 전송 시 Content-Type 헤더 자동 설정 방지
+                body: formData
+                // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
               });
               
               if (!response.success) {
@@ -1510,30 +1495,51 @@ const handleUpdate = async () => {
               
               const formData = new FormData();
               formData.append('process_id', processId);
-              formData.append('siteFile', pfdItem._file);
+              formData.append('drawing_type', 'PFD'); // PFD 도면 타입 추가
+              // DWG 파일의 경우 MIME 타입을 명시적으로 설정
+              const fileBlob = new Blob([pfdItem._file], { 
+                type: pfdItem._file.type || 'application/octet-stream' 
+              });
+              formData.append('siteFile', fileBlob, pfdItem._file.name);
               formData.append('remarks', pfdItem.remarks || '');
               
               // FormData 디버깅
               console.log('PFD FormData 내용:');
               console.log('process_id:', processId);
+              console.log('drawing_type:', 'PFD');
               console.log('file:', pfdItem._file);
               console.log('file name:', pfdItem._file.name);
               console.log('file size:', pfdItem._file.size);
-              console.log('file type:', pfdItem._file.type);
+              console.log('file type:', pfdItem._file.type || 'application/octet-stream');
               console.log('remarks:', pfdItem.remarks || '');
+              
+              // 파일 크기 검증 (10MB 제한)
+              const maxFileSize = 10 * 1024 * 1024; // 10MB
+              if (pfdItem._file && pfdItem._file.size > maxFileSize) {
+                throw new Error(`파일 크기가 너무 큽니다. 최대 ${maxFileSize / (1024 * 1024)}MB까지 업로드 가능합니다.`);
+              }
+              
+              console.log('PFD 파일 업로드 시작:', {
+                fileName: pfdItem._file.name,
+                fileSize: pfdItem._file.size,
+                fileSizeMB: (pfdItem._file.size / (1024 * 1024)).toFixed(2) + 'MB',
+                fileType: pfdItem._file.type || 'application/octet-stream' // DWG 파일 타입 설정
+              });
+              
+              // 사용자에게 업로드 시작 알림
+              if (pfdItem._file.size > 1024 * 1024) { // 1MB 이상인 경우
+                console.log(`대용량 파일 업로드 중... (${(pfdItem._file.size / (1024 * 1024)).toFixed(2)}MB)`);
+              }
               
               // FormData entries 확인
               for (let [key, value] of (formData as any).entries()) {
                 console.log(`${key}:`, value);
               }
               
-              const response = await request('/api/process/drawing/create', formData, {
+              const response = await request('/api/process/drawing/create', undefined, {
                 method: 'POST',
-                headers: {
-                  'user_Id': localStorage.getItem('authUserId') || '',
-                  'wai_lang': localStorage.getItem('wai_lang') || 'ko'
-                },
-                skipContentType: true // FormData 전송 시 Content-Type 헤더 자동 설정 방지
+                body: formData
+                // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
               });
               
               if (!response.success) {
@@ -1554,8 +1560,25 @@ const handleUpdate = async () => {
               }
             }
             console.log("추가된 PFD 처리 완료");
-          } catch (error) {
+          } catch (error: any) {
             console.error("PFD 추가 실패:", error);
+            
+            // 구체적인 에러 메시지 표시
+            let errorMessage = "PFD 파일 업로드에 실패했습니다.";
+            if (error.message) {
+              if (error.message.includes("Failed to fetch")) {
+                errorMessage = "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
+              } else if (error.message.includes("파일 크기가 너무 큽니다")) {
+                errorMessage = error.message;
+              } else if (error.message.includes("timeout")) {
+                errorMessage = "파일 업로드 시간이 초과되었습니다. 파일 크기를 확인해주세요.";
+              } else {
+                errorMessage = error.message;
+              }
+            }
+            
+            alert(errorMessage);
+            throw error; // 에러를 다시 throw하여 상위에서 처리할 수 있도록 함
           }
         }
       }
@@ -1596,19 +1619,11 @@ const loadMappingPidList = async (pfdItem: any) => {
   try {
     console.log('P&ID 매핑 목록 로드 시작:', pfdItem);
     
-    // 임시 데이터 (실제 API 호출로 대체 필요)
+    // 임시 데이터 (실제 API 호출로 대체 필요) - 1 row만 출력
     const mockData = [
       {
         id: '1',
         no: 1,
-        pidFileName: '유량조정조 1번.dwg',
-        excelFileName: '유량조정조 1번.excel',
-        svgStatus: '대기',
-        infoOverview: '예: 펌프, 2대'
-      },
-      {
-        id: '2',
-        no: 2,
         pidFileName: '',
         excelFileName: '',
         svgStatus: '대기',

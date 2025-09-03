@@ -340,42 +340,60 @@
                       </td>
                       <td>{{ row.no }}</td>
                       <td>
-                        <div class="file-selection-group">
-                          <button class="btn btn-primary btn-sm" @click="selectFormulaFile(row)">파일선택</button>
-                          <div class="file-info">
-                            <span v-if="row.formulaFile" class="selected-file">
-                              {{ row.formulaFile.name }}
-                              <button class="clear-file" @click="clearFormulaFile(row)">&times;</button>
-                            </span>
-                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
-                          </div>
+                        <div class="file-input-group">
+                          <button class="btn btn-primary btn-sm" @click="selectFormulaFile(row)">
+                            {{ t("common.selectFile") }}
+                          </button>
+                          <span class="selected-files-info">
+                            {{ row.formulaFile ? `${row.formulaFile.name} (${(row.formulaFile.size / 1024).toFixed(2)} KB)` : t("common.noFile") }}
+                          </span>
+                          <button 
+                            v-if="row.formulaFile" 
+                            class="clear-file" 
+                            @click="clearFormulaFile(row)"
+                            title="파일 제거"
+                          >
+                            &times;
+                          </button>
                         </div>
                       </td>
                       <td>
                         <button class="btn btn-secondary btn-sm" @click="openComponentModal(row)">설정</button>
                       </td>
                       <td>
-                        <div class="file-selection-group">
-                          <button class="btn btn-primary btn-sm" @click="selectHydraulicFile(row)">파일선택</button>
-                          <div class="file-info">
-                            <span v-if="row.hydraulicFile" class="selected-file">
-                              {{ row.hydraulicFile.name }}
-                              <button class="clear-file" @click="clearHydraulicFile(row)">&times;</button>
-                            </span>
-                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
-                          </div>
+                        <div class="file-input-group">
+                          <button class="btn btn-primary btn-sm" @click="selectHydraulicFile(row)">
+                            {{ t("common.selectFile") }}
+                          </button>
+                          <span class="selected-files-info">
+                            {{ row.hydraulicFile ? `${row.hydraulicFile.name} (${(row.hydraulicFile.size / 1024).toFixed(2)} KB)` : t("common.noFile") }}
+                          </span>
+                          <button 
+                            v-if="row.hydraulicFile" 
+                            class="clear-file" 
+                            @click="clearHydraulicFile(row)"
+                            title="파일 제거"
+                          >
+                            &times;
+                          </button>
                         </div>
                       </td>
                       <td>
-                        <div class="file-selection-group">
-                          <button class="btn btn-primary btn-sm" @click="selectPfdFile(row)">파일선택</button>
-                          <div class="file-info">
-                            <span v-if="row.pfdFile" class="selected-file">
-                              {{ row.pfdFile.name }}
-                              <button class="clear-file" @click="clearPfdFile(row)">&times;</button>
-                            </span>
-                            <span v-else class="no-file">{{ t("common.noFile") }}</span>
-                          </div>
+                        <div class="file-input-group">
+                          <button class="btn btn-primary btn-sm" @click="selectPfdFile(row)">
+                            {{ t("common.selectFile") }}
+                          </button>
+                          <span class="selected-files-info">
+                            {{ row.pfdFile ? `${row.pfdFile.name} (${(row.pfdFile.size / 1024).toFixed(2)} KB)` : t("common.noFile") }}
+                          </span>
+                          <button 
+                            v-if="row.pfdFile" 
+                            class="clear-file" 
+                            @click="clearPfdFile(row)"
+                            title="파일 제거"
+                          >
+                            &times;
+                          </button>
                         </div>
                       </td>
                       <td>
@@ -404,7 +422,7 @@
             <input
               type="file"
               accept=".svg"
-              @change="handleProcessSymbolFileSelected"
+              @change="handleProcessSymbolFileChange"
               style="display: none"
               ref="processSymbolFileInput"
             />
@@ -679,6 +697,10 @@ interface FileUploadRow {
   hydraulicFile: File | null;
   pfdFile: File | null;
   pidStatus: 'pending' | 'completed';
+  // 원본 파일 정보 저장 (ProcessDetail.vue와 동일한 로직)
+  originalFormulaFile?: string | null;
+  originalHydraulicFile?: string | null;
+  originalPfdFile?: string | null;
 }
 
 // 첨부된 파일 목록을 관리하는 인터페이스
@@ -717,6 +739,9 @@ const isDetailModalOpen = ref(false);
 
 // 파일 입력 ref
 const processSymbolFileInput = ref<HTMLInputElement | null>(null);
+const formulaFileInput = ref<HTMLInputElement | null>(null);
+const hydraulicFileInput = ref<HTMLInputElement | null>(null);
+const pfdFileInput = ref<HTMLInputElement | null>(null);
 const selectedProcessSymbolFile = ref<File | null>(null);
  const selectedProcessId = ref<string | undefined>(undefined);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
@@ -783,14 +808,14 @@ const attachedFiles = ref<AttachedFiles>({
 const selectedFiles = ref<{ [key: string]: File }>({});
 
 // 폼 유효성 검사
-const isFormValid = computed(() => {
-  return (
-    registForm.value.processType !== null &&
-    registForm.value.processType.trim() !== "" &&
-    registForm.value.processNm !== null &&
-    registForm.value.processNm.trim() !== ""
-  );
-});
+// const isFormValid = computed(() => {
+//   return (
+//     registForm.value.processType !== null &&
+//     registForm.value.processType.trim() !== "" &&
+//     registForm.value.processNm !== null &&
+//     registForm.value.processNm.trim() !== ""
+//   );
+// });
 
 const formatDate = (date: string | null) => {
   if (!date) return "-";
@@ -903,91 +928,33 @@ const handleRegist = () => {
    currentFileRow.value = null;
     };
 
-// 첨부된 파일명 가져오기
-const getAttachedFileName = (type: keyof AttachedFiles, index: number): string => {
-  const files = attachedFiles.value[type];
-  return files[index - 1] || '';
-};
+
 
 // 첨부된 파일 삭제
-const removeAttachedFile = (type: keyof AttachedFiles, index: number) => {
-  const files = attachedFiles.value[type];
-  if (files[index - 1]) {
-    files.splice(index - 1, 1);
-    attachedFiles.value = { ...attachedFiles.value };
-  }
-};
+// const removeAttachedFile = (type: keyof AttachedFiles, index: number) => {
+//   const files = attachedFiles.value[type];
+//   if (files[index - 1]) {
+//     files.splice(index - 1, 1);
+//     attachedFiles.value = { ...attachedFiles.value };
+//   }
+// };
 
 // 에러 파일인지 확인 (수리계통도의 3번째 파일을 에러로 표시)
-const isErrorFile = (type: keyof AttachedFiles, index: number): boolean => {
-  return type === 'hydraulic' && index === 3 && getAttachedFileName(type, index) === 'dr2003-1110104.DWG';
-};
+// const isErrorFile = (type: keyof AttachedFiles, index: number): boolean => {
+//   return type === 'hydraulic' && index === 3 && getAttachedFileName(type, index) === 'dr2003-1110104.DWG';
+// };
 
-const handleFileChange = (field: keyof RegistForm, event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    const file = target.files[0];
-    (registForm.value as any)[field] = file;
-    // 파일명 표시를 위해 selectedFiles에도 저장
-    selectedFiles.value[field] = file;
-  }
-};
+// const handleFileChange = (field: keyof RegistForm, event: Event) => {
+//   const target = event.target as HTMLInputElement;
+//   if (target.files && target.files[0]) {
+//     const file = target.files[0];
+//     (registForm.value as any)[field] = file;
+//     // 파일명 표시를 위해 selectedFiles에도 저장
+//     selectedFiles.value[field] = file;
+//   }
+// };
 
-const handleSave = async () => {
-  try {
-    // 정합성 체크
-    // if (registForm.value.consistencyCheck) {
-    //   // 정합성 체크 로직
-    //   alert(t("messages.warning.consistencyCheckLogicRequired"));
-    //   return;
-    // }
 
-    // 필수 필드 검증
-    if (!registForm.value.processType || !registForm.value.processNm) {
-      alert(t("messages.warning.pleaseFillRequiredFields"));
-      return;
-    }
-
-    // 선택된 공정명의 label과 value 찾기
-    const selectedProcessNameOption =
-      processStore.searchProcessNameOptions.find(
-        (option) => option.value === registForm.value.processNm
-      );
-
-    if (!selectedProcessNameOption) {
-      alert(t("messages.error.invalidProcessName"));
-      return;
-    }
-
-    // API 호출을 위한 데이터 준비
-    const requestData = {
-      process_code: selectedProcessNameOption.value,
-      process_name: selectedProcessNameOption.label,
-      process_type_code: registForm.value.processType,
-      process_category: registForm.value.processSubCategory,
-      // 파일 정보 추가
-      process_symbol_file: registForm.value.processSymbolFile,
-      calculation_file: registForm.value.calculationFile,
-      pid_file: registForm.value.pidFile,
-      excel_file: registForm.value.excelFile,
-    };
-
-    console.log("공정 등록 요청 데이터:", requestData);
-
-    // processStore를 통한 공정 등록
-    const result = await processStore.createProcess(requestData);
-
-    console.log("공정 등록 API 응답:", result);
-
-    alert(t("messages.success.processRegistered"));
-    closeRegistModal();
-  } catch (error: any) {
-    console.error("등록 실패:", error);
-    const errorMessage =
-      error?.message || t("messages.error.registrationError");
-    alert(`등록 실패: ${errorMessage}`);
-  }
-};
 
 const handleDelete = async () => {
   if (processStore.selectedItems.length === 0) {
@@ -1009,8 +976,8 @@ const handleDelete = async () => {
       );
       
       const selectedSymbolIds = processStore.selectedItems.map(
-        (item) => item.symbol_id || null
-      );
+        (item) => item.symbol_id || ''
+      ).filter(id => id !== '');
 
       console.log('삭제할 항목들 상세 정보:');
       console.log('selectedItems:', processStore.selectedItems);
@@ -1084,17 +1051,17 @@ const deleteSelectedFileRows = () => {
 
 const selectFormulaFile = (row: FileUploadRow) => {
   currentFileRow.value = row;
-  (document.querySelector('input[ref="formulaFileInput"]') as HTMLInputElement)?.click();
+  formulaFileInput.value?.click();
 };
 
 const selectHydraulicFile = (row: FileUploadRow) => {
   currentFileRow.value = row;
-  (document.querySelector('input[ref="hydraulicFileInput"]') as HTMLInputElement)?.click();
+  hydraulicFileInput.value?.click();
 };
 
 const selectPfdFile = (row: FileUploadRow) => {
   currentFileRow.value = row;
-  (document.querySelector('input[ref="pfdFileInput"]') as HTMLInputElement)?.click();
+  pfdFileInput.value?.click();
 };
 
 
@@ -1149,33 +1116,102 @@ const getProcessSymbolFileName = () => {
 const handleFormulaFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0] && currentFileRow.value) {
-    currentFileRow.value.formulaFile = target.files[0];
+    const file = target.files[0];
+    
+    // Python 파일만 허용
+    if (!file.name.toLowerCase().endsWith('.py')) {
+      alert('Python 파일(.py)만 선택 가능합니다.');
+      target.value = '';
+      return;
+    }
+    
+    // 원본 파일 정보 저장 (ProcessDetail.vue와 동일한 로직)
+    if (!currentFileRow.value.originalFormulaFile) {
+      // 기존 파일이 있다면 원본으로 저장
+      currentFileRow.value.originalFormulaFile = currentFileRow.value.formulaFile?.name || null;
+    }
+    
+    currentFileRow.value.formulaFile = file;
+    console.log('계산식 파일 선택됨:', file.name);
   }
 };
 
 const handleHydraulicFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0] && currentFileRow.value) {
-    currentFileRow.value.hydraulicFile = target.files[0];
+    const file = target.files[0];
+    
+    // 수리계통도 파일 타입 검증 (.dwg, .dxf, .xlsx, .xls, .csv)
+    const allowedExtensions = ['.dwg', '.dxf', '.xlsx', '.xls', '.csv'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert('수리계통도 파일은 .dwg, .dxf, .xlsx, .xls, .csv 파일만 선택 가능합니다.');
+      target.value = '';
+      return;
+    }
+    
+    // 원본 파일 정보 저장 (ProcessDetail.vue와 동일한 로직)
+    if (!currentFileRow.value.originalHydraulicFile) {
+      // 기존 파일이 있다면 원본으로 저장
+      currentFileRow.value.originalHydraulicFile = currentFileRow.value.hydraulicFile?.name || null;
+    }
+    
+    currentFileRow.value.hydraulicFile = file;
+    console.log('수리계통도 파일 선택됨:', file.name);
   }
 };
 
 const handlePfdFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0] && currentFileRow.value) {
-    currentFileRow.value.pfdFile = target.files[0];
+    const file = target.files[0];
+    
+    // PFD 파일 타입 검증 (.dwg, .dxf, .pdf, .png, .jpg, .jpeg)
+    const allowedExtensions = ['.dwg', '.dxf', '.pdf', '.png', '.jpg', '.jpeg'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert('PFD 파일은 .dwg, .dxf, .pdf, .png, .jpg, .jpeg 파일만 선택 가능합니다.');
+      target.value = '';
+      return;
+    }
+    
+    // 원본 파일 정보 저장 (ProcessDetail.vue와 동일한 로직)
+    if (!currentFileRow.value.originalPfdFile) {
+      // 기존 파일이 있다면 원본으로 저장
+      currentFileRow.value.originalPfdFile = currentFileRow.value.pfdFile?.name || null;
+    }
+    
+    currentFileRow.value.pfdFile = file;
+    console.log('PFD 파일 선택됨:', file.name);
   }
 };
 
 const clearFormulaFile = (row: FileUploadRow) => {
+  // 원본 파일로 복원 (ProcessDetail.vue와 동일한 로직)
+  if (row.originalFormulaFile) {
+    // 원본 파일이 있다면 복원 로직 구현
+    console.log('계산식 파일을 원본으로 복원:', row.originalFormulaFile);
+  }
   row.formulaFile = null;
 };
 
 const clearHydraulicFile = (row: FileUploadRow) => {
+  // 원본 파일로 복원 (ProcessDetail.vue와 동일한 로직)
+  if (row.originalHydraulicFile) {
+    // 원본 파일이 있다면 복원 로직 구현
+    console.log('수리계통도 파일을 원본으로 복원:', row.originalHydraulicFile);
+  }
   row.hydraulicFile = null;
 };
 
 const clearPfdFile = (row: FileUploadRow) => {
+  // 원본 파일로 복원 (ProcessDetail.vue와 동일한 로직)
+  if (row.originalPfdFile) {
+    // 원본 파일이 있다면 복원 로직 구현
+    console.log('PFD 파일을 원본으로 복원:', row.originalPfdFile);
+  }
   row.pfdFile = null;
 };
 
@@ -1210,7 +1246,7 @@ const resetComponentModal = () => {
 };
 
 // P&ID 목록 모달 관련 함수들
-const openPidListModal = (row: FileUploadRow) => {
+const openPidListModal = (_row: FileUploadRow) => {
   showPidListModal.value = true;
   // 초기 데이터 설정
   pidListItems.value = [
@@ -1385,11 +1421,32 @@ const saveProcessRegistration = async () => {
       return;
     }
 
-    // 파일 업로드 검증
+    // 파일 업로드 검증 - 첫 행이 추가된 데이터로 간주
     if (fileUploadRows.value.length === 0) {
       alert('최소 하나의 파일 업로드 행을 추가해주세요.');
       return;
     }
+
+    // 첫 행 검증 - 첫 행은 반드시 추가된 데이터로 간주
+    const firstRow = fileUploadRows.value[0];
+    if (!firstRow) {
+      alert('첫 번째 행이 존재하지 않습니다.');
+      return;
+    }
+
+    // 첫 행에 최소 하나의 파일이 있어야 함
+    const hasAnyFile = firstRow.formulaFile || firstRow.hydraulicFile || firstRow.pfdFile;
+    if (!hasAnyFile) {
+      alert('첫 번째 행에 최소 하나의 파일을 선택해주세요.');
+      return;
+    }
+
+    console.log('첫 행 검증 통과:', {
+      firstRow: firstRow,
+      hasFormulaFile: !!firstRow.formulaFile,
+      hasHydraulicFile: !!firstRow.hydraulicFile,
+      hasPfdFile: !!firstRow.pfdFile
+    });
 
     // 선택된 공정명의 label과 value 찾기
     const selectedProcessNameOption =
@@ -1402,6 +1459,48 @@ const saveProcessRegistration = async () => {
       return;
     }
 
+    // 계산식 파일이 있는 행들을 찾아서 처리 (ProcessDetail.vue의 uploadFormulaFiles 로직 참고)
+    console.log('fileUploadRows.value:', fileUploadRows.value);
+    console.log('fileUploadRows.value[0]:', fileUploadRows.value[0]);
+    console.log('fileUploadRows.value[0].formulaFile:', fileUploadRows.value[0]?.formulaFile);
+    console.log('fileUploadRows.value[0].formulaFile instanceof File:', fileUploadRows.value[0]?.formulaFile instanceof File);
+    
+    const formulaFiles = fileUploadRows.value
+      .filter(row => {
+        console.log('필터링 체크:', {
+          row: row,
+          hasFormulaFile: !!row.formulaFile,
+          isFile: row.formulaFile instanceof File,
+          hasName: !!row.formulaFile?.name,
+          formulaFile: row.formulaFile,
+          formulaFileType: typeof row.formulaFile,
+          formulaFileKeys: row.formulaFile ? Object.keys(row.formulaFile) : 'null'
+        });
+        return row.formulaFile && 
+               row.formulaFile instanceof File && 
+               row.formulaFile.name &&
+               row.formulaFile.size > 0;
+      })
+      .map((row, index) => {
+        console.log('formulaFiles 매핑:', {
+          index: index,
+          formulaFile: row.formulaFile,
+          formulaFileName: row.formulaFile?.name
+        });
+        return {
+          id: `formula_${Date.now()}_${index}`,
+          no: (index + 1).toString().padStart(3, '0'),
+          registeredFormula: row.formulaFile?.name.replace('.py', '') || '',
+          formula_code: '',
+          registrationDate: new Date().toISOString().split('T')[0],
+          infoOverview: '',
+          remarks: '',
+          _file: row.formulaFile
+        };
+      });
+
+    console.log('처리할 계산식 파일들:', formulaFiles);
+
     // API 호출을 위한 데이터 준비
     const requestData = {
       language_code: registForm.value.language,
@@ -1412,21 +1511,35 @@ const saveProcessRegistration = async () => {
       process_category: registForm.value.processSubCategory,
       process_symbol_file: symbolFile,
       siteFile: symbolFile, // createProcess에서 사용할 siteFile 추가
-      file_upload_rows: fileUploadRows.value
+      file_upload_rows: fileUploadRows.value,
+      formula_files: formulaFiles // 계산식 파일 정보 추가
     };
 
-    console.log('공정 등록 저장:', {
-      formData: registForm.value,
-      fileRows: fileUploadRows.value,
-      symbolFile: symbolFile,
-      requestData: requestData
-    });
+    console.log('=== 공정 등록 저장 시작 ===');
+    console.log('formulaFiles:', formulaFiles);
+    console.log('formulaFiles.length:', formulaFiles.length);
+    console.log('requestData:', requestData);
+    console.log('requestData.formula_files:', requestData.formula_files);
+    console.log('requestData.formula_files?.length:', requestData.formula_files?.length);
+    console.log('=== 공정 등록 저장 데이터 확인 완료 ===');
 
     // 실제 API 호출
+    console.log('=== processStore.createProcess 호출 시작 ===');
     const result = await processStore.createProcess(requestData);
+    console.log('=== processStore.createProcess 호출 완료 ===');
     console.log('공정 등록 API 응답:', result);
+    console.log('result.success:', result.success);
+    console.log('result.response:', result.response);
+    console.log('result.response?.process_id:', result.response?.process_id);
+    console.log('result.response?.id:', result.response?.id);
 
-    alert('공정 등록이 완료되었습니다.');
+    // 성공 메시지에 계산식 파일 정보 포함
+    let successMessage = '공정 등록이 완료되었습니다.';
+    if (formulaFiles.length > 0) {
+      successMessage += `\n계산식 파일 ${formulaFiles.length}개가 함께 등록되었습니다.`;
+    }
+    
+    alert(successMessage);
     closeRegistModal();
   } catch (error) {
     console.error('공정 등록 실패:', error);

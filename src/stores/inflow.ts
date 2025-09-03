@@ -453,6 +453,8 @@ export const useInflowStore = defineStore("inflow", {
     async createWaterFlowType(requestData: {
       waterFlowTypeData: WaterFlowTypeFormData;
       symbolFile?: File;
+      metricFile?: File;
+      imperialFile?: File;
     }) {
       this.loading = true;
       this.error = null;
@@ -469,6 +471,16 @@ export const useInflowStore = defineStore("inflow", {
         // 파일이 있으면 symbolFile로 추가
         if (requestData.symbolFile) {
           formData.append("symbolFile", requestData.symbolFile);
+        }
+
+        // Metric 계산식 파일이 있으면 metricFile로 추가
+        if (requestData.metricFile) {
+          formData.append("metricFile", requestData.metricFile);
+        }
+
+        // Imperial 계산식 파일이 있으면 imperialFile로 추가
+        if (requestData.imperialFile) {
+          formData.append("imperialFile", requestData.imperialFile);
         }
 
         const response = await request("/api/inflow/create", undefined, {
@@ -534,6 +546,8 @@ export const useInflowStore = defineStore("inflow", {
       requestData: {
         waterFlowTypeData: Partial<WaterFlowTypeFormData>;
         symbolFile?: File;
+        metricFile?: File;
+        imperialFile?: File;
       }
     ) {
       this.loading = true;
@@ -551,6 +565,16 @@ export const useInflowStore = defineStore("inflow", {
         // 파일이 있으면 symbolFile로 추가
         if (requestData.symbolFile) {
           formData.append("symbolFile", requestData.symbolFile);
+        }
+
+        // Metric 계산식 파일이 있으면 metricFile로 추가
+        if (requestData.metricFile) {
+          formData.append("metricFile", requestData.metricFile);
+        }
+
+        // Imperial 계산식 파일이 있으면 imperialFile로 추가
+        if (requestData.imperialFile) {
+          formData.append("imperialFile", requestData.imperialFile);
         }
 
         const response = await request(

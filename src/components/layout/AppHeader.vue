@@ -8,7 +8,7 @@
 
       <!-- Tab Navigation -->
       <div class="navigation-section">
-        <TabNavigation v-if="currentTabs.length > 0" :tabs="currentTabs" />
+        <TabNavigation v-if="currentTabs.length > 1" :tabs="currentTabs" />
       </div>
 
       <!-- User Section -->

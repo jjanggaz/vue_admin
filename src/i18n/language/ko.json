@@ -151,6 +151,7 @@
       "active": "사용여부",
       "isRequired": "편집여부",
       "remarks": "비고",
+      "select": "선택",
       "formula": "계산식",
       "uploadDate": "업로드 일자",
       "author": "작성자",

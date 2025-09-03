@@ -283,7 +283,7 @@ const handleSubmit = async () => {
     };
 
     // API 호출로 등록 처리
-    const response = await inflowStore.createWaterQualityParameter(submitData);
+    await inflowStore.createWaterQualityParameter(submitData);
 
     // 성공 후 폼 초기화
     resetForm();

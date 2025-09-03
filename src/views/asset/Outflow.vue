@@ -21,9 +21,7 @@
                   color: getTextColor(tab.symbol_color || '#f0f0f0'),
                 }"
                 @click="onTabClick(idx)"
-                :title="
-                  tab.flow_type_code ? `코드: ${tab.flow_type_code}` : tab.name
-                "
+                :title="tab.flow_type_code ? tab.flow_type_code : tab.name"
               >
                 {{ tab.name }}
               </div>

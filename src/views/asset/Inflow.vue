@@ -307,29 +307,39 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
-              <dl class="column-regist">
-                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
-                <dd>
-                  <div class="file-upload-row" id="metricFileUpload">
-                    <input
-                      type="text"
-                      :value="metricFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
-                    <label class="file-select-btn">
-                      {{ t("common.selectFile") }}
+              <div class="upload-and-button-row">
+                <dl class="column-regist">
+                  <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                  <dd>
+                    <div class="file-upload-row" id="metricFileUpload">
                       <input
-                        type="file"
-                        @change="handleMetricFileUpload"
-                        accept=".py"
-                        style="display: none"
+                        type="text"
+                        :value="metricFileName || ''"
+                        :placeholder="t('placeholder.selectFile')"
+                        readonly
+                        class="file-name-input"
                       />
-                    </label>
+                      <label class="file-select-btn">
+                        {{ t("common.selectFile") }}
+                        <input
+                          type="file"
+                          @change="handleMetricFileUpload"
+                          accept=".py"
+                          style="display: none"
+                        />
+                      </label>
+                    </div>
+                  </dd>
+                </dl>
+                <div class="action-bar">
+                  <div class="btns">
+                    <button class="btn btn-add" @click="addModalMetricRow">
+                      {{ t("inflow.addItem") }}
+                    </button>
                   </div>
-                </dd>
-              </dl>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -365,43 +375,45 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
-              <dl class="column-regist">
-                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
-                <dd>
-                  <div class="file-upload-row" id="imperialFileUpload">
-                    <input
-                      type="text"
-                      :value="imperialFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
-                    <label class="file-select-btn">
-                      {{ t("common.selectFile") }}
+              <div class="upload-and-button-row">
+                <dl class="column-regist">
+                  <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                  <dd>
+                    <div class="file-upload-row" id="imperialFileUpload">
                       <input
-                        type="file"
-                        @change="handleImperialFileUpload"
-                        accept=".py"
-                        style="display: none"
+                        type="text"
+                        :value="imperialFileName || ''"
+                        :placeholder="t('placeholder.selectFile')"
+                        readonly
+                        class="file-name-input"
                       />
-                    </label>
+                      <label class="file-select-btn">
+                        {{ t("common.selectFile") }}
+                        <input
+                          type="file"
+                          @change="handleImperialFileUpload"
+                          accept=".py"
+                          style="display: none"
+                        />
+                      </label>
+                    </div>
+                  </dd>
+                </dl>
+                <div class="action-bar">
+                  <div class="btns">
+                    <button class="btn btn-add" @click="addModalImperialRow">
+                      {{ t("inflow.addItem") }}
+                    </button>
                   </div>
-                </dd>
-              </dl>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -439,14 +451,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -566,29 +570,39 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
-              <dl class="column-regist">
-                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
-                <dd>
-                  <div class="file-upload-row" id="updateMetricFileUpload">
-                    <input
-                      type="text"
-                      :value="metricFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
-                    <label class="file-select-btn">
-                      {{ t("common.selectFile") }}
+              <div class="upload-and-button-row">
+                <dl class="column-regist">
+                  <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                  <dd>
+                    <div class="file-upload-row" id="updateMetricFileUpload">
                       <input
-                        type="file"
-                        @change="handleMetricFileUpload"
-                        accept=".py"
-                        style="display: none"
+                        type="text"
+                        :value="metricFileName || ''"
+                        :placeholder="t('placeholder.selectFile')"
+                        readonly
+                        class="file-name-input"
                       />
-                    </label>
+                      <label class="file-select-btn">
+                        {{ t("common.selectFile") }}
+                        <input
+                          type="file"
+                          @change="handleMetricFileUpload"
+                          accept=".py"
+                          style="display: none"
+                        />
+                      </label>
+                    </div>
+                  </dd>
+                </dl>
+                <div class="action-bar">
+                  <div class="btns">
+                    <button class="btn btn-add" @click="addModalMetricRow">
+                      {{ t("inflow.addItem") }}
+                    </button>
                   </div>
-                </dd>
-              </dl>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -626,85 +640,45 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Metric 계산식 목록 -->
-              <div class="modal-metric-formula-section">
-                <div class="action-bar">
-                  <div class="title">
-                    <h5>{{ t("inflow.formulaList") }} (Metric)</h5>
-                  </div>
-                  <div class="btns">
-                    <button class="btn btn-delete">
-                      {{ t("inflow.delete") }}
-                    </button>
-                  </div>
-                </div>
-
-                <DataTable
-                  :columns="gridColumns2"
-                  :data="currentGridData2"
-                  maxHeight="300px"
-                  :stickyHeader="true"
-                >
-                  <template #cell-formula="{ item }">
-                    <span>{{ item.formula }}</span>
-                  </template>
-                  <template #cell-apply="{ item }: { item: GridRow2 }">
-                    <input
-                      type="checkbox"
-                      v-model="item.apply"
-                      true-value="Y"
-                      false-value="N"
-                    />
-                  </template>
-                  <template #cell-remarks="{ item, index }">
-                    <input
-                      v-if="index === currentGridData2.length - 1"
-                      type="text"
-                      v-model="item.remarks"
-                      class="form-input"
-                    />
-                    <span v-else>{{ item.remarks }}</span>
-                  </template>
-                </DataTable>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
-              <dl class="column-regist">
-                <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
-                <dd>
-                  <div class="file-upload-row" id="updateImperialFileUpload">
-                    <input
-                      type="text"
-                      :value="imperialFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
-                    <label class="file-select-btn">
-                      {{ t("common.selectFile") }}
+              <div class="upload-and-button-row">
+                <dl class="column-regist">
+                  <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
+                  <dd>
+                    <div class="file-upload-row" id="updateImperialFileUpload">
                       <input
-                        type="file"
-                        @change="handleImperialFileUpload"
-                        accept=".py"
-                        style="display: none"
+                        type="text"
+                        :value="imperialFileName || ''"
+                        :placeholder="t('placeholder.selectFile')"
+                        readonly
+                        class="file-name-input"
                       />
-                    </label>
+                      <label class="file-select-btn">
+                        {{ t("common.selectFile") }}
+                        <input
+                          type="file"
+                          @change="handleImperialFileUpload"
+                          accept=".py"
+                          style="display: none"
+                        />
+                      </label>
+                    </div>
+                  </dd>
+                </dl>
+                <div class="action-bar">
+                  <div class="btns">
+                    <button class="btn btn-add" @click="addModalImperialRow">
+                      {{ t("inflow.addItem") }}
+                    </button>
                   </div>
-                </dd>
-              </dl>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -742,56 +716,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("inflow.addItem") }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Imperial 계산식 목록 -->
-              <div class="modal-imperial-formula-section">
-                <div class="action-bar">
-                  <div class="title">
-                    <h5>{{ t("inflow.formulaList") }} (Imperial)</h5>
-                  </div>
-                  <div class="btns">
-                    <button class="btn btn-add">
-                      {{ t("inflow.delete") }}
-                    </button>
-                  </div>
-                </div>
-
-                <DataTable
-                  :columns="gridColumns2"
-                  :data="currentGridData2"
-                  maxHeight="300px"
-                  :stickyHeader="true"
-                >
-                  <template #cell-formula="{ item }">
-                    <span>{{ item.formula }}</span>
-                  </template>
-                  <template #cell-apply="{ item }: { item: GridRow2 }">
-                    <input
-                      type="checkbox"
-                      v-model="item.apply"
-                      true-value="Y"
-                      false-value="N"
-                    />
-                  </template>
-                  <template #cell-remarks="{ item, index }">
-                    <input
-                      v-if="index === currentGridData2.length - 1"
-                      type="text"
-                      v-model="item.remarks"
-                      class="form-input"
-                    />
-                    <span v-else>{{ item.remarks }}</span>
-                  </template>
-                </DataTable>
-              </div>
             </div>
           </div>
         </div>
@@ -2190,9 +2114,30 @@ onBeforeUnmount(() => {
 
 // 모달 내부 파일 업로드 폼 스타일은 상단의 dt/dd 구조와 동일하게 적용
 
+// 업로드와 버튼을 같은 줄에 배치
+.upload-and-button-row {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+
+  .column-regist {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .action-bar {
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+}
+
 // 탭 스크롤 관련 스타일
 .action-bar {
   min-width: 0; // 액션 바가 축소될 수 있도록 허용
+  display: flex;
+  justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
+  margin-bottom: $spacing-sm;
 }
 
 .tab-action-bar {

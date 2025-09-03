@@ -438,6 +438,15 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
+
+              <div class="action-bar">
+                <div class="btns">
+                  <button class="btn btn-add" @click="addModalMetricRow">
+                    {{ t("outflow.addItem") }}
+                  </button>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -475,20 +484,21 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalMetricRow">
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
 
             <div class="modal-tab-content-imperial">
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
+
+              <div class="action-bar">
+                <div class="btns">
+                  <button class="btn btn-add" @click="addModalImperialRow">
+                    {{ t("outflow.addItem") }}
+                  </button>
+                </div>
+              </div>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
@@ -526,14 +536,6 @@
                   <input type="checkbox" v-model="item.is_required" />
                 </template>
               </DataTable>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-add" @click="addModalImperialRow">
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1430,8 +1432,8 @@ onBeforeUnmount(() => {
       }
 
       .section-header {
-        margin-bottom: $spacing-lg;
-        padding-bottom: $spacing-md;
+        margin-bottom: $spacing-sm;
+        padding-bottom: $spacing-sm;
         border-bottom: 2px solid $primary-color;
 
         h3 {
@@ -1671,6 +1673,9 @@ onBeforeUnmount(() => {
 // 탭 스크롤 관련 스타일
 .action-bar {
   min-width: 0; // 액션 바가 축소될 수 있도록 허용
+  display: flex;
+  justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
+  margin-bottom: $spacing-sm;
 }
 
 .tab-action-bar {

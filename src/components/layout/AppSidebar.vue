@@ -21,10 +21,10 @@
           </router-link>
         </template>
 
-        <router-link to="/test" class="nav-item">
+        <!-- <router-link to="/test" class="nav-item">
           <span class="nav-icon">🧪</span>
           <span class="nav-text">{{ t("sidebar.test") }}</span>
-        </router-link>
+        </router-link> -->
       </nav>
     </div>
   </aside>

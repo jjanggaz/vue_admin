@@ -327,6 +327,7 @@
     "upload": "업로드",
     "filesSelected": "{count}개 파일 선택됨",
     "close": "닫기",
+    "reset": "초기화",
     "selectFile": "파일 선택",
     "chooseFile": "파일 선택하기",
     "noFile": "선택된 파일 없음",

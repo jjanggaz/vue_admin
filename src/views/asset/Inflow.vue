@@ -71,9 +71,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, false)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, false)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -85,13 +87,13 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" />
+                  <input type="checkbox" v-model="item.is_active" disabled />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
 
@@ -140,9 +142,16 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, false)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(
+                        item.parameter_code,
+                        index,
+                        false,
+                        false
+                      )
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -154,13 +163,13 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" />
+                  <input type="checkbox" v-model="item.is_active" disabled />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
 
@@ -329,9 +338,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -343,7 +354,7 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -396,9 +407,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, false, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -410,7 +423,7 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -576,9 +589,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -590,7 +605,7 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -643,9 +658,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, false, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -657,7 +674,7 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -798,7 +815,8 @@ const onInputTypeChange = () => {
 interface GridRow {
   id: number;
   mapping_id: string;
-  item: string;
+  parameter_name: string; // item을 parameter_name으로 변경
+  parameter_code: string;
   influent: number;
   unit: string;
   is_active: boolean;
@@ -867,7 +885,8 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
         const gridRow: GridRow = {
           id: 0, // 나중에 재정렬
           mapping_id: param.mapping_id,
-          item: param.parameter_name,
+          parameter_name: param.parameter_name,
+          parameter_code: param.parameter_code,
           influent: parseFloat(param.default_value) || 0,
           unit: param.parameter_unit || "",
           is_active: !!param.is_active,
@@ -1188,18 +1207,33 @@ const parsePythonFile = (content: string): GridRow[] => {
               const nameParts = varName.split(".");
               const displayName = nameParts[nameParts.length - 1].toUpperCase();
 
-              const item: GridRow = {
-                id: idCounter++,
-                mapping_id: "",
-                item: displayName,
-                influent: numericValue,
-                unit: unit,
-                is_active: true,
-                is_required: false,
-                remarks: "",
-              };
+              // parameter_code가 availableParameterCodes에 있는지 확인
+              const matchingParameter = inflowStore.waterQualityParameters.find(
+                (param) => {
+                  console.log(
+                    "&&&&&&&&&&&&& : " + param.parameter_code,
+                    displayName
+                  );
+                  return param.parameter_code === displayName;
+                }
+              );
 
-              data.push(item);
+              // 매칭되는 parameter_code가 있을 때만 그리드에 추가
+              if (matchingParameter) {
+                const item: GridRow = {
+                  id: idCounter++,
+                  mapping_id: "",
+                  parameter_name: matchingParameter.parameter_name,
+                  parameter_code: matchingParameter.parameter_code,
+                  influent: numericValue,
+                  unit: unit,
+                  is_active: true,
+                  is_required: false,
+                  remarks: "",
+                };
+
+                data.push(item);
+              }
             }
           }
         }
@@ -1215,7 +1249,8 @@ const parsePythonFile = (content: string): GridRow[] => {
         data.push({
           id: index + 1,
           mapping_id: "",
-          item: `VALUE_${index + 1}`,
+          parameter_name: `VALUE_${index + 1}`,
+          parameter_code: "", // 빈 값으로 시작
           influent: parseFloat(num),
           unit: "-",
           is_active: true,
@@ -1228,7 +1263,8 @@ const parsePythonFile = (content: string): GridRow[] => {
       data.push({
         id: 1,
         mapping_id: "",
-        item: "NO_DATA",
+        parameter_name: "NO_DATA",
+        parameter_code: "", // 빈 값으로 시작
         influent: 0,
         unit: "-",
         is_active: true,
@@ -1290,6 +1326,9 @@ const onParameterSelect = (
     (param) => param.parameter_code === parameterCode
   );
 
+  console.log("선택된 파라미터:", selectedParameter);
+  console.log("전체 수질 파라미터 목록:", inflowStore.waterQualityParameters);
+
   if (selectedParameter) {
     // 선택된 행 업데이트
     const targetData = isModal
@@ -1301,11 +1340,14 @@ const onParameterSelect = (
       : imperialTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
-      targetData[rowIndex].item = selectedParameter.parameter_name;
+      targetData[rowIndex].parameter_name = selectedParameter.parameter_name;
+      targetData[rowIndex].parameter_code = selectedParameter.parameter_code; // parameter_code 저장
       targetData[rowIndex].unit = selectedParameter.default_unit;
       // influent 값은 기본값이 있으면 설정, 없으면 0
       targetData[rowIndex].influent = 0;
       targetData[rowIndex].remarks = selectedParameter.description || "";
+
+      console.log("업데이트된 행 데이터:", targetData[rowIndex]);
     }
   }
 };
@@ -1326,21 +1368,6 @@ const currentMetricGridData = computed(() => {
 const currentImperialGridData = computed(() => {
   return imperialTabGridData.value[activeTab.value] || [];
 });
-
-// 수질 검색 (임시 주석 처리)
-// const searchWaterQuality = async () => {
-//   try {
-//     await waterQualityStore.fetchWaterQuality({
-//       search_field:
-//         searchField.value && searchValue.value ? searchField.value : undefined,
-//       search_value: searchValue.value || undefined,
-//       page: waterQualityStore.page,
-//       page_size: waterQualityStore.page_size,
-//     });
-//   } catch (error) {
-//     console.error("수질 검색 실패:", error);
-//   }
-// };
 
 const currentGridData2 = computed(() => {
   return tabGridData2.value[activeTab.value] || [];
@@ -1476,10 +1503,13 @@ const createNewTab = async () => {
 
   try {
     // Metric 파라미터 데이터 준비
+    console.log("원본 metricFileData:", metricFileData.value);
+
     const metricParameters =
       metricFileData.value.length > 0
         ? metricFileData.value.map((item) => ({
-            parameter_name: item.item,
+            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+            parameter_name: item.parameter_name,
             is_active: item.is_active,
             is_required: item.is_required,
             default_value: item.influent,
@@ -1488,11 +1518,27 @@ const createNewTab = async () => {
           }))
         : undefined;
 
+    console.log("등록할 Metric 파라미터:", metricParameters);
+    metricParameters?.forEach((param, index) => {
+      console.log(`Metric 파라미터 ${index + 1}:`, {
+        parameter_code: param.parameter_code,
+        parameter_name: param.parameter_name,
+        is_active: param.is_active,
+        is_required: param.is_required,
+        default_value: param.default_value,
+        parameter_unit: param.parameter_unit,
+        remarks: param.remarks,
+      });
+    });
+
     // Imperial 파라미터 데이터 준비
+    console.log("원본 imperialFileData:", imperialFileData.value);
+
     const imperialParameters =
       imperialFileData.value.length > 0
         ? imperialFileData.value.map((item) => ({
-            parameter_name: item.item,
+            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+            parameter_name: item.parameter_name,
             is_active: item.is_active,
             is_required: item.is_required,
             default_value: item.influent,
@@ -1500,6 +1546,19 @@ const createNewTab = async () => {
             remarks: item.remarks || undefined,
           }))
         : undefined;
+
+    console.log("등록할 Imperial 파라미터:", imperialParameters);
+    imperialParameters?.forEach((param, index) => {
+      console.log(`Imperial 파라미터 ${index + 1}:`, {
+        parameter_code: param.parameter_code,
+        parameter_name: param.parameter_name,
+        is_active: param.is_active,
+        is_required: param.is_required,
+        default_value: param.default_value,
+        parameter_unit: param.parameter_unit,
+        remarks: param.remarks,
+      });
+    });
 
     // 유입종류와 파라미터를 한 번에 등록
     const requestData = {

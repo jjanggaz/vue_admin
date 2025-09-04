@@ -327,6 +327,7 @@
     "upload": "Upload",
     "filesSelected": "{count} files selected",
     "close": "Close",
+    "reset": "Reset",
     "selectFile": "Select File",
     "chooseFile": "Choose File",
     "noFile": "No file selected",

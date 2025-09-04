@@ -71,9 +71,11 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, false)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, false)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -85,13 +87,13 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" />
+                  <input type="checkbox" v-model="item.is_active" disabled />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -112,9 +114,16 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, false)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(
+                        item.parameter_code,
+                        index,
+                        false,
+                        false
+                      )
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
@@ -126,13 +135,13 @@
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" />
+                  <input type="checkbox" v-model="item.is_active" disabled />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -256,21 +265,23 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
                     <option
-                      v-for="param in outflowStore.waterQualityParameters"
+                      v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -299,21 +310,23 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, false, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
                     <option
-                      v-for="param in outflowStore.waterQualityParameters"
+                      v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -445,6 +458,9 @@
 
               <div class="action-bar">
                 <div class="btns">
+                  <button class="btn btn-reset" @click="resetModalMetricRows">
+                    {{ t("common.reset") }}
+                  </button>
                   <button class="btn btn-add" @click="addModalMetricRow">
                     {{ t("outflow.addItem") }}
                   </button>
@@ -465,21 +481,23 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, true, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, true, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
                     <option
-                      v-for="param in outflowStore.waterQualityParameters"
+                      v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -497,6 +515,9 @@
 
               <div class="action-bar">
                 <div class="btns">
+                  <button class="btn btn-reset" @click="resetModalImperialRows">
+                    {{ t("common.reset") }}
+                  </button>
                   <button class="btn btn-add" @click="addModalImperialRow">
                     {{ t("outflow.addItem") }}
                   </button>
@@ -517,21 +538,23 @@
                   #cell-item="{ item, index }: { item: GridRow, index: number }"
                 >
                   <select
-                    v-if="item.item === ''"
-                    v-model="item.item"
-                    @change="onParameterSelect(item.item, index, false, true)"
+                    v-if="item.parameter_name === ''"
+                    v-model="item.parameter_code"
+                    @change="
+                      onParameterSelect(item.parameter_code, index, false, true)
+                    "
                     class="form-input"
                   >
                     <option value="">선택</option>
                     <option
-                      v-for="param in outflowStore.waterQualityParameters"
+                      v-for="param in getAvailableParameters(false, true)"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
                       {{ param.parameter_name }}
                     </option>
                   </select>
-                  <span v-else>{{ item.item }}</span>
+                  <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
                   <input type="checkbox" v-model="item.is_active" />
@@ -674,7 +697,8 @@ const onOutputTypeChange = () => {
 
 interface GridRow {
   id: number;
-  item: string;
+  parameter_name: string; // item을 parameter_name으로 변경
+  parameter_code: string;
   effluent: number;
   unit: string;
   is_active: boolean;
@@ -732,7 +756,8 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
       outflowStore.waterFlowTypeParameters.forEach((param) => {
         const gridRow: GridRow = {
           id: 0, // 임시 ID, 나중에 재정렬
-          item: param.parameter_name,
+          parameter_name: param.parameter_name,
+          parameter_code: param.parameter_code,
           effluent: parseFloat(param.default_value) || 0,
           unit: param.parameter_unit || "",
           is_active: param.is_active,
@@ -919,7 +944,8 @@ const addModalMetricRow = () => {
 
   const newRow: GridRow = {
     id: newId,
-    item: "", // 빈 값으로 시작, 선택 시 채워짐
+    parameter_name: "", // 빈 값으로 시작, 선택 시 채워짐
+    parameter_code: "", // 빈 값으로 시작
     effluent: 0,
     unit: "",
     is_active: true,
@@ -965,7 +991,8 @@ const addModalImperialRow = () => {
 
   const newRow: GridRow = {
     id: newId,
-    item: "", // 빈 값으로 시작, 선택 시 채워짐
+    parameter_name: "", // 빈 값으로 시작, 선택 시 채워짐
+    parameter_code: "", // 빈 값으로 시작
     effluent: 0,
     unit: "",
     is_active: true,
@@ -998,6 +1025,46 @@ const addModalImperialRow = () => {
   });
 };
 
+// 모달용 Metric 데이터 초기화 함수
+const resetModalMetricRows = () => {
+  // 현재 탭의 원본 데이터로 초기화
+  if (metricTabGridData.value[activeTab.value]) {
+    metricFileData.value = [...metricTabGridData.value[activeTab.value]];
+  } else {
+    metricFileData.value = [];
+  }
+};
+
+// 모달용 Imperial 데이터 초기화 함수
+const resetModalImperialRows = () => {
+  // 현재 탭의 원본 데이터로 초기화
+  if (imperialTabGridData.value[activeTab.value]) {
+    imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
+  } else {
+    imperialFileData.value = [];
+  }
+};
+
+// 사용 가능한 파라미터 목록을 반환하는 함수 (이미 선택된 것 제외)
+const getAvailableParameters = (isMetric: boolean, isModal: boolean) => {
+  const allParameters = outflowStore.waterQualityParameters;
+
+  if (!isModal) {
+    // 메인 화면에서는 모든 파라미터 표시
+    return allParameters;
+  }
+
+  // 모달에서는 현재 선택된 파라미터들을 제외
+  const currentData = isMetric ? metricFileData.value : imperialFileData.value;
+  const selectedCodes = currentData
+    .filter((item) => item.parameter_code && item.parameter_code !== "")
+    .map((item) => item.parameter_code);
+
+  return allParameters.filter(
+    (param) => !selectedCodes.includes(param.parameter_code)
+  );
+};
+
 // 수질 파라미터 선택 시 처리 함수
 const onParameterSelect = (
   parameterCode: string,
@@ -1008,6 +1075,9 @@ const onParameterSelect = (
   const selectedParameter = outflowStore.waterQualityParameters.find(
     (param) => param.parameter_code === parameterCode
   );
+
+  console.log("선택된 파라미터:", selectedParameter);
+  console.log("전체 수질 파라미터 목록:", outflowStore.waterQualityParameters);
 
   if (selectedParameter) {
     // 선택된 행 업데이트
@@ -1020,11 +1090,14 @@ const onParameterSelect = (
       : imperialTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
-      targetData[rowIndex].item = selectedParameter.parameter_name;
+      targetData[rowIndex].parameter_name = selectedParameter.parameter_name;
+      targetData[rowIndex].parameter_code = selectedParameter.parameter_code; // parameter_code 저장
       targetData[rowIndex].unit = selectedParameter.default_unit;
       // effluent 값은 기본값이 있으면 설정, 없으면 0
       targetData[rowIndex].effluent = 0;
       targetData[rowIndex].remarks = selectedParameter.description || "";
+
+      console.log("업데이트된 행 데이터:", targetData[rowIndex]);
     }
   }
 };
@@ -1066,7 +1139,8 @@ const openModal = async () => {
         // Metric 데이터
         const metricRow: GridRow = {
           id: index + 1,
-          item: param.parameter_name,
+          parameter_name: param.parameter_name,
+          parameter_code: param.parameter_code,
           effluent: 0, // 기본값
           unit: param.default_unit || "mg/L",
           is_active: true,
@@ -1078,7 +1152,8 @@ const openModal = async () => {
         // Imperial 데이터 (동일한 구조로 생성)
         const imperialRow: GridRow = {
           id: index + 1,
-          item: param.parameter_name,
+          parameter_name: param.parameter_name,
+          parameter_code: param.parameter_code,
           effluent: 0, // 기본값
           unit: param.default_unit || "mg/L", // 실제로는 Imperial 단위로 변환해야 함
           is_active: true,
@@ -1281,30 +1356,62 @@ const createNewTab = async () => {
 
   try {
     // Metric 파라미터 데이터 준비
+    console.log("원본 metricFileData:", metricFileData.value);
+
     const metricParameters =
       metricFileData.value.length > 0
         ? metricFileData.value.map((item) => ({
-            parameter_name: item.item,
+            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+            parameter_name: item.parameter_name,
             is_active: item.is_active,
-            is_required: item.is_active,
+            is_required: item.is_required,
             default_value: item.effluent,
             parameter_unit: item.unit,
             remarks: item.remarks || undefined,
           }))
         : undefined;
 
+    console.log("등록할 Metric 파라미터:", metricParameters);
+    metricParameters?.forEach((param, index) => {
+      console.log(`Metric 파라미터 ${index + 1}:`, {
+        parameter_code: param.parameter_code,
+        parameter_name: param.parameter_name,
+        is_active: param.is_active,
+        is_required: param.is_required,
+        default_value: param.default_value,
+        parameter_unit: param.parameter_unit,
+        remarks: param.remarks,
+      });
+    });
+
     // Imperial 파라미터 데이터 준비
+    console.log("원본 imperialFileData:", imperialFileData.value);
+
     const imperialParameters =
       imperialFileData.value.length > 0
         ? imperialFileData.value.map((item) => ({
-            parameter_name: item.item,
+            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+            parameter_name: item.parameter_name,
             is_active: item.is_active,
-            is_required: item.is_active,
+            is_required: item.is_required,
             default_value: item.effluent,
             parameter_unit: item.unit,
             remarks: item.remarks || undefined,
           }))
         : undefined;
+
+    console.log("등록할 Imperial 파라미터:", imperialParameters);
+    imperialParameters?.forEach((param, index) => {
+      console.log(`Imperial 파라미터 ${index + 1}:`, {
+        parameter_code: param.parameter_code,
+        parameter_name: param.parameter_name,
+        is_active: param.is_active,
+        is_required: param.is_required,
+        default_value: param.default_value,
+        parameter_unit: param.parameter_unit,
+        remarks: param.remarks,
+      });
+    });
 
     // 유출종류와 파라미터를 한 번에 등록
     const requestData = {
@@ -1655,6 +1762,14 @@ onBeforeUnmount(() => {
     color: #fff;
     &:hover {
       background-color: color.scale($primary-color, $lightness: -10%);
+    }
+  }
+
+  .btn-reset {
+    background-color: #f59e0b;
+    color: #fff;
+    &:hover {
+      background-color: #d97706;
     }
   }
 }

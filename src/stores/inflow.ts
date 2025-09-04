@@ -369,8 +369,10 @@ export const useInflowStore = defineStore("inflow", {
 
         // API 응답 처리
         if (response.response && response.response.items) {
+          console.log("수질 파라미터 API 응답:", response.response.items);
           this.waterQualityParameters = response.response.items;
         } else {
+          console.log("수질 파라미터 응답이 비어있음:", response);
           this.waterQualityParameters = [];
         }
 

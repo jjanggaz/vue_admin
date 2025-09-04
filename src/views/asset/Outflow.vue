@@ -1126,6 +1126,7 @@ const onParameterSelect = (
       : imperialTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
+      targetData[rowIndex].parameter_id = selectedParameter.parameter_id || "";
       targetData[rowIndex].parameter_name = selectedParameter.parameter_name;
       targetData[rowIndex].parameter_code = selectedParameter.parameter_code; // parameter_code 저장
       targetData[rowIndex].unit = selectedParameter.default_unit;

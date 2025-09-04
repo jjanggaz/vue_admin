@@ -349,16 +349,22 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 수질 파라미터 목록 조회
-    async fetchWaterQualityParameters() {
+    async fetchWaterQualityParameters(flowDirection: string) {
       this.loading = true;
       this.error = null;
 
+      // 요청 본문 설정
+      const requestBody = {
+        flow_direction: flowDirection,
+      };
+
       try {
         const response = await request("/api/inflow/listLookup", undefined, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(requestBody),
         });
 
         // API 응답 처리

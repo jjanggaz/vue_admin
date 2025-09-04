@@ -698,7 +698,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <WaterCodeManagement />
+          <WaterCodeManagement :flowDirection="'INFLUENT'" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-cancel" @click="closeCodeManagementModal">
@@ -773,7 +773,7 @@ const loadWaterQualityParameters = async () => {
       return;
     }
 
-    await inflowStore.fetchWaterQualityParameters();
+    await inflowStore.fetchWaterQualityParameters("INFLUENT");
   } catch (error) {
     console.error("수질 파라미터 로드 실패:", error);
   }

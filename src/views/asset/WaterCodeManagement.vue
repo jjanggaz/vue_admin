@@ -142,6 +142,15 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
 
+// Props 정의
+interface Props {
+  flowDirection: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  flowDirection: "INFLUENT",
+});
+
 const { t } = useI18n();
 const inflowStore = useInflowStore();
 
@@ -212,7 +221,7 @@ const waterQualityParameters = computed(
 // 컴포넌트 마운트 시 데이터 로드
 onMounted(async () => {
   try {
-    await inflowStore.fetchWaterQualityParameters();
+    await inflowStore.fetchWaterQualityParameters(props.flowDirection);
   } catch (error) {
     console.error("수질 파라미터 로드 실패:", error);
   }
@@ -276,10 +285,11 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    // 사용여부를 무조건 true로 설정
+    // 사용여부를 무조건 true로 설정하고 flow_direction 추가
     const submitData = {
       ...formData.value,
       is_active: true,
+      flow_direction: props.flowDirection,
     };
 
     // API 호출로 등록 처리
@@ -288,7 +298,7 @@ const handleSubmit = async () => {
     // 성공 후 폼 초기화
     resetForm();
     // 데이터 새로고침
-    await inflowStore.fetchWaterQualityParameters();
+    await inflowStore.fetchWaterQualityParameters(props.flowDirection);
 
     // 성공 메시지 표시
     alert(t("messages.success.parameterCreateSuccess"));

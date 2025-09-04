@@ -572,7 +572,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <WaterCodeManagement />
+          <WaterCodeManagement :flowDirection="'EFFLUENT'" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-cancel" @click="closeCodeManagementModal">
@@ -650,7 +650,7 @@ const loadWaterQualityParameters = async () => {
       return;
     }
 
-    await outflowStore.fetchWaterQualityParameters();
+    await outflowStore.fetchWaterQualityParameters("EFFLUENT");
   } catch (error) {
     console.error("수질 파라미터 로드 실패:", error);
   }
@@ -1047,7 +1047,7 @@ const openModal = async () => {
   // 모달 오픈 시 수질 파라미터 데이터를 가져와서 DataTable에 표시
   try {
     // 수질 파라미터 목록 조회
-    await outflowStore.fetchWaterQualityParameters();
+    await outflowStore.fetchWaterQualityParameters("EFFLUENT");
 
     if (
       outflowStore.waterQualityParameters &&

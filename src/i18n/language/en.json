@@ -1054,7 +1054,8 @@
       "cannotFindDataToEdit": "Cannot find data to edit.",
       "parameterRegisterFailed": "Parameter registration failed.",
       "parameterUpdateFailed": "Parameter update failed.",
-      "parameterDeleteFailed": "Parameter deletion failed."
+      "parameterDeleteFailed": "Parameter deletion failed.",
+      "maxParametersReached": "Maximum number of parameters reached."
     },
     "info": {}
   },

@@ -1053,7 +1053,8 @@
       "cannotFindDataToEdit": "수정할 데이터를 찾을 수 없습니다.",
       "parameterRegisterFailed": "파라미터 등록에 실패했습니다.",
       "parameterUpdateFailed": "파라미터 수정에 실패했습니다.",
-      "parameterDeleteFailed": "파라미터 삭제에 실패했습니다."
+      "parameterDeleteFailed": "파라미터 삭제에 실패했습니다.",
+      "maxParametersReached": "최대 파라미터 개수에 도달했습니다."
     },
     "info": {}
   },

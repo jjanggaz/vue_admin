@@ -815,6 +815,7 @@ const onInputTypeChange = () => {
 interface GridRow {
   id: number;
   mapping_id: string;
+  parameter_id: string;
   parameter_name: string; // item을 parameter_name으로 변경
   parameter_code: string;
   influent: number;
@@ -885,6 +886,7 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
         const gridRow: GridRow = {
           id: 0, // 나중에 재정렬
           mapping_id: param.mapping_id,
+          parameter_id: param.parameter_id || "", // parameter_id 추가
           parameter_name: param.parameter_name,
           parameter_code: param.parameter_code,
           influent: parseFloat(param.default_value) || 0,
@@ -1502,20 +1504,22 @@ const createNewTab = async () => {
   }
 
   try {
-    // Metric 파라미터 데이터 준비
+    // Metric 파라미터 데이터 준비 (선택된 파라미터만)
     console.log("원본 metricFileData:", metricFileData.value);
 
     const metricParameters =
       metricFileData.value.length > 0
-        ? metricFileData.value.map((item) => ({
-            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
-            parameter_name: item.parameter_name,
-            is_active: item.is_active,
-            is_required: item.is_required,
-            default_value: item.influent,
-            parameter_unit: item.unit,
-            remarks: item.remarks || undefined,
-          }))
+        ? metricFileData.value
+            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+            .map((item) => ({
+              parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+              parameter_name: item.parameter_name,
+              is_active: item.is_active,
+              is_required: item.is_required,
+              default_value: item.influent,
+              parameter_unit: item.unit,
+              remarks: item.remarks || undefined,
+            }))
         : undefined;
 
     console.log("등록할 Metric 파라미터:", metricParameters);
@@ -1531,20 +1535,22 @@ const createNewTab = async () => {
       });
     });
 
-    // Imperial 파라미터 데이터 준비
+    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
     console.log("원본 imperialFileData:", imperialFileData.value);
 
     const imperialParameters =
       imperialFileData.value.length > 0
-        ? imperialFileData.value.map((item) => ({
-            parameter_code: item.parameter_code, // 저장된 parameter_code 사용
-            parameter_name: item.parameter_name,
-            is_active: item.is_active,
-            is_required: item.is_required,
-            default_value: item.influent,
-            parameter_unit: item.unit,
-            remarks: item.remarks || undefined,
-          }))
+        ? imperialFileData.value
+            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+            .map((item) => ({
+              parameter_code: item.parameter_code, // 저장된 parameter_code 사용
+              parameter_name: item.parameter_name,
+              is_active: item.is_active,
+              is_required: item.is_required,
+              default_value: item.influent,
+              parameter_unit: item.unit,
+              remarks: item.remarks || undefined,
+            }))
         : undefined;
 
     console.log("등록할 Imperial 파라미터:", imperialParameters);
@@ -1667,17 +1673,56 @@ const updateTab = async () => {
       (wft) => wft.flow_type_id === currentTab.flow_type_id
     );
 
+    // Metric 파라미터 데이터 준비 (선택된 파라미터만)
+    const metricParameters =
+      metricFileData.value.length > 0
+        ? metricFileData.value
+            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+            .map((item) => ({
+              flow_type_id: flowTypeId, // flow_type_id 추가
+              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+              parameter_code: item.parameter_code,
+              parameter_name: item.parameter_name,
+              is_active: item.is_active,
+              is_required: item.is_required,
+              default_value: item.influent,
+              parameter_unit: item.unit,
+              remarks: item.remarks || undefined,
+            }))
+        : undefined;
+
+    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
+    const imperialParameters =
+      imperialFileData.value.length > 0
+        ? imperialFileData.value
+            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+            .map((item) => ({
+              flow_type_id: flowTypeId, // flow_type_id 추가
+              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+              parameter_code: item.parameter_code,
+              parameter_name: item.parameter_name,
+              is_active: item.is_active,
+              is_required: item.is_required,
+              default_value: item.influent,
+              parameter_unit: item.unit,
+              remarks: item.remarks || undefined,
+            }))
+        : undefined;
+
     // 유입종류 수정
     const requestData = {
       waterFlowTypeData: {
-        flow_type_code: selectedInputType.value,
+        flow_type_id: flowTypeId, // flow_type_id 추가
+        flow_direction: "INFLUENT", // flow_direction 하드코딩
+        flow_type_code: currentTab.flow_type_code, // flow_type_code 추가
         flow_type_name: newInflowTypeName.value.trim(),
         flow_type_name_en: newInflowTypeNameEn.value.trim() || undefined,
-        flow_direction: "INFLUENT",
         description: uploadForm.value.title || undefined,
         svg_symbol_id: originalWaterFlowType?.svg_symbol_id, // SVG 심볼 ID 추가
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
+        metric_parameters: metricParameters,
+        imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
       metricFile: metricFile.value || undefined, // Metric 계산식 파일

@@ -2154,7 +2154,6 @@ onBeforeUnmount(() => {
   scroll-behavior: smooth;
   flex: 1;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
-  max-width: calc(100% - 76px); // 좌우 버튼(30px+여백 8px씩) 제외
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE/Edge
 

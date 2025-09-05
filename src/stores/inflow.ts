@@ -7,7 +7,7 @@ export interface SymbolInfo {
   symbol_code: string;
   symbol_type: string;
   symbol_color: string;
-  svg_content: string;
+  svg_content: string | null;
 }
 
 // 유입종류 인터페이스
@@ -39,13 +39,7 @@ export interface WaterFlowTypeListResponse {
 
 // 유입종류 조회 파라미터 인터페이스
 export interface WaterFlowTypeQueryParams {
-  search_field?: string;
-  search_value?: string;
-  page?: number;
-  page_size?: number;
-  order_by?: string;
-  order_direction?: "asc" | "desc";
-  flowTypeCode?: string; // 유출종류 코드 추가
+  // 현재는 skip, limit만 사용하므로 빈 인터페이스로 유지
 }
 
 // Water Flow Type Parameter 관련 인터페이스
@@ -228,31 +222,19 @@ export const useInflowStore = defineStore("inflow", {
 
   actions: {
     // 유입종류 목록 조회
-    async fetchWaterFlowTypes(params: WaterFlowTypeQueryParams = {}) {
+    async fetchWaterFlowTypes(flowTypeCode?: string) {
       this.loading = true;
       this.error = null;
 
       try {
-        const queryParams: Record<string, string> = {};
+        const queryParams: Record<string, number | string> = {};
 
-        // 검색 조건 설정
-        if (params.search_field !== undefined)
-          queryParams.search_field = params.search_field;
-        if (params.search_value !== undefined)
-          queryParams.search_value = params.search_value;
+        // 검색 조건 설정 (skip, limit, flowTypeCode)
+        queryParams.skip = 0;
+        queryParams.limit = 100;
 
-        // 페이지네이션 설정
-        queryParams.page = (params.page || this.page).toString();
-        queryParams.page_size = (params.page_size || this.page_size).toString();
-
-        // 정렬 설정
-        if (params.order_by !== undefined)
-          queryParams.order_by = params.order_by;
-        if (params.order_direction !== undefined)
-          queryParams.order_direction = params.order_direction;
-
-        if (params.flowTypeCode !== undefined)
-          queryParams.flowTypeCode = params.flowTypeCode;
+        // flowTypeCode가 없으면 기본값 사용 (INFLUENT)
+        queryParams.flowTypeCode = flowTypeCode || "INFLUENT";
 
         const response = await request("/api/inflow/list", undefined, {
           method: "POST",
@@ -265,10 +247,12 @@ export const useInflowStore = defineStore("inflow", {
         // API 응답 처리
         if (response.response && response.response.items) {
           this.waterFlowTypes = response.response.items;
-          this.totalCount = response.response.total;
-          this.page = response.response.page;
-          this.page_size = response.response.page_size;
-          this.hasMore = response.response.page < response.response.total_pages;
+          this.totalCount = response.response.total || 0;
+          this.page = response.response.page || 1;
+          this.page_size = response.response.page_size || 10;
+          this.hasMore =
+            (response.response.page || 1) <
+            (response.response.total_pages || 1);
         } else {
           this.waterFlowTypes = [];
           this.totalCount = 0;
@@ -437,26 +421,6 @@ export const useInflowStore = defineStore("inflow", {
       }
     },
 
-    // 페이지 변경 (검색 조건 유지)
-    async changePage(
-      page: number,
-      searchParams?: { search_field?: string; search_value?: string }
-    ) {
-      await this.fetchWaterFlowTypes({
-        page,
-        page_size: this.page_size,
-        ...searchParams,
-      });
-    },
-
-    // 페이지 크기 변경
-    async changePageSize(pageSize: number) {
-      await this.fetchWaterFlowTypes({
-        page: 1, // 페이지 크기 변경 시 첫 페이지로
-        page_size: pageSize,
-      });
-    },
-
     // 유입종류 등록
     async createWaterFlowType(requestData: {
       waterFlowTypeData: WaterFlowTypeFormData;
@@ -470,10 +434,15 @@ export const useInflowStore = defineStore("inflow", {
       try {
         const formData = new FormData();
 
-        // waterFlowTypeData를 JSON 문자열로 변환하여 추가
+        // waterFlowTypeData를 JSON 문자열로 변환하여 추가 (undefined 값 제거)
+        const cleanWaterFlowTypeData = JSON.parse(
+          JSON.stringify(requestData.waterFlowTypeData, (key, value) => {
+            return value === undefined ? null : value;
+          })
+        );
         formData.append(
           "waterFlowTypeData",
-          JSON.stringify(requestData.waterFlowTypeData)
+          JSON.stringify(cleanWaterFlowTypeData)
         );
 
         // 파일이 있으면 symbolFile로 추가
@@ -497,10 +466,8 @@ export const useInflowStore = defineStore("inflow", {
         });
 
         // 등록 후 유입종류 목록 새로고침
-        await this.fetchWaterFlowTypes({
-          page: this.page,
-          page_size: this.page_size,
-        });
+        const flowTypeCode = requestData.waterFlowTypeData.flow_direction;
+        await this.fetchWaterFlowTypes(flowTypeCode);
 
         return response;
       } catch (error) {
@@ -564,10 +531,15 @@ export const useInflowStore = defineStore("inflow", {
       try {
         const formData = new FormData();
 
-        // waterFlowTypeData를 JSON 문자열로 변환하여 추가
+        // waterFlowTypeData를 JSON 문자열로 변환하여 추가 (undefined 값 제거)
+        const cleanWaterFlowTypeData = JSON.parse(
+          JSON.stringify(requestData.waterFlowTypeData, (key, value) => {
+            return value === undefined ? null : value;
+          })
+        );
         formData.append(
           "waterFlowTypeData",
-          JSON.stringify(requestData.waterFlowTypeData)
+          JSON.stringify(cleanWaterFlowTypeData)
         );
 
         // 파일이 있으면 symbolFile로 추가
@@ -595,10 +567,12 @@ export const useInflowStore = defineStore("inflow", {
         );
 
         // 수정 후 유입종류 목록 새로고침
-        await this.fetchWaterFlowTypes({
-          page: this.page,
-          page_size: this.page_size,
-        });
+        // 현재 store에 있는 데이터의 flow_direction 사용
+        const currentFlowType = this.waterFlowTypes.find(
+          (wft) => wft.flow_type_id === flowTypeId
+        );
+        const flowTypeCode = currentFlowType?.flow_direction;
+        await this.fetchWaterFlowTypes(flowTypeCode);
 
         return response;
       } catch (error) {
@@ -648,10 +622,12 @@ export const useInflowStore = defineStore("inflow", {
         );
 
         // 삭제 후 유입종류 목록 새로고침
-        await this.fetchWaterFlowTypes({
-          page: this.page,
-          page_size: this.page_size,
-        });
+        // 현재 store에 있는 데이터의 flow_direction 사용
+        const currentFlowType = this.waterFlowTypes.find(
+          (wft) => wft.flow_type_id === flowTypeId
+        );
+        const flowTypeCode = currentFlowType?.flow_direction;
+        await this.fetchWaterFlowTypes(flowTypeCode);
 
         return response;
       } catch (error) {

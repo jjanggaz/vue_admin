@@ -937,13 +937,7 @@ const loadWaterFlowTypes = async () => {
     isLoadingTabs.value = true;
 
     // 유입종류 목록 조회
-    await inflowStore.fetchWaterFlowTypes({
-      page: 1,
-      page_size: 100, // 많은 데이터를 가져오기 위해 큰 값 설정
-      order_by: "created_at",
-      order_direction: "asc",
-      flowTypeCode: "INFLUENT", // 유출종류 조회
-    });
+    await inflowStore.fetchWaterFlowTypes("INFLUENT");
 
     // 조회된 데이터를 탭 형태로 변환
     if (inflowStore.waterFlowTypes && inflowStore.waterFlowTypes.length > 0) {
@@ -1225,6 +1219,7 @@ const parsePythonFile = (content: string): GridRow[] => {
                 const item: GridRow = {
                   id: idCounter++,
                   mapping_id: "",
+                  parameter_id: matchingParameter.parameter_id || "",
                   parameter_name: matchingParameter.parameter_name,
                   parameter_code: matchingParameter.parameter_code,
                   influent: numericValue,
@@ -1251,6 +1246,7 @@ const parsePythonFile = (content: string): GridRow[] => {
         data.push({
           id: index + 1,
           mapping_id: "",
+          parameter_id: "",
           parameter_name: `VALUE_${index + 1}`,
           parameter_code: "", // 빈 값으로 시작
           influent: parseFloat(num),
@@ -1265,6 +1261,7 @@ const parsePythonFile = (content: string): GridRow[] => {
       data.push({
         id: 1,
         mapping_id: "",
+        parameter_id: "",
         parameter_name: "NO_DATA",
         parameter_code: "", // 빈 값으로 시작
         influent: 0,

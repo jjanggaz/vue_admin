@@ -2,7 +2,7 @@ import { refreshAccessToken } from "./tokenManager";
 
 export const request = async (
   path: string,
-  params?: Record<string, string> | Record<string, string>[],
+  params?: Record<string, string | number> | Record<string, string | number>[],
   options: RequestInit = { method: "GET" }
 ) => {
   try {
@@ -14,12 +14,12 @@ export const request = async (
       if (Array.isArray(params)) {
         params.forEach((paramObj) => {
           Object.keys(paramObj).forEach((key) =>
-            url.searchParams.append(key, paramObj[key])
+            url.searchParams.append(key, String(paramObj[key]))
           );
         });
       } else {
         Object.keys(params).forEach((key) =>
-          url.searchParams.append(key, params[key])
+          url.searchParams.append(key, String(params[key]))
         );
       }
     }

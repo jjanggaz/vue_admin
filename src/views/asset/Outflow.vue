@@ -823,13 +823,7 @@ const loadWaterFlowTypes = async () => {
     isLoadingTabs.value = true;
 
     // 유출종류 목록 조회
-    await outflowStore.fetchWaterFlowTypes({
-      page: 1,
-      page_size: 100, // 많은 데이터를 가져오기 위해 큰 값 설정
-      order_by: "created_at",
-      order_direction: "asc",
-      flowTypeCode: "EFFLUENT", // 유출종류 조회
-    });
+    await outflowStore.fetchWaterFlowTypes("EFFLUENT");
 
     // 조회된 데이터를 탭 형태로 변환
     if (outflowStore.waterFlowTypes && outflowStore.waterFlowTypes.length > 0) {
@@ -1351,7 +1345,7 @@ const updateTab = async () => {
               parameter_name: item.parameter_name,
               is_active: item.is_active,
               is_required: item.is_required,
-              default_value: item.effluent,
+              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
               parameter_unit: item.unit,
               remarks: item.remarks || undefined,
             }))
@@ -1369,7 +1363,7 @@ const updateTab = async () => {
               parameter_name: item.parameter_name,
               is_active: item.is_active,
               is_required: item.is_required,
-              default_value: item.effluent,
+              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
               parameter_unit: item.unit,
               remarks: item.remarks || undefined,
             }))
@@ -1449,7 +1443,7 @@ const createNewTab = async () => {
               parameter_name: item.parameter_name,
               is_active: item.is_active,
               is_required: item.is_required,
-              default_value: item.effluent,
+              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
               parameter_unit: item.unit,
               remarks: item.remarks || undefined,
             }))
@@ -1480,7 +1474,7 @@ const createNewTab = async () => {
               parameter_name: item.parameter_name,
               is_active: item.is_active,
               is_required: item.is_required,
-              default_value: item.effluent,
+              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
               parameter_unit: item.unit,
               remarks: item.remarks || undefined,
             }))

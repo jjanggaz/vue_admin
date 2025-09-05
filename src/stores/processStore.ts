@@ -469,8 +469,10 @@ export const useProcessStore = defineStore("process", () => {
             process_type: item.level2_code_key || "",
             process_type_nm: item.level2_code_value || "",
             process_nm: item.process_name || "",
+            process_name: item.process_name || "", // 그리드에서 사용할 process_name 추가
             sub_category: item.level3_code_key || "",
             sub_category_nm: item.level3_code_value || "",
+            level3_code_key: item.level3_code_key || "", // 그리드에서 사용할 level3_code_key 추가
             process_code: item.process_code || "",
             process_symbol: item.symbol_uri || "📄",
             symbol_id: item.symbol_id || null,
@@ -1016,7 +1018,8 @@ export const useProcessStore = defineStore("process", () => {
         if (formulaItem._file) {
           const formData = new FormData();
           formData.append('process_id', processId); // process_id 사용
-          formData.append('formula_file', formulaItem._file);
+          formData.append('python_file', formulaItem._file); // 서버에서 요구하는 필드명
+          formData.append('formula_scope', 'PROCESS'); // 서버에서 요구하는 필드
           formData.append('registered_formula', formulaItem.registeredFormula);
           formData.append('formula_code', formulaItem.formula_code || '');
           formData.append('info_overview', formulaItem.infoOverview || '');
@@ -1033,7 +1036,7 @@ export const useProcessStore = defineStore("process", () => {
         console.log('info_overview:', formulaItem.infoOverview);
         console.log('remarks:', formulaItem.remarks);
           
-          const result = await request("/api/process/formula/upload", undefined, {
+          const result = await request("/api/process/formula/create", undefined, {
             method: "POST",
             body: formData,
           });

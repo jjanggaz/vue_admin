@@ -342,8 +342,12 @@
           <button class="btn btn-cancel" @click="closeModal">
             {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-confirm" @click="createNewTab">
-            {{ t("common.register") }}
+          <button
+            class="btn btn-confirm"
+            @click="createNewTab"
+            :disabled="isCreating"
+          >
+            {{ isCreating ? t("common.processing") : t("common.register") }}
           </button>
         </div>
       </div>
@@ -584,8 +588,12 @@
           <button class="btn btn-cancel" @click="closeUpdateModal">
             {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-confirm" @click="updateTab">
-            {{ t("common.update") }}
+          <button
+            class="btn btn-confirm"
+            @click="updateTab"
+            :disabled="isUpdating"
+          >
+            {{ isUpdating ? t("common.processing") : t("common.update") }}
           </button>
         </div>
       </div>
@@ -646,6 +654,10 @@ const selectedOutputType = ref(""); // 선택된 유출종류 코드
 // 색상 선택 관련 상태
 const selectedColor = ref("#3b82f6"); // 기본 파란색
 const showColorPicker = ref(false);
+
+// 로딩 상태
+const isCreating = ref(false);
+const isUpdating = ref(false);
 
 // 수정 모달 관련 상태
 const isUpdateModalOpen = ref(false);
@@ -756,41 +768,66 @@ const handleResize = () => {
 };
 
 // 유출종류별 파라미터 데이터 로드
-const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
+const loadWaterFlowTypeParameters = async (
+  flowTypeCode: string,
+  flowTypeId: string
+) => {
   try {
     // 유출종류별 파라미터 조회
-    await outflowStore.fetchWaterFlowTypeParameters("EFFLUENT", flowTypeCode);
+    await outflowStore.fetchWaterFlowTypeParameters(
+      "EFFLUENT",
+      flowTypeCode,
+      flowTypeId
+    );
 
     // 조회된 파라미터를 그리드 데이터로 변환
-    if (
-      outflowStore.waterFlowTypeParameters &&
-      outflowStore.waterFlowTypeParameters.length > 0
-    ) {
+    if (outflowStore.waterFlowTypeParameters) {
       const metricParams: GridRow[] = [];
       const imperialParams: GridRow[] = [];
 
-      outflowStore.waterFlowTypeParameters.forEach((param) => {
-        const gridRow: GridRow = {
-          id: 0, // 임시 ID, 나중에 재정렬
-          mapping_id: param.mapping_id || "",
-          parameter_id: param.parameter_id || "", // parameter_id 추가
-          parameter_name: param.parameter_name,
-          parameter_code: param.parameter_code,
-          effluent: parseFloat(param.default_value) || 0,
-          unit: param.parameter_unit || "",
-          is_active: param.is_active,
-          is_required: param.is_required,
-          remarks: param.remarks || "",
-        };
-
-        // unit_system_code에 따라 분류
-        if (param.unit_system_code === "IMPERIAL") {
-          imperialParams.push(gridRow);
-        } else {
-          // METRIC이거나 기본값
+      // Metric 파라미터 처리
+      if (
+        outflowStore.waterFlowTypeParameters.metric &&
+        Array.isArray(outflowStore.waterFlowTypeParameters.metric)
+      ) {
+        outflowStore.waterFlowTypeParameters.metric.forEach((param) => {
+          const gridRow: GridRow = {
+            id: 0, // 임시 ID, 나중에 재정렬
+            mapping_id: param.mapping_id || "",
+            parameter_id: param.parameter_id || "",
+            parameter_name: param.parameter_name,
+            parameter_code: param.parameter_code,
+            effluent: parseFloat(String(param.default_value || 0)) || 0,
+            unit: param.parameter_unit || "",
+            is_active: param.is_active,
+            is_required: param.is_required,
+            remarks: param.remarks || "",
+          };
           metricParams.push(gridRow);
-        }
-      });
+        });
+      }
+
+      // Imperial 파라미터 처리
+      if (
+        outflowStore.waterFlowTypeParameters.imperial &&
+        Array.isArray(outflowStore.waterFlowTypeParameters.imperial)
+      ) {
+        outflowStore.waterFlowTypeParameters.imperial.forEach((param) => {
+          const gridRow: GridRow = {
+            id: 0, // 임시 ID, 나중에 재정렬
+            mapping_id: param.mapping_id || "",
+            parameter_id: param.parameter_id || "",
+            parameter_name: param.parameter_name,
+            parameter_code: param.parameter_code,
+            effluent: parseFloat(String(param.default_value || 0)) || 0,
+            unit: param.parameter_unit || "",
+            is_active: param.is_active,
+            is_required: param.is_required,
+            remarks: param.remarks || "",
+          };
+          imperialParams.push(gridRow);
+        });
+      }
 
       // ID 재정렬
       metricParams.forEach((item, index) => {
@@ -844,8 +881,11 @@ const loadWaterFlowTypes = async () => {
 
       // 첫 번째 탭의 파라미터도 로드
       const firstTab = tabs.value[0];
-      if (firstTab && firstTab.flow_type_code) {
-        await loadWaterFlowTypeParameters(firstTab.flow_type_code);
+      if (firstTab && firstTab.flow_type_code && firstTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          firstTab.flow_type_code,
+          firstTab.flow_type_id
+        );
       }
     }
   } catch (error) {
@@ -1321,6 +1361,8 @@ const closeUpdateModal = () => {
 };
 
 const updateTab = async () => {
+  isUpdating.value = true;
+
   try {
     const currentTab = tabs.value[activeTab.value];
     if (!currentTab || !currentTab.flow_type_id) {
@@ -1416,6 +1458,8 @@ const updateTab = async () => {
       "messages.error.waterFlowTypeUpdateFailed"
     );
     alert(errorMessage);
+  } finally {
+    isUpdating.value = false;
   }
 };
 
@@ -1429,6 +1473,8 @@ const createNewTab = async () => {
     alert(t("messages.warning.enterOutflowTypeName"));
     return;
   }
+
+  isCreating.value = true;
 
   try {
     // Metric 파라미터 데이터 준비 (선택된 파라미터만)
@@ -1540,8 +1586,11 @@ const createNewTab = async () => {
 
       // 새로 등록된 탭의 파라미터도 로드
       const newTab = tabs.value[tabs.value.length - 1];
-      if (newTab && newTab.flow_type_code) {
-        await loadWaterFlowTypeParameters(newTab.flow_type_code);
+      if (newTab && newTab.flow_type_code && newTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          newTab.flow_type_code,
+          newTab.flow_type_id
+        );
       }
     });
 
@@ -1562,6 +1611,8 @@ const createNewTab = async () => {
       "messages.error.waterFlowTypeCreateFailed"
     );
     alert(errorMessage);
+  } finally {
+    isCreating.value = false;
   }
 };
 
@@ -1578,8 +1629,11 @@ const onTabClick = async (index: number) => {
 
   // 선택된 탭의 유입종류 코드로 파라미터 조회
   const selectedTab = tabs.value[index];
-  if (selectedTab && selectedTab.flow_type_code) {
-    await loadWaterFlowTypeParameters(selectedTab.flow_type_code);
+  if (selectedTab && selectedTab.flow_type_code && selectedTab.flow_type_id) {
+    await loadWaterFlowTypeParameters(
+      selectedTab.flow_type_code,
+      selectedTab.flow_type_id
+    );
   }
 };
 

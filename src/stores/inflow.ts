@@ -47,6 +47,8 @@ export interface WaterFlowTypeParameter {
   mapping_id: string;
   flow_type_id: string;
   parameter_id: string;
+  parameter_name: string;
+  parameter_code: string;
   is_required: boolean;
   default_value?: number;
   min_value?: number;
@@ -60,6 +62,39 @@ export interface WaterFlowTypeParameter {
   updated_by?: string;
   unit_system_code: string;
   unit_id?: string;
+}
+
+// 새로운 API 응답 구조를 위한 인터페이스
+export interface WaterFlowTypeParametersResponse {
+  metric: WaterFlowTypeParameter[];
+  imperial: WaterFlowTypeParameter[];
+  metric_formulas?: {
+    data: {
+      formulas: FormulaData[];
+    };
+    status: string;
+  };
+  imperial_formulas?: {
+    data: {
+      formulas: FormulaData[];
+    };
+    status: string;
+  };
+}
+
+// 계산식 데이터 인터페이스
+export interface FormulaData {
+  formula_id: string;
+  formula_name: string;
+  formula_version: string;
+  file_name: string;
+  created_at: string;
+  created_by: string;
+  flow_type_id: string;
+  unit_system_code: string;
+  formula_scope: string;
+  download_url: string;
+  info_url: string;
 }
 
 export interface WaterFlowTypeParameterFormData {
@@ -209,7 +244,10 @@ export interface WaterFlowTypeParameterListResponse {
 export const useInflowStore = defineStore("inflow", {
   state: () => ({
     waterFlowTypes: [] as WaterFlowType[], // 유입종류 목록
-    waterFlowTypeParameters: [] as WaterFlowTypeParameterResponse[], // 유입종류별 파라미터 목록
+    waterFlowTypeParameters: {
+      metric: [],
+      imperial: [],
+    } as WaterFlowTypeParametersResponse, // 유입종류별 파라미터 목록
     waterQualityParameters: [] as WaterQualityParameter[], // 수질 파라미터 목록
     commonCodes: [] as CommonCode[], // 공통코드 목록
     loading: false,
@@ -275,7 +313,8 @@ export const useInflowStore = defineStore("inflow", {
     // 유입종류별 파라미터 조회
     async fetchWaterFlowTypeParameters(
       flowDirection: string,
-      flowTypeCode: string
+      flowTypeCode: string,
+      flowTypeId: string
     ) {
       this.loading = true;
       this.error = null;
@@ -283,13 +322,13 @@ export const useInflowStore = defineStore("inflow", {
       try {
         // flowDirection 유효성 검사
         if (!flowDirection || flowDirection.trim() === "") {
-          this.waterFlowTypeParameters = [];
+          this.waterFlowTypeParameters = { metric: [], imperial: [] };
           return { items: [], total: 0 };
         }
 
         // flowTypeCode 유효성 검사
         if (!flowTypeCode || flowTypeCode.trim() === "") {
-          this.waterFlowTypeParameters = [];
+          this.waterFlowTypeParameters = { metric: [], imperial: [] };
           return { items: [], total: 0 };
         }
 
@@ -299,6 +338,7 @@ export const useInflowStore = defineStore("inflow", {
         const requestBody = {
           flowDirection: flowDirection,
           flowTypeCode: encodedFlowTypeCode,
+          flowTypeId: flowTypeId,
         };
 
         const url = "/api/inflow/parameters";
@@ -313,9 +353,10 @@ export const useInflowStore = defineStore("inflow", {
 
         // API 응답 처리
         if (response.response && response.response.items) {
+          // 새로운 구조: response.items.metric, response.items.imperial
           this.waterFlowTypeParameters = response.response.items;
         } else {
-          this.waterFlowTypeParameters = [];
+          this.waterFlowTypeParameters = { metric: [], imperial: [] };
         }
 
         return response.response;
@@ -325,7 +366,7 @@ export const useInflowStore = defineStore("inflow", {
           error instanceof Error
             ? error.message
             : "유입종류 파라미터 조회에 실패했습니다.";
-        this.waterFlowTypeParameters = [];
+        this.waterFlowTypeParameters = { metric: [], imperial: [] };
         throw error;
       } finally {
         this.loading = false;
@@ -702,7 +743,7 @@ export const useInflowStore = defineStore("inflow", {
     // 상태 초기화
     resetState() {
       this.waterFlowTypes = [];
-      this.waterFlowTypeParameters = [];
+      this.waterFlowTypeParameters = { metric: [], imperial: [] };
       this.waterQualityParameters = [];
       this.commonCodes = [];
       this.loading = false;

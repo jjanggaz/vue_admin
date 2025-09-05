@@ -102,7 +102,9 @@
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-add">{{ t("inflow.delete") }}</button>
+                  <button class="btn btn-add" @click="deleteMetricFormula">
+                    {{ t("inflow.delete") }}
+                  </button>
                 </div>
               </div>
 
@@ -111,19 +113,12 @@
                 :data="currentGridData2"
                 maxHeight="300px"
                 :stickyHeader="true"
-              >
-                <template #cell-select="{ item }: { item: GridRow2 }">
-                  <input
-                    type="radio"
-                    :name="'formula-select-metric'"
-                    v-model="selectedFormulaId"
-                    :value="item.id"
-                  />
-                </template>
-                <template #cell-formula="{ item }">
-                  <span>{{ item.formula }}</span>
-                </template>
-              </DataTable>
+                :selectable="true"
+                selectionMode="single"
+                :showSelectAll="false"
+                :selectedItems="selectedMetricFormula"
+                @selection-change="onMetricFormulaSelectionChange"
+              />
             </div>
           </div>
 
@@ -178,28 +173,23 @@
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-add">{{ t("inflow.delete") }}</button>
+                  <button class="btn btn-add" @click="deleteImperialFormula">
+                    {{ t("inflow.delete") }}
+                  </button>
                 </div>
               </div>
 
               <DataTable
                 :columns="gridColumns2"
-                :data="currentGridData2"
+                :data="currentImperialGridData2"
                 maxHeight="300px"
                 :stickyHeader="true"
-              >
-                <template #cell-select="{ item }: { item: GridRow2 }">
-                  <input
-                    type="radio"
-                    :name="'formula-select-imperial'"
-                    v-model="selectedFormulaId"
-                    :value="item.id"
-                  />
-                </template>
-                <template #cell-formula="{ item }">
-                  <span>{{ item.formula }}</span>
-                </template>
-              </DataTable>
+                :selectable="true"
+                selectionMode="single"
+                :showSelectAll="false"
+                :selectedItems="selectedImperialFormula"
+                @selection-change="onImperialFormulaSelectionChange"
+              />
             </div>
           </div>
         </div>
@@ -439,8 +429,12 @@
           <button class="btn btn-cancel" @click="closeModal">
             {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-confirm" @click="createNewTab">
-            {{ t("common.register") }}
+          <button
+            class="btn btn-confirm"
+            @click="createNewTab"
+            :disabled="isCreating"
+          >
+            {{ isCreating ? t("common.processing") : t("common.register") }}
           </button>
         </div>
       </div>
@@ -690,8 +684,12 @@
           <button class="btn btn-cancel" @click="closeUpdateModal">
             {{ t("common.cancel") }}
           </button>
-          <button class="btn btn-confirm" @click="updateTab">
-            {{ t("common.update") }}
+          <button
+            class="btn btn-confirm"
+            @click="updateTab"
+            :disabled="isUpdating"
+          >
+            {{ isUpdating ? t("common.processing") : t("common.update") }}
           </button>
         </div>
       </div>
@@ -752,6 +750,10 @@ const selectedInputType = ref(""); // 선택된 유입종류 코드
 // 색상 선택 관련 상태
 const selectedColor = ref("#3b82f6"); // 기본 파란색
 const showColorPicker = ref(false);
+
+// 로딩 상태
+const isCreating = ref(false);
+const isUpdating = ref(false);
 
 // 컴포넌트 마운트 시 유입종류 데이터 로드
 onMounted(async () => {
@@ -833,11 +835,12 @@ interface TabInfo {
 }
 
 interface GridRow2 {
-  id: number;
-  mapping_id: string;
-  formula: string;
-  uploadDate: string;
-  author: string;
+  id: number; // 순번
+  formula_id: string; // 삭제 시 사용할 formula_id
+  formula: string; // formula_name 표시
+  uploadDate: string; // created_at을 YYYY-MM-DD 형태로 변환
+  created_at: string; // 원본 created_at (비교용)
+  isLatest: boolean; // 가장 최근 업로드된 항목인지 여부
 }
 
 interface UploadForm {
@@ -862,49 +865,135 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
 const resizeObserver = ref<ResizeObserver | null>(null);
-const selectedFormulaId = ref<number | null>(null);
+const selectedMetricFormulaId = ref<string | null>(null);
+const selectedImperialFormulaId = ref<string | null>(null);
 const handleResize = () => {
   nextTick(() => updateScrollButtons());
 };
 
+// Metric 계산식 선택 변경 핸들러
+const onMetricFormulaSelectionChange = (selectedItems: GridRow2[]) => {
+  if (selectedItems.length > 0) {
+    selectedMetricFormulaId.value = selectedItems[0].formula_id;
+  } else {
+    selectedMetricFormulaId.value = null;
+  }
+};
+
+// Imperial 계산식 선택 변경 핸들러
+const onImperialFormulaSelectionChange = (selectedItems: GridRow2[]) => {
+  if (selectedItems.length > 0) {
+    selectedImperialFormulaId.value = selectedItems[0].formula_id;
+  } else {
+    selectedImperialFormulaId.value = null;
+  }
+};
+
+// Metric 계산식 삭제 함수
+const deleteMetricFormula = () => {
+  if (!selectedMetricFormulaId.value) {
+    alert("삭제할 계산식을 선택해주세요.");
+    return;
+  }
+
+  // 선택된 항목이 최신 항목인지 확인
+  const selectedItem = currentGridData2.value.find(
+    (item) => item.formula_id === selectedMetricFormulaId.value
+  );
+  if (selectedItem?.isLatest) {
+    alert("가장 최근에 업로드된 계산식은 삭제할 수 없습니다.");
+    return;
+  }
+
+  if (confirm("선택한 Metric 계산식을 삭제하시겠습니까?")) {
+    alert(`선택된 Metric 계산식 ID: ${selectedMetricFormulaId.value}`);
+    // 여기에 실제 삭제 API 호출 로직 추가
+  }
+};
+
+// Imperial 계산식 삭제 함수
+const deleteImperialFormula = () => {
+  if (!selectedImperialFormulaId.value) {
+    alert("삭제할 계산식을 선택해주세요.");
+    return;
+  }
+
+  // 선택된 항목이 최신 항목인지 확인
+  const selectedItem = currentImperialGridData2.value.find(
+    (item) => item.formula_id === selectedImperialFormulaId.value
+  );
+  if (selectedItem?.isLatest) {
+    alert("가장 최근에 업로드된 계산식은 삭제할 수 없습니다.");
+    return;
+  }
+
+  if (confirm("선택한 Imperial 계산식을 삭제하시겠습니까?")) {
+    alert(`선택된 Imperial 계산식 ID: ${selectedImperialFormulaId.value}`);
+    // 여기에 실제 삭제 API 호출 로직 추가
+  }
+};
+
 // 유입종류별 파라미터 데이터 로드
-const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
+const loadWaterFlowTypeParameters = async (
+  flowTypeCode: string,
+  flowTypeId: string
+) => {
   try {
     // 유입종류별 파라미터 조회
-    await inflowStore.fetchWaterFlowTypeParameters("INFLUENT", flowTypeCode);
+    await inflowStore.fetchWaterFlowTypeParameters(
+      "INFLUENT",
+      flowTypeCode,
+      flowTypeId
+    );
 
     // 조회된 파라미터를 그리드 데이터로 변환
-    // 여기
-    if (
-      inflowStore.waterFlowTypeParameters &&
-      inflowStore.waterFlowTypeParameters.length > 0
-    ) {
+    if (inflowStore.waterFlowTypeParameters) {
       const metricParams: GridRow[] = [];
       const imperialParams: GridRow[] = [];
 
-      inflowStore.waterFlowTypeParameters.forEach((param) => {
-        const gridRow: GridRow = {
-          id: 0, // 나중에 재정렬
-          mapping_id: param.mapping_id,
-          parameter_id: param.parameter_id || "", // parameter_id 추가
-          parameter_name: param.parameter_name,
-          parameter_code: param.parameter_code,
-          influent: parseFloat(param.default_value) || 0,
-          unit: param.parameter_unit || "",
-          is_active: !!param.is_active,
-          is_required: !!param.is_required,
-          remarks: param.remarks || "",
-        };
-
-        // unit_system_code에 따라 분류
-        if (param.unit_system_code === "IMPERIAL") {
-          // IMPERIAL인 경우
-          imperialParams.push(gridRow);
-        } else {
-          // METRIC이거나 기본값
+      // Metric 파라미터 처리
+      if (
+        inflowStore.waterFlowTypeParameters.metric &&
+        Array.isArray(inflowStore.waterFlowTypeParameters.metric)
+      ) {
+        inflowStore.waterFlowTypeParameters.metric.forEach((param) => {
+          const gridRow: GridRow = {
+            id: 0, // 나중에 재정렬
+            mapping_id: param.mapping_id,
+            parameter_id: param.parameter_id || "",
+            parameter_name: param.parameter_name,
+            parameter_code: param.parameter_code,
+            influent: parseFloat(String(param.default_value || 0)) || 0,
+            unit: param.parameter_unit || "",
+            is_active: !!param.is_active,
+            is_required: !!param.is_required,
+            remarks: param.remarks || "",
+          };
           metricParams.push(gridRow);
-        }
-      });
+        });
+      }
+
+      // Imperial 파라미터 처리
+      if (
+        inflowStore.waterFlowTypeParameters.imperial &&
+        Array.isArray(inflowStore.waterFlowTypeParameters.imperial)
+      ) {
+        inflowStore.waterFlowTypeParameters.imperial.forEach((param) => {
+          const gridRow: GridRow = {
+            id: 0, // 나중에 재정렬
+            mapping_id: param.mapping_id,
+            parameter_id: param.parameter_id || "",
+            parameter_name: param.parameter_name,
+            parameter_code: param.parameter_code,
+            influent: parseFloat(String(param.default_value || 0)) || 0,
+            unit: param.parameter_unit || "",
+            is_active: !!param.is_active,
+            is_required: !!param.is_required,
+            remarks: param.remarks || "",
+          };
+          imperialParams.push(gridRow);
+        });
+      }
 
       // ID 재정렬
       metricParams.forEach((item, index) => {
@@ -918,6 +1007,66 @@ const loadWaterFlowTypeParameters = async (flowTypeCode: string) => {
       // Metric과 Imperial 데이터를 각각 저장
       metricTabGridData.value[activeTab.value] = metricParams;
       imperialTabGridData.value[activeTab.value] = imperialParams;
+
+      // Metric 계산식 데이터 처리
+      if (
+        inflowStore.waterFlowTypeParameters.metric_formulas?.data?.formulas &&
+        Array.isArray(
+          inflowStore.waterFlowTypeParameters.metric_formulas.data.formulas
+        )
+      ) {
+        const formulas =
+          inflowStore.waterFlowTypeParameters.metric_formulas.data.formulas;
+
+        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
+        const sortedFormulas = [...formulas].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const latestCreatedAt = sortedFormulas[0]?.created_at;
+
+        const metricFormulas: GridRow2[] = formulas.map((formula, index) => ({
+          id: index + 1, // 순번
+          formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
+          formula: formula.formula_name,
+          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          created_at: formula.created_at, // 원본 created_at
+          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
+        }));
+        tabGridData2.value[activeTab.value] = metricFormulas;
+      } else {
+        tabGridData2.value[activeTab.value] = [];
+      }
+
+      // Imperial 계산식 데이터 처리
+      if (
+        inflowStore.waterFlowTypeParameters.imperial_formulas?.data?.formulas &&
+        Array.isArray(
+          inflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas
+        )
+      ) {
+        const formulas =
+          inflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas;
+
+        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
+        const sortedFormulas = [...formulas].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const latestCreatedAt = sortedFormulas[0]?.created_at;
+
+        const imperialFormulas: GridRow2[] = formulas.map((formula, index) => ({
+          id: index + 1, // 순번
+          formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
+          formula: formula.formula_name,
+          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          created_at: formula.created_at, // 원본 created_at
+          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
+        }));
+        imperialTabGridData2.value[activeTab.value] = imperialFormulas;
+      } else {
+        imperialTabGridData2.value[activeTab.value] = [];
+      }
     } else {
       // 파라미터가 없으면 빈 배열
       metricTabGridData.value[activeTab.value] = [];
@@ -958,8 +1107,11 @@ const loadWaterFlowTypes = async () => {
 
       // 첫 번째 탭의 파라미터도 로드
       const firstTab = tabs.value[0];
-      if (firstTab && firstTab.flow_type_code) {
-        await loadWaterFlowTypeParameters(firstTab.flow_type_code);
+      if (firstTab && firstTab.flow_type_code && firstTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          firstTab.flow_type_code,
+          firstTab.flow_type_id
+        );
       }
     }
   } catch (error) {
@@ -1003,11 +1155,9 @@ const gridColumns: TableColumn[] = [
 ];
 
 const gridColumns2: TableColumn[] = [
-  { key: "select", title: t("columns.inflow.select"), width: "60px" },
   { key: "id", title: t("columns.inflow.no"), width: "80px" },
   { key: "formula", title: t("columns.inflow.formula") },
   { key: "uploadDate", title: t("columns.inflow.uploadDate") },
-  { key: "author", title: t("columns.inflow.author") },
 ];
 
 const handleFileUpload = (event: Event) => {
@@ -1218,6 +1368,9 @@ const metricTabGridData = ref<{ [key: number]: GridRow[] }>({});
 // Imperial용 데이터
 const imperialTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
+// Imperial 계산식용 데이터
+const imperialTabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
+
 // 각 탭별 데이터 복사본을 Metric/Imperial용으로 초기화
 Object.keys(tabGridData.value).forEach((key) => {
   const tabKey = parseInt(key);
@@ -1281,6 +1434,29 @@ const currentImperialGridData = computed(() => {
 
 const currentGridData2 = computed(() => {
   return tabGridData2.value[activeTab.value] || [];
+});
+
+// Imperial 계산식 데이터
+const currentImperialGridData2 = computed(() => {
+  return imperialTabGridData2.value[activeTab.value] || [];
+});
+
+// 선택된 Metric 계산식
+const selectedMetricFormula = computed(() => {
+  if (!selectedMetricFormulaId.value) return [];
+  const formula = currentGridData2.value.find(
+    (item) => item.formula_id === selectedMetricFormulaId.value
+  );
+  return formula ? [formula] : [];
+});
+
+// 선택된 Imperial 계산식
+const selectedImperialFormula = computed(() => {
+  if (!selectedImperialFormulaId.value) return [];
+  const formula = currentImperialGridData2.value.find(
+    (item) => item.formula_id === selectedImperialFormulaId.value
+  );
+  return formula ? [formula] : [];
 });
 
 // 모달 관련 함수
@@ -1411,6 +1587,8 @@ const createNewTab = async () => {
     return;
   }
 
+  isCreating.value = true;
+
   try {
     // Metric 파라미터 데이터 준비 (선택된 파라미터만)
     console.log("원본 metricFileData:", metricFileData.value);
@@ -1526,8 +1704,11 @@ const createNewTab = async () => {
 
       // 새로 등록된 탭의 파라미터도 로드
       const newTab = tabs.value[tabs.value.length - 1];
-      if (newTab && newTab.flow_type_code) {
-        await loadWaterFlowTypeParameters(newTab.flow_type_code);
+      if (newTab && newTab.flow_type_code && newTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          newTab.flow_type_code,
+          newTab.flow_type_id
+        );
       }
     });
 
@@ -1548,6 +1729,8 @@ const createNewTab = async () => {
       "messages.error.waterFlowTypeCreateFailed"
     );
     alert(errorMessage);
+  } finally {
+    isCreating.value = false;
   }
 };
 
@@ -1566,6 +1749,8 @@ const updateTab = async () => {
     alert(t("messages.warning.enterInflowTypeName"));
     return;
   }
+
+  isUpdating.value = true;
 
   try {
     const currentTab = tabs.value[activeTab.value];
@@ -1662,8 +1847,15 @@ const updateTab = async () => {
 
         // 수정된 탭의 파라미터도 로드
         const updatedTab = tabs.value[updatedTabIndex];
-        if (updatedTab && updatedTab.flow_type_code) {
-          await loadWaterFlowTypeParameters(updatedTab.flow_type_code);
+        if (
+          updatedTab &&
+          updatedTab.flow_type_code &&
+          updatedTab.flow_type_id
+        ) {
+          await loadWaterFlowTypeParameters(
+            updatedTab.flow_type_code,
+            updatedTab.flow_type_id
+          );
         }
       }
     });
@@ -1685,6 +1877,8 @@ const updateTab = async () => {
       "messages.error.waterFlowTypeUpdateFailed"
     );
     alert(errorMessage);
+  } finally {
+    isUpdating.value = false;
   }
 };
 
@@ -1698,11 +1892,17 @@ const onTabClick = async (index: number) => {
   if (!imperialTabGridData.value[index]) {
     imperialTabGridData.value[index] = [];
   }
+  if (!imperialTabGridData2.value[index]) {
+    imperialTabGridData2.value[index] = [];
+  }
 
   // 선택된 탭의 유입종류 코드로 파라미터 조회
   const selectedTab = tabs.value[index];
-  if (selectedTab && selectedTab.flow_type_code) {
-    await loadWaterFlowTypeParameters(selectedTab.flow_type_code);
+  if (selectedTab && selectedTab.flow_type_code && selectedTab.flow_type_id) {
+    await loadWaterFlowTypeParameters(
+      selectedTab.flow_type_code,
+      selectedTab.flow_type_id
+    );
   }
 };
 

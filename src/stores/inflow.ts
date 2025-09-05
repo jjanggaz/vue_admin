@@ -436,7 +436,7 @@ export const useInflowStore = defineStore("inflow", {
 
         // waterFlowTypeData를 JSON 문자열로 변환하여 추가 (undefined 값 제거)
         const cleanWaterFlowTypeData = JSON.parse(
-          JSON.stringify(requestData.waterFlowTypeData, (key, value) => {
+          JSON.stringify(requestData.waterFlowTypeData, (_key, value) => {
             return value === undefined ? null : value;
           })
         );
@@ -533,7 +533,7 @@ export const useInflowStore = defineStore("inflow", {
 
         // waterFlowTypeData를 JSON 문자열로 변환하여 추가 (undefined 값 제거)
         const cleanWaterFlowTypeData = JSON.parse(
-          JSON.stringify(requestData.waterFlowTypeData, (key, value) => {
+          JSON.stringify(requestData.waterFlowTypeData, (_key, value) => {
             return value === undefined ? null : value;
           })
         );
@@ -665,6 +665,34 @@ export const useInflowStore = defineStore("inflow", {
           error instanceof Error
             ? error.message
             : "수질 파라미터 등록에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 계산식 파일 추출
+    async extractFormula(formData: FormData) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          "/api/inflow/formula/extract",
+          undefined,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("계산식 파일 추출 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "계산식 파일 추출에 실패했습니다.";
         throw error;
       } finally {
         this.loading = false;

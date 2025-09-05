@@ -1047,11 +1047,63 @@ const handleMetricFileUpload = async (event: Event) => {
     metricFile.value = file; // 파일 저장
 
     try {
-      const fileContent = await readFileContent(file);
-      const parsedData = parsePythonFile(fileContent);
-      metricFileData.value = parsedData;
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "METRIC");
+
+      // API 호출하여 계산식 추출
+      const response = await inflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = inflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              influent: paramData.value || 0,
+              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        metricFileData.value = extractedData;
+        console.log("Metric 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        metricFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
     } catch (error) {
-      console.error("파일 파싱 에러:", error);
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      metricFileData.value = [];
       alert(t("messages.warning.fileReadError"));
     }
   }
@@ -1073,207 +1125,66 @@ const handleImperialFileUpload = async (event: Event) => {
     imperialFile.value = file; // 파일 저장
 
     try {
-      const fileContent = await readFileContent(file);
-      const parsedData = parsePythonFile(fileContent);
-      imperialFileData.value = parsedData;
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "IMPERIAL");
+
+      // API 호출하여 계산식 추출
+      const response = await inflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = inflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              influent: paramData.value || 0,
+              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        imperialFileData.value = extractedData;
+        console.log("Imperial 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        imperialFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
     } catch (error) {
-      console.error("파일 파싱 에러:", error);
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      imperialFileData.value = [];
       alert(t("messages.warning.fileReadError"));
     }
   }
-};
-
-// 파일 내용 읽기
-const readFileContent = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        resolve(e.target.result as string);
-      } else {
-        reject(new Error("파일을 읽을 수 없습니다."));
-      }
-    };
-    reader.onerror = () => reject(new Error("파일 읽기 실패"));
-    reader.readAsText(file);
-  });
-};
-
-// Python 파일 파싱
-const parsePythonFile = (content: string): GridRow[] => {
-  const lines = content.split("\n");
-  const data: GridRow[] = [];
-  let idCounter = 1;
-
-  for (let i = 0; i < lines.length; i++) {
-    const originalLine = lines[i];
-    const line = originalLine.trim();
-
-    // 빈 라인이나 특수 라인 건너뛰기
-    if (line === "") {
-      continue;
-    }
-
-    if (
-      line.startsWith("import") ||
-      line.startsWith("from") ||
-      line.startsWith("def ") ||
-      line.startsWith("class ") ||
-      line.startsWith("if ") ||
-      line.startsWith("for ") ||
-      line.startsWith("while ") ||
-      line.startsWith("try:") ||
-      line.startsWith("except") ||
-      line.startsWith("finally")
-    ) {
-      continue;
-    }
-
-    // 주석 처리
-    if (line.startsWith("#")) {
-      continue;
-    }
-
-    // = 기호가 있는지 확인
-    if (line.includes("=")) {
-      // 가장 단순한 분할 방식
-      const parts = line.split("=");
-      if (parts.length >= 2) {
-        const varName = parts[0].trim();
-        const value = parts.slice(1).join("=").trim(); // 여러 = 가 있을 경우 대비
-
-        // 변수명이 유효한지 확인 (객체 속성 접근도 허용: DCN.influents.bod)
-        if (
-          /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/.test(varName)
-        ) {
-          // influents가 포함된 변수명만 허용
-          const hasInfluents = varName.toLowerCase().includes("influents");
-
-          if (!hasInfluents) {
-            continue;
-          }
-
-          // 수질 관련 변수인지 확인 (변수명의 마지막 부분도 체크)
-          const waterQualityKeywords = [
-            "BOD",
-            "COD",
-            "SS",
-            "TSS",
-            "TN",
-            "TP",
-            "NH3",
-            "NO3",
-            "PO4",
-            "pH",
-            "DO",
-            "TEMP",
-            "FLOW",
-            "MLSS",
-            "SRT",
-            "HRT",
-            "INFLUENT",
-            "EFFLUENT",
-          ];
-          const isWaterQuality = waterQualityKeywords.some((keyword) =>
-            varName.toUpperCase().includes(keyword)
-          );
-
-          if (isWaterQuality) {
-            // 값에서 숫자 추출
-            let numericValue = 0;
-            let unit = "mg/L";
-
-            // 문자열에서 따옴표 제거
-            let cleanValue = value.replace(/['"]/g, "").trim();
-
-            // 숫자 찾기
-            const numberMatch = cleanValue.match(/([0-9]+\.?[0-9]*)/);
-            if (numberMatch) {
-              numericValue = parseFloat(numberMatch[1]);
-
-              // 단위 추출 시도
-              if (cleanValue.includes("mg/L")) unit = "mg/L";
-              else if (cleanValue.includes("%")) unit = "%";
-              else if (cleanValue.includes("L/day")) unit = "L/day";
-              else if (cleanValue.includes("day")) unit = "day";
-              else if (cleanValue.includes("°C")) unit = "°C";
-              else if (cleanValue.includes("㎥/d")) unit = "㎥/d";
-
-              // 변수명에서 의미있는 부분 추출 (마지막 부분 사용)
-              const nameParts = varName.split(".");
-              const displayName = nameParts[nameParts.length - 1].toUpperCase();
-
-              // parameter_code가 availableParameterCodes에 있는지 확인
-              const matchingParameter = inflowStore.waterQualityParameters.find(
-                (param) => {
-                  console.log(
-                    "&&&&&&&&&&&&& : " + param.parameter_code,
-                    displayName
-                  );
-                  return param.parameter_code === displayName;
-                }
-              );
-
-              // 매칭되는 parameter_code가 있을 때만 그리드에 추가
-              if (matchingParameter) {
-                const item: GridRow = {
-                  id: idCounter++,
-                  mapping_id: "",
-                  parameter_id: matchingParameter.parameter_id || "",
-                  parameter_name: matchingParameter.parameter_name,
-                  parameter_code: matchingParameter.parameter_code,
-                  influent: numericValue,
-                  unit: unit,
-                  is_active: true,
-                  is_required: false,
-                  remarks: "",
-                };
-
-                data.push(item);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 파싱된 데이터가 없으면 파일에서 모든 숫자 추출
-  if (data.length === 0) {
-    const allNumbers = content.match(/\b([0-9]+\.?[0-9]*)\b/g);
-    if (allNumbers && allNumbers.length > 0) {
-      allNumbers.slice(0, 8).forEach((num, index) => {
-        data.push({
-          id: index + 1,
-          mapping_id: "",
-          parameter_id: "",
-          parameter_name: `VALUE_${index + 1}`,
-          parameter_code: "", // 빈 값으로 시작
-          influent: parseFloat(num),
-          unit: "-",
-          is_active: true,
-          is_required: false,
-          remarks: `파일에서 추출된 숫자값`,
-        });
-      });
-    } else {
-      // 정말 아무것도 없으면 기본값
-      data.push({
-        id: 1,
-        mapping_id: "",
-        parameter_id: "",
-        parameter_name: "NO_DATA",
-        parameter_code: "", // 빈 값으로 시작
-        influent: 0,
-        unit: "-",
-        is_active: true,
-        is_required: false,
-        remarks: "파싱 가능한 데이터 없음",
-      });
-    }
-  }
-
-  return data;
 };
 
 // 색상 업데이트 함수
@@ -1418,9 +1329,9 @@ const openUpdateModal = async () => {
         ) {
           // uploaded_at 기준으로 정렬하여 가장 최신 파일 찾기
           const latestFile = fileInfoResponse.response.uploaded_files.sort(
-            (a: any, b: any) =>
-              new Date(b.uploaded_at).getTime() -
-              new Date(a.uploaded_at).getTime()
+            (a: Record<string, unknown>, b: Record<string, unknown>) =>
+              new Date(String(b.uploaded_at)).getTime() -
+              new Date(String(a.uploaded_at)).getTime()
           )[0];
 
           // 파일명을 input에 표시하기 위해 별도 상태 추가

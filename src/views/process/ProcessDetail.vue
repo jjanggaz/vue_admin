@@ -275,7 +275,6 @@
       <div class="modal-header">
         <h3>P&ID 목록</h3>
         <div class="modal-actions">
-          <button class="btn btn-primary">Zip 등록</button>
           <button class="btn btn-primary" @click="addMappingPidRow">추가</button>
           <button 
             class="btn btn-danger" 

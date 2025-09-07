@@ -433,13 +433,6 @@
           <button class="btn btn-secondary" @click="closeDetailModal">
             닫기
           </button>
-          <button
-            class="btn btn-primary"
-            @click="handleDetailSave"
-            :disabled="!isDetailFormValid"
-          >
-            저장
-          </button>
         </div>
       </div>
     </div>
@@ -447,7 +440,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import ProcessDetail from "./ProcessDetail.vue";
@@ -607,16 +600,6 @@ const handleSvgLoad = (event: Event) => {
   console.log('SVG 로드 성공:', img.src);
 };
 
-// 상세 모달 저장 핸들러
-const handleDetailSave = async () => {
-  try {
-    if (processDetailRef.value?.handleUpdate) {
-      await processDetailRef.value.handleUpdate();
-    }
-  } catch (error) {
-    console.error('상세 모달 저장 중 오류:', error);
-  }
-};
 
 // URI에서 파일명만 추출하는 함수
 const getFileNameFromUri = (uri: string | null | undefined): string => {
@@ -1114,10 +1097,6 @@ const closeDetailModal = () => {
 // ProcessDetail 컴포넌트에서 직접 업데이트를 처리하므로 이 함수는 불필요
 // const handleDetailUpdate = async () => { ... };
 
-const isDetailFormValid = computed(() => {
-  // ProcessDetail 컴포넌트의 폼 유효성 검사 결과를 반환
-  return true; // 실제로는 ProcessDetail의 폼 상태를 확인해야 함
-});
 
 const handlePageChange = (page: number) => {
   processStore.setCurrentPage(page);
@@ -1608,6 +1587,8 @@ onMounted(async () => {
     
     .modal-header {
       cursor: default;
+      padding: 10px 0;
+      margin: 0;
     }
     
     .modal-body {

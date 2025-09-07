@@ -68,27 +68,24 @@
             <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFile") }}</span>
           </div>
         </div>
+        
+        <!-- 저장 버튼 -->
+        <div class="form-group save-btn-container">
+          <button @click="handleMainSave" class="btn btn-primary save-btn">
+            등록
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 탭 네비게이션 -->
-    <div class="tabs-container">
-      <div class="tabs-header" ref="tabsContainer">
-        <button
-          v-for="(tab, index) in tabs"
-          :key="index"
-          :class="['tab-button', { active: activeTab === index }]"
-          @click="onTabClick(index)"
-        >
-          {{ tab }}
-        </button>
-      </div>
-
-      <!-- 탭 내용 -->
-      <div class="tab-content">
-        <!-- 계산식 관리 탭 -->
-        <div v-show="activeTab === 0" class="tab-panel">
+    <!-- 메인 콘텐츠 -->
+    <div class="main-content">
+      <!-- 계산식 관리 섹션 -->
+      <div class="formula-section">
           <div class="tab-header">
+            <div class="grid-title">
+              <h4>계산식</h4>
+            </div>
             <div class="tab-actions">
               <button @click="openFormulaModal" class="btn btn-primary">
                 {{ t("common.add") }}
@@ -96,47 +93,64 @@
               <button @click="handleFormulaDelete" class="btn btn-danger" :disabled="!selectedFormulaItems.length">
                 {{ t("common.delete") }}
               </button>
+              <button @click="handleFormulaSave" class="btn btn-success">저장</button>
+            </div>
+          </div>
+        
+        <DataTable
+          :columns="formulaColumns"
+          :data="processStore.formulaList"
+          :selectable="true"
+          @selection-change="handleFormulaSelectionChange"
+        >
+          <template #cell-component="{ item, index }">
+            <button 
+              class="btn-component" 
+              @click="handleComponentClick(item, index)"
+            >
+              컴포넌트
+            </button>
+          </template>
+          <template #cell-processManagement="{ item, index }">
+            <button 
+              class="btn-process-management" 
+              @click="handleProcessManagementClick(item, index)"
+            >
+              공정카드
+            </button>
+          </template>
+        </DataTable>
+        
+        <!-- 컴포넌트 섹션 -->
+        <div v-if="showComponentSection" class="component-section">
+          <div class="tab-header">
+            <div class="grid-title">
+              <h4>컴포넌트 목록</h4>
+            </div>
+            <div class="tab-actions">
+              <button @click="() => { console.log('닫기 버튼 클릭됨'); closeComponentSection(); }" class="btn btn-secondary">닫기</button>
             </div>
           </div>
           
           <DataTable
-            :columns="formulaColumns"
-            :data="processStore.formulaList"
-            :selectable="true"
-            @selection-change="handleFormulaSelectionChange"
-          />
-          
-          <Pagination
-            :current-page="1"
-            :total-pages="1"
-            :total-items="processStore.formulaList.length"
-            @page-change="handleFormulaPageChange"
-          />
-        </div>
-
-        <!-- 컴포넌트 탭 -->
-        <div v-show="activeTab === 1" class="tab-panel">
-          <div class="tab-header">
-          </div>
-          
-          <DataTable
-            :columns="structColumns"
-            :data="processStore.structList"
+            :columns="componentColumns"
+            :data="processStore.structList.map((item: any) => ({
+              id: item.id || '',
+              name: item.components || '',
+              type: item.type || '',
+              description: item.inputItem || '',
+              status: item.division || ''
+            }))"
             :selectable="false"
           />
-          
-          <Pagination
-            :current-page="1"
-            :total-pages="1"
-            :total-items="processStore.structList.length"
-            @page-change="handleStructPageChange"
-          />
         </div>
-
-
-        <!-- 공정카드 탭 -->
-        <div v-show="activeTab === 2" class="tab-panel">
+        
+        <!-- 공정카드 섹션 -->
+        <div v-if="showPfdSection" class="pfd-section">
           <div class="tab-header">
+            <div class="grid-title">
+              <h4>공정카드</h4>
+            </div>
             <div class="tab-actions">
               <button @click="openPfdModal" class="btn btn-primary">
                 {{ t("common.add") }}
@@ -144,11 +158,9 @@
               <button @click="handlePfdDelete" class="btn btn-danger" :disabled="!selectedPfdItems.length">
                 {{ t("common.delete") }}
               </button>
+              <button @click="handlePfdSave" class="btn btn-success">저장</button>
+              <button @click="closePfdSection" class="btn btn-secondary">닫기</button>
             </div>
-          </div>
-          
-          <div class="grid-title">
-            <h4>PFD 목록</h4>
           </div>
           
           <DataTable
@@ -162,18 +174,120 @@
                 class="btn btn-sm btn-outline-primary"
                 @click="openMappingPidModal(item)"
               >
-                보기
+                P&ID
               </button>
             </template>
           </DataTable>
-          
-          <Pagination
-            :current-page="1"
-            :total-pages="1"
-            :total-items="processStore.pfdList.length"
-            @page-change="handlePfdPageChange"
-          />
         </div>
+        
+        <!-- P&ID 목록 섹션 -->
+        <div v-if="showPidListInMain" class="pid-section">
+          <div class="tab-header">
+            <div class="grid-title">
+              <h4>P&ID 목록</h4>
+            </div>
+            <div class="tab-actions">
+              <button class="btn btn-primary" @click="addMappingPidRow">추가</button>
+              <button 
+                class="btn btn-danger" 
+                @click="deleteSelectedMappingPidItems"
+                :disabled="selectedMappingPidItems.length === 0"
+              >
+                삭제
+              </button>
+              <button @click="confirmMappingPid" class="btn btn-success">저장</button>
+              <button @click="closePidListInMain" class="btn btn-secondary">닫기</button>
+            </div>
+          </div>
+          
+          <div class="mapping-pid-table">
+            <table class="pid-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input 
+                      type="checkbox" 
+                      @change="handleSelectAllMappingPid"
+                      :checked="selectedMappingPidItems.length === mappingPidList.length && mappingPidList.length > 0"
+                      :indeterminate="selectedMappingPidItems.length > 0 && selectedMappingPidItems.length < mappingPidList.length"
+                    />
+                  </th>
+                  <th>No.</th>
+                  <th>P&ID (*)</th>
+                  <th>매핑 Excel (*)</th>
+                  <th>정보개요(기기명+대수)</th>
+                  <th>Svg 도면 미리보기</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in mappingPidList" :key="item.id" :class="{ 'alternate-row': index % 2 === 1 }">
+                  <td>
+                    <input 
+                      type="checkbox" 
+                      :value="item"
+                      v-model="selectedMappingPidItems"
+                      @change="handleMappingPidSelectionChange"
+                    />
+                  </td>
+                  <td>{{ item.no }}</td>
+                  <td>
+                    <div class="file-selection-group">
+                      <button class="btn btn-sm btn-primary" @click="selectPidFile(item)">파일선택</button>
+                      <div class="file-info">
+                        <span v-if="item.pidFileName" class="selected-file">
+                          {{ item.pidFileName }}
+                          <button class="clear-file" @click="clearPidFile(item)">&times;</button>
+                        </span>
+                        <span v-else class="no-file">{{ t("common.noFile") }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="file-selection-group">
+                      <button class="btn btn-sm btn-primary" @click="selectExcelFile(item)">파일선택</button>
+                      <div class="file-info">
+                        <span v-if="item.excelFileName" class="selected-file">
+                          {{ item.excelFileName }}
+                          <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
+                        </span>
+                        <span v-else class="no-file">{{ t("common.noFile") }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <input 
+                      type="text" 
+                      v-model="item.infoOverview" 
+                      class="info-input"
+                      placeholder="예: 펌프, 2대"
+                    />
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Hidden file inputs -->
+          <input
+            type="file"
+            accept=".dwg"
+            @change="handlePidFileSelected"
+            style="display: none"
+            ref="pidFileInput"
+          />
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            @change="handleExcelFileSelected"
+            style="display: none"
+            ref="excelFileInput"
+          />
+          
+        </div>
+        
       </div>
     </div>
 
@@ -269,124 +383,7 @@
     </div>
   </div>
 
-  <!-- P&ID 매핑 목록 모달 -->
-  <div v-if="showMappingPidModal" class="modal-overlay" @click="closeMappingPidModal">
-    <div class="modal-content large-modal" @click.stop>
-      <div class="modal-header">
-        <h3>P&ID 목록</h3>
-        <div class="modal-actions">
-          <button class="btn btn-primary" @click="addMappingPidRow">추가</button>
-          <button 
-            class="btn btn-danger" 
-            @click="deleteSelectedMappingPidItems"
-            :disabled="selectedMappingPidItems.length === 0"
-          >
-            삭제
-          </button>
-          <button @click="closeMappingPidModal" class="modal-close">&times;</button>
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="mapping-pid-table">
-          <table class="pid-table">
-            <thead>
-              <tr>
-                <th>
-                  <input 
-                    type="checkbox" 
-                    @change="handleSelectAllMappingPid"
-                    :checked="selectedMappingPidItems.length === mappingPidList.length && mappingPidList.length > 0"
-                    :indeterminate="selectedMappingPidItems.length > 0 && selectedMappingPidItems.length < mappingPidList.length"
-                  />
-                </th>
-                <th>No.</th>
-                <th>P&ID (*)</th>
-                <th>매핑 Excel (*)</th>
-                <th>정보개요(기기명+대수)</th>
-                <th>Svg 도면 미리보기</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in mappingPidList" :key="item.id" :class="{ 'alternate-row': index % 2 === 1 }">
-                <td>
-                  <input 
-                    type="checkbox" 
-                    :value="item"
-                    v-model="selectedMappingPidItems"
-                    @change="handleMappingPidSelectionChange"
-                  />
-                </td>
-                <td>{{ item.no }}</td>
-                <td>
-                  <div class="file-selection-group">
-                    <button class="btn btn-sm btn-primary" @click="selectPidFile(item)">파일선택</button>
-                    <div class="file-info">
-                      <span v-if="item.pidFileName" class="selected-file">
-                        {{ item.pidFileName }}
-                        <button class="clear-file" @click="clearPidFile(item)">&times;</button>
-                      </span>
-                      <span v-else class="no-file">{{ t("common.noFile") }}</span>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="file-selection-group">
-                    <button class="btn btn-sm btn-primary" @click="selectExcelFile(item)">파일선택</button>
-                    <div class="file-info">
-                      <span v-if="item.excelFileName" class="selected-file">
-                        {{ item.excelFileName }}
-                        <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
-                      </span>
-                      <span v-else class="no-file">{{ t("common.noFile") }}</span>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <input 
-                    type="text" 
-                    v-model="item.infoOverview" 
-                    class="info-input"
-                    placeholder="예: 펌프, 2대"
-                  />
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <!-- Hidden file inputs -->
-        <input
-          type="file"
-          accept=".dwg"
-          @change="handlePidFileSelected"
-          style="display: none"
-          ref="pidFileInput"
-        />
-        <input
-          type="file"
-          accept=".xlsx,.xls"
-          @change="handleExcelFileSelected"
-          style="display: none"
-          ref="excelFileInput"
-        />
-      </div>
-      
-      <!-- 모달 푸터 -->
-      <div class="modal-footer">
-        <div class="modal-footer-buttons">
-          <button @click="confirmMappingPid" class="btn btn-primary">
-            저장
-          </button>
-          <button @click="closeMappingPidModal" class="btn btn-secondary" style="margin-left: 15px;">
-            취소
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </template>
 
 <script lang="ts" setup>
@@ -395,7 +392,6 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useProcessStore } from '@/stores/processStore';
 import DataTable from '@/components/common/DataTable.vue';
-import Pagination from '@/components/common/Pagination.vue';
 import type { TableColumn } from '@/types/components';
 import { request } from '@/utils/request';
 
@@ -421,18 +417,27 @@ const { t } = useI18n();
 const processStore = useProcessStore();
 
 // Reactive references
-const activeTab = ref(0);
 const selectedFormulaItems = ref<any[]>([]);
 const selectedPfdItems = ref<any[]>([]);
 const selectedFormulaFiles = ref<File[]>([]);
 const selectedPfdFiles = ref<File[]>([]);
 
-// P&ID 매핑 모달 관련 상태
-const showMappingPidModal = ref(false);
+// P&ID 매핑 관련 상태
 const currentPfdItemForMapping = ref<any>(null);
 const mappingPidList = ref<any[]>([]);
 const selectedMappingPidItems = ref<any[]>([]);
 const initialMappingPidList = ref<any[]>([]); // 초기 P&ID 목록 데이터 저장
+
+// P&ID 목록 메인화면 표시 상태
+const showPidListInMain = ref(false);
+
+// 공정카드 섹션 표시 상태
+const showPfdSection = ref(false);
+
+// 컴포넌트 섹션 표시 상태
+const showComponentSection = ref(false);
+const selectedFormulaForComponent = ref<any>(null);
+
 
 // P&ID 매핑 모달 파일 입력 refs
 const pidFileInput = ref<HTMLInputElement>();
@@ -442,38 +447,47 @@ const excelFileInput = ref<HTMLInputElement>();
 const selectedLanguage = ref('');
 const selectedUnit = ref('');
 
-// 탭 설정
-const tabs = ref([
-  "계산식 관리",
-  "컴포넌트",
-  "공정카드",
-]);
 
 // 컬럼 정의
 const formulaColumns: TableColumn[] = [
   { key: "no", title: "순번", sortable: true },
   { key: "registeredFormula", title: "등록 계산식", sortable: true },
-  { key: "registrationDate", title: "등록일자", sortable: true, dateFormat: "YYYY-MM-DD" },
+  { key: "registrationDate", title: "등록일자", sortable: true },
   { key: "infoOverview", title: "정보 개요", sortable: true },
   { key: "remarks", title: "비고", sortable: true },
-  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true }
+  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
+  {
+    key: "component",
+    title: "컴포넌트",
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "processManagement",
+    title: "공정카드",
+    width: "100px",
+    sortable: false,
+  },
 ];
 
-const structColumns: TableColumn[] = [
-  { key: "division", title: "구분", sortable: true },
-  { key: "components", title: "Components", sortable: true },
-  { key: "type", title: "유형", sortable: true },
-  { key: "inputItem", title: "입력Item", sortable: true }
-];
 
 
 const pfdColumns: TableColumn[] = [
   { key: "pfdFileName", title: "공정카드 파일명", sortable: true },
-  { key: "registrationDate", title: "등록일자", sortable: true, dateFormat: "YYYY-MM-DD" },
+  { key: "registrationDate", title: "등록일자", sortable: true },
   { key: "infoOverview", title: "정보개요", sortable: true },
   { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
   { key: "remarks", title: "비고", sortable: true }
 ];
+
+const componentColumns: TableColumn[] = [
+  { key: "id", title: "ID", sortable: true },
+  { key: "name", title: "컴포넌트명", sortable: true },
+  { key: "type", title: "타입", sortable: true },
+  { key: "description", title: "설명", sortable: true },
+  { key: "status", title: "상태", sortable: true }
+];
+
 
 // P&ID 매핑 목록 컬럼 정의 (사용하지 않음)
 // const mappingPidColumns: TableColumn[] = [
@@ -882,10 +896,6 @@ const getProcessSymbolFileName = () => {
   return '';
 };
 
-// 탭 관련 함수들
-const onTabClick = (index: number) => {
-  activeTab.value = index;
-};
 
 // 모달 관련 함수들
 const openFormulaModal = () => {
@@ -899,6 +909,7 @@ const closeFormulaModal = () => {
 };
 
 const showPfdModal = ref(false);
+
 
 
 const openPfdModal = () => {
@@ -1032,6 +1043,232 @@ const handleFormulaSelectionChange = (items: any[]) => {
   selectedFormulaItems.value = items;
 };
 
+// 컴포넌트 버튼 클릭 핸들러
+const handleComponentClick = (item: any, index: number) => {
+  console.log("컴포넌트 버튼 클릭:", item, index);
+  
+  // 선택된 계산식 정보 저장
+  selectedFormulaForComponent.value = item;
+  
+  // 컴포넌트 섹션 표시
+  showComponentSection.value = true;
+  console.log("컴포넌트 섹션 표시 상태:", showComponentSection.value);
+  
+  // 컴포넌트 섹션으로 스크롤
+  setTimeout(() => {
+    const componentSection = document.querySelector('.component-section');
+    console.log("컴포넌트 섹션 요소:", componentSection);
+    if (componentSection) {
+      componentSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 100);
+};
+
+// 공정카드 버튼 클릭 핸들러
+const handleProcessManagementClick = (item: any, index: number) => {
+  console.log("공정카드 버튼 클릭:", item, index);
+  // 공정카드 섹션 표시
+  showPfdSection.value = true;
+  // 공정카드 섹션으로 스크롤
+  setTimeout(() => {
+    const pfdSection = document.querySelector('.pfd-section');
+    if (pfdSection) {
+      pfdSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 100);
+};
+
+
+// 컴포넌트 섹션 닫기
+const closeComponentSection = () => {
+  console.log('컴포넌트 섹션 닫기 버튼 클릭');
+  showComponentSection.value = false;
+  selectedFormulaForComponent.value = null;
+  console.log('컴포넌트 섹션 닫기 완료');
+};
+
+// 공정카드 섹션 닫기
+const closePfdSection = () => {
+  showPfdSection.value = false;
+  // P&ID 영역도 함께 닫기
+  showPidListInMain.value = false;
+};
+
+// 공정카드 저장 핸들러
+const handlePfdSave = async () => {
+  try {
+    console.log('공정카드 저장 버튼 클릭');
+    
+    const processId = props.processId || (route.params.id as string);
+    if (!processId) {
+      alert('공정 ID가 없습니다.');
+      return;
+    }
+    
+    // PFD 변경사항 처리
+    await processPfdChanges(processId);
+    
+    console.log('공정카드 저장 완료');
+    alert('공정카드가 저장되었습니다.');
+    
+  } catch (error: any) {
+    console.error('공정카드 저장 실패:', error);
+    alert(`공정카드 저장 실패: ${error.message}`);
+  }
+};
+
+// PFD 변경사항 처리 함수
+const processPfdChanges = async (processId: string) => {
+  console.log('=== PFD 변경사항 처리 시작 ===');
+  console.log('initialPfdList 존재:', !!processStore.initialPfdList);
+  console.log('pfdList 존재:', !!processStore.pfdList);
+  console.log('initialPfdList 길이:', processStore.initialPfdList?.length || 0);
+  console.log('pfdList 길이:', processStore.pfdList?.length || 0);
+  
+  if (processStore.initialPfdList && processStore.pfdList) {
+    // 삭제된 행들 감지
+    const deletedRows = processStore.initialPfdList.filter(initialItem => {
+      if (!initialItem.drawing_id) return false;
+      return !processStore.pfdList.some(currentItem => 
+        currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id
+      );
+    });
+    
+    // 추가된 행들 감지
+    const addedRows = processStore.pfdList.filter(currentItem => {
+      // 새로 추가된 행은 id가 'pfd_'로 시작하고 drawing_id가 임시 ID인 경우
+      if (currentItem.id.startsWith('pfd_') && currentItem.drawing_id?.startsWith('temp_pfd_drawing_')) {
+        return true;
+      }
+      // 기존 행이지만 drawing_id가 있고 initialPfdList에 없는 경우
+      if (!currentItem.drawing_id) return false;
+      return !processStore.initialPfdList.some(initialItem => 
+        initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
+      );
+    });
+    
+    console.log('PFD 변경사항 확인:', {
+      deletedRows: deletedRows.length,
+      addedRows: addedRows.length,
+      initialCount: processStore.initialPfdList.length,
+      currentCount: processStore.pfdList.length
+    });
+    
+    // 삭제된 행 처리
+    if (deletedRows.length > 0) {
+      try {
+        console.log('=== PFD 삭제 API 호출 시작 ===');
+        const deletePromises = deletedRows.map(async (row) => {
+          if (!row.drawing_id) return null;
+          
+          try {
+            const response = await request(`/api/process/drawing/delete/${row.drawing_id}`, {}, {
+              method: 'DELETE',
+              headers: {
+                'user_Id': localStorage.getItem('authUserId') || '',
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (!response.success) {
+              // 404 Not Found 오류인 경우 무시하고 계속 진행
+              if (response.status === 404 || response.message?.includes('not found')) {
+                console.warn(`PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`);
+                return { success: true, drawing_id: row.drawing_id, skipped: true };
+              }
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return { success: true, drawing_id: row.drawing_id };
+          } catch (deleteError: any) {
+            // 404 오류나 "not found" 메시지가 포함된 경우 무시
+            if (deleteError.message?.includes('not found') || 
+                deleteError.message?.includes('404') ||
+                deleteError.message?.includes('DrawingMasters with ID') && deleteError.message?.includes('not found')) {
+              console.warn(`PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`);
+              return { success: true, drawing_id: row.drawing_id, skipped: true };
+            }
+            throw deleteError;
+          }
+        });
+        
+        await Promise.all(deletePromises);
+        console.log("=== PFD 삭제 API 호출 완료 ===");
+      } catch (error) {
+        console.error("PFD 삭제 실패:", error);
+        throw error;
+      }
+    }
+    
+    // 추가된 행 처리
+    if (addedRows.length > 0) {
+      try {
+        console.log('=== PFD 추가 API 호출 시작 ===');
+        for (const pfdItem of addedRows) {
+          const file = (pfdItem as any)._file;
+          if (!file) {
+            console.warn('PFD 파일이 없어서 건너뛰기:', pfdItem);
+            continue;
+          }
+          
+          const formData = new FormData();
+          formData.append('process_id', processId);
+          formData.append('drawing_type', 'PFD');
+          formData.append('file', file);
+          
+          console.log('PFD API 호출 시작...');
+          const response = await request('/api/process/drawing/create', undefined, {
+            method: 'POST',
+            body: formData
+          });
+          
+          console.log('PFD API 호출 완료:', response);
+          
+          if (!response.success) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const responseData = response;
+          console.log('PFD 도면 생성 API 응답:', responseData);
+          
+          if (responseData.response?.drawing_id) {
+            const updatedPfdList = processStore.pfdList.map(item => {
+              if (item.id === pfdItem.id) {
+                return { ...item, drawing_id: responseData.response.drawing_id };
+              }
+              return item;
+            });
+            processStore.setPfdList(updatedPfdList);
+            
+            // PFD 저장 후 그리드 새로고침
+            await refreshPfdData();
+          }
+        }
+        console.log("추가된 PFD 처리 완료");
+      } catch (error) {
+        console.error("PFD 추가 실패:", error);
+        throw error;
+      }
+    }
+    
+    // 변경사항이 없으면 메시지 표시
+    if (deletedRows.length === 0 && addedRows.length === 0) {
+      console.log('PFD 변경사항이 없습니다.');
+      alert('저장할 PFD 변경사항이 없습니다.');
+      return;
+    }
+    
+    // 초기값 업데이트
+    const updatedPfdList = JSON.parse(JSON.stringify(processStore.pfdList));
+    processStore.setInitialPfdList(updatedPfdList);
+    
+    console.log('=== PFD 변경사항 처리 완료 ===');
+  }
+};
+
+
+
+
 
 const handlePfdSelectionChange = (items: any[]) => {
   selectedPfdItems.value = items;
@@ -1057,6 +1294,121 @@ const handleFormulaDelete = () => {
   alert('선택된 계산식이 그리드에서 삭제되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.');
 };
 
+// 계산식 저장 핸들러
+const handleFormulaSave = async () => {
+  try {
+    console.log('계산식 저장 버튼 클릭');
+    
+    const processId = props.processId || (route.params.id as string);
+    if (!processId) {
+      alert('공정 ID가 없습니다.');
+      return;
+    }
+    
+    // 계산식 변경사항 처리
+    await processFormulaChanges(processId);
+    
+    console.log('계산식 저장 완료');
+    alert('계산식이 저장되었습니다.');
+    
+  } catch (error: any) {
+    console.error('계산식 저장 실패:', error);
+    alert(`계산식 저장 실패: ${error.message}`);
+  }
+};
+
+// 계산식 변경사항 처리 함수
+const processFormulaChanges = async (processId: string) => {
+  console.log('=== 계산식 변경사항 처리 시작 ===');
+  console.log('initialFormulaList 존재:', !!processStore.initialFormulaList);
+  console.log('formulaList 존재:', !!processStore.formulaList);
+  console.log('initialFormulaList 길이:', processStore.initialFormulaList?.length || 0);
+  console.log('formulaList 길이:', processStore.formulaList?.length || 0);
+  
+  if (processStore.initialFormulaList && processStore.formulaList) {
+    // 삭제된 행들 감지
+    const deletedRows = processStore.initialFormulaList.filter(initialItem => {
+      if (!initialItem.formula_id) return false;
+      return !processStore.formulaList.some(currentItem => 
+        currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
+      );
+    });
+    
+    // 추가된 행들 감지
+    const addedRows = processStore.formulaList.filter(currentItem => {
+      // 새로 추가된 행은 id가 'formula_'로 시작하고 formula_id가 없는 경우
+      if (currentItem.id.startsWith('formula_') && !currentItem.formula_id) {
+        return true;
+      }
+      // 기존 행이지만 formula_id가 있고 initialFormulaList에 없는 경우
+      if (!currentItem.formula_id) return false;
+      return !processStore.initialFormulaList.some(initialItem => 
+        initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
+      );
+    });
+    
+    console.log('계산식 변경사항 확인:', {
+      deletedRows: deletedRows.length,
+      addedRows: addedRows.length,
+      initialCount: processStore.initialFormulaList.length,
+      currentCount: processStore.formulaList.length
+    });
+    
+    // 삭제된 행 처리
+    if (deletedRows.length > 0) {
+      try {
+        console.log('=== 계산식 삭제 API 호출 시작 ===');
+        const deletePromises = deletedRows.map((row, index) => {
+          let formulaId = row.formula_id;
+          if (!formulaId && row.id && row.id.startsWith('existing_formula_')) {
+            formulaId = row.id.replace('existing_formula_', '');
+          }
+          
+          if (!formulaId) {
+            console.error('삭제할 formula_id를 찾을 수 없습니다:', row);
+            return Promise.reject(new Error('삭제할 formula_id를 찾을 수 없습니다'));
+          }
+          
+          return deleteFormulaAPI(formulaId);
+        });
+        
+        await Promise.all(deletePromises);
+        console.log("=== 계산식 삭제 API 호출 완료 ===");
+      } catch (error) {
+        console.error("계산식 삭제 실패:", error);
+        throw error;
+      }
+    }
+    
+    // 추가된 행 처리
+    if (addedRows.length > 0) {
+      try {
+        const formulaPromises = addedRows.map(formula => 
+          createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file)
+        );
+        await Promise.all(formulaPromises);
+        console.log("추가된 계산식 처리 완료");
+      } catch (error) {
+        console.error("계산식 추가 실패:", error);
+        throw error;
+      }
+    }
+    
+    // 변경사항이 없으면 메시지 표시
+    if (deletedRows.length === 0 && addedRows.length === 0) {
+      console.log('계산식 변경사항이 없습니다.');
+      alert('저장할 계산식 변경사항이 없습니다.');
+      return;
+    }
+    
+    // 초기값 업데이트
+    const updatedFormulaList = JSON.parse(JSON.stringify(processStore.formulaList));
+    processStore.setInitialFormulaList(updatedFormulaList);
+    
+    console.log('=== 계산식 변경사항 처리 완료 ===');
+  }
+};
+
 
 
 
@@ -1079,21 +1431,102 @@ const handlePfdDelete = () => {
   alert('선택된 공정카드가 그리드에서 삭제되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.');
 };
 
-// 페이지네이션 핸들러들
-const handleFormulaPageChange = (page: number) => {
-  console.log('계산식 페이지 변경:', page);
+
+
+
+// 메인 저장 버튼 핸들러 (기본 정보만 저장)
+const handleMainSave = async () => {
+  try {
+    console.log('등록 버튼 클릭 - 기본 정보만 저장');
+    
+    const processId = props.processId || (route.params.id as string);
+    if (!processId) {
+      alert('공정 ID가 없습니다.');
+      return;
+    }
+    
+    // 기본 정보만 저장 처리
+    await saveBasicProcessInfo(processId);
+    
+    console.log('기본 정보 저장 완료');
+    
+  } catch (error: any) {
+    console.error('기본 정보 저장 실패:', error);
+    alert(`기본 정보 저장 실패: ${error.message}`);
+  }
 };
 
-const handleStructPageChange = (page: number) => {
-  console.log('컴포넌트 페이지 변경:', page);
+// 기본 정보만 저장하는 함수
+const saveBasicProcessInfo = async (processId: string) => {
+  try {
+    console.log("기본 정보 저장 처리 시작");
+    
+    let hasAnyChanges = false;
+    
+    // 공정심볼 파일 변경 감지
+    const hasProcessSymbolChanged = processStore.selectedFiles['processSymbol'] !== undefined;
+    if (hasProcessSymbolChanged) {
+      hasAnyChanges = true;
+      console.log('공정심볼 파일 변경 감지됨');
+      
+      // processDetail에 siteFile 추가
+      const symbolFile = processStore.selectedFiles['processSymbol'];
+      processStore.setProcessDetail({
+        siteFile: symbolFile
+      });
+      
+      console.log('processDetail에 siteFile 설정:', symbolFile.name);
+    }
+    
+    // 기본 정보 변경사항 감지 (언어, 단위, 공정구분, 공정 중분류, 공정명 등)
+    // processDetail의 기본 정보가 변경되었는지 확인
+    const currentProcessDetail = processStore.processDetail;
+    if (currentProcessDetail) {
+      // 기본 정보가 존재하면 변경사항이 있다고 간주
+      hasAnyChanges = true;
+      console.log('기본 정보 변경사항 감지됨:', {
+        processNm: currentProcessDetail.processNm,
+        processType: currentProcessDetail.processType,
+        subCategory: currentProcessDetail.subCategory,
+        language: currentProcessDetail.language,
+        unit: currentProcessDetail.unit
+      });
+    }
+    
+    // 기본 정보 변경사항이 있는 경우에만 저장
+    if (hasAnyChanges) {
+      try {
+        await processStore.updateProcess(processId, processStore.processDetail);
+        
+        // 업데이트 성공 후 선택된 파일 상태 초기화
+        if (hasProcessSymbolChanged) {
+          const updatedSelectedFiles = { ...processStore.selectedFiles };
+          delete updatedSelectedFiles['processSymbol'];
+          processStore.setSelectedFiles(updatedSelectedFiles);
+          
+          // processDetail에서 siteFile 제거
+          processStore.setProcessDetail({
+            siteFile: null
+          });
+          
+          console.log('업데이트 성공 후 파일 상태 초기화 완료');
+        }
+        console.log("기본 정보 업데이트 완료");
+        alert('기본 정보가 저장되었습니다.');
+      } catch (updateError: any) {
+        console.error("기본 정보 업데이트 실패:", updateError);
+        throw updateError;
+      }
+    } else {
+      console.log("기본 정보 변경사항이 없습니다.");
+      alert('저장할 기본 정보 변경사항이 없습니다.');
+    }
+    
+  } catch (error: any) {
+    console.error("기본 정보 저장 실패:", error);
+    throw error;
+  }
 };
-
-
-const handlePfdPageChange = (page: number) => {
-  console.log('PFD 페이지 변경:', page);
-};
-
-
 
 // 메인 업데이트 함수
 const handleUpdate = async () => {
@@ -1492,10 +1925,10 @@ const handleUpdate = async () => {
                 const responseData = response;
                 console.log('PFD 도면 생성 API 응답:', responseData);
                 
-                if (responseData.drawing_id) {
+                if (responseData.response?.drawing_id) {
                   const updatedPfdList = processStore.pfdList.map(item => {
                     if (item.id === pfdItem.id) {
-                      return { ...item, drawing_id: responseData.drawing_id };
+                      return { ...item, drawing_id: responseData.response.drawing_id };
                     }
                     return item;
                   });
@@ -1556,7 +1989,7 @@ const handleUpdate = async () => {
 
 // P&ID 매핑 모달 관련 함수들
 const openMappingPidModal = async (pfdItem: any) => {
-  console.log('P&ID 매핑 모달 열기:', pfdItem);
+  console.log('P&ID 목록 표시:', pfdItem);
   console.log('PFD 아이템 drawing_id:', pfdItem.drawing_id);
   console.log('PFD 아이템 id:', pfdItem.id);
   console.log('PFD 아이템 모든 키:', Object.keys(pfdItem));
@@ -1575,18 +2008,19 @@ const openMappingPidModal = async (pfdItem: any) => {
   
   currentPfdItemForMapping.value = pfdItem;
   selectedMappingPidItems.value = []; // 선택된 항목들 초기화
-  showMappingPidModal.value = true;
+  showPidListInMain.value = true; // 메인화면에 표시
   
   // P&ID 목록 데이터 로드 - drawing_id를 parent_drawing_id로 전달
   await loadMappingPidList(pfdItem);
 };
 
-const closeMappingPidModal = () => {
-  showMappingPidModal.value = false;
+// P&ID 목록 메인화면 닫기
+const closePidListInMain = () => {
+  showPidListInMain.value = false;
   currentPfdItemForMapping.value = null;
   mappingPidList.value = [];
-  selectedMappingPidItems.value = []; // 선택된 항목들 초기화
-  initialMappingPidList.value = []; // 초기값도 초기화
+  selectedMappingPidItems.value = [];
+  initialMappingPidList.value = [];
 };
 
 // P&ID 매핑 폼 초기화 함수
@@ -1766,7 +2200,7 @@ const confirmMappingPid = async () => {
       alert('P&ID 항목이 삭제되었습니다.');
       // PFD 데이터 새로고침
       await refreshPfdData();
-      closeMappingPidModal();
+      // P&ID 모달이 삭제되어 함수 호출 제거
       return;
     }
     
@@ -1903,7 +2337,7 @@ const confirmMappingPid = async () => {
       }
     }
     
-    closeMappingPidModal();
+    // P&ID 모달이 삭제되어 함수 호출 제거
     
   } catch (error: any) {
     console.error('P&ID 매핑 저장 실패:', error);
@@ -2679,59 +3113,45 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   min-width: 80px;
 }
 
-.tabs-container {
+
+.component-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #e9ecef;
+}
+
+.pfd-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #e9ecef;
+}
+
+.pid-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #e9ecef;
+}
+
+.pid-save-section {
   margin-top: 20px;
+  text-align: right;
 }
 
-.tabs-header {
-  display: flex;
-  border-bottom: 2px solid #e9ecef;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.tab-button {
-  padding: 12px 24px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-  transition: all 0.3s ease;
-}
-
-.tab-button:hover {
-  color: #007bff;
-}
-
-.tab-button.active {
-  color: #007bff;
-  border-bottom-color: #007bff;
-}
-
-.tab-content {
-  min-height: 400px;
-}
-
-.tab-panel {
-  padding: 20px 0;
-}
 
 .tab-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
 
 .grid-title {
-  margin-bottom: 15px;
+  margin: 0;
 }
 
 .grid-title h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
 }
@@ -2755,23 +3175,33 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   transition: background-color 0.3s ease;
 }
 
-.btn-primary {
-  background: #007bff;
-  color: white;
+
+.save-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-right: 0;
 }
 
-.btn-primary:hover {
-  background: #0056b3;
-}
-
-.btn-primary:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
+.save-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  width: 80px;
 }
 
 .btn-danger {
   background: #dc3545;
   color: white;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #218838;
 }
 
 .btn-danger:hover {
@@ -2810,7 +3240,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
-  max-height: 80vh;
+  max-height: 95vh;
   overflow-y: auto;
 }
 
@@ -2818,7 +3248,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 15px 20px;
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -2840,7 +3270,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 15px 20px;
 }
 
 .modal-footer {
@@ -2989,4 +3419,47 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   font-size: 12px;
   border-radius: 4px;
 }
+
+/* 컴포넌트 버튼 스타일 */
+.btn-component {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-component:hover {
+  background-color: #059669;
+}
+
+.btn-component:active {
+  background-color: #047857;
+}
+
+/* 공정관리 버튼 스타일 */
+.btn-process-management {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-process-management:hover {
+  background-color: #2563eb;
+}
+
+.btn-process-management:active {
+  background-color: #1d4ed8;
+}
+
 </style>

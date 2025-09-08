@@ -1,29 +1,48 @@
 <template>
   <div class="machine-page">
-    <!-- 검색 바 -->
-    <div class="action-bar">
-      <div class="search-bar">
-        <div class="group-form">
-          <label for="search" class="label-search">{{
-            t("common.search")
-          }}</label>
-          <div class="form-item">
-            <input
-              type="text"
-              id="search"
-              :placeholder="t('placeholder.searchQuery')"
-              v-model="searchQueryInput"
-              @keyup.enter="handleSearch"
-            />
-          </div>
+    <!-- 검색 및 필터 바 -->
+    <div class="search-filter-bar">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label for="language">{{ t("common.language") }}</label>
+          <select id="language" v-model="selectedLanguage" class="form-select">
+            <option value="ko">{{ t("common.korean") }}</option>
+            <option value="en">{{ t("common.english") }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="unit">{{ t("common.unit") }}</label>
+          <select id="unit" v-model="selectedUnit" class="form-select">
+            <option value="metric">{{ t("common.metric") }}</option>
+            <option value="imperial">{{ t("common.imperial") }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="search">{{ t("common.search") }}</label>
+          <input
+            type="text"
+            id="search"
+            :placeholder="t('placeholder.machineSearch')"
+            v-model="searchQueryInput"
+            @keyup.enter="handleSearch"
+            class="form-input"
+          />
           <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
       </div>
-      <div class="btns">
-        <button class="btn btn-primary btn-add" @click="openRegistModal">
-          {{ t("common.add") }}
+    </div>
+
+    <!-- 기계 리스트 헤더 -->
+    <div class="machine-list-header">
+      <h2>{{ t("common.machineList") }}</h2>
+      <div class="action-buttons">
+        <button class="btn btn-primary btn-register" @click="openRegistModal">
+          {{ t("common.register") }}
+        </button>
+        <button class="btn btn-primary btn-edit" @click="handleEdit">
+          {{ t("common.edit") }}
         </button>
         <button
           class="btn btn-primary btn-delete"
@@ -42,15 +61,24 @@
       :loading="loading"
       :selectable="true"
       :selected-items="selectedItems"
+      :selection-mode="'single'"
+      :show-select-all="false"
+      :select-header-text="t('common.selectColumn')"
       @selection-change="handleSelectionChange"
     >
+      <!-- 순번 슬롯 -->
+      <template #cell-no="{ index }">
+        {{ (currentPage - 1) * pageSize + index + 1 }}
+      </template>
+
       <!-- 기계타입 슬롯 -->
       <template #cell-type="{ value }">
         {{ t("common.machineType." + mapMachineType(value)) }}
       </template>
 
-      <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="openDetailModal(item)">
+      <!-- 상세정보 액션 슬롯 -->
+      <template #cell-details="{ item }">
+        <button class="btn-view" @click.stop="openDetailModal(item)">
           {{ t("common.view") }}
         </button>
       </template>
@@ -65,9 +93,9 @@
       />
     </div>
 
-    <!-- 등록/수정 모달 -->
+    <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container">
+      <div class="modal-container" style="max-width: 1600px; width: 98%">
         <div class="modal-header">
           <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -79,59 +107,23 @@
           </button>
         </div>
         <div class="modal-body">
-          <dl class="column-regist">
-            <dt class="essential">{{ t("common.name") }}</dt>
-            <dd>
-              <input
-                v-model="newMachine.name"
-                type="text"
-                class="form-input"
-                :placeholder="t('placeholder.machineName')"
-              />
-            </dd>
-            <dt class="essential">{{ t("common.code") }}</dt>
-            <dd>
-              <input
-                v-model="newMachine.code"
-                type="text"
-                class="form-input"
-                :placeholder="t('placeholder.machineCode')"
-              />
-            </dd>
-            <dt>{{ t("common.type") }}</dt>
-            <dd>
-              <select v-model="newMachine.type" class="form-input">
-                <option value="">-- {{ t("common.select") }} --</option>
-                <option value="펌프">{{ t("common.machineType.pump") }}</option>
-                <option value="모터">
-                  {{ t("common.machineType.motor") }}
-                </option>
-                <option value="컨베이어">
-                  {{ t("common.machineType.conveyor") }}
-                </option>
-              </select>
-            </dd>
-            <dt>{{ t("common.description") }}</dt>
-            <dd>
-              <textarea
-                v-model="newMachine.description"
-                class="form-input"
-                :placeholder="t('placeholder.machineDescription')"
-                rows="3"
-              ></textarea>
-            </dd>
-          </dl>
+          <div class="tabs-wrapper">
+            <div
+              v-for="(tab, idx) in modalTabs"
+              :key="tab.key"
+              :class="['tab', { active: modalActiveTab === idx }]"
+              @click="modalActiveTab = idx"
+            >
+              {{ tab.label }}
+            </div>
+          </div>
+          <div class="tab-content">
+            <component :is="modalActiveComponent" />
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
-            {{ t("common.cancel") }}
-          </button>
-          <button
-            class="btn btn-primary"
-            @click="handleSave"
-            :disabled="!isFormValid"
-          >
-            {{ t("common.save") }}
+            {{ t("common.close") }}
           </button>
         </div>
       </div>
@@ -139,7 +131,7 @@
 
     <!-- 상세정보 모달 -->
     <div v-if="isDetailModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1200px">
+      <div class="modal-container" style="max-width: 1600px; width: 98%">
         <div class="modal-header">
           <h3>{{ t("common.detailInfo") }}</h3>
           <button
@@ -152,73 +144,33 @@
         </div>
         <div class="modal-body">
           <div style="overflow-x: auto">
-            <DataTable
-              v-if="!isDetailEditMode"
-              :columns="detailTableColumns"
-              :data="detailTableData"
-              :loading="false"
-              :selectable="false"
-            />
-            <table
-              v-else
-              style="width: 100%; border-collapse: collapse; text-align: center"
-            >
-              <thead>
-                <tr>
-                  <th>{{ t("common.name") }}</th>
-                  <th>{{ t("common.code") }}</th>
-                  <th>{{ t("common.type") }}</th>
-                  <th>{{ t("common.description") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input v-model="detailEditData.name" class="form-input" />
-                  </td>
-                  <td>
-                    <input v-model="detailEditData.code" class="form-input" />
-                  </td>
-                  <td>
-                    <select v-model="detailEditData.type" class="form-input">
-                      <option value="">-- {{ t("common.select") }} --</option>
-                      <option value="펌프">
-                        {{ t("common.machineType.pump") }}
-                      </option>
-                      <option value="모터">
-                        {{ t("common.machineType.motor") }}
-                      </option>
-                      <option value="컨베이어">
-                        {{ t("common.machineType.conveyor") }}
-                      </option>
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      v-model="detailEditData.description"
-                      class="form-input"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- 상세정보 보기 모드: 테이블 2개 구성 -->
+            <template v-if="!isDetailEditMode">
+              <!-- 사양 테이블 -->
+              <DataTable
+                :columns="specTableColumns"
+                :data="specTableData"
+                :loading="false"
+                :selectable="false"
+                :stickyHeader="true"
+              />
+
+              <!-- 간격 -->
+              <div style="height: 16px" />
+
+              <!-- 단가/견적 테이블 -->
+              <DataTable
+                :columns="costTableColumns"
+                :data="costTableData"
+                :loading="false"
+                :selectable="false"
+                :stickyHeader="true"
+              />
+            </template>
+            <!-- 편집 모드 제거 -->
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            v-if="!isDetailEditMode"
-            class="btn btn-primary"
-            @click="handleDetailEdit"
-          >
-            {{ t("common.edit") }}
-          </button>
-          <button
-            v-if="isDetailEditMode"
-            class="btn btn-primary"
-            @click="handleDetailSave"
-          >
-            {{ t("common.save") }}
-          </button>
           <button class="btn btn-secondary" @click="closeDetailModal">
             {{ t("common.close") }}
           </button>
@@ -232,8 +184,24 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import MachineRegisterTab from "./components/MachineRegisterTab.vue";
+import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
+
+// 모달 탭 구성 (ProjectDetail 스타일)
+const modalTabs = [
+  { key: "machine", label: "기계 등록", component: MachineRegisterTab },
+  {
+    key: "formula",
+    label: "기계 계산식 등록",
+    component: MachineFormulaRegisterTab,
+  },
+];
+const modalActiveTab = ref(0);
+const modalActiveComponent = computed(
+  () => modalTabs[modalActiveTab.value].component
+);
 
 interface MachineItem {
   id: string;
@@ -242,6 +210,29 @@ interface MachineItem {
   type: string;
   description: string;
   createdAt: string;
+  capacity?: string;
+  capacityMax?: string;
+  model?: string;
+  formula?: string;
+  company?: string;
+  dischargePressure?: string;
+  dischargeDiameter?: string;
+  power?: string;
+  controlMethod?: string;
+  ratedVoltage?: string;
+  efficiency?: string;
+  powerFactor?: string;
+  demandFactor?: string;
+  totalWeight?: string;
+  material?: string;
+  // 단가/견적 필드
+  unit_price?: string;
+  price_registered_at?: string;
+  estimate_price?: string;
+  estimated_at?: string;
+  execution_price?: string;
+  proposal_price?: string;
+  note?: string;
 }
 
 interface RegistForm {
@@ -253,9 +244,9 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "id", title: t("columns.machine.id"), width: "60px", sortable: false },
+  { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
-    key: "mcId",
+    key: "code",
     title: t("columns.machine.mcId"),
     width: "150px",
     sortable: true,
@@ -267,27 +258,27 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "code",
-    title: t("columns.machine.code"),
-    width: "120px",
-    sortable: true,
-  },
-  {
     key: "type",
     title: t("columns.machine.type"),
     width: "100px",
     sortable: true,
   },
   {
-    key: "description",
-    title: t("columns.machine.description"),
-    width: "200px",
+    key: "capacity",
+    title: t("columns.machine.capacity"),
+    width: "100px",
     sortable: true,
   },
   {
-    key: "createdAt",
-    title: t("columns.machine.createdAt"),
+    key: "model",
+    title: t("columns.machine.model"),
     width: "120px",
+    sortable: true,
+  },
+  {
+    key: "formula",
+    title: t("columns.machine.formula"),
+    width: "100px",
     sortable: true,
   },
   {
@@ -297,8 +288,8 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "actions",
-    title: t("common.detailInfo"),
+    key: "details",
+    title: t("columns.machine.details"),
     width: "80px",
     sortable: false,
   },
@@ -311,6 +302,8 @@ const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 const searchQuery = ref("");
+const selectedLanguage = ref("ko");
+const selectedUnit = ref("metric");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newMachine = ref<RegistForm>({
@@ -321,35 +314,127 @@ const newMachine = ref<RegistForm>({
 });
 const isDetailModalOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
+// 편집 기능 제거로 관련 상태 제거
 const isDetailEditMode = ref(false);
-const detailEditData = ref<RegistForm>({
-  name: "",
-  code: "",
-  type: "",
-  description: "",
+
+// 상세 모달용 - 사양 테이블 컬럼/데이터 (상단 표)
+const specTableColumns: TableColumn[] = [
+  { key: "code", title: t("columns.machine.mcId"), width: "120px" },
+  { key: "type", title: t("columns.machine.type"), width: "110px" },
+  { key: "company", title: t("columns.machine.company"), width: "120px" },
+  { key: "model", title: t("columns.machine.model"), width: "120px" },
+  { key: "capacity", title: t("columns.machine.capacity"), width: "110px" },
+  {
+    key: "capacityMax",
+    title: t("columns.machine.capacityMax"),
+    width: "110px",
+  },
+  {
+    key: "dischargePressure",
+    title: t("columns.machine.dischargePressure"),
+    width: "120px",
+  },
+  {
+    key: "dischargeDiameter",
+    title: t("columns.machine.dischargeDiameter"),
+    width: "120px",
+  },
+  { key: "power", title: t("columns.machine.power"), width: "100px" },
+];
+const specTableData = computed(() => {
+  if (!detailItemData.value) return [];
+  const item = detailItemData.value;
+  return [
+    {
+      code: item.code,
+      type: t("common.machineType." + mapMachineType(item.type)),
+      company: item.company,
+      model: item.model,
+      capacity: item.capacity,
+      capacityMax: item.capacityMax,
+      dischargePressure: item.dischargePressure,
+      dischargeDiameter: item.dischargeDiameter,
+      power: item.power,
+    },
+  ];
 });
 
-// 상세정보 DataTable용 컬럼
-const detailTableColumns: TableColumn[] = [
-  { key: "name", title: t("columns.machine.name"), width: "150px" },
-  { key: "code", title: t("columns.machine.code"), width: "150px" },
-  { key: "type", title: t("columns.machine.type"), width: "120px" },
+// 상세 모달용 - 운전/전기/재질 + 단가/견적 (하단 표)
+const costTableColumns: TableColumn[] = [
   {
-    key: "description",
-    title: t("columns.machine.description"),
-    width: "200px",
+    key: "controlMethod",
+    title: t("columns.machine.controlMethod"),
+    width: "140px",
   },
+  {
+    key: "ratedVoltage",
+    title: t("columns.machine.ratedVoltage"),
+    width: "120px",
+  },
+  { key: "efficiency", title: t("columns.machine.efficiency"), width: "110px" },
+  {
+    key: "powerFactor",
+    title: t("columns.machine.powerFactor"),
+    width: "110px",
+  },
+  {
+    key: "demandFactor",
+    title: t("columns.machine.demandFactor"),
+    width: "110px",
+  },
+  { key: "formula", title: t("columns.machine.formula"), width: "110px" },
+  {
+    key: "totalWeight",
+    title: t("columns.machine.totalWeight"),
+    width: "120px",
+  },
+  { key: "material", title: t("columns.machine.material"), width: "140px" },
+  { key: "unit_price", title: t("columns.cost.unitPrice"), width: "120px" },
+  {
+    key: "price_registered_at",
+    title: t("columns.cost.unitPriceRegisteredAt"),
+    width: "140px",
+  },
+  {
+    key: "estimate_price",
+    title: t("columns.cost.estimatePrice"),
+    width: "120px",
+  },
+  { key: "estimated_at", title: t("columns.cost.estimatedAt"), width: "120px" },
+  {
+    key: "execution_price",
+    title: t("columns.cost.executionPrice"),
+    width: "120px",
+  },
+  {
+    key: "proposal_price",
+    title: t("columns.cost.proposalPrice"),
+    width: "120px",
+  },
+  { key: "note", title: t("common.etc"), width: "160px" },
 ];
-const detailTableData = computed(() => {
+const costTableData = computed(() => {
   if (!detailItemData.value) return [];
-
-  // type 값을 번역된 값으로 변환
-  const translatedData = {
-    ...detailItemData.value,
-    type: t("common.machineType." + mapMachineType(detailItemData.value.type)),
-  };
-
-  return [translatedData];
+  const item: any = detailItemData.value;
+  return [
+    {
+      controlMethod: item.controlMethod ?? "-",
+      ratedVoltage: item.ratedVoltage ?? "-",
+      efficiency: item.efficiency ?? "-",
+      powerFactor: item.powerFactor ?? "-",
+      demandFactor: item.demandFactor ?? "-",
+      formula: item.formula ?? "-",
+      totalWeight: item.totalWeight ?? "-",
+      material: item.material ?? "-",
+      unit_price: item.unit_price ?? "-",
+      price_registered_at: item.price_registered_at ?? "-",
+      estimate_price: item.estimate_price ?? "-",
+      estimated_at: item.estimated_at ?? "-",
+      execution_price: item.execution_price ?? "-",
+      proposal_price: item.proposal_price ?? "-",
+      note: item.note ?? "",
+    },
+  ];
 });
 
 const filteredMachineList = computed(() => {
@@ -376,11 +461,7 @@ const paginatedMachineList = computed(() => {
   return filteredMachineList.value.slice(start, end);
 });
 
-const isFormValid = computed(() => {
-  return (
-    newMachine.value.name.trim() !== "" && newMachine.value.code.trim() !== ""
-  );
-});
+// (기존 단일 등록 폼 유효성 제거)
 
 const handleSelectionChange = (selected: MachineItem[]) => {
   selectedItems.value = selected;
@@ -413,42 +494,27 @@ const closeRegistModal = () => {
   isEditMode.value = false;
 };
 
-const detailItem = (item: MachineItem) => {
+const handleEdit = () => {
+  if (selectedItems.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToEdit"));
+    return;
+  }
+  if (selectedItems.value.length > 1) {
+    alert(t("messages.warning.pleaseSelectOneItemToEdit"));
+    return;
+  }
+
   isEditMode.value = true;
   newMachine.value = {
-    name: item.name,
-    code: item.code,
-    type: item.type,
-    description: item.description,
+    name: selectedItems.value[0].name,
+    code: selectedItems.value[0].code,
+    type: selectedItems.value[0].type,
+    description: selectedItems.value[0].description,
   };
   isRegistModalOpen.value = true;
 };
 
-const handleSave = () => {
-  if (isEditMode.value) {
-    // 수정 로직
-    const index = machineList.value.findIndex(
-      (item) => item.id === selectedItems.value[0]?.id
-    );
-    if (index !== -1) {
-      machineList.value[index] = {
-        ...machineList.value[index],
-        ...newMachine.value,
-      };
-    }
-  } else {
-    // 등록 로직
-    const newItem: MachineItem = {
-      id: Date.now().toString(),
-      ...newMachine.value,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    machineList.value.unshift(newItem);
-  }
-
-  closeRegistModal();
-  selectedItems.value = [];
-};
+// (기존 단일 등록/수정 저장 핸들러 제거)
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
@@ -471,12 +537,6 @@ const handleDelete = () => {
 
 const openDetailModal = (item: MachineItem) => {
   detailItemData.value = item;
-  detailEditData.value = {
-    name: item.name,
-    code: item.code,
-    type: item.type,
-    description: item.description,
-  };
   isDetailModalOpen.value = true;
   isDetailEditMode.value = false;
 };
@@ -486,34 +546,39 @@ const closeDetailModal = () => {
   isDetailEditMode.value = false;
 };
 
-const handleDetailEdit = () => {
-  isDetailEditMode.value = true;
-};
-const handleDetailSave = () => {
-  if (!detailItemData.value) return;
-  // machineList에서 해당 id 찾아서 수정
-  const idx = machineList.value.findIndex(
-    (m) => m.id === detailItemData.value?.id
-  );
-  if (idx !== -1) {
-    machineList.value[idx] = {
-      ...machineList.value[idx],
-      ...detailEditData.value,
-    };
-    detailItemData.value = machineList.value[idx];
-  }
-  isDetailEditMode.value = false;
-};
+// 편집 로직 제거됨
 
 // 샘플 데이터 로드 함수
 const loadData = () => {
   machineList.value = Array.from({ length: 15 }, (_, i) => ({
     id: (i + 1).toString(),
     name: `기계${i + 1}`,
-    code: `MCH-${String(i + 1).padStart(3, "0")}`,
+    code: `EQ-${String(i + 1).padStart(3, "0")}`,
     type: ["펌프", "모터", "컨베이어"][i % 3],
     description: `기계 ${i + 1}에 대한 설명입니다.`,
     createdAt: `2023-01-${(i % 28) + 1}`,
+    capacity: "****",
+    capacityMax: "****",
+    model: "*****",
+    formula: "****",
+    company: "****",
+    dischargePressure: "0.6 MPa",
+    dischargeDiameter: "DN100",
+    power: "15 kW",
+    controlMethod: "Inverter",
+    ratedVoltage: "380 V",
+    efficiency: "92 %",
+    powerFactor: "0.95",
+    demandFactor: "0.8",
+    totalWeight: "350 kg",
+    material: "SS400",
+    unit_price: "1,500,000",
+    price_registered_at: "2024-12-01",
+    estimate_price: "1,450,000",
+    estimated_at: "2024-12-15",
+    execution_price: "1,420,000",
+    proposal_price: "1,390,000",
+    note: "-",
   }));
 };
 
@@ -537,33 +602,58 @@ onMounted(() => {
   padding: $spacing-lg;
 }
 
-.action-bar {
+.search-filter-bar {
+  background: $background-light;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 500;
+    color: $text-color;
+    white-space: nowrap;
+  }
+}
+
+.form-select {
+  padding: 0.5rem;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  min-width: 120px;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+  }
+}
+
+.machine-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+    color: $text-color;
+    font-size: 1.5rem;
+  }
 }
 
-.search-bar {
-  display: flex;
-  align-items: center;
-}
-
-.group-form {
-  display: flex;
-  align-items: center;
-  margin-right: 1rem;
-}
-
-.label-search {
-  margin-right: 0.5rem;
-}
-
-.form-item {
-  margin-right: 0.5rem;
-}
-
-.btns {
+.action-buttons {
   display: flex;
   gap: 0.5rem;
 }
@@ -615,7 +705,7 @@ onMounted(() => {
   }
 }
 
-.btn-edit {
+.btn-view {
   background-color: $primary-color;
   color: white;
   border: none;
@@ -650,9 +740,10 @@ onMounted(() => {
 .modal-container {
   background: white;
   border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
+  width: 98%;
+  max-width: 1600px;
+  max-height: 100vh;
+  margin: 0; /* 상/하 여백 제거 */
   overflow-y: auto;
 }
 
@@ -682,7 +773,34 @@ onMounted(() => {
 }
 
 .modal-body {
-  padding: 1rem;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.tabs-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: #222;
+  border-bottom: 2px solid transparent;
+  transition: border 0.2s, color 0.2s;
+}
+
+.tab.active {
+  color: #1a73e8;
+  border-bottom: 2px solid #1a73e8;
+  font-weight: bold;
+}
+
+.tab-content {
+  margin-top: 1.5rem;
 }
 
 .column-regist {

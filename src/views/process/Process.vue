@@ -414,7 +414,7 @@
     <div v-if="isDetailModalOpen" class="modal-overlay detail-modal-overlay">
       <div class="modal-container detail-modal-container">
         <div class="modal-header">
-          <h3>공정 상세</h3>
+          <h3>{{ isRegisterMode ? '공정 등록' : '공정 상세' }}</h3>
           <button class="btn-close" @click="closeDetailModal">×</button>
         </div>
         <div class="modal-body detail-modal-body">
@@ -425,8 +425,10 @@
             v-else
             :key="`process-detail-${selectedProcessId}`"
             :process-id="String(selectedProcessId)"
+            :is-register-mode="isRegisterMode"
             ref="processDetailRef"
             class="popup-mode"
+            @update-success="closeDetailModal"
           />
         </div>
         <div class="modal-footer detail-modal-footer">
@@ -519,6 +521,7 @@ const tableColumns: TableColumn[] = [
  const sortOrder = ref<"asc" | "desc" | null>(null);
  const isRegistModalOpen = ref(false);
 const isDetailModalOpen = ref(false);
+const isRegisterMode = ref(false);
 
 // 파일 입력 ref
 const processSymbolFileInput = ref<HTMLInputElement | null>(null);
@@ -622,20 +625,10 @@ const getFileNameFromUri = (uri: string | null | undefined): string => {
 
 
 const handleRegist = () => {
-  isRegistModalOpen.value = true;
-  // 등록 모달용 공정구분 코드 로드
-  processStore.loadProcessTypeCodes();
-  
-  // 파일 입력 초기화
-  if (processSymbolFileInput.value) {
-    processSymbolFileInput.value.value = '';
-  }
-  selectedProcessSymbolFile.value = null;
-  
-  // 초기 파일 업로드 행 추가
-  if (fileUploadRows.value.length === 0) {
-    addFileUploadRow();
-  }
+  // ProcessDetail 모달을 공정 등록 모드로 열기
+  isRegisterMode.value = true;
+  selectedProcessId.value = 'new'; // 새 공정임을 나타내는 값
+  isDetailModalOpen.value = true;
 };
 
  const closeRegistModal = () => {
@@ -1092,6 +1085,7 @@ const viewDetail = (item: ProcessItem) => {
 const closeDetailModal = () => {
   isDetailModalOpen.value = false;
   selectedProcessId.value = undefined;
+  isRegisterMode.value = false; // 등록 모드 초기화
 };
 
 // ProcessDetail 컴포넌트에서 직접 업데이트를 처리하므로 이 함수는 불필요

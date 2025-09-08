@@ -1592,7 +1592,7 @@ onMounted(async () => {
     }
     
     .modal-body {
-      padding: 2.5rem;
+      padding: 1rem 2.5rem 2.5rem 2.5rem;
       min-height: 400px;
 
              .column-regist {

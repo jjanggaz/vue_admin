@@ -2112,9 +2112,24 @@ const confirmMappingPid = async () => {
     console.log('삭제된 P&ID row들:', deletedRows);
     
     // 파일 객체가 있는 항목들 중에서 새로 추가된 항목들만 (drawing_id가 없거나 undefined인 항목들)
-    const validMappings = mappingPidList.value.filter(item => 
-      item.pidFile && (!item.drawing_id || item.drawing_id === undefined) // 파일 객체가 있고 새 항목인 경우만 처리 대상
-    );
+    const validMappings = mappingPidList.value.filter(item => {
+      const hasFile = !!item.pidFile;
+      const isNewItem = (!item.drawing_id || item.drawing_id === undefined);
+      // 기존 항목이지만 새 파일이 업로드된 경우도 저장 대상으로 포함
+      const hasNewFile = hasFile && item.pidFile instanceof File;
+      const isValid = hasNewFile; // 파일 객체가 있으면 저장 대상
+      
+      console.log(`필터링 체크 - ${item.pidFileName || 'no name'}:`, {
+        hasFile,
+        isNewItem,
+        hasNewFile,
+        isValid,
+        drawing_id: item.drawing_id,
+        isFileInstance: item.pidFile instanceof File
+      });
+      
+      return isValid;
+    });
     
     console.log('새로 추가된 P&ID 항목들 (drawing_id가 없고 파일 객체가 있는 항목들):', validMappings);
     console.log('현재 mappingPidList 전체:', mappingPidList.value);
@@ -2252,16 +2267,23 @@ const confirmMappingPid = async () => {
             item.parent_drawing_id = parentDrawingId;
           }
           
+          const isNewItem = !item.drawing_id;
+          
           console.log('P&ID 매핑 아이템 저장:', {
             item: item,
             parent_drawing_id: item.parent_drawing_id,
             pidFile: item.pidFile?.name,
             excelFile: item.excelFile?.name || '없음',
-            isNewItem: !item.drawing_id
+            isNewItem: isNewItem
           });
           
-          // 새 데이터 - 생성 API 호출 (validMappings에서 이미 새 데이터만 필터링됨)
-          console.log('새 데이터 - 생성 API 호출');
+          if (isNewItem) {
+            // 새 데이터 - 생성 API 호출
+            console.log('새 데이터 - 생성 API 호출');
+          } else {
+            // 기존 데이터 - 수정 API 호출
+            console.log('기존 데이터 - 수정 API 호출');
+          }
           
           const formData = new FormData();
           formData.append('process_id', props.processId || (route.params.id as string));
@@ -2292,10 +2314,35 @@ const confirmMappingPid = async () => {
           console.log('pid_file:', item.pidFile.name);
           console.log('excel_file:', item.excelFile?.name || '없음');
           
-          const response = await request('/api/process/drawing/create', undefined, {
-            method: 'POST',
-            body: formData
-          });
+          let response;
+          if (isNewItem) {
+            // 새 데이터 - 생성 API 호출
+            console.log('P&ID 새 데이터 생성 API 호출');
+            response = await request('/api/process/drawing/create', undefined, {
+              method: 'POST',
+              body: formData
+            });
+          } else {
+            // 기존 데이터 - 수정 API 호출 (FormData로 파일 포함 전송)
+            console.log('P&ID 기존 데이터 수정 API 호출');
+            console.log('수정할 drawing_id:', item.drawing_id);
+            
+            // FormData에 drawing_id 추가
+            formData.append('drawing_id', item.drawing_id);
+            
+            console.log('P&ID 수정 FormData 내용:');
+            console.log('process_id:', props.processId || (route.params.id as string));
+            console.log('drawing_type:', 'PNID');
+            console.log('parent_drawing_id:', item.parent_drawing_id);
+            console.log('drawing_id:', item.drawing_id);
+            console.log('pid_file:', item.pidFile.name);
+            console.log('excel_file:', item.excelFile?.name || '없음');
+            
+            response = await request(`/api/process/drawing/${item.drawing_id}`, undefined, {
+              method: 'PATCH',
+              body: formData
+            });
+          }
           
           if (!response.success) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -2314,10 +2361,10 @@ const confirmMappingPid = async () => {
         
         if (successfulSaves.length > 0) {
           alert(`P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.`);
+          
+          // 저장 성공 후 그리드 상태 유지 (새로고침하지 않음)
+          console.log('P&ID 저장 완료 - 그리드 상태 유지');
         }
-        
-        // 저장 성공 후 화면 초기화
-        await resetMappingPidForm();
         
       } catch (error: any) {
         console.error('P&ID 매핑 저장 실패:', error);
@@ -2567,9 +2614,20 @@ const handlePidFileSelected = (event: Event) => {
       return;
     }
     
+    // currentPfdItemForMapping에 저장
     currentPfdItemForMapping.value.pidFileName = file.name;
     currentPfdItemForMapping.value.pidFile = file; // 실제 File 객체 저장
+    
+    // mappingPidList에서 해당 항목을 찾아서 업데이트
+    const itemIndex = mappingPidList.value.findIndex(item => item.id === currentPfdItemForMapping.value.id);
+    if (itemIndex !== -1) {
+      mappingPidList.value[itemIndex].pidFileName = file.name;
+      mappingPidList.value[itemIndex].pidFile = file;
+      console.log('P&ID 파일이 mappingPidList에 업데이트됨:', file.name);
+    }
+    
     console.log('P&ID 파일 선택됨:', file.name);
+    console.log('현재 mappingPidList 상태:', mappingPidList.value);
   }
 };
 
@@ -2577,20 +2635,48 @@ const handleExcelFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0] && currentPfdItemForMapping.value) {
     const file = target.files[0];
+    
+    // currentPfdItemForMapping에 저장
     currentPfdItemForMapping.value.excelFileName = file.name;
     currentPfdItemForMapping.value.excelFile = file; // 실제 File 객체 저장
+    
+    // mappingPidList에서 해당 항목을 찾아서 업데이트
+    const itemIndex = mappingPidList.value.findIndex(item => item.id === currentPfdItemForMapping.value.id);
+    if (itemIndex !== -1) {
+      mappingPidList.value[itemIndex].excelFileName = file.name;
+      mappingPidList.value[itemIndex].excelFile = file;
+      console.log('Excel 파일이 mappingPidList에 업데이트됨:', file.name);
+    }
+    
     console.log('Excel 파일 선택됨:', file.name);
+    console.log('현재 mappingPidList 상태:', mappingPidList.value);
   }
 };
 
 const clearPidFile = (item: any) => {
   item.pidFileName = '';
   item.pidFile = null; // File 객체도 삭제
+  
+  // mappingPidList에서 해당 항목을 찾아서 업데이트
+  const itemIndex = mappingPidList.value.findIndex(listItem => listItem.id === item.id);
+  if (itemIndex !== -1) {
+    mappingPidList.value[itemIndex].pidFileName = '';
+    mappingPidList.value[itemIndex].pidFile = null;
+    console.log('P&ID 파일이 mappingPidList에서 제거됨');
+  }
 };
 
 const clearExcelFile = (item: any) => {
   item.excelFileName = '';
   item.excelFile = null; // File 객체도 삭제
+  
+  // mappingPidList에서 해당 항목을 찾아서 업데이트
+  const itemIndex = mappingPidList.value.findIndex(listItem => listItem.id === item.id);
+  if (itemIndex !== -1) {
+    mappingPidList.value[itemIndex].excelFileName = '';
+    mappingPidList.value[itemIndex].excelFile = null;
+    console.log('Excel 파일이 mappingPidList에서 제거됨');
+  }
 };
 
 
@@ -3033,7 +3119,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 
 <style scoped>
 .process-detail {
-  padding: 20px;
+  padding: 10px 20px 20px 20px;
 }
 
 .process-info-section {

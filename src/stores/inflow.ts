@@ -740,6 +740,36 @@ export const useInflowStore = defineStore("inflow", {
       }
     },
 
+    // 계산식 삭제
+    async deleteFormula(formulaId: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/inflow/formula/${formulaId}`,
+          undefined,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("계산식 삭제 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "계산식 삭제에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // 상태 초기화
     resetState() {
       this.waterFlowTypes = [];

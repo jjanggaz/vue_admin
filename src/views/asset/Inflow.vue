@@ -78,7 +78,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -149,7 +149,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -335,7 +335,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -404,7 +404,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -590,7 +590,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -659,7 +659,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in inflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -890,9 +890,9 @@ const onImperialFormulaSelectionChange = (selectedItems: GridRow2[]) => {
 };
 
 // Metric 계산식 삭제 함수
-const deleteMetricFormula = () => {
+const deleteMetricFormula = async () => {
   if (!selectedMetricFormulaId.value) {
-    alert("삭제할 계산식을 선택해주세요.");
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
@@ -901,20 +901,44 @@ const deleteMetricFormula = () => {
     (item) => item.formula_id === selectedMetricFormulaId.value
   );
   if (selectedItem?.isLatest) {
-    alert("가장 최근에 업로드된 계산식은 삭제할 수 없습니다.");
+    alert(t("messages.warning.cannotDeleteLatestFormula"));
     return;
   }
 
-  if (confirm("선택한 Metric 계산식을 삭제하시겠습니까?")) {
-    alert(`선택된 Metric 계산식 ID: ${selectedMetricFormulaId.value}`);
-    // 여기에 실제 삭제 API 호출 로직 추가
+  if (confirm(t("messages.confirm.deleteMetricFormula"))) {
+    try {
+      await inflowStore.deleteFormula(selectedMetricFormulaId.value);
+
+      // 삭제 성공 시 현재 탭의 데이터 다시 로드
+      const currentTab = tabs.value[activeTab.value];
+      if (currentTab && currentTab.flow_type_code && currentTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          currentTab.flow_type_code,
+          currentTab.flow_type_id
+        );
+      }
+
+      // 선택 초기화
+      selectedMetricFormulaId.value = null;
+
+      alert(t("messages.success.metricFormulaDeleteSuccess"));
+    } catch (error) {
+      console.error("Metric 계산식 삭제 실패:", error);
+      const errorMessage = translateMessage(
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
+        "messages.error.formulaDeleteFailed"
+      );
+      alert(errorMessage);
+    }
   }
 };
 
 // Imperial 계산식 삭제 함수
-const deleteImperialFormula = () => {
+const deleteImperialFormula = async () => {
   if (!selectedImperialFormulaId.value) {
-    alert("삭제할 계산식을 선택해주세요.");
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
@@ -923,13 +947,37 @@ const deleteImperialFormula = () => {
     (item) => item.formula_id === selectedImperialFormulaId.value
   );
   if (selectedItem?.isLatest) {
-    alert("가장 최근에 업로드된 계산식은 삭제할 수 없습니다.");
+    alert(t("messages.warning.cannotDeleteLatestFormula"));
     return;
   }
 
-  if (confirm("선택한 Imperial 계산식을 삭제하시겠습니까?")) {
-    alert(`선택된 Imperial 계산식 ID: ${selectedImperialFormulaId.value}`);
-    // 여기에 실제 삭제 API 호출 로직 추가
+  if (confirm(t("messages.confirm.deleteImperialFormula"))) {
+    try {
+      await inflowStore.deleteFormula(selectedImperialFormulaId.value);
+
+      // 삭제 성공 시 현재 탭의 데이터 다시 로드
+      const currentTab = tabs.value[activeTab.value];
+      if (currentTab && currentTab.flow_type_code && currentTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          currentTab.flow_type_code,
+          currentTab.flow_type_id
+        );
+      }
+
+      // 선택 초기화
+      selectedImperialFormulaId.value = null;
+
+      alert(t("messages.success.imperialFormulaDeleteSuccess"));
+    } catch (error) {
+      console.error("Imperial 계산식 삭제 실패:", error);
+      const errorMessage = translateMessage(
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
+        "messages.error.formulaDeleteFailed"
+      );
+      alert(errorMessage);
+    }
   }
 };
 
@@ -1098,7 +1146,7 @@ const loadWaterFlowTypes = async () => {
       }));
     } else {
       // 데이터가 없으면 기본 탭 설정
-      tabs.value = [{ name: "데이터 없음" }];
+      tabs.value = [{ name: t("placeholder.noData") }];
     }
 
     // 첫 번째 탭을 활성화하고 파라미터 로드
@@ -1118,7 +1166,7 @@ const loadWaterFlowTypes = async () => {
     console.error("유입종류 데이터 로드 실패:", error);
 
     // 에러 발생 시 기본 탭 설정
-    tabs.value = [{ name: "로드 실패" }];
+    tabs.value = [{ name: t("messages.error.loadFailed") }];
   } finally {
     isLoadingTabs.value = false;
 
@@ -1172,7 +1220,7 @@ const handleFileUpload = (event: Event) => {
       .substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("SVG, PNG, JPG, JPEG, GIF 파일만 업로드 가능합니다.");
+      alert(t("messages.warning.invalidFileType"));
       target.value = ""; // 파일 선택 초기화
       return;
     }

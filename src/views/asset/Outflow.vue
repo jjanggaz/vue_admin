@@ -9,7 +9,10 @@
               :disabled="!canScrollLeft"
               @click="scrollTabs(-1)"
             >
-              <img src="/images/icons/leftArrow.svg" alt="이전" />
+              <img
+                src="/images/icons/leftArrow.svg"
+                :alt="t('common.previous')"
+              />
             </button>
             <div class="tabs" ref="tabsContainer" @scroll="updateScrollButtons">
               <div
@@ -31,7 +34,7 @@
               :disabled="!canScrollRight"
               @click="scrollTabs(1)"
             >
-              <img src="/images/icons/rightArrow.svg" alt="다음" />
+              <img src="/images/icons/rightArrow.svg" :alt="t('common.next')" />
             </button>
           </div>
         </div>
@@ -78,7 +81,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -126,7 +129,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
@@ -272,7 +275,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
@@ -317,7 +320,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
@@ -499,7 +502,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in getAvailableParameters(true, true)"
                       :key="param.parameter_id"
@@ -563,7 +566,7 @@
                     "
                     class="form-input"
                   >
-                    <option value="">선택</option>
+                    <option value="">{{ t("common.select") }}</option>
                     <option
                       v-for="param in getAvailableParameters(false, true)"
                       :key="param.parameter_id"
@@ -872,7 +875,7 @@ const loadWaterFlowTypes = async () => {
       }));
     } else {
       // 데이터가 없으면 기본 탭 설정
-      tabs.value = [{ name: "데이터 없음" }];
+      tabs.value = [{ name: t("placeholder.noData") }];
     }
 
     // 첫 번째 탭을 활성화하고 파라미터 로드
@@ -892,7 +895,7 @@ const loadWaterFlowTypes = async () => {
     console.error("유출종류 데이터 로드 실패:", error);
 
     // 에러 발생 시 기본 탭 설정
-    tabs.value = [{ name: "로드 실패" }];
+    tabs.value = [{ name: t("messages.error.loadFailed") }];
   } finally {
     isLoadingTabs.value = false;
 
@@ -936,7 +939,7 @@ const handleFileUpload = (event: Event) => {
       .substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("SVG, PNG, JPG, JPEG, GIF 파일만 업로드 가능합니다.");
+      alert(t("messages.warning.invalidFileType"));
       target.value = ""; // 파일 선택 초기화
       return;
     }

@@ -328,6 +328,8 @@
     "filesSelected": "{count}개 파일 선택됨",
     "close": "닫기",
     "reset": "초기화",
+    "previous": "이전",
+    "next": "다음",
     "selectFile": "파일 선택",
     "chooseFile": "파일 선택하기",
     "noFile": "선택된 파일 없음",
@@ -880,6 +882,8 @@
       "formulaCreateJsonSuccess": "계산식 생성에 성공했습니다. (JSON)",
       "formulaCreateSuccess": "계산식 생성에 성공했습니다.",
       "formulaDeleteSuccess": "계산식 삭제에 성공했습니다.",
+      "metricFormulaDeleteSuccess": "Metric 계산식이 성공적으로 삭제되었습니다.",
+      "imperialFormulaDeleteSuccess": "Imperial 계산식이 성공적으로 삭제되었습니다.",
       "drawingCreateSuccess": "도면 생성에 성공했습니다.",
       "drawingCreateMultipartSuccess": "도면 생성에 성공했습니다. (MultipartHttpServletRequest)",
       "drawingDeleteSuccess": "도면 삭제에 성공했습니다.",
@@ -1033,7 +1037,9 @@
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
       "deleteItem": "선택된 항목을 삭제하시겠습니까?",
       "confirmDelete": "다음 항목을 삭제하시겠습니까?",
-      "deleteParameter": "선택한 파라미터를 삭제하시겠습니까?"
+      "deleteParameter": "선택한 파라미터를 삭제하시겠습니까?",
+      "deleteMetricFormula": "선택한 Metric 계산식을 삭제하시겠습니까?",
+      "deleteImperialFormula": "선택한 Imperial 계산식을 삭제하시겠습니까?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",
@@ -1058,7 +1064,9 @@
       "parameterRegisterFailed": "파라미터 등록에 실패했습니다.",
       "parameterUpdateFailed": "파라미터 수정에 실패했습니다.",
       "parameterDeleteFailed": "파라미터 삭제에 실패했습니다.",
-      "maxParametersReached": "최대 파라미터 개수에 도달했습니다."
+      "maxParametersReached": "최대 파라미터 개수에 도달했습니다.",
+      "cannotDeleteLatestFormula": "가장 최근에 업로드된 계산식은 삭제할 수 없습니다.",
+      "invalidFileType": "SVG, PNG, JPG, JPEG, GIF 파일만 업로드 가능합니다."
     },
     "info": {}
   },

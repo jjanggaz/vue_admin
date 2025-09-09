@@ -212,7 +212,7 @@ const handleSelectionChange = (items: any[]) => {
   selectedItems.value = items;
 };
 
-// 기계명 선택 시 바로 3차 부서 조회
+// 기계명 선택 시 바로 3차 깊이별 조회
 watch(selectedMachineName, async (newValue, oldValue) => {
   if (newValue && newValue !== oldValue) {
     // 모든 하위 단계들 초기화
@@ -224,7 +224,7 @@ watch(selectedMachineName, async (newValue, oldValue) => {
     isStep3Enabled.value = false;
 
     try {
-      // 3차 부서 공통코드 조회 API 호출
+      // 3차 깊이별 공통코드 조회 API 호출
       const response = await machineStore.fetchThirdDepth(newValue, 3);
       if (response?.response && response.response.length > 0) {
         isStep1Enabled.value = true;
@@ -232,8 +232,8 @@ watch(selectedMachineName, async (newValue, oldValue) => {
         isStep1Enabled.value = false;
       }
     } catch (error) {
-      console.error("3차 부서 공통코드 조회 실패:", error);
-      alert("3차 부서 공통코드 조회에 실패했습니다.");
+      console.error("3차 깊이별 공통코드 조회 실패:", error);
+      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
       isStep1Enabled.value = false;
     }
   }
@@ -258,8 +258,8 @@ watch(selectedThirdDept, async (newValue, oldValue) => {
           isStep2Enabled.value = false;
         }
       } catch (error) {
-        console.error("4차 부서 공통코드 조회 실패:", error);
-        alert("4차 부서 공통코드 조회에 실패했습니다.");
+        console.error("4차 깊이별 공통코드 조회 실패:", error);
+        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
         isStep2Enabled.value = false;
       }
     }
@@ -282,8 +282,8 @@ watch(selectedFourthDept, async (newValue, oldValue) => {
           isStep3Enabled.value = false;
         }
       } catch (error) {
-        console.error("5차 부서 공통코드 조회 실패:", error);
-        alert("5차 부서 공통코드 조회에 실패했습니다.");
+        console.error("5차 깊이별 공통코드 조회 실패:", error);
+        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
         isStep3Enabled.value = false;
       }
     }

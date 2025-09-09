@@ -156,7 +156,7 @@ export const useMachineStore = defineStore("machine", () => {
           unitSystems.value = response.response.unitSystems;
         }
 
-        // 기계명(2차 부서) 설정
+        // 기계명(2차 깊이별) 설정
         if (response.response.secondDepth) {
           secondDepth.value = response.response.secondDepth;
         }
@@ -173,7 +173,7 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
-  // 3차 부서 공통코드 조회 함수
+  // 깊이별 공통코드 조회 함수
   const fetchThirdDepth = async (parentValue: string, level: number) => {
     loading.value = true;
     error.value = null;
@@ -201,11 +201,11 @@ export const useMachineStore = defineStore("machine", () => {
 
       return response;
     } catch (err) {
-      console.error("3차 부서 공통코드 조회 실패:", err);
+      console.error("깊이별 공통코드 조회 실패:", err);
       error.value =
         err instanceof Error
           ? err.message
-          : "3차 부서 공통코드 조회에 실패했습니다.";
+          : "깊이별 공통코드 조회에 실패했습니다.";
       throw err;
     } finally {
       loading.value = false;

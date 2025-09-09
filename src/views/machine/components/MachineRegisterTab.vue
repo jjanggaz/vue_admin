@@ -254,7 +254,7 @@ async function handleRegister() {
   }
 
   try {
-    // 3차 부서 공통코드 조회 API 호출
+    // 3차 깊이별 공통코드 조회 API 호출
     await machineStore.fetchThirdDepth(selectedMachineName.value, 3);
 
     // 모든 하위 단계들 초기화
@@ -271,8 +271,8 @@ async function handleRegister() {
     // 1단계 완료 - 기계종분류 활성화
     isStep1Enabled.value = true;
   } catch (error) {
-    console.error("3차 부서 공통코드 조회 실패:", error);
-    alert("3차 부서 공통코드 조회에 실패했습니다.");
+    console.error("3차 깊이별 공통코드 조회 실패:", error);
+    alert("3차 깊이별 공통코드 조회에 실패했습니다.");
   }
 }
 
@@ -295,8 +295,8 @@ watch(selectedThirdDept, async (newValue, oldValue) => {
           isStep2Enabled.value = false;
         }
       } catch (error) {
-        console.error("4차 부서 공통코드 조회 실패:", error);
-        alert("4차 부서 공통코드 조회에 실패했습니다.");
+        console.error("4차 깊이별 공통코드 조회 실패:", error);
+        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
         isStep2Enabled.value = false;
       }
     }
@@ -319,8 +319,8 @@ watch(selectedFourthDept, async (newValue, oldValue) => {
           isStep3Enabled.value = false;
         }
       } catch (error) {
-        console.error("5차 부서 공통코드 조회 실패:", error);
-        alert("5차 부서 공통코드 조회에 실패했습니다.");
+        console.error("5차 깊이별 공통코드 조회 실패:", error);
+        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
         isStep3Enabled.value = false;
       }
     }

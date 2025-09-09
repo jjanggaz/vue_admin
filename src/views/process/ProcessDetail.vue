@@ -66,6 +66,14 @@
               {{ t("common.selectFile") }}
             </button>
             <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFile") }}</span>
+            <button 
+              v-if="processStore.processDetail.symbolId" 
+              @click="downloadProcessSymbol" 
+              class="btn btn-sm btn-outline-primary download-btn"
+              title="공정심볼 다운로드"
+            >
+              <i class="fas fa-download"></i>
+            </button>
         </div>
       </div>
     </div>
@@ -119,6 +127,19 @@
               v-model="selectedFormulaItems"
               @change="handleFormulaSelectionChange"
             />
+          </template>
+          <template #cell-registeredFormula="{ item, index }">
+            <div class="formula-name-container">
+              <span class="formula-name">{{ item.registeredFormula }}</span>
+              <button 
+                v-if="item.formula_id" 
+                @click="downloadFormulaFromList(item)" 
+                class="btn btn-sm btn-outline-primary download-btn"
+                title="계산식 다운로드"
+              >
+                <i class="fas fa-download"></i>
+              </button>
+            </div>
           </template>
           <template #cell-component="{ item, index }">
             <button 
@@ -198,6 +219,19 @@
                 @change="handlePfdSelectionChange"
               />
             </template>
+            <template #cell-pfdFileName="{ item, index }">
+              <div class="pfd-filename-container">
+                <span class="pfd-filename">{{ item.pfdFileName }}</span>
+                <button 
+                  v-if="item.drawing_id && !item.drawing_id.startsWith('temp_pfd_drawing_')" 
+                  @click="downloadPfd(item.drawing_id)" 
+                  class="btn btn-sm btn-outline-primary download-btn"
+                  title="공정카드 다운로드"
+                >
+                  <i class="fas fa-download"></i>
+                </button>
+              </div>
+            </template>
             <template #cell-mappingPidList="{ item }">
               <button 
                 class="btn btn-sm btn-outline-primary"
@@ -251,6 +285,14 @@
                 <button class="btn btn-sm btn-primary" @click="selectPidFile(item)">파일선택</button>
                 <span v-if="item.pidFileName" class="selected-file">
                   {{ item.pidFileName }}
+                  <button 
+                    v-if="item.drawing_id && !item.drawing_id.startsWith('temp_pid_drawing_')" 
+                    @click="downloadPid(item.drawing_id)" 
+                    class="btn btn-sm btn-outline-primary download-btn"
+                    title="P&ID 다운로드"
+                  >
+                    <i class="fas fa-download"></i>
+                  </button>
                   <button class="clear-file" @click="clearPidFile(item)">&times;</button>
                 </span>
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
@@ -299,11 +341,19 @@
               <h4>P&ID Components 설정</h4>
             </div>
             <div class="tab-actions">
-              <button class="btn btn-primary" @click="addPidComponentRow">추가</button>
+              <button 
+                class="btn btn-primary" 
+                @click="addPidComponentRow"
+                :disabled="isAddButtonDisabled"
+                title="P&ID Components는 최대 1행만 입력 가능합니다"
+              >
+                추가
+              </button>
               <button 
                 class="btn btn-danger" 
-                @click="deleteSelectedPidComponentItems"
-                :disabled="selectedPidComponentItems.length === 0"
+                @click="deletePidComponentRow"
+                :disabled="pidComponentList.length === 0"
+                title="현재 행을 삭제합니다"
               >
                 삭제
               </button>
@@ -319,51 +369,85 @@
             @selection-change="handlePidComponentSelectionChange"
           >
             <template #cell-pidId="{ item }">
-              <input 
-                type="text" 
-                v-model="item.pidId" 
-                class="form-control"
-                placeholder="P&ID ID"
-              />
+              <span class="pid-id-display">{{ item.pidId || '-' }}</span>
             </template>
-            <template #cell-code="{ item }">
-              <input 
-                type="text" 
-                v-model="item.code" 
-                class="form-control"
-                placeholder="Code"
-              />
+            <template #cell-category="{ item }">
+              <select 
+                v-model="item.category" 
+                class="form-control required"
+                @change="handlePidComponentCategoryChange(item)"
+              >
+                <option 
+                  v-for="option in categoryOptions" 
+                  :key="option.value" 
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
             </template>
-            <template #cell-components="{ item }">
-              <input 
-                type="text" 
-                v-model="item.components" 
-                class="form-control"
-                placeholder="Components"
-              />
+            <template #cell-middleCategory="{ item }">
+              <select 
+                v-model="item.middleCategory" 
+                class="form-control required"
+                @change="handlePidComponentMiddleCategoryChange(item)"
+              >
+                <option 
+                  v-for="option in middleCategoryOptions" 
+                  :key="option.value" 
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
+            <template #cell-smallCategory="{ item }">
+              <select 
+                v-model="item.smallCategory" 
+                class="form-control required"
+                @change="handlePidComponentSmallCategoryChange(item)"
+              >
+                <option 
+                  v-for="option in smallCategoryOptions" 
+                  :key="option.value" 
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
             </template>
             <template #cell-equipmentType="{ item }">
-              <input 
-                type="text" 
+              <select 
                 v-model="item.equipmentType" 
-                class="form-control"
-                placeholder="장비유형"
-              />
+                class="form-control required"
+              >
+                <option 
+                  v-for="option in equipmentTypeOptions" 
+                  :key="option.value" 
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
             </template>
             <template #cell-normalQuantity="{ item }">
               <input 
-                type="text" 
+                type="number" 
                 v-model="item.normalQuantity" 
                 class="form-control"
-                placeholder="상용"
+                placeholder="0"
+                min="0"
+                step="1"
               />
             </template>
             <template #cell-spareQuantity="{ item }">
               <input 
-                type="text" 
+                type="number" 
                 v-model="item.spareQuantity" 
                 class="form-control"
-                placeholder="예비"
+                placeholder="0"
+                min="0"
+                step="1"
               />
             </template>
           </DataTable>
@@ -514,6 +598,34 @@ const initialMappingPidList = ref<any[]>([]); // 초기 P&ID 목록 데이터 �
 // P&ID 컴포넌트 관련 상태
 const pidComponentList = ref<any[]>([]);
 const selectedPidComponentItems = ref<any[]>([]);
+const currentDrawingId = ref<string>(''); // 현재 선택된 drawing_id 저장
+
+// P&ID 컴포넌트 추가 버튼 비활성화 여부 (최대 1행만 허용)
+const isAddButtonDisabled = computed(() => {
+  return pidComponentList.value.length >= 1;
+});
+
+// P&ID 컴포넌트 select 옵션 데이터
+const categoryOptions = ref([
+  { value: '', label: '선택하세요' },
+  { value: 'STRUCT_WWTP', label: '토목' },
+  { value: 'EQUIP', label: '기계' }
+]);
+
+// 중분류 옵션 (동적으로 로드됨)
+const middleCategoryOptions = ref([
+  { value: '', label: '선택하세요' }
+]);
+
+// 소분류 옵션 (동적으로 로드됨)
+const smallCategoryOptions = ref([
+  { value: '', label: '선택하세요' }
+]);
+
+// 장비유형 옵션 (동적으로 로드됨)
+const equipmentTypeOptions = ref([
+  { value: '', label: '선택하세요' }
+]);
 
 // P&ID 목록 메인화면 표시 상태
 const showPidListInMain = ref(false);
@@ -602,12 +714,13 @@ const mappingPidColumns: TableColumn[] = [
 
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
-  { key: "pidId", title: "P&ID ID.", sortable: false },
-  { key: "code", title: "Code", sortable: false },
-  { key: "components", title: "Components", sortable: false },
-  { key: "equipmentType", title: "장비유형", sortable: false },
-  { key: "normalQuantity", title: "수량(상용)", sortable: false },
-  { key: "spareQuantity", title: "수량(예비)", sortable: false }
+  { key: "pidId", title: "P&ID ID", sortable: false, width: "120px" },
+  { key: "category", title: "구분 *", sortable: false, width: "100px" },
+  { key: "middleCategory", title: "중분류 *", sortable: false, width: "120px" },
+  { key: "smallCategory", title: "소분류 *", sortable: false, width: "120px" },
+  { key: "equipmentType", title: "장비유형 *", sortable: false, width: "150px" },
+  { key: "normalQuantity", title: "수량(상용)", sortable: false, width: "100px" },
+  { key: "spareQuantity", title: "수량(예비)", sortable: false, width: "100px" }
 ];
 
 // 유틸리티 함수들 (사용하지 않음)
@@ -1197,6 +1310,10 @@ const handleComponentClick = (item: any, index: number) => {
 const openPidComponentModal = (item: any) => {
   console.log("P&ID 컴포넌트 버튼 클릭:", item);
   
+  // drawing_id 저장
+  currentDrawingId.value = item.drawing_id || '';
+  console.log("저장된 drawing_id:", currentDrawingId.value);
+  
   // 해당 row 선택
   selectedMappingPidItems.value = item;
   
@@ -1207,7 +1324,8 @@ const openPidComponentModal = (item: any) => {
   showPidComponentSection.value = true;
   console.log("P&ID 컴포넌트 섹션 표시 상태:", showPidComponentSection.value);
   
-  // P&ID 컴포넌트 데이터 로드
+  // P&ID 컴포넌트 데이터 초기화 및 로드 (항상 1행 보장)
+  pidComponentList.value = [];
   loadPidComponentData(item);
   
   // P&ID 컴포넌트 섹션으로 스크롤
@@ -1224,22 +1342,202 @@ const openPidComponentModal = (item: any) => {
 const loadPidComponentData = (pidItem: any) => {
   console.log("P&ID 컴포넌트 데이터 로드:", pidItem);
   
-  // 임시 데이터 생성 (추후 API 연동)
-  const sampleData = [
-    {
-      id: 'pid_comp_1',
-      no: 1,
-      pidId: pidItem.drawing_id || 'P001-10',
-      code: 'M_AGTR',
-      components: '기계, 펌프, 무폐쇄형 펌프',
-      equipmentType: '스프르트펌프, M_PMP0601',
-      normalQuantity: '',
-      spareQuantity: ''
-    }
-  ];
+  // 데이터 초기화 (자동 행 추가 없음)
+  pidComponentList.value = [];
+  console.log("P&ID 컴포넌트 데이터 초기화 완료");
+};
+
+// P&ID 컴포넌트 구분 변경 핸들러
+const handlePidComponentCategoryChange = async (item: any) => {
+  console.log("P&ID 컴포넌트 구분 변경:", item.category);
   
-  pidComponentList.value = sampleData;
-  console.log("P&ID 컴포넌트 데이터 로드 완료:", pidComponentList.value);
+  if (item.category) {
+    try {
+      // 직접 API 호출로 중분류 옵션 가져오기
+      const requestData = {
+        search_field: "parent_key",
+        search_value: item.category,
+        order_by: "code_order",
+        order_direction: "asc",
+      };
+      
+      console.log("P&ID 컴포넌트 중분류 API 요청:", requestData);
+      
+      const response = await request('/api/process/code/search', undefined, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      console.log("P&ID 컴포넌트 중분류 API 응답:", response);
+      
+      if (response.success && response.response && Array.isArray(response.response)) {
+        const subCategoryOptions = response.response.map((item: any) => ({
+          value: item.code_key,
+          label: item.code_value,
+        }));
+        
+        console.log("P&ID 컴포넌트 중분류 옵션 생성:", subCategoryOptions);
+        
+        middleCategoryOptions.value = [
+          { value: '', label: '선택하세요' },
+          ...subCategoryOptions
+        ];
+        
+        console.log("P&ID 컴포넌트 중분류 옵션 설정 완료:", middleCategoryOptions.value);
+      } else {
+        console.log("P&ID 컴포넌트 중분류 API 응답이 올바르지 않음");
+        middleCategoryOptions.value = [
+          { value: '', label: '선택하세요' }
+        ];
+      }
+    } catch (error) {
+      console.error("P&ID 컴포넌트 중분류 옵션 로드 실패:", error);
+      // 에러 발생 시 기본 옵션으로 설정
+      middleCategoryOptions.value = [
+        { value: '', label: '선택하세요' }
+      ];
+    }
+  } else {
+    // 구분이 선택되지 않았을 때 중분류 옵션 초기화
+    middleCategoryOptions.value = [
+      { value: '', label: '선택하세요' }
+    ];
+  }
+  
+  // 하위 필드들 초기화
+  item.middleCategory = '';
+  item.smallCategory = '';
+  item.equipmentType = '';
+};
+
+// P&ID 컴포넌트 중분류 변경 핸들러
+const handlePidComponentMiddleCategoryChange = async (item: any) => {
+  console.log("P&ID 컴포넌트 중분류 변경:", item.middleCategory);
+  
+  if (item.middleCategory) {
+    try {
+      // 직접 API 호출로 소분류 옵션 가져오기
+      const requestData = {
+        search_field: "parent_key",
+        search_value: item.middleCategory,
+        order_by: "code_order",
+        order_direction: "asc",
+      };
+      
+      console.log("P&ID 컴포넌트 소분류 API 요청:", requestData);
+      
+      const response = await request('/api/process/code/search', undefined, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      console.log("P&ID 컴포넌트 소분류 API 응답:", response);
+      
+      if (response.success && response.response && Array.isArray(response.response)) {
+        const subCategoryOptions = response.response.map((item: any) => ({
+          value: item.code_key,
+          label: item.code_value,
+        }));
+        
+        console.log("P&ID 컴포넌트 소분류 옵션 생성:", subCategoryOptions);
+        
+        smallCategoryOptions.value = [
+          { value: '', label: '선택하세요' },
+          ...subCategoryOptions
+        ];
+        
+        console.log("P&ID 컴포넌트 소분류 옵션 설정 완료:", smallCategoryOptions.value);
+      } else {
+        console.log("P&ID 컴포넌트 소분류 API 응답이 올바르지 않음");
+        smallCategoryOptions.value = [
+          { value: '', label: '선택하세요' }
+        ];
+      }
+    } catch (error) {
+      console.error("P&ID 컴포넌트 소분류 옵션 로드 실패:", error);
+      smallCategoryOptions.value = [
+        { value: '', label: '선택하세요' }
+      ];
+    }
+  } else {
+    // 중분류가 선택되지 않았을 때 소분류 옵션 초기화
+    smallCategoryOptions.value = [
+      { value: '', label: '선택하세요' }
+    ];
+  }
+  
+  // 하위 필드들 초기화
+  item.smallCategory = '';
+  item.equipmentType = '';
+};
+
+// P&ID 컴포넌트 소분류 변경 핸들러
+const handlePidComponentSmallCategoryChange = async (item: any) => {
+  console.log("P&ID 컴포넌트 소분류 변경:", item.smallCategory);
+  
+  if (item.smallCategory) {
+    try {
+      // 직접 API 호출로 장비유형 옵션 가져오기
+      const requestData = {
+        search_field: "parent_key",
+        search_value: item.smallCategory,
+        order_by: "code_order",
+        order_direction: "asc",
+      };
+      
+      console.log("P&ID 컴포넌트 장비유형 API 요청:", requestData);
+      
+      const response = await request('/api/process/code/search', undefined, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      console.log("P&ID 컴포넌트 장비유형 API 응답:", response);
+      
+      if (response.success && response.response && Array.isArray(response.response)) {
+        const equipmentTypeOptionsData = response.response.map((item: any) => ({
+          value: item.code_key,
+          label: item.code_value,
+        }));
+        
+        console.log("P&ID 컴포넌트 장비유형 옵션 생성:", equipmentTypeOptionsData);
+        
+        equipmentTypeOptions.value = [
+          { value: '', label: '선택하세요' },
+          ...equipmentTypeOptionsData
+        ];
+        
+        console.log("P&ID 컴포넌트 장비유형 옵션 설정 완료:", equipmentTypeOptions.value);
+      } else {
+        console.log("P&ID 컴포넌트 장비유형 API 응답이 올바르지 않음");
+        equipmentTypeOptions.value = [
+          { value: '', label: '선택하세요' }
+        ];
+      }
+    } catch (error) {
+      console.error("P&ID 컴포넌트 장비유형 옵션 로드 실패:", error);
+      equipmentTypeOptions.value = [
+        { value: '', label: '선택하세요' }
+      ];
+    }
+  } else {
+    // 소분류가 선택되지 않았을 때 장비유형 옵션 초기화
+    equipmentTypeOptions.value = [
+      { value: '', label: '선택하세요' }
+    ];
+  }
+  
+  // 하위 필드 초기화
+  item.equipmentType = '';
 };
 
 // 공정카드 버튼 클릭 핸들러
@@ -1275,23 +1573,32 @@ const closePidComponentSection = () => {
   showPidComponentSection.value = false;
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
+  currentDrawingId.value = ''; // drawing_id 초기화
   console.log('P&ID 컴포넌트 섹션 닫기 완료');
 };
 
 // P&ID 컴포넌트 행 추가
 const addPidComponentRow = () => {
+  // 최대 1행 제한 확인
+  if (pidComponentList.value.length >= 1) {
+    alert('P&ID Components는 최대 1행만 입력 가능합니다.');
+    return;
+  }
+  
   const newRow = {
     id: `pid_comp_${Date.now()}`,
     no: pidComponentList.value.length + 1,
-    pidId: '',
-    code: '',
-    components: '',
+    pidId: currentDrawingId.value, // 저장된 drawing_id 자동 입력
+    category: '',
+    middleCategory: '',
+    smallCategory: '',
     equipmentType: '',
-    normalQuantity: '',
-    spareQuantity: ''
+    normalQuantity: '0',
+    spareQuantity: '0'
   };
   pidComponentList.value.push(newRow);
   console.log('P&ID 컴포넌트 새 행 추가:', newRow);
+  console.log('자동 입력된 P&ID ID:', currentDrawingId.value);
 };
 
 // P&ID 컴포넌트 선택 변경 핸들러
@@ -1310,38 +1617,603 @@ const handleSelectAllPidComponent = (event: Event) => {
   console.log('P&ID 컴포넌트 전체 선택 상태:', target.checked);
 };
 
-// 선택된 P&ID 컴포넌트 항목들 삭제
-const deleteSelectedPidComponentItems = () => {
-  if (selectedPidComponentItems.value.length === 0) {
-    alert('삭제할 항목을 선택해주세요.');
-    return;
-  }
-
-  const selectedIds = selectedPidComponentItems.value.map(item => item.id);
-  pidComponentList.value = pidComponentList.value.filter(item => !selectedIds.includes(item.id));
+// P&ID 컴포넌트 행 삭제
+const deletePidComponentRow = () => {
+  // 현재 행 삭제 (1행만 있으므로 전체 삭제)
+  pidComponentList.value = [];
   selectedPidComponentItems.value = [];
   
-  // 번호 재정렬
-  pidComponentList.value.forEach((item, index) => {
-    item.no = index + 1;
-  });
+  console.log('P&ID 컴포넌트 행 삭제 완료');
+};
+
+// 장비유형 코드로부터 이름을 가져오는 헬퍼 함수
+const getEquipmentTypeName = (equipmentTypeCode: string) => {
+  if (!equipmentTypeCode) return '';
   
-  console.log('P&ID 컴포넌트 항목들 삭제 완료');
+  // equipmentTypeOptions에서 해당 코드의 이름을 찾기
+  const option = equipmentTypeOptions.value.find(opt => opt.value === equipmentTypeCode);
+  return option ? option.label : equipmentTypeCode;
 };
 
 // P&ID 컴포넌트 저장 핸들러
+// P&ID 컴포넌트 필수입력 검증
+const validatePidComponentData = () => {
+  const errors: string[] = [];
+  
+  pidComponentList.value.forEach((item, index) => {
+    const rowNumber = index + 1;
+    
+    if (!item.category) {
+      errors.push(`${rowNumber}행: 구분을 선택해주세요.`);
+    }
+    if (!item.middleCategory) {
+      errors.push(`${rowNumber}행: 중분류를 선택해주세요.`);
+    }
+    if (!item.smallCategory) {
+      errors.push(`${rowNumber}행: 소분류를 선택해주세요.`);
+    }
+    if (!item.equipmentType) {
+      errors.push(`${rowNumber}행: 장비유형을 선택해주세요.`);
+    }
+  });
+  
+  return errors;
+};
+
 const handlePidComponentSave = async () => {
   try {
     console.log('P&ID 컴포넌트 저장 버튼 클릭');
     console.log('저장할 P&ID 컴포넌트 데이터:', pidComponentList.value);
     
-    // TODO: API 호출로 P&ID 컴포넌트 데이터 저장
-    // 현재는 콘솔에 데이터 출력만 함
-    alert('P&ID 컴포넌트 데이터가 저장되었습니다.');
+    // 필수입력 검증
+    const validationErrors = validatePidComponentData();
+    if (validationErrors.length > 0) {
+      alert('다음 필수입력 항목을 확인해주세요:\n' + validationErrors.join('\n'));
+      return;
+    }
+    
+    // 그리드 데이터가 없으면 저장하지 않음
+    if (pidComponentList.value.length === 0) {
+      alert('저장할 데이터가 없습니다.');
+      return;
+    }
+    
+    // UUID 형식 검증
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    // 그리드에서 데이터 추출
+    const componentData = pidComponentList.value.map(item => {
+      // UUID 형식 검증
+      if (!item.pidId || item.pidId.length === 0) {
+        throw new Error('P&ID ID가 누락되었습니다.');
+      }
+      
+      // UUID 형식이 아닌 경우 에러
+      if (!uuidRegex.test(item.pidId)) {
+        throw new Error('P&ID ID가 올바른 UUID 형식이 아닙니다: ' + item.pidId);
+      }
+      
+      return {
+        component_type: item.category, // 구분 code
+        component_code: item.equipmentType, // 장비유형 code
+        item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 value
+        standard_quantity: parseInt(item.normalQuantity) || 0, // 수량(상용)
+        spare_quantity: parseInt(item.spareQuantity) || 0, // 수량(예비)
+        pid_id: item.pidId // 그리드의 pid_id
+      };
+    });
+    
+    console.log('추출된 컴포넌트 데이터:', componentData);
+    console.log('P&ID ID 값들:', pidComponentList.value.map(item => ({ pidId: item.pidId, type: typeof item.pidId })));
+    
+    // API 요청 데이터 준비
+    const requestData = {
+      components: componentData
+    };
+    console.log('API 요청 데이터:', requestData);
+    console.log('JSON 변환된 요청 데이터:', JSON.stringify(requestData));
+    
+    // API 호출
+    const response = await request('/api/process/component/create', undefined, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    });
+    
+    console.log('API 응답 전체:', response);
+    
+    if (response.success) {
+      alert('P&ID 컴포넌트 데이터가 성공적으로 저장되었습니다.');
+      console.log('P&ID 컴포넌트 저장 성공:', response);
+    } else {
+      console.log('API 응답 실패 - response:', response);
+      console.log('API 응답 실패 - response.response:', response.response);
+      
+      // 원본 서버 응답에서 failed_component_ids 확인
+      if (response.failed_component_ids) {
+        console.log('원본 응답의 실패한 컴포넌트 ID들:', response.failed_component_ids);
+      }
+      if (response.created_component_ids) {
+        console.log('원본 응답의 생성된 컴포넌트 ID들:', response.created_component_ids);
+      }
+      if (response.total_count !== undefined) {
+        console.log('원본 응답의 총 컴포넌트 수:', response.total_count);
+        console.log('원본 응답의 성공한 컴포넌트 수:', response.success_count);
+      }
+      
+      throw new Error(response.message || '저장에 실패했습니다.');
+    }
     
   } catch (error) {
     console.error('P&ID 컴포넌트 저장 실패:', error);
-    alert('P&ID 컴포넌트 저장에 실패했습니다.');
+    
+    // 서버 응답의 전체 내용 확인
+    console.log('에러 객체 전체:', error);
+    console.log('에러 response 속성:', error.response);
+    console.log('에러 message:', error.message);
+    console.log('에러 status:', error.status);
+    
+    // failed_component_ids는 error 객체의 최상위에 있음
+    if (error.failed_component_ids) {
+      console.log('실패한 컴포넌트 ID들:', error.failed_component_ids);
+    }
+    if (error.created_component_ids) {
+      console.log('생성된 컴포넌트 ID들:', error.created_component_ids);
+    }
+    if (error.total_count !== undefined) {
+      console.log('총 컴포넌트 수:', error.total_count);
+      console.log('성공한 컴포넌트 수:', error.success_count);
+    }
+    
+    // 원본 서버 응답에서 추가 정보 확인
+    console.log('에러 객체의 모든 키들:', Object.keys(error));
+    console.log('에러 객체의 모든 값들:', Object.values(error));
+    
+    // error.response가 JSON 문자열인 경우 파싱
+    let parsedResponse = null;
+    if (error.response && typeof error.response === 'string') {
+      try {
+        parsedResponse = JSON.parse(error.response);
+        console.log('파싱된 response:', parsedResponse);
+      } catch (e) {
+        console.log('response 파싱 실패:', e);
+      }
+    }
+    
+    // 상세한 에러 메시지 표시
+    let errorMessage = 'P&ID 컴포넌트 저장에 실패했습니다.';
+    if (error.message) {
+      errorMessage += '\n에러: ' + error.message;
+    }
+    
+    // 서버 응답의 상세 정보 추가 (error 객체의 최상위에서 가져옴)
+    if (error.total_count !== undefined) {
+      errorMessage += `\n총 ${error.total_count}개 중 ${error.success_count}개 성공`;
+    }
+    if (error.failed_component_ids && error.failed_component_ids.length > 0) {
+      errorMessage += `\n실패한 컴포넌트: ${error.failed_component_ids.length}개`;
+      console.log('실패한 컴포넌트 상세:', error.failed_component_ids);
+    }
+    
+    // 파싱된 response에서 상세 정보 추가
+    if (parsedResponse && parsedResponse.detail) {
+      errorMessage += '\n상세: ' + parsedResponse.detail;
+    }
+    
+    alert(errorMessage);
+  }
+};
+
+// 공정심볼 다운로드 함수
+const downloadProcessSymbol = async () => {
+  try {
+    const symbolId = processStore.processDetail.symbolId;
+    
+    if (!symbolId) {
+      alert('다운로드할 공정심볼이 없습니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드
+    const response = await fetch(`/api/process/symbol/download/${symbolId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 파일명 추출 (Content-Disposition 헤더에서)
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let fileName = 'process_symbol.svg';
+    
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (fileNameMatch && fileNameMatch[1]) {
+        fileName = fileNameMatch[1].replace(/['"]/g, '');
+      }
+    }
+    
+    // 응답을 JSON으로 파싱
+    const responseData = await response.json();
+    
+    // response_body에서 SVG 내용 추출
+    let svgContent = '';
+    if (responseData.success && responseData.response_body) {
+      svgContent = responseData.response_body;
+    } else {
+      throw new Error('SVG 내용을 찾을 수 없습니다.');
+    }
+    
+    // SVG 유효성 검사
+    if (!svgContent.trim().startsWith('<svg') && !svgContent.trim().startsWith('<?xml')) {
+      throw new Error('유효하지 않은 SVG 형식입니다.');
+    }
+    
+    // Blob으로 변환하여 다운로드
+    const blob = new Blob([svgContent], { 
+      type: 'image/svg+xml' 
+    });
+    
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error('공정심볼 다운로드 실패:', error);
+    alert('공정심볼 다운로드에 실패했습니다: ' + (error.message || error));
+  }
+};
+
+// 계산식 목록에서 다운로드 함수 (원본 데이터 사용)
+const downloadFormulaFromList = async (formulaItem: any) => {
+  try {
+    // 원본 데이터에서 다운로드 URL 확인
+    const originalData = formulaItem._originalData || formulaItem;
+    
+    // 다운로드 URL이 있는지 확인
+    let downloadUrl = originalData.download_url || originalData.file_url || originalData.url;
+    
+    if (downloadUrl) {
+      // 외부 URL인 경우 직접 다운로드
+      if (downloadUrl.startsWith('http')) {
+        window.open(downloadUrl, '_blank');
+        return;
+      }
+    }
+    
+    // 다운로드 URL이 없으면 기존 방식 사용
+    if (formulaItem.formula_id) {
+      await downloadFormula(formulaItem.formula_id);
+    } else {
+      throw new Error('다운로드할 계산식 정보가 없습니다.');
+    }
+    
+  } catch (error) {
+    console.error('계산식 다운로드 실패:', error);
+    alert('계산식 다운로드에 실패했습니다: ' + (error.message || error));
+  }
+};
+
+// 계산식 다운로드 함수
+const downloadFormula = async (formulaId: string) => {
+  try {
+    if (!formulaId) {
+      alert('다운로드할 계산식이 없습니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드
+    const response = await fetch(`/api/process/formula/download/${formulaId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    // 응답을 텍스트로 먼저 확인
+    const responseText = await response.text();
+    
+    if (!response.ok) {
+      // 에러 응답의 상세 내용 확인
+      let errorMessage = `다운로드 실패: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage += ` - ${errorData.message || errorData.detail || '알 수 없는 오류'}`;
+      } catch (e) {
+        errorMessage += ` - ${responseText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    
+    // JSON 응답인지 확인
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      // JSON이 아니면 직접 파일 내용으로 처리
+      const blob = new Blob([responseText], { 
+        type: 'text/plain' 
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'formula.py';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    }
+    
+    // JSON 응답 처리
+    let fileContent = '';
+    let fileName = 'formula.py';
+    
+    if (responseData.success && responseData.response_body) {
+      fileContent = responseData.response_body;
+    } else if (responseData.download_url) {
+      // 다운로드 URL이 있는 경우
+      window.open(responseData.download_url, '_blank');
+      return;
+    } else {
+      throw new Error('파일 내용을 찾을 수 없습니다.');
+    }
+    
+    // 파일명 추출
+    if (responseData.file_name) {
+      fileName = responseData.file_name;
+    }
+    
+    // Blob으로 변환하여 다운로드
+    const blob = new Blob([fileContent], { 
+      type: 'text/plain' 
+    });
+    
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error('계산식 다운로드 실패:', error);
+    alert('계산식 다운로드에 실패했습니다: ' + (error.message || error));
+  }
+};
+
+// 공정카드 다운로드 함수
+const downloadPfd = async (drawingId: string) => {
+  try {
+    if (!drawingId) {
+      alert('다운로드할 공정카드가 없습니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드
+    const response = await fetch(`/api/process/drawing/download/${drawingId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 응답을 JSON으로 파싱
+    const responseData = await response.json();
+    
+    // download_url이 있으면 실제 파일 다운로드
+    if (responseData.download_url) {
+      // 파일명 추출
+      let fileName = 'pfd_file.pdf';
+      if (responseData.file_info && responseData.file_info.file_name) {
+        fileName = responseData.file_info.file_name;
+      }
+      
+      try {
+        // 직접 download_url에서 파일 다운로드 시도
+        const downloadResponse = await fetch(responseData.download_url, {
+          method: 'GET',
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        if (!downloadResponse.ok) {
+          throw new Error(`다운로드 실패: ${downloadResponse.status}`);
+        }
+        
+        const blob = await downloadResponse.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+      } catch (corsError) {
+        // CORS 오류가 발생하면 새 창에서 직접 열기
+        console.warn('CORS 오류로 인한 직접 다운로드 실패, 새 창에서 열기:', corsError);
+        window.open(responseData.download_url, '_blank');
+      }
+      return;
+    } else {
+      // response_body에서 파일 내용 추출
+      let fileContent = '';
+      if (responseData.success && responseData.response_body) {
+        fileContent = responseData.response_body;
+      } else {
+        throw new Error('파일 내용을 찾을 수 없습니다.');
+      }
+      
+      // 파일명 추출 (responseData.file_info.file_name 사용)
+      let fileName = 'pfd_file.pdf';
+      if (responseData.file_info && responseData.file_info.file_name) {
+        fileName = responseData.file_info.file_name;
+      }
+      
+      // Blob으로 변환하여 다운로드
+      const blob = new Blob([fileContent], { 
+        type: 'application/pdf' 
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
+    
+  } catch (error) {
+    console.error('공정카드 다운로드 실패:', error);
+    alert('공정카드 다운로드에 실패했습니다: ' + (error.message || error));
+  }
+};
+
+// P&ID 다운로드 함수
+const downloadPid = async (drawingId: string) => {
+  try {
+    if (!drawingId) {
+      alert('다운로드할 P&ID가 없습니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드
+    const response = await fetch(`/api/process/drawing/download/${drawingId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 응답을 JSON으로 파싱
+    const responseData = await response.json();
+    
+    // download_url이 있으면 실제 파일 다운로드
+    if (responseData.download_url) {
+      // 파일명 추출
+      let fileName = 'pid_file.dwg';
+      if (responseData.file_info && responseData.file_info.file_name) {
+        fileName = responseData.file_info.file_name;
+      }
+      
+      try {
+        // CORS 문제를 해결하기 위해 프록시를 통해 다운로드
+        const proxyUrl = `/api/proxy/download?url=${encodeURIComponent(responseData.download_url)}`;
+        const downloadResponse = await fetch(proxyUrl, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'system_code': import.meta.env.VITE_SYSTEM_CODE,
+            'user_Id': localStorage.getItem("authUserId") || "",
+            'wai_lang': localStorage.getItem("wai_lang") || "ko",
+          }
+        });
+        
+        if (!downloadResponse.ok) {
+          throw new Error(`프록시 다운로드 실패: ${downloadResponse.status}`);
+        }
+        
+        const blob = await downloadResponse.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+      } catch (proxyError) {
+        // 프록시가 실패하면 직접 링크로 시도
+        console.warn('프록시 다운로드 실패, 직접 링크로 시도:', proxyError);
+        const link = document.createElement('a');
+        link.href = responseData.download_url;
+        link.download = fileName;
+        link.target = '_blank';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      return;
+    } else {
+      // response_body에서 파일 내용 추출
+      let fileContent = '';
+      if (responseData.success && responseData.response_body) {
+        fileContent = responseData.response_body;
+      } else {
+        throw new Error('파일 내용을 찾을 수 없습니다.');
+      }
+      
+      // 파일명 추출 (responseData.file_info.file_name 사용)
+      let fileName = 'pid_file.dwg';
+      if (responseData.file_info && responseData.file_info.file_name) {
+        fileName = responseData.file_info.file_name;
+      }
+      
+      // Blob으로 변환하여 다운로드
+      const blob = new Blob([fileContent], { 
+        type: 'application/octet-stream' 
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
+    
+  } catch (error) {
+    console.error('P&ID 다운로드 실패:', error);
+    alert('P&ID 다운로드에 실패했습니다: ' + (error.message || error));
   }
 };
 
@@ -1355,6 +2227,7 @@ const closePfdSection = () => {
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
   selectedPidComponentItems.value = [];
+  currentDrawingId.value = ''; // drawing_id 초기화
 };
 
 // 공정카드 저장 핸들러
@@ -2532,6 +3405,7 @@ const closePidListInMain = () => {
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
   selectedPidComponentItems.value = [];
+  currentDrawingId.value = ''; // drawing_id 초기화
 };
 
 // P&ID 매핑 폼 초기화 함수
@@ -3461,7 +4335,11 @@ onMounted(async () => {
         const formulaResult = await searchFormulaAPI();
         
         if (formulaResult && formulaResult.response && Array.isArray(formulaResult.response)) {
+          console.log('계산식 API 응답 데이터:', formulaResult.response);
+          
           const formulaItems = formulaResult.response.map((item: any, index: number) => {
+            console.log(`계산식 아이템 ${index} 원본 데이터:`, item);
+            
             const formulaItem = {
               id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
               no: (index + 1).toString().padStart(3, '0'),
@@ -3472,7 +4350,8 @@ onMounted(async () => {
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
               _file: undefined,
-              isSaved: true // 기존 데이터는 저장된 상태
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item // 원본 데이터 보존
             };
             
             console.log('계산식 아이템 생성 (response):', {
@@ -3480,7 +4359,8 @@ onMounted(async () => {
               원본_formula_id: item.formula_id,
               생성된_id: formulaItem.id,
               생성된_formula_id: formulaItem.formula_id,
-              formula_name: item.formula_name
+              formula_name: item.formula_name,
+              전체_생성된_아이템: formulaItem
             });
             
             return formulaItem;
@@ -3503,7 +4383,8 @@ onMounted(async () => {
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
               _file: undefined,
-              isSaved: true // 기존 데이터는 저장된 상태
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item // 원본 데이터 보존
             };
             
             console.log('계산식 아이템 생성 (data):', {
@@ -3707,7 +4588,8 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
               _file: undefined,
-              isSaved: true // 기존 데이터는 저장된 상태
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item // 원본 데이터 보존
             };
             
             console.log('계산식 아이템 생성 (watch, response):', {
@@ -3738,7 +4620,8 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
               _file: undefined,
-              isSaved: true // 기존 데이터는 저장된 상태
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item // 원본 데이터 보존
             };
             
             console.log('계산식 아이템 생성 (watch, data):', {
@@ -3781,18 +4664,18 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 
 <style scoped>
 .process-detail {
-  padding: 10px 20px 20px 20px;
+  padding: 5px 20px 5px 20px;
 }
 
 .process-info-section {
-  margin-bottom: 30px;
-  padding: 20px;
+  margin-bottom: 15px;
+  padding: 15px;
   background: #f8f9fa;
   border-radius: 8px;
 }
 
 .process-info-section h3 {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #333;
 }
 
@@ -3806,7 +4689,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 .form-grid {
   display: flex;
   flex-wrap: nowrap;
-  gap: 20px;
+  gap: 15px;
   align-items: flex-start;
   width: 100%;
   flex: 1;
@@ -3815,7 +4698,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 .register-button-container {
   display: flex;
   align-items: flex-start;
-  padding-top: 10px; /* 더 위로 이동 */
+  padding-top: 5px; /* 더 위로 이동 */
 }
 
 .register-button-container .save-btn {
@@ -3859,7 +4742,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .form-group label {
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   font-weight: 600;
   color: #555;
   font-size: 0.9rem;
@@ -3867,7 +4750,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .form-group select {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
@@ -3910,25 +4793,25 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 
 
 .component-section {
-  margin-top: 40px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 10px;
   border-top: 2px solid #e9ecef;
 }
 
 .pfd-section {
-  margin-top: 40px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 10px;
   border-top: 2px solid #e9ecef;
 }
 
 .pid-section {
-  margin-top: 40px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 10px;
   border-top: 2px solid #e9ecef;
 }
 
 .pid-save-section {
-  margin-top: 20px;
+  margin-top: 10px;
   text-align: right;
 }
 
@@ -3937,7 +4820,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .grid-title {
@@ -3974,7 +4857,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 .save-btn-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 30px;
+  margin-top: 15px;
   padding-right: 0;
 }
 
@@ -4035,7 +4918,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
-  max-height: 95vh;
+  max-height: 90vh;
   overflow-y: auto;
 }
 
@@ -4043,7 +4926,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 8px 20px;
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -4065,14 +4948,14 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .modal-body {
-  padding: 15px 20px;
+  padding: 8px 20px;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 20px;
+  padding: 8px 20px;
   border-top: 1px solid #e9ecef;
 }
 
@@ -4082,11 +4965,11 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .selected-files-list {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .selected-files-list h4 {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   color: #333;
 }
 
@@ -4096,7 +4979,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .selected-files-list li {
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #f0f0f0;
   color: #666;
 }
@@ -4105,6 +4988,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 .large-modal {
   max-width: 1200px !important;
   width: 95% !important;
+  max-height: 85vh !important;
 }
 
 .modal-actions {
@@ -4312,9 +5196,210 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 
 /* P&ID 컴포넌트 섹션 여백 */
 .pid-component-section {
-  margin-top: 30px;
-  padding-top: 20px;
+  margin-top: 15px;
+  padding-top: 10px;
   border-top: 1px solid #e9ecef;
+}
+
+/* P&ID 컴포넌트 그리드 스타일 */
+.pid-component-section .data-table {
+  min-width: 810px; /* 최소 폭 설정 (120+100+120+120+150+100+100) */
+  overflow-x: auto;
+}
+
+.pid-component-section .data-table table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 810px;
+}
+
+.pid-component-section .data-table th,
+.pid-component-section .data-table td {
+  padding: 8px 6px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 컬럼별 폭 설정 */
+.pid-component-section .data-table th:nth-child(1),
+.pid-component-section .data-table td:nth-child(1) {
+  width: 120px;
+  min-width: 120px;
+}
+
+.pid-component-section .data-table th:nth-child(2),
+.pid-component-section .data-table td:nth-child(2) {
+  width: 100px;
+  min-width: 100px;
+}
+
+.pid-component-section .data-table th:nth-child(3),
+.pid-component-section .data-table td:nth-child(3) {
+  width: 120px;
+  min-width: 120px;
+}
+
+.pid-component-section .data-table th:nth-child(4),
+.pid-component-section .data-table td:nth-child(4) {
+  width: 120px;
+  min-width: 120px;
+}
+
+.pid-component-section .data-table th:nth-child(5),
+.pid-component-section .data-table td:nth-child(5) {
+  width: 150px;
+  min-width: 150px;
+}
+
+.pid-component-section .data-table th:nth-child(6),
+.pid-component-section .data-table td:nth-child(6) {
+  width: 100px;
+  min-width: 100px;
+}
+
+.pid-component-section .data-table th:nth-child(7),
+.pid-component-section .data-table td:nth-child(7) {
+  width: 100px;
+  min-width: 100px;
+}
+
+/* 입력 필드 스타일 */
+.pid-component-section .form-control {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+/* select 요소 스타일 */
+.pid-component-section select.form-control {
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 30px;
+}
+
+.pid-component-section select.form-control:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* P&ID ID 읽기 전용 표시 스타일 */
+.pid-component-section .pid-id-display {
+  display: inline-block;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: #495057;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  width: 100%;
+  min-height: 32px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+/* P&ID 컴포넌트 필수입력 필드 스타일 */
+.pid-component-section .form-control.required {
+  border-left: 3px solid #dc3545;
+}
+
+.pid-component-section .form-control.required:focus {
+  border-color: #80bdff;
+  border-left-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* P&ID 컴포넌트 필수입력 필드 에러 상태 */
+.pid-component-section .form-control.required.error {
+  border-color: #dc3545;
+  border-left-color: #dc3545;
+}
+
+.pid-component-section .form-control.required.error:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* P&ID 컴포넌트 추가 버튼 비활성화 스타일 */
+.pid-component-section .btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pid-component-section .btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 비활성화된 버튼에 대한 추가 스타일 */
+.pid-component-section .btn:disabled:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff !important;
+}
+
+/* 공정심볼 다운로드 버튼 스타일 */
+.download-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.download-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.download-btn:active {
+  transform: translateY(1px);
+}
+
+/* 계산식 이름과 다운로드 버튼 컨테이너 */
+.formula-name-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formula-name {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* 공정카드 파일명과 다운로드 버튼 컨테이너 */
+.pfd-filename-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pfd-filename {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
 }
 
 </style>

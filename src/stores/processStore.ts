@@ -680,6 +680,7 @@ export const useProcessStore = defineStore("process", () => {
             processCode: processData.process_code || null,
             description: processData.process_description || "",
             processSymbol: processData.symbol_uri && processData.symbol_uri !== null ? processData.symbol_uri : "",
+            symbolId: processData.symbol_id || null,  // 심볼 ID 설정
             originalProcessSymbol: processData.symbol_uri && processData.symbol_uri !== null ? processData.symbol_uri : "",  // 원본 공정심볼 파일명 저장
             originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
             language_code: processData.language_code || null,   // 언어 코드
@@ -692,6 +693,7 @@ export const useProcessStore = defineStore("process", () => {
           console.log("설정된 processName 타입:", typeof (processData.process_name || null));
           console.log("설정된 subCategory:", processData.level3_code_key || null);
           console.log("설정된 processType:", processData.level2_code_key || null);
+          console.log("설정된 symbolId:", processData.symbol_id || null);
           console.log("=====================================");
 
           if (processData.symbol_uri) {

@@ -3,9 +3,7 @@
     <!-- 상단 필터: MachineRegisterTab와 동일한 스타일/구성 -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("common.language") }} <span class="req">(＊)</span></span
-        >
+        <span class="label required">⊙ {{ t("common.language") }}</span>
         <select class="input select-sm" v-model="selectedLanguage">
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -18,9 +16,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("common.unit") }} <span class="req">(＊)</span></span
-        >
+        <span class="label required">⊙ {{ t("common.unit") }}</span>
         <select class="input select-sm" v-model="selectedUnit">
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -33,7 +29,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 기계명 <span class="req">(＊)</span></span>
+        <span class="label required">⊙ 기계명</span>
         <select class="input select-md" v-model="selectedMachineName">
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -46,7 +42,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 기계종분류 <span class="req">(＊)</span></span>
+        <span class="label required">⊙ 기계종분류</span>
         <select
           class="input select-sm"
           :disabled="!isStep1Enabled"
@@ -353,14 +349,20 @@ $desktop: 1200px;
   min-width: 100px;
   flex-shrink: 0;
 
+  &.required::after {
+    content: " (＊)";
+    color: #e74c3c;
+    margin-left: 4px;
+  }
+
   @media (max-width: $mobile) {
     min-width: auto;
     font-size: 12px;
   }
 }
 
-.req {
-  color: #e74c3c;
+.label .req {
+  display: none;
 }
 
 .input {

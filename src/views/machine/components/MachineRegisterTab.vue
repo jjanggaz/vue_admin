@@ -3,9 +3,7 @@
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("common.unit") }} <span class="req">(＊)</span></span
-        >
+        <span class="label required">⊙ {{ t("common.unit") }}</span>
         <select
           class="input select-sm"
           v-model="selectedUnit"
@@ -22,7 +20,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 기계명 <span class="req">(＊)</span></span>
+        <span class="label required">⊙ 기계명</span>
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -39,7 +37,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ revit 모델 <span class="req">(＊)</span></span>
+        <span class="label required">⊙ revit 모델</span>
         <div class="file-upload-group">
           <input
             type="text"
@@ -76,7 +74,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 기계종분류 <span class="req">(＊)</span></span>
+        <span class="label required">⊙ 기계종분류</span>
         <select
           class="input select-sm"
           :disabled="!isStep1Enabled"
@@ -396,14 +394,20 @@ $desktop: 1200px;
   min-width: 100px;
   flex-shrink: 0;
 
+  &.required::after {
+    content: " (＊)";
+    color: #e74c3c;
+    margin-left: 4px;
+  }
+
   @media (max-width: $mobile) {
     min-width: auto;
     font-size: 12px;
   }
 }
 
-.req {
-  color: #e74c3c;
+.label .req {
+  display: none;
 }
 
 .input {

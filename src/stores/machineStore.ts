@@ -128,7 +128,7 @@ export const useMachineStore = defineStore("machine", () => {
   const error = ref<string | null>(null);
 
   // 액션
-  const fetchCommonCodes = async () => {
+  const fetchCommonCodes = async (parentKey: string) => {
     loading.value = true;
     error.value = null;
 
@@ -140,8 +140,7 @@ export const useMachineStore = defineStore("machine", () => {
         },
         body: JSON.stringify({
           // machine 관련 공통코드 조회를 위한 파라미터
-          code_group: "MACHINE",
-          is_active: true,
+          parent_key: parentKey,
         }),
       });
 

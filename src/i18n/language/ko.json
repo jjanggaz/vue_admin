@@ -372,6 +372,9 @@
     "value": "값",
     "order": "순서",
     "etc": "비고",
+    "symbolImage": "심볼 이미지",
+    "symbolImagePlaceholder": "심볼 이미지가 표시됩니다",
+    "noSymbolImage": "저장된 심볼 이미지가 없습니다.",
     "machineType": {
       "pump": "펌프",
       "motor": "모터",

@@ -163,6 +163,7 @@
           </button>
         </div>
         <div class="modal-body">
+          <!-- 첫 번째 줄: 유출종류명 국문, 유출종류명 영문, 비고 -->
           <dl class="column-regist">
             <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
             <dd>
@@ -193,15 +194,21 @@
                 disabled
               />
             </dd>
+            <dt>{{ t("common.etc") }}</dt>
+            <dd>
+              <input
+                type="text"
+                v-model="uploadForm.title"
+                :placeholder="t('placeholder.outflowRemarks')"
+                class="form-input"
+              />
+            </dd>
           </dl>
+          <!-- 두 번째 줄: 심볼색상, 파일 업로드 -->
           <dl class="column-regist">
             <dt>{{ t("outflow.symbolColor") }}</dt>
             <dd>
               <div class="color-picker-container">
-                <!-- <div class="color-preview" 
-                     :style="{ backgroundColor: selectedColor }"
-                     @click="showColorPicker = !showColorPicker">
-                </div> -->
                 <input
                   type="color"
                   v-model="selectedColor"
@@ -230,22 +237,11 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".svg,.png,.jpg,.jpeg,.gif"
+                    accept=".svg"
                     style="display: none"
                   />
                 </label>
               </div>
-            </dd>
-          </dl>
-          <dl class="column-regist">
-            <dt>{{ t("common.etc") }}</dt>
-            <dd>
-              <input
-                type="text"
-                v-model="uploadForm.title"
-                :placeholder="t('placeholder.outflowRemarks')"
-                class="form-input"
-              />
             </dd>
           </dl>
 
@@ -374,6 +370,7 @@
           </button>
         </div>
         <div class="modal-body">
+          <!-- 첫 번째 줄: 유출종류명 국문, 유출종류명 영문, 비고 -->
           <dl class="column-regist">
             <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
             <dd>
@@ -405,7 +402,17 @@
                 disabled
               />
             </dd>
+            <dt>{{ t("common.etc") }}</dt>
+            <dd>
+              <input
+                type="text"
+                v-model="uploadForm.title"
+                :placeholder="t('placeholder.outflowRemarks')"
+                class="form-input"
+              />
+            </dd>
           </dl>
+          <!-- 두 번째 줄: 심볼색상, 파일 업로드, 심볼이미지 -->
           <dl class="column-regist">
             <dt>{{ t("outflow.symbolColor") }}</dt>
             <dd>
@@ -438,22 +445,19 @@
                   <input
                     type="file"
                     @change="handleFileUpload"
-                    accept=".svg,.png,.jpg,.jpeg,.gif"
+                    accept=".svg"
                     style="display: none"
                   />
                 </label>
               </div>
             </dd>
-          </dl>
-          <dl class="column-regist">
-            <dt>{{ t("common.etc") }}</dt>
+            <dt>{{ t("common.symbolImage") }}</dt>
             <dd>
-              <input
-                type="text"
-                v-model="uploadForm.title"
-                :placeholder="t('placeholder.outflowRemarks')"
-                class="form-input"
-              />
+              <div class="symbol-image-preview">
+                <span v-if="!symbolImageContent" class="no-symbol-message">
+                  {{ t("common.noSymbolImage") }}
+                </span>
+              </div>
             </dd>
           </dl>
 
@@ -657,6 +661,7 @@ const selectedOutputType = ref(""); // 선택된 유출종류 코드
 // 색상 선택 관련 상태
 const selectedColor = ref("#3b82f6"); // 기본 파란색
 const showColorPicker = ref(false);
+const symbolImageContent = ref(""); // 심볼 이미지 콘텐츠
 
 // 로딩 상태
 const isCreating = ref(false);
@@ -933,7 +938,7 @@ const handleFileUpload = (event: Event) => {
     const file = target.files[0];
 
     // 허용된 파일 확장자 체크
-    const allowedExtensions = [".svg", ".png", ".jpg", ".jpeg", ".gif"];
+    const allowedExtensions = [".svg"];
     const fileExtension = file.name
       .toLowerCase()
       .substring(file.name.lastIndexOf("."));
@@ -1265,6 +1270,7 @@ const closeModal = () => {
   uploadForm.value.file = null; // 파일 첨부 초기화
   uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
+  symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
   metricFileName.value = "";
@@ -1285,6 +1291,9 @@ const openUpdateModal = async () => {
     alert(t("messages.warning.selectTabToEdit"));
     return;
   }
+
+  // 심볼 이미지 콘텐츠 초기화
+  symbolImageContent.value = "";
 
   const currentTab = tabs.value[activeTab.value];
 
@@ -1319,6 +1328,12 @@ const openUpdateModal = async () => {
         // 파일명을 input에 표시하기 위해 별도 상태 추가
         uploadForm.value.existingFileName = latestFile.original_filename;
       }
+
+      // 심볼 이미지 표시를 위한 콘텐츠 저장
+      if (fileInfoResponse?.response?.file_info?.response?.content) {
+        symbolImageContent.value =
+          fileInfoResponse.response.file_info.response.content;
+      }
     } catch (error) {
       console.error("파일 정보 조회 실패:", error);
       // 에러가 발생해도 모달은 계속 진행
@@ -1346,6 +1361,16 @@ const openUpdateModal = async () => {
 
   // 모달 열기
   isUpdateModalOpen.value = true;
+
+  // 모달이 열린 후 SVG 이미지 주입
+  nextTick(() => {
+    if (symbolImageContent.value) {
+      const symbolPreview = document.querySelector(".symbol-image-preview");
+      if (symbolPreview) {
+        symbolPreview.innerHTML = symbolImageContent.value;
+      }
+    }
+  });
 };
 
 const closeUpdateModal = () => {
@@ -1357,6 +1382,7 @@ const closeUpdateModal = () => {
   uploadForm.value.title = "";
   uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
+  symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
   metricFileName.value = "";
@@ -2060,5 +2086,26 @@ onBeforeUnmount(() => {
   &.right {
     margin-left: 8px;
   }
+}
+
+.symbol-image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  overflow: hidden;
+}
+
+.symbol-image-preview svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
+.no-symbol-message {
+  color: #6b7280;
+  font-size: 14px;
+  font-style: italic;
 }
 </style>

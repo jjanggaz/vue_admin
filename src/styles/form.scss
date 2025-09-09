@@ -11,14 +11,17 @@ textarea {
 dl.column-search {
   display: grid;
   grid-auto-rows: auto;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr) minmax(200px, 3fr));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(50px, 1fr) minmax(200px, 3fr)
+  );
   gap: 10px 5px;
   width: 100%;
 
   /* flow items by row so dt and dd pair correctly */
   grid-auto-flow: row;
 
-  >dt {
+  > dt {
     display: flex;
     align-items: center;
     font-weight: bold;
@@ -33,7 +36,7 @@ dl.column-search {
       grid-column: 1;
     }
   }
-  >dd {
+  > dd {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -46,7 +49,7 @@ dl.column-search {
 
     input[type="text"],
     input[type="number"],
-    input[type="email"], 
+    input[type="email"],
     input[type="password"],
     textarea,
     select {
@@ -57,7 +60,7 @@ dl.column-search {
       font-size: 14px;
       box-sizing: border-box;
     }
-    
+
     button {
       display: inline-block;
       padding: 8px 16px;
@@ -79,15 +82,15 @@ dl.column-search {
 
 .criteria,
 .search-bar {
- display: flex;
- gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .group-form {
- display: flex;
- align-items: center;
- gap: 10px;
- label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  label {
     flex: 0 0 auto;
     font-size: 14px;
     color: #333;
@@ -97,86 +100,90 @@ dl.column-search {
       width: 20px;
       height: 20px;
       text-indent: -99999px;
-      background: transparent url('../assets/images/common/ico_search.svg') no-repeat center center;
+      background: transparent url("../assets/images/common/ico_search.svg")
+        no-repeat center center;
     }
- }
- .form-item {
-   flex: 1;
-   display: flex;
-   input[type="text"],
-   input[type="number"],
-   input[type="email"], 
-   input[type="password"],
-   textarea,
-   select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid $border-form;
-    border-radius: 4px;
+  }
+  .form-item {
+    flex: 1;
+    display: flex;
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid $border-form;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+  }
+
+  [class*="btn-"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: $border-radius-sm;
     font-size: 14px;
-    box-sizing: border-box;
-   }
- }
+    color: #ffffff;
+    background: $background-blue;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
 
- [class*="btn-"] {
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   height: 40px;
-   padding: 0 16px;
-   border-radius: $border-radius-sm;
-   font-size: 14px;
-   color: #ffffff;
-   background: $background-blue;
-   cursor: pointer;
-   transition: background-color 0.3s, border-color 0.3s;
-
-   &:hover {
-     background-color: color.scale($background-light, $lightness: -10%);
-     border-color: color.scale($border-form, $lightness: -10%);
-   }
- }
+    &:hover {
+      background-color: color.scale($background-light, $lightness: -10%);
+      border-color: color.scale($border-form, $lightness: -10%);
+    }
+  }
 }
 
 .form-item {
- flex: 1;
+  flex: 1;
 }
-
-
-
-
-
-
-
-
 
 dl.column-regist {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr) minmax(300px, 2fr));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr) minmax(300px, 2fr)
+  );
   gap: 10px;
-  
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
   dt {
     font-weight: bold;
     margin-bottom: 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
     &.essential {
       &:after {
-        content: '*';
+        content: "*";
         color: red;
         margin-left: 4px;
       }
     }
   }
-  
+
   dd {
     flex: 1;
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 200px;
-  
+
     input[type="text"],
     input[type="number"],
-    input[type="email"], 
+    input[type="email"],
     input[type="password"],
     textarea,
     select {
@@ -206,8 +213,6 @@ dl.column-regist {
   }
 }
 
-
-
 input[type="file"] {
   position: relative;
   display: inline-block;
@@ -217,7 +222,7 @@ input[type="file"] {
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
-  background: url('../assets/images/common/ico_file.svg') no-repeat right center;
+  background: url("../assets/images/common/ico_file.svg") no-repeat right center;
   background-size: 16px;
   cursor: pointer;
   appearance: none;
@@ -228,7 +233,7 @@ input[type="file"] {
     display: none;
   }
   &::before {
-    content: '파일 선택';
+    content: "파일 선택";
     display: inline-block;
     position: absolute;
     left: 0;
@@ -243,7 +248,7 @@ input[type="file"] {
     transition: background-color 0.3s, border-color 0.3s;
   }
   &::after {
-    content: '';
+    content: "";
     display: inline-block;
     position: absolute;
     right: 0;
@@ -297,7 +302,7 @@ input[type="file"] {
   transform: translateY(-50%);
   width: 24px;
   height: 24px;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   border: none;
   cursor: pointer;
   z-index: 1;

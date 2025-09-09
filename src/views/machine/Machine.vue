@@ -6,15 +6,27 @@
         <div class="filter-item">
           <label for="language">{{ t("common.language") }}</label>
           <select id="language" v-model="selectedLanguage" class="form-select">
-            <option value="ko">{{ t("common.korean") }}</option>
-            <option value="en">{{ t("common.english") }}</option>
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="lang in machineStore.langCodes"
+              :key="lang.code_id"
+              :value="lang.code_value_en"
+            >
+              {{ lang.code_value }}
+            </option>
           </select>
         </div>
         <div class="filter-item">
           <label for="unit">{{ t("common.unit") }}</label>
           <select id="unit" v-model="selectedUnit" class="form-select">
-            <option value="metric">{{ t("common.metric") }}</option>
-            <option value="imperial">{{ t("common.imperial") }}</option>
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="unit in machineStore.unitSystems"
+              :key="unit.unit_system_id"
+              :value="unit.system_code.toLowerCase()"
+            >
+              {{ unit.system_name }}
+            </option>
           </select>
         </div>
         <div class="filter-item">
@@ -187,7 +199,10 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import MachineRegisterTab from "./components/MachineRegisterTab.vue";
 import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
 import { useI18n } from "vue-i18n";
+import { useMachineStore } from "@/stores/machineStore";
+
 const { t } = useI18n();
+const machineStore = useMachineStore();
 
 // 모달 탭 구성 (ProjectDetail 스타일)
 const modalTabs = [
@@ -302,8 +317,8 @@ const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 const searchQuery = ref("");
-const selectedLanguage = ref("ko");
-const selectedUnit = ref("metric");
+const selectedLanguage = ref("");
+const selectedUnit = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newMachine = ref<RegistForm>({
@@ -415,7 +430,7 @@ const costTableColumns: TableColumn[] = [
 ];
 const costTableData = computed(() => {
   if (!detailItemData.value) return [];
-  const item: any = detailItemData.value;
+  const item = detailItemData.value;
   return [
     {
       controlMethod: item.controlMethod ?? "-",
@@ -590,8 +605,9 @@ function mapMachineType(val: string) {
   return val;
 }
 
-onMounted(() => {
-  loadData();
+onMounted(async () => {
+  await loadData();
+  await machineStore.fetchCommonCodes();
 });
 </script>
 
@@ -724,6 +740,10 @@ onMounted(() => {
   justify-content: center;
 }
 
+// 반응형 브레이크포인트
+$mobile: 768px;
+$tablet: 1024px;
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -735,6 +755,13 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;
+
+  @media (max-width: $mobile) {
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
 }
 
 .modal-container {
@@ -745,6 +772,20 @@ onMounted(() => {
   max-height: 100vh;
   margin: 0; /* 상/하 여백 제거 */
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: $tablet) {
+    width: 95%;
+    max-width: 95vw;
+  }
+
+  @media (max-width: $mobile) {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 90vh;
+    border-radius: 4px;
+  }
 }
 
 .modal-header {
@@ -753,10 +794,20 @@ onMounted(() => {
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid $border-color;
+  flex-shrink: 0;
 
   h3 {
     margin: 0;
     color: $text-color;
+    font-size: 1.25rem;
+
+    @media (max-width: $mobile) {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: $mobile) {
+    padding: 0.75rem;
   }
 }
 
@@ -766,20 +817,45 @@ onMounted(() => {
   font-size: 1.5rem;
   cursor: pointer;
   color: $text-light;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 
   &:hover {
     color: $text-color;
+  }
+
+  @media (max-width: $mobile) {
+    width: 24px;
+    height: 24px;
+    font-size: 1.2rem;
   }
 }
 
 .modal-body {
   padding: 0 1rem 1rem 1rem;
+  flex: 1;
+  min-height: 0; // flex 아이템이 축소될 수 있도록 함
+  overflow-y: auto;
+
+  @media (max-width: $mobile) {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
 }
 
 .tabs-wrapper {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+  overflow-x: auto; // 탭이 많을 때 스크롤 가능
+
+  @media (max-width: $mobile) {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .tab {
@@ -791,6 +867,13 @@ onMounted(() => {
   color: #222;
   border-bottom: 2px solid transparent;
   transition: border 0.2s, color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  @media (max-width: $mobile) {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
 }
 
 .tab.active {
@@ -801,6 +884,10 @@ onMounted(() => {
 
 .tab-content {
   margin-top: 1.5rem;
+
+  @media (max-width: $mobile) {
+    margin-top: 1rem;
+  }
 }
 
 .column-regist {
@@ -809,9 +896,19 @@ onMounted(() => {
   gap: 1rem;
   align-items: center;
 
+  @media (max-width: $mobile) {
+    grid-template-columns: 100px 1fr;
+    gap: 0.75rem;
+  }
+
   dt {
     font-weight: bold;
     color: $text-color;
+    font-size: 0.9rem;
+
+    @media (max-width: $mobile) {
+      font-size: 0.8rem;
+    }
 
     &.essential::after {
       content: " *";
@@ -835,6 +932,11 @@ onMounted(() => {
     outline: none;
     border-color: $primary-color;
   }
+
+  @media (max-width: $mobile) {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
 }
 
 .modal-footer {
@@ -843,5 +945,13 @@ onMounted(() => {
   gap: 0.5rem;
   padding: 1rem;
   border-top: 1px solid $border-color;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+
+  @media (max-width: $mobile) {
+    padding: 0.75rem;
+    gap: 0.4rem;
+    justify-content: center;
+  }
 }
 </style>

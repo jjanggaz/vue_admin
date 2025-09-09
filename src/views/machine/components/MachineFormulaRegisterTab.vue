@@ -33,7 +33,7 @@
         <select class="input select-md" v-model="selectedMachineName">
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="machine in machineStore.secondDepts"
+            v-for="machine in machineStore.secondDepth"
             :key="machine.code_id"
             :value="machine.code_key"
           >
@@ -50,7 +50,7 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.thirdDepts"
+            v-for="dept in machineStore.thirdDepth"
             :key="dept.code_id"
             :value="dept.code_key"
           >
@@ -67,7 +67,7 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.fourthDepts"
+            v-for="dept in machineStore.fourthDepth"
             :key="dept.code_id"
             :value="dept.code_key"
           >
@@ -84,7 +84,7 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.fifthDepts"
+            v-for="dept in machineStore.fifthDepth"
             :key="dept.code_id"
             :value="dept.code_key"
           >
@@ -225,7 +225,7 @@ watch(selectedMachineName, async (newValue, oldValue) => {
 
     try {
       // 3차 부서 공통코드 조회 API 호출
-      const response = await machineStore.fetchThirdDepts(newValue, 3);
+      const response = await machineStore.fetchThirdDepth(newValue, 3);
       if (response?.response && response.response.length > 0) {
         isStep1Enabled.value = true;
       } else {
@@ -251,7 +251,7 @@ watch(selectedThirdDept, async (newValue, oldValue) => {
     // 값이 있을 때만 API 호출
     if (newValue) {
       try {
-        const response = await machineStore.fetchThirdDepts(newValue, 4);
+        const response = await machineStore.fetchThirdDepth(newValue, 4);
         if (response?.response && response.response.length > 0) {
           isStep2Enabled.value = true;
         } else {
@@ -275,7 +275,7 @@ watch(selectedFourthDept, async (newValue, oldValue) => {
     // 값이 있을 때만 API 호출
     if (newValue) {
       try {
-        const response = await machineStore.fetchThirdDepts(newValue, 5);
+        const response = await machineStore.fetchThirdDepth(newValue, 5);
         if (response?.response && response.response.length > 0) {
           isStep3Enabled.value = true;
         } else {

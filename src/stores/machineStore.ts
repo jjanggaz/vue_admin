@@ -36,7 +36,7 @@ export const useMachineStore = defineStore("machine", () => {
     }>
   >([]);
 
-  const secondDepts = ref<
+  const secondDepth = ref<
     Array<{
       code_id: string;
       code_key: string;
@@ -58,7 +58,7 @@ export const useMachineStore = defineStore("machine", () => {
     }>
   >([]);
 
-  const thirdDepts = ref<
+  const thirdDepth = ref<
     Array<{
       code_id: string;
       code_key: string;
@@ -80,7 +80,7 @@ export const useMachineStore = defineStore("machine", () => {
     }>
   >([]);
 
-  const fourthDepts = ref<
+  const fourthDepth = ref<
     Array<{
       code_id: string;
       code_key: string;
@@ -102,7 +102,7 @@ export const useMachineStore = defineStore("machine", () => {
     }>
   >([]);
 
-  const fifthDepts = ref<
+  const fifthDepth = ref<
     Array<{
       code_id: string;
       code_key: string;
@@ -157,8 +157,8 @@ export const useMachineStore = defineStore("machine", () => {
         }
 
         // 기계명(2차 부서) 설정
-        if (response.response.secondDepts) {
-          secondDepts.value = response.response.secondDepts;
+        if (response.response.secondDepth) {
+          secondDepth.value = response.response.secondDepth;
         }
       }
 
@@ -174,12 +174,12 @@ export const useMachineStore = defineStore("machine", () => {
   };
 
   // 3차 부서 공통코드 조회 함수
-  const fetchThirdDepts = async (parentValue: string, level: number) => {
+  const fetchThirdDepth = async (parentValue: string, level: number) => {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await request("/api/machine/depts", undefined, {
+      const response = await request("/api/machine/depth", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,11 +191,11 @@ export const useMachineStore = defineStore("machine", () => {
 
       if (response?.response) {
         if (level === 3) {
-          thirdDepts.value = response.response;
+          thirdDepth.value = response.response;
         } else if (level === 4) {
-          fourthDepts.value = response.response;
+          fourthDepth.value = response.response;
         } else if (level === 5) {
-          fifthDepts.value = response.response;
+          fifthDepth.value = response.response;
         }
       }
 
@@ -216,14 +216,14 @@ export const useMachineStore = defineStore("machine", () => {
     // 상태
     langCodes,
     unitSystems,
-    secondDepts,
-    thirdDepts,
-    fourthDepts,
-    fifthDepts,
+    secondDepth,
+    thirdDepth,
+    fourthDepth,
+    fifthDepth,
     loading,
     error,
     // 액션
     fetchCommonCodes,
-    fetchThirdDepts,
+    fetchThirdDepth,
   };
 });

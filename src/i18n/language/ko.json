@@ -844,7 +844,11 @@
       "projectItem": "항목관리"
     },
     "machine": {
+      "structure": "구조물",
       "machine": "기계",
+      "pipe": "배관 자재",
+      "electrical": "전기 자재",
+      "measurement": "계측기",
       "machineCodeManagement": "코드관리",
       "cost": "단가 관리"
     },

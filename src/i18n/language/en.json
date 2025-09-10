@@ -845,7 +845,11 @@
       "projectItem": "Item Management"
     },
     "machine": {
+      "structure": "Structure",
       "machine": "Machine",
+      "pipe": "Pipe Materials",
+      "electrical": "Electrical Materials",
+      "measurement": "Measurement",
       "machineCodeManagement": "Code Management",
       "cost": "Cost Management"
     },

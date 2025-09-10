@@ -110,9 +110,29 @@ const sectionTabs = {
   ],
   machine: [
     {
+      name: "Structure",
+      label: t("tabs.machine.structure"),
+      to: "/machine/structure",
+    },
+    {
       name: "Machine",
       label: t("tabs.machine.machine"),
       to: "/machine/machine",
+    },
+    {
+      name: "Pipe",
+      label: t("tabs.machine.pipe"),
+      to: "/machine/pipe",
+    },
+    {
+      name: "Electrical",
+      label: t("tabs.machine.electrical"),
+      to: "/machine/electrical",
+    },
+    {
+      name: "Measurement",
+      label: t("tabs.machine.measurement"),
+      to: "/machine/measurement",
     },
     {
       name: "MachineCodeManagement",

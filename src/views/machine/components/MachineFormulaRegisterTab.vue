@@ -240,7 +240,7 @@ watch(selectedMachineName, async (newValue, oldValue) => {
 });
 
 // watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedThirdDept, async (newValue, oldValue) => {
+watch(selectedThirdDept, async (newValue, _oldValue) => {
   if (isStep1Enabled.value) {
     // 기계종분류가 변경되면 하위 단계들 초기화
     selectedFourthDept.value = "";
@@ -266,7 +266,7 @@ watch(selectedThirdDept, async (newValue, oldValue) => {
   }
 });
 
-watch(selectedFourthDept, async (newValue, oldValue) => {
+watch(selectedFourthDept, async (newValue, _oldValue) => {
   if (isStep2Enabled.value) {
     // 기계유형이 변경되면 하위 단계 초기화
     selectedFifthDept.value = "";

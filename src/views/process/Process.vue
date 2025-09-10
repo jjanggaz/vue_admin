@@ -140,50 +140,11 @@
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
     >
-      <!-- 공정심볼 SVG 미리보기 + 파일명 슬롯 -->
+      <!-- 공정심볼 텍스트 표시 슬롯 -->
       <template #cell-symbol_download="{ item }">
-        <!-- 디버깅: symbol_download 값 확인 -->
-        <div style="display: none;">
-          Debug: {{ JSON.stringify(item.symbol_download) }}
-        </div>
-        
-        <!-- symbol_download가 없거나 null이거나 빈 문자열이거나 {}이거나 빈 객체인 경우 공백 표시 -->
-        <div v-if="!item.symbol_download || item.symbol_download === '' || item.symbol_download === null || item.symbol_download === 'null' || item.symbol_download === '{}' || (typeof item.symbol_download === 'string' && item.symbol_download.trim() === '{}') || (typeof item.symbol_download === 'object' && Object.keys(item.symbol_download).length === 0)" class="empty-symbol">
-          &nbsp;
-        </div>
-        
-        <!-- symbol_download가 있는 경우 SVG 미리보기 + 파일명 표시 -->
-        <div v-else class="svg-preview-container">
-          <!-- SVG 미리보기 -->
-          <div class="svg-preview-section">
-            <!-- SVG 코드가 직접 포함된 경우 -->
-            <div 
-              v-if="typeof item.symbol_download === 'string' && item.symbol_download.includes('<svg')"
-              class="svg-preview"
-              v-html="item.symbol_download"
-            ></div>
-            
-            <!-- SVG 파일 경로인 경우 -->
-            <img 
-              v-else-if="typeof item.symbol_download === 'string' && item.symbol_download.toLowerCase().endsWith('.svg')"
-              :src="`/${item.symbol_download}`" 
-              :alt="item.symbol_download"
-              class="svg-preview"
-              @error="handleSvgError"
-              @load="handleSvgLoad"
-            />
-            
-            <!-- 그 외의 경우 -->
-            <span v-else class="svg-fallback">
-              {{ item.symbol_download || '-' }}
-            </span>
-          </div>
-          
-          <!-- 파일명 표시 (symbol_uri에서 경로 제외) -->
-          <span class="filename-text">
-            {{ getFileNameFromUri(item.process_symbol) || getFileNameFromUri(item.symbol_download) || 'symbol.svg' }}
-          </span>
-        </div>
+        <span class="symbol-text">
+          {{ getFileNameFromUri(item.process_symbol) || getFileNameFromUri(item.symbol_download) || '-' }}
+        </span>
       </template>
       
       <!-- 보기 버튼 슬롯 -->
@@ -431,11 +392,6 @@
             @update-success="closeDetailModal"
           />
         </div>
-        <div class="modal-footer detail-modal-footer">
-          <button class="btn btn-secondary" @click="closeDetailModal">
-            닫기
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -584,24 +540,6 @@ const formatDate = (date: string | null) => {
   return new Date(date).toLocaleDateString("ko-KR");
 };
 
-// SVG 에러 처리 함수
-const handleSvgError = (event: Event) => {
-  const img = event.target as HTMLImageElement;
-  const container = img.parentElement;
-  if (container) {
-    img.style.display = 'none';
-    const fallback = container.querySelector('.svg-fallback') as HTMLElement;
-    if (fallback) {
-      fallback.style.display = 'inline';
-    }
-  }
-};
-
-// SVG 로드 성공 처리 함수
-const handleSvgLoad = (event: Event) => {
-  const img = event.target as HTMLImageElement;
-  console.log('SVG 로드 성공:', img.src);
-};
 
 
 // URI에서 파일명만 추출하는 함수
@@ -1304,110 +1242,16 @@ onMounted(async () => {
   padding: $spacing-lg;
 }
 
-// 공정심볼 스타일
-.empty-symbol {
-  min-height: 20px;
-  min-width: 20px;
-}
-
-// SVG 미리보기 + 파일명 스타일 (1줄 표시, 클릭 가능)
-.svg-preview-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .svg-preview-section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    
-    .svg-preview {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-      border-radius: 3px;
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      
-      &.clickable {
-        cursor: pointer;
-      }
-      
-      &:hover {
-        transform: scale(1.1);
-        transition: transform 0.2s ease;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      }
-      
-      // SVG 코드를 직접 렌더링할 때의 스타일
-      svg {
-        width: 100%;
-        height: 100%;
-        fill: currentColor;
-      }
-    }
-    
-    .svg-fallback {
-      font-size: 11px;
-      color: #6c757d;
-      font-family: monospace;
-      
-      &.clickable {
-        cursor: pointer;
-      }
-      
-      &.fallback-only {
-        display: inline;
-      }
-    }
-  }
-  
-  .filename-text {
-    font-size: 12px;
-    color: #495057;
-    font-family: monospace;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-  
-  .download-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    
-    svg {
-      width: 12px;
-      height: 12px;
-    }
-  }
-  
-  &:hover .download-icon {
-    opacity: 1;
-    color: #007bff;
-  }
+// 공정심볼 텍스트 스타일
+.symbol-text {
+  font-size: 12px;
+  color: #495057;
+  font-family: monospace;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .process-3d-page {
@@ -1515,7 +1359,7 @@ onMounted(async () => {
 .detail-modal-body {
   flex: 1;
   overflow: auto;
-  padding: 2.5rem;
+  padding: 0.5rem 2.5rem 2.5rem 2.5rem;
   min-height: 400px;
 
   .process-page {
@@ -1581,7 +1425,7 @@ onMounted(async () => {
     
     .modal-header {
       cursor: default;
-      padding: 10px 0;
+      padding: 10px 0 5px 0;
       margin: 0;
     }
     

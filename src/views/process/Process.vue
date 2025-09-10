@@ -607,29 +607,6 @@ const handleRegist = () => {
     };
 
 
-
-// 첨부된 파일 삭제
-// const removeAttachedFile = (type: keyof AttachedFiles, index: number) => {
-//   const files = attachedFiles.value[type];
-//   if (files[index - 1]) {
-//     files.splice(index - 1, 1);
-//     attachedFiles.value = { ...attachedFiles.value };
-//   }
-// };
-
-
-// const handleFileChange = (field: keyof RegistForm, event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   if (target.files && target.files[0]) {
-//     const file = target.files[0];
-//     (registForm.value as any)[field] = file;
-//     // 파일명 표시를 위해 selectedFiles에도 저장
-//     selectedFiles.value[field] = file;
-//   }
-// };
-
-
-
 const handleDelete = async () => {
   if (processStore.selectedItems.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));

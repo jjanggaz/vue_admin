@@ -109,7 +109,7 @@
           <!-- 공정 등록 모드에서 기본정보 미등록 시 안내 메시지 -->
           <div v-if="props.isRegisterMode && !isBasicInfoRegistered" class="formula-placeholder">
             <div class="placeholder-message">
-              <p>계산식 입력 전에 기본정보를 등록하여야 합니다</p>
+              <p>{{ t("process.registerBasicInfoFirst") }}</p>
             </div>
           </div>
           
@@ -232,6 +232,23 @@
                 </button>
               </div>
             </template>
+            <template #cell-svgFile="{ item }">
+              <div class="file-selection-group">
+                <button class="btn btn-sm btn-primary" @click="selectSvgFile(item)">파일선택</button>
+                <span v-if="item.svgFileName" class="selected-file">
+                  {{ item.svgFileName }}
+                  <button 
+                    v-if="item.svg_drawing_id && !item.svg_drawing_id.startsWith('temp_svg_drawing_')" 
+                    @click="downloadSvg(item.svg_drawing_id)" 
+                    class="btn btn-sm btn-outline-primary download-btn"
+                    title="Svg 파일 다운로드"
+                  >
+                    <i class="fas fa-download"></i>
+                  </button>
+                </span>
+                <span v-else class="no-file">{{ t("common.noFile") }}</span>
+              </div>
+            </template>
             <template #cell-mappingPidList="{ item }">
               <button 
                 class="btn btn-sm btn-primary"
@@ -250,7 +267,7 @@
         <div v-if="showPidListInMain" class="pid-section">
           <div class="tab-header">
             <div class="grid-title">
-              <h4>P&ID 목록</h4>
+              <h4>P&ID</h4>
             </div>
             <div class="tab-actions">
               <button class="btn btn-primary" @click="addMappingPidRow">추가</button>
@@ -306,11 +323,25 @@
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
               </div>
             </template>
+            <template #cell-svgFile="{ item }">
+              <div class="file-selection-group">
+                <button class="btn btn-sm btn-primary" @click="selectSvgFileForPid(item)">파일선택</button>
+                <span v-if="item.svgFileName" class="selected-file">
+                  {{ item.svgFileName }}
+                  <button 
+                    v-if="item.svg_drawing_id && !item.svg_drawing_id.startsWith('temp_svg_drawing_')" 
+                    @click="downloadSvg(item.svg_drawing_id)" 
+                    class="btn btn-sm btn-outline-primary download-btn"
+                    title="Svg 파일 다운로드"
+                  >
+                    <i class="fas fa-download"></i>
+                  </button>
+                </span>
+                <span v-else class="no-file">{{ t("common.noFile") }}</span>
+              </div>
+            </template>
             <template #cell-pidComponent="{ item }">
               <button class="btn btn-sm btn-primary" @click="openPidComponentModal(item)">P&ID 컴포넌트</button>
-            </template>
-            <template #cell-svgPreview="{ item }">
-              <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
             </template>
           </DataTable>
           
@@ -329,6 +360,13 @@
             style="display: none"
             ref="excelFileInput"
           />
+          <input
+            type="file"
+            accept=".svg"
+            @change="handleSvgFileSelected"
+            style="display: none"
+            ref="svgFileInput"
+          />
           
         </div>
         
@@ -336,7 +374,7 @@
         <div v-if="showPidComponentSection" class="pid-component-section">
           <div class="tab-header">
             <div class="grid-title">
-              <h4>P&ID Components 설정</h4>
+              <h4>P&ID Components</h4>
             </div>
             <div class="tab-actions">
               <button 
@@ -366,6 +404,9 @@
             :selectable="true"
             @selection-change="handlePidComponentSelectionChange"
           >
+            <template #cell-no="{ item, index }">
+              <span>{{ item.no || index + 1 }}</span>
+            </template>
             <template #cell-pidId="{ item }">
               <span class="pid-id-display">{{ item.pidId || '-' }}</span>
             </template>
@@ -593,6 +634,11 @@ const mappingPidList = ref<any[]>([]);
 const selectedMappingPidItems = ref<any[]>([]);
 const initialMappingPidList = ref<any[]>([]); // 초기 P&ID 목록 데이터 저장
 
+// Svg 파일 관련 상태
+const currentPfdItemForSvg = ref<any>(null);
+const currentPidItemForSvg = ref<any>(null);
+const svgFileInput = ref<HTMLInputElement>();
+
 // P&ID 컴포넌트 관련 상태
 const pidComponentList = ref<any[]>([]);
 const selectedPidComponentItems = ref<any[]>([]);
@@ -663,7 +709,7 @@ const hasProcessSymbolFile = computed(() => {
 // 컬럼 정의
 const formulaColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false },
-  { key: "no", title: "순번", sortable: true },
+  { key: "no", title: "No.", sortable: true },
   { key: "registeredFormula", title: "등록 계산식", sortable: true },
   { key: "registrationDate", title: "등록일자", sortable: true },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
@@ -685,10 +731,11 @@ const formulaColumns: TableColumn[] = [
 
 const pfdColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false },
-  { key: "pfdFileName", title: "공정카드 파일명", sortable: true },
+  { key: "no", title: "No.", sortable: false },
+  { key: "pfdFileName", title: "공정카드 파일", sortable: true },
+  { key: "svgFile", title: "Svg 파일", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: true },
-  { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
-  { key: "remarks", title: "비고", sortable: true }
+  { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false }
 ];
 
 const componentColumns: TableColumn[] = [
@@ -706,12 +753,13 @@ const mappingPidColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "pidFile", title: "P&ID (*)", sortable: false },
   { key: "excelFile", title: "매핑 Excel (*)", sortable: false },
-  { key: "pidComponent", title: "P&ID 컴포넌트", sortable: false },
-  { key: "svgPreview", title: "Svg 도면 미리보기", sortable: false }
+  { key: "svgFile", title: "Svg 파일", sortable: false },
+  { key: "pidComponent", title: "P&ID 컴포넌트", sortable: false }
 ];
 
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
+  { key: "no", title: "No.", sortable: false, width: "60px" },
   { key: "pidId", title: "P&ID ID", sortable: false, width: "120px" },
   { key: "category", title: "구분 *", sortable: false, width: "100px" },
   { key: "middleCategory", title: "중분류 *", sortable: false, width: "120px" },
@@ -802,6 +850,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
       
       return {
         id: `pfd-${index + 1}`,
+        no: index + 1,
         pfdFileName: fileName,
         registrationDate: item.created_at || item.uploaded_at || formatDate(new Date()),
         mappingPidList: '보기',
@@ -1234,7 +1283,7 @@ const uploadFormulaFiles = () => {
   const newFormulaItems = selectedFormulaFiles.value.map((file, index) => {
     return {
       id: `formula_${Date.now()}_${index}`,
-      no: (processStore.formulaList.length + index + 1).toString().padStart(3, '0'),
+      no: processStore.formulaList.length + index + 1,
       registeredFormula: file.name.replace('.py', ''),
       formula_code: '',
       registrationDate: formatDate(new Date()),
@@ -1264,6 +1313,7 @@ const uploadPfdFiles = () => {
   const newPfdItems = selectedPfdFiles.value.map((file, index) => {
     return {
       id: `pfd_${Date.now()}_${index}`,
+      no: processStore.pfdList.length + index + 1,
       pfdFileName: file.name,
       registrationDate: formatDate(new Date()),
       mappingPidList: '보기',
@@ -1285,6 +1335,17 @@ const uploadPfdFiles = () => {
 // 선택 관련 함수들
 const handleFormulaSelectionChange = () => {
   console.log('선택된 계산식 항목:', selectedFormulaItems.value);
+  
+  // 계산식 row가 선택되면 공정카드 버튼 클릭 이벤트 호출
+  if (selectedFormulaItems.value) {
+    const selectedItem = selectedFormulaItems.value;
+    const selectedIndex = processStore.formulaList.findIndex(item => item.id === selectedItem.id);
+    
+    if (selectedIndex !== -1) {
+      console.log('계산식 선택으로 인한 공정카드 버튼 클릭 시뮬레이션');
+      handleProcessManagementClick(selectedItem, selectedIndex);
+    }
+  }
 };
 
 // 컴포넌트 버튼 클릭 핸들러
@@ -2216,6 +2277,126 @@ const downloadPid = async (drawingId: string) => {
   }
 };
 
+// Svg 파일 선택 (공정카드 그리드용)
+const selectSvgFile = (item: any) => {
+  currentPfdItemForSvg.value = item;
+  svgFileInput.value?.click();
+};
+
+// Svg 파일 선택 (P&ID 그리드용)
+const selectSvgFileForPid = (item: any) => {
+  currentPidItemForSvg.value = item;
+  svgFileInput.value?.click();
+};
+
+// Svg 파일 선택 핸들러
+const handleSvgFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+    console.log('Svg 파일 선택됨:', file.name);
+    
+    // 공정카드 그리드에서 선택된 경우
+    if (currentPfdItemForSvg.value) {
+      // currentPfdItemForSvg에 저장
+      currentPfdItemForSvg.value.svgFileName = file.name;
+      currentPfdItemForSvg.value.svgFile = file; // 실제 File 객체 저장
+      currentPfdItemForSvg.value.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+      
+      // processStore.pfdList에서 해당 항목을 찾아서 업데이트
+      const itemIndex = processStore.pfdList.findIndex(pfdItem => pfdItem.id === currentPfdItemForSvg.value.id);
+      if (itemIndex !== -1) {
+        processStore.pfdList[itemIndex].svgFileName = file.name;
+        processStore.pfdList[itemIndex].svgFile = file;
+        processStore.pfdList[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        console.log('Svg 파일이 processStore.pfdList에 업데이트됨:', file.name);
+      }
+    }
+    
+    // P&ID 그리드에서 선택된 경우
+    if (currentPidItemForSvg.value) {
+      // currentPidItemForSvg에 저장
+      currentPidItemForSvg.value.svgFileName = file.name;
+      currentPidItemForSvg.value.svgFile = file; // 실제 File 객체 저장
+      currentPidItemForSvg.value.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+      
+      // processStore.pidList에서 해당 항목을 찾아서 업데이트
+      const itemIndex = processStore.pidList.findIndex(pidItem => pidItem.id === currentPidItemForSvg.value.id);
+      if (itemIndex !== -1) {
+        processStore.pidList[itemIndex].svgFileName = file.name;
+        processStore.pidList[itemIndex].svgFile = file;
+        processStore.pidList[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        console.log('Svg 파일이 processStore.pidList에 업데이트됨:', file.name);
+      }
+    }
+    
+    console.log('Svg 파일 선택 완료:', file.name);
+  }
+};
+
+// Svg 파일 다운로드
+const downloadSvg = async (drawingId: string) => {
+  try {
+    console.log('Svg 파일 다운로드 시작:', drawingId);
+    
+    const response = await request(`/api/process/drawing/download/${drawingId}`, undefined, {
+      method: 'GET'
+    });
+    
+    if (!response.success) {
+      throw new Error(`Svg 파일 다운로드 실패: ${response.message}`);
+    }
+    
+    const responseData = response.response;
+    console.log('Svg 파일 다운로드 응답:', responseData);
+    
+    if (responseData.download_url) {
+      // 외부 URL인 경우 CORS 처리
+      try {
+        const fileResponse = await fetch(responseData.download_url, {
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        if (!fileResponse.ok) {
+          throw new Error(`파일 다운로드 실패: ${fileResponse.status}`);
+        }
+        
+        const blob = await fileResponse.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = responseData.file_info?.file_name || 'svg_file.svg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (corsError) {
+        console.warn('CORS 오류로 인한 대체 방법 사용:', corsError);
+        window.open(responseData.download_url, '_blank');
+      }
+    } else if (responseData.response_body) {
+      // 직접 파일 내용인 경우
+      const blob = new Blob([responseData.response_body], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = responseData.file_info?.file_name || 'svg_file.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      throw new Error('다운로드할 파일을 찾을 수 없습니다.');
+    }
+    
+    console.log('Svg 파일 다운로드 완료');
+  } catch (error: any) {
+    console.error('Svg 파일 다운로드 실패:', error);
+    alert(`Svg 파일 다운로드 실패: ${error.message}`);
+  }
+};
+
 // 공정카드 섹션 닫기
 const closePfdSection = () => {
   showPfdSection.value = false;
@@ -2440,6 +2621,13 @@ const processPfdChanges = async (processId: string) => {
 
 const handlePfdSelectionChange = () => {
   console.log('선택된 공정카드 항목:', selectedPfdItems.value);
+  
+  // 공정카드 row가 선택되면 P&ID 버튼 클릭 이벤트 호출
+  if (selectedPfdItems.value) {
+    const selectedItem = selectedPfdItems.value;
+    console.log('공정카드 선택으로 인한 P&ID 버튼 클릭 시뮬레이션');
+    openMappingPidModal(selectedItem);
+  }
 };
 
 // 삭제 함수들
@@ -3582,6 +3770,7 @@ const refreshPfdData = async () => {
         
         return {
           id: `pfd_${index + 1}`,
+          no: index + 1,
           pfdFileName: item.current_file?.file_name || item.pfdFileName || '공정카드 파일',
           registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
           mappingPidList: '보기',
@@ -4185,6 +4374,13 @@ const handleSelectAllMappingPid = () => {
 
 const handleMappingPidSelectionChange = () => {
   console.log('선택된 P&ID 항목들:', selectedMappingPidItems.value);
+  
+  // P&ID 목록 row가 선택되면 P&ID 컴포넌트 버튼 클릭 이벤트 호출
+  if (selectedMappingPidItems.value) {
+    const selectedItem = selectedMappingPidItems.value;
+    console.log('P&ID 선택으로 인한 P&ID 컴포넌트 버튼 클릭 시뮬레이션');
+    openPidComponentModal(selectedItem);
+  }
 };
 
 const deleteSelectedMappingPidItems = () => {
@@ -4353,7 +4549,7 @@ onMounted(async () => {
             
             const formulaItem = {
               id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-              no: (index + 1).toString().padStart(3, '0'),
+              no: index + 1,
               registeredFormula: item.formula_name || item.name || '',
               formula_code: item.formula_code || item.code || '',
               registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
@@ -4386,7 +4582,7 @@ onMounted(async () => {
           const formulaItems = formulaResult.data.map((item: any, index: number) => {
             const formulaItem = {
               id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-              no: (index + 1).toString().padStart(3, '0'),
+              no: index + 1,
               registeredFormula: item.formula_name || item.name || '',
               formula_code: item.formula_code || item.code || '',
               registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
@@ -4477,6 +4673,7 @@ onMounted(async () => {
             
             return {
               id: `pfd_${index + 1}`,
+              no: index + 1,
               pfdFileName: item.current_file?.file_name || item.pfdFileName || '공정카드 파일',
               registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
               mappingPidList: '보기',
@@ -4591,7 +4788,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
           const formulaItems = formulaResult.response.map((item: any, index: number) => {
             const formulaItem = {
               id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-              no: (index + 1).toString().padStart(3, '0'),
+              no: index + 1,
               registeredFormula: item.formula_name || item.name || '',
               formula_code: item.formula_code || item.code || '',
               registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
@@ -4623,7 +4820,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
           const formulaItems = formulaResult.data.map((item: any, index: number) => {
             const formulaItem = {
               id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-              no: (index + 1).toString().padStart(3, '0'),
+              no: index + 1,
               registeredFormula: item.formula_name || item.name || '',
               formula_code: item.formula_code || item.code || '',
               registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
@@ -5411,6 +5608,28 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   flex: 1;
   min-width: 0;
   word-break: break-word;
+}
+
+/* Svg 파일 선택 그룹 스타일 */
+.file-selection-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #333;
+  font-size: 14px;
+}
+
+.no-file {
+  color: #999;
+  font-style: italic;
+  font-size: 14px;
 }
 
 </style>

@@ -375,6 +375,7 @@
     "symbolImage": "Symbol Image",
     "symbolImagePlaceholder": "Symbol image will be displayed here",
     "noSymbolImage": "No saved symbol image.",
+    "noAttachedSymbolImage": "No attached symbol image.",
     "active": "Active",
     "inactive": "Inactive",
     "update": "Update",

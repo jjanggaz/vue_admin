@@ -234,7 +234,7 @@
             </template>
             <template #cell-mappingPidList="{ item }">
               <button 
-                class="btn btn-sm btn-outline-primary"
+                class="btn btn-sm btn-primary"
                 :disabled="!item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_')"
                 @click="openMappingPidModal(item)"
                 :title="!item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_') ? 'PFD를 먼저 저장해주세요' : (item.hasPidMapping ? 'P&ID 매핑 보기' : 'P&ID 매핑 추가')"
@@ -293,7 +293,6 @@
                   >
                     <i class="fas fa-download"></i>
                   </button>
-                  <button class="clear-file" @click="clearPidFile(item)">&times;</button>
                 </span>
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
               </div>
@@ -303,13 +302,12 @@
                 <button class="btn btn-sm btn-primary" @click="selectExcelFile(item)">파일선택</button>
                 <span v-if="item.excelFileName" class="selected-file">
                   {{ item.excelFileName }}
-                  <button class="clear-file" @click="clearExcelFile(item)">&times;</button>
                 </span>
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
               </div>
             </template>
             <template #cell-pidComponent="{ item }">
-              <button class="btn btn-sm btn-outline-primary" @click="openPidComponentModal(item)">P&ID 컴포넌트</button>
+              <button class="btn btn-sm btn-primary" @click="openPidComponentModal(item)">P&ID 컴포넌트</button>
             </template>
             <template #cell-svgPreview="{ item }">
               <button class="btn btn-sm btn-secondary" @click="previewSvg(item)">보기</button>
@@ -345,7 +343,7 @@
                 class="btn btn-primary" 
                 @click="addPidComponentRow"
                 :disabled="isAddButtonDisabled"
-                title="P&ID Components는 최대 1행만 입력 가능합니다"
+                title="P&ID Components 행 추가"
               >
                 추가
               </button>
@@ -600,9 +598,9 @@ const pidComponentList = ref<any[]>([]);
 const selectedPidComponentItems = ref<any[]>([]);
 const currentDrawingId = ref<string>(''); // 현재 선택된 drawing_id 저장
 
-// P&ID 컴포넌트 추가 버튼 비활성화 여부 (최대 1행만 허용)
+// P&ID 컴포넌트 추가 버튼 비활성화 여부 (제한 없음)
 const isAddButtonDisabled = computed(() => {
-  return pidComponentList.value.length >= 1;
+  return false;
 });
 
 // P&ID 컴포넌트 select 옵션 데이터
@@ -1048,6 +1046,10 @@ const deletePidDrawingAPI = async (drawingId: string) => {
 const handleProcessTypeChange = () => {
   if (processStore.processDetail.processType) {
     processStore.loadSubCategoryCodes(processStore.processDetail.processType);
+  } else {
+    // 공정구분이 선택되지 않은 경우 중분류와 공정명 옵션 초기화
+    processStore.searchSubCategoryOptions = [];
+    processStore.searchProcessNameOptions = [];
   }
   processStore.processDetail.subCategory = '';
   processStore.processDetail.processName = '';
@@ -1056,6 +1058,9 @@ const handleProcessTypeChange = () => {
 const handleSubCategoryChange = () => {
   if (processStore.processDetail.processType && processStore.processDetail.subCategory) {
     processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
+  } else {
+    // 중분류가 선택되지 않은 경우 공정명 옵션 초기화
+    processStore.searchProcessNameOptions = [];
   }
   processStore.processDetail.processName = '';
 };
@@ -1579,12 +1584,6 @@ const closePidComponentSection = () => {
 
 // P&ID 컴포넌트 행 추가
 const addPidComponentRow = () => {
-  // 최대 1행 제한 확인
-  if (pidComponentList.value.length >= 1) {
-    alert('P&ID Components는 최대 1행만 입력 가능합니다.');
-    return;
-  }
-  
   const newRow = {
     id: `pid_comp_${Date.now()}`,
     no: pidComponentList.value.length + 1,
@@ -2684,9 +2683,11 @@ const createNewProcess = async () => {
       return;
     }
     
-    // 공정심볼 파일이 있는지 확인
+    // 공정심볼 파일이 있는지 확인 (새로 선택한 파일 또는 기존 파일)
     const symbolFile = processStore.selectedFiles['processSymbol'];
-    if (!symbolFile) {
+    const existingSymbol = processStore.processDetail.processSymbol;
+    
+    if (!symbolFile && !existingSymbol) {
       alert('공정심볼 파일을 선택해주세요.');
       return;
     }
@@ -2827,32 +2828,41 @@ const saveBasicProcessInfo = async (processId: string) => {
     }
     
     // 기본 정보 변경사항 감지 (언어, 단위, 공정구분, 공정 중분류, 공정명 등)
-    // processDetail의 기본 정보가 변경되었는지 확인
     const currentProcessDetail = processStore.processDetail;
     if (currentProcessDetail) {
-      // 기본 정보가 존재하면 변경사항이 있다고 간주
+      // 기본 정보가 입력되어 있으면 변경사항이 있다고 간주
+      if (currentProcessDetail.processNm || 
+          currentProcessDetail.processType || 
+          currentProcessDetail.subCategory || 
+          currentProcessDetail.language || 
+          currentProcessDetail.unit || 
+          currentProcessDetail.processName) {
       hasAnyChanges = true;
-      
-      // 공정명 select의 label 값으로 process_name 설정
+        console.log('기본 정보 변경사항 감지됨');
+      }
+    }
+    
+    // 변경사항이 있는지 확인
+    if (!hasAnyChanges) {
+      console.log('저장할 변경사항이 없습니다.');
+      alert('저장할 내용이 없습니다.');
+      return;
+    }
+    
+    // 공정명 정보 로깅
+    if (currentProcessDetail) {
       const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
         option => option.value === currentProcessDetail.processName
       );
       
-      if (selectedProcessNameOption) {
-        // processDetail에 올바른 process_name 설정
-        processStore.setProcessDetail({
-          processName: selectedProcessNameOption.label
-        });
-        console.log('공정명 label 값으로 설정:', selectedProcessNameOption.label);
-      }
-      
-      console.log('기본 정보 변경사항 감지됨:', {
+      console.log('현재 기본 정보:', {
         processNm: currentProcessDetail.processNm,
         processType: currentProcessDetail.processType,
         subCategory: currentProcessDetail.subCategory,
         language: currentProcessDetail.language,
         unit: currentProcessDetail.unit,
-        processName: selectedProcessNameOption?.label || currentProcessDetail.processName
+        processName: currentProcessDetail.processName,
+        processNameLabel: selectedProcessNameOption?.label
       });
     }
     
@@ -2860,7 +2870,25 @@ const saveBasicProcessInfo = async (processId: string) => {
     if (hasProcessSymbolChanged) {
       try {
         console.log('공정심볼 파일과 함께 저장 시작');
-        await processStore.updateProcess(processId, processStore.processDetail);
+        
+        // processName을 label 값으로 변환하여 저장
+        const processDetailForSave = { ...processStore.processDetail };
+        const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+          option => option.value === processDetailForSave.processName
+        );
+        if (selectedProcessNameOption) {
+          processDetailForSave.processName = selectedProcessNameOption.label;
+        }
+        
+        // 공정심볼파일이 변경된 경우에만 siteFile 포함
+        if (hasProcessSymbolChanged) {
+          processDetailForSave.siteFile = symbolFile;
+        } else {
+          // 공정심볼파일이 변경되지 않은 경우 siteFile 제거
+          delete processDetailForSave.siteFile;
+        }
+        
+        await processStore.updateProcess(processId, processDetailForSave);
         
         // 업데이트 성공 후 선택된 파일 상태 초기화
         if (hasProcessSymbolChanged) {
@@ -2882,8 +2910,29 @@ const saveBasicProcessInfo = async (processId: string) => {
         throw updateError;
       }
     } else {
-      console.log("공정심볼 파일이 선택되지 않았습니다.");
-      alert('공정심볼 파일을 선택해주세요.');
+      // 공정심볼 파일이 없는 경우 기본 정보만 저장
+      try {
+        console.log('기본 정보만 저장 시작');
+        
+        // processName을 label 값으로 변환하여 저장
+        const processDetailForSave = { ...processStore.processDetail };
+        const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+          option => option.value === processDetailForSave.processName
+        );
+        if (selectedProcessNameOption) {
+          processDetailForSave.processName = selectedProcessNameOption.label;
+        }
+        
+        // 공정심볼파일이 변경되지 않은 경우 siteFile 제거
+        delete processDetailForSave.siteFile;
+        
+        await processStore.updateProcess(processId, processDetailForSave);
+        console.log("기본 정보 업데이트 완료");
+        alert('기본 정보가 저장되었습니다.');
+      } catch (updateError: any) {
+        console.error("기본 정보 업데이트 실패:", updateError);
+        throw updateError;
+      }
     }
     
   } catch (error: any) {
@@ -3390,6 +3439,15 @@ const openMappingPidModal = async (pfdItem: any) => {
   
   // P&ID 목록 데이터 로드 - drawing_id를 parent_drawing_id로 전달
   await loadMappingPidList(pfdItem);
+  
+  // P&ID 목록 데이터가 없는 경우 P&ID Components 설정 닫기
+  if (mappingPidList.value.length === 0) {
+    showPidComponentSection.value = false;
+    selectedPidForComponent.value = null;
+    pidComponentList.value = [];
+    selectedPidComponentItems.value = [];
+    currentDrawingId.value = '';
+  }
 };
 
 // P&ID 목록 메인화면 닫기
@@ -4016,44 +4074,18 @@ const loadMappingPidList = async (pfdItem: any) => {
       console.log('P&ID 매핑 목록 로드 완료:', mappingPidList.value.length, '개');
         console.log('P&ID 초기값 저장 완료:', initialMappingPidList.value.length, '개');
       } else {
-        // child_drawings가 없는 경우 빈 행 1개 추가
-        const emptyRow = {
-          id: 'pid_1',
-          no: 1,
-          pidFileName: '',
-          excelFileName: '',
-          remarks: '',
-          parent_drawing_id: parentDrawingId,
-          drawing_id: null,
-          pidFile: null,
-          excelFile: null
-        };
-        
-        mappingPidList.value = [emptyRow];
-        // 초기값 저장 (깊은 복사)
-        initialMappingPidList.value = JSON.parse(JSON.stringify([emptyRow]));
-        console.log('P&ID 매핑 목록 로드 완료 (빈 행):', mappingPidList.value);
-        console.log('P&ID 초기값 저장 완료 (빈 행):', initialMappingPidList.value);
+        // child_drawings가 없는 경우 빈 배열로 설정
+        mappingPidList.value = [];
+        initialMappingPidList.value = [];
+        console.log('P&ID 매핑 목록 로드 완료 (데이터 없음):', mappingPidList.value);
+        console.log('P&ID 초기값 저장 완료 (데이터 없음):', initialMappingPidList.value);
       }
     } else {
-      // 기존 데이터가 없는 경우 빈 행 1개 추가
-      const emptyRow = {
-        id: 'pid_1',
-        no: 1,
-        pidFileName: '',
-        excelFileName: '',
-        remarks: '',
-        parent_drawing_id: parentDrawingId,
-        drawing_id: null,
-        pidFile: null,
-        excelFile: null
-      };
-      
-      mappingPidList.value = [emptyRow];
-      // 초기값 저장 (깊은 복사)
-      initialMappingPidList.value = JSON.parse(JSON.stringify([emptyRow]));
-      console.log('P&ID 매핑 목록 로드 완료 (빈 행):', mappingPidList.value);
-      console.log('P&ID 초기값 저장 완료 (빈 행):', initialMappingPidList.value);
+      // 기존 데이터가 없는 경우 빈 배열로 설정
+      mappingPidList.value = [];
+      initialMappingPidList.value = [];
+      console.log('P&ID 매핑 목록 로드 완료 (데이터 없음):', mappingPidList.value);
+      console.log('P&ID 초기값 저장 완료 (데이터 없음):', initialMappingPidList.value);
     }
     
   } catch (error) {
@@ -4139,31 +4171,6 @@ const handleExcelFileSelected = (event: Event) => {
   }
 };
 
-const clearPidFile = (item: any) => {
-  item.pidFileName = '';
-  item.pidFile = null; // File 객체도 삭제
-  
-  // mappingPidList에서 해당 항목을 찾아서 업데이트
-  const itemIndex = mappingPidList.value.findIndex(listItem => listItem.id === item.id);
-  if (itemIndex !== -1) {
-    mappingPidList.value[itemIndex].pidFileName = '';
-    mappingPidList.value[itemIndex].pidFile = null;
-    console.log('P&ID 파일이 mappingPidList에서 제거됨');
-  }
-};
-
-const clearExcelFile = (item: any) => {
-  item.excelFileName = '';
-  item.excelFile = null; // File 객체도 삭제
-  
-  // mappingPidList에서 해당 항목을 찾아서 업데이트
-  const itemIndex = mappingPidList.value.findIndex(listItem => listItem.id === item.id);
-  if (itemIndex !== -1) {
-    mappingPidList.value[itemIndex].excelFileName = '';
-    mappingPidList.value[itemIndex].excelFile = null;
-    console.log('Excel 파일이 mappingPidList에서 제거됨');
-  }
-};
 
 
 
@@ -4223,6 +4230,10 @@ onMounted(async () => {
         processName: '',
         processSymbol: ''
       });
+      
+      // 공정 등록 모드에서는 중분류와 공정명 옵션 초기화
+      processStore.searchSubCategoryOptions = [];
+      processStore.searchProcessNameOptions = [];
       
       // 계산식 그리드 초기화
       processStore.setFormulaList([]);
@@ -4668,14 +4679,14 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .process-info-section {
-  margin-bottom: 15px;
-  padding: 15px;
+  margin-bottom: 8px;
+  padding: 8px 15px;
   background: #f8f9fa;
   border-radius: 8px;
 }
 
 .process-info-section h3 {
-  margin-bottom: 15px;
+  margin-bottom: 0;
   color: #333;
 }
 
@@ -4782,7 +4793,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .selected-file {
-  color: #666;
+  color: #000 !important;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
@@ -5045,7 +5056,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #007bff;
+  color: #000 !important;
   font-size: 13px;
   flex: 1;
   min-width: 0;
@@ -5066,7 +5077,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .no-file {
-  color: #6c757d;
+  color: #000;
   font-size: 13px;
   font-style: italic;
   flex: 1;

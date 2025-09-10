@@ -560,7 +560,8 @@
     "consistencyCheckLogicRequired": "정합성 체크 로직 구현해야함",
     "formulaFileAttachment": "계산식 첨부파일",
     "pfdFileAttachment": "공정카드 첨부파일",
-    "registerBasicInfoFirst": "계산식 입력 전에 기본정보를 등록하여야 합니다"
+    "registerBasicInfoFirst": "계산식 입력 전에 기본정보를 등록하여야 합니다",
+    "registerBasicInfoForPfd": "공정카드 입력 전에 기본정보를 등록하여야 합니다"
   },
   "processDetail": {
     "processType": "공정구분",

@@ -630,7 +630,8 @@
     "consistencyCheckLogicRequired": "Consistency check logic implementation required",
     "formulaFileAttachment": "Formula FileAttachment",
     "pfdFileAttachment": "PFD FileAttachment",
-    "registerBasicInfoFirst": "You must register basic information before entering a calculation formula"
+    "registerBasicInfoFirst": "You must register basic information before entering a calculation formula",
+    "registerBasicInfoForPfd": "You must register basic information before entering a PFD"
   },
   "processDetail": {
     "processType": "Process Type",

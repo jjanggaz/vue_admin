@@ -64,6 +64,9 @@ export interface PidItem {
   mappingExcel: string;
   infoOverview: string;
   svgPreview: string;
+  svgFile?: File;
+  svgFileName?: string;
+  svg_drawing_id?: string;
 }
 
 export interface PfdItem {
@@ -75,6 +78,9 @@ export interface PfdItem {
   remarks: string;
   drawing_id?: string;
   _file?: File;
+  svgFile?: File;
+  svgFileName?: string;
+  svg_drawing_id?: string;
 }
 
 export interface DesignItem {
@@ -151,6 +157,8 @@ export const useProcessStore = defineStore("process", () => {
   const searchProcessType = ref<string | null>(null);
   const searchSubCategoryInput = ref<string | null>(null);
   const searchProcessName = ref<string | null>(null);
+  const searchLanguage = ref<string>("ko");
+  const searchUnit = ref<string>("METRIC");
 
   // 코드 옵션 상태
   const processTypeOptions = ref<ProcessCodeOption[]>([]);
@@ -279,6 +287,14 @@ export const useProcessStore = defineStore("process", () => {
     searchProcessName.value = value;
   };
 
+  const setSearchLanguage = (value: string) => {
+    searchLanguage.value = value;
+  };
+
+  const setSearchUnit = (value: string) => {
+    searchUnit.value = value;
+  };
+
   const setProcessDetail = (detail: Partial<ProcessDetail>) => {
     processDetail.value = { ...processDetail.value, ...detail };
   };
@@ -374,9 +390,12 @@ export const useProcessStore = defineStore("process", () => {
 
       let requestData;
 
+      // 기본 검색 조건 구성
+      let baseRequestData: any = {};
+
       // 1. searchProcessName.value != null 인 경우
       if (searchProcessName.value != null) {
-        requestData = {
+        baseRequestData = {
           search_field: "process_code",
           search_value: searchProcessName.value,
         };
@@ -386,7 +405,7 @@ export const useProcessStore = defineStore("process", () => {
         searchProcessName.value == null &&
         searchSubCategoryInput.value != null
       ) {
-        requestData = {
+        baseRequestData = {
           search_field: "level3_code_key",
           search_value: searchSubCategoryInput.value,
         };
@@ -397,24 +416,40 @@ export const useProcessStore = defineStore("process", () => {
         searchSubCategoryInput.value == null &&
         searchProcessType.value != null
       ) {
-        requestData = {
+        baseRequestData = {
           search_field: "level2_code_key",
           search_value: searchProcessType.value,
         };
       }
       // 4. 모든 값이 null인 경우 - 기본 검색
       else {
-        requestData = {
+        baseRequestData = {
           search_field: "process_name",
           search_value: "",
         };
       }
 
+      // 언어와 단위 정보 추가
+      console.log("언어와 단위 값 확인:", {
+        searchLanguage: searchLanguage.value,
+        searchUnit: searchUnit.value,
+        searchLanguageType: typeof searchLanguage.value,
+        searchUnitType: typeof searchUnit.value
+      });
+
+      requestData = {
+        ...baseRequestData,
+        language_code: searchLanguage.value,
+        unit_system_code: searchUnit.value,
+      };
+
       console.log("검색 요청 데이터:", requestData);
       console.log("검색 조건 상태:", {
         searchProcessName: searchProcessName.value,
         searchSubCategoryInput: searchSubCategoryInput.value,
-        searchProcessType: searchProcessType.value
+        searchProcessType: searchProcessType.value,
+        searchLanguage: searchLanguage.value,
+        searchUnit: searchUnit.value
       });
 
       const result = await request("/api/process/master/search", undefined, {
@@ -1654,6 +1689,8 @@ export const useProcessStore = defineStore("process", () => {
     searchProcessType,
     searchSubCategoryInput,
     searchProcessName,
+    searchLanguage,
+    searchUnit,
     processTypeOptions,
     searchProcessTypeOptions,
     searchSubCategoryOptions,
@@ -1698,6 +1735,8 @@ export const useProcessStore = defineStore("process", () => {
     setSearchProcessType,
     setSearchSubCategoryInput,
     setSearchProcessName,
+    setSearchLanguage,
+    setSearchUnit,
     setProcessDetail,
     setGlobalProcessData,
     searchProcesses,

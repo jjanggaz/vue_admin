@@ -51,16 +51,6 @@
         >
           {{ t("common.delete") }}
         </button>
-        <button
-          class="btn btn-primary btn-edit"
-          @click="handleEdit"
-          :disabled="selectedItems.length !== 1"
-        >
-          {{ t("common.edit") }}
-        </button>
-        <button class="btn btn-primary btn-regist" @click="handleRegist">
-          {{ t("common.register") }}
-        </button>
       </div>
     </div>
     <DataTable
@@ -80,82 +70,6 @@
         :total-pages="totalPagesComputed"
         @page-change="handlePageChange"
       />
-    </div>
-    <!-- 등록 모달 -->
-    <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container">
-        <div class="modal-header">
-          <h3>
-            {{
-              isEditMode
-                ? t("recommendedProcess.editProcess")
-                : t("recommendedProcess.registerProcess")
-            }}
-          </h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-            ×
-          </button>
-        </div>
-        <div class="modal-body">
-          <dl class="column-regist">
-            <dt>{{ t("recommendedProcess.inflowType") }}</dt>
-            <dd>
-              <input
-                id="process-inflowType"
-                v-model="newProcess.inflowType"
-                type="text"
-                :placeholder="t('placeholder.recommendedProcessInflowType')"
-              />
-            </dd>
-            <dt>{{ t("recommendedProcess.applicationField") }}</dt>
-            <dd>
-              <input
-                id="process-applicationField"
-                v-model="newProcess.applicationField"
-                type="text"
-                :placeholder="
-                  t('placeholder.recommendedProcessApplicationField')
-                "
-              />
-            </dd>
-            <dt>{{ t("recommendedProcess.solution") }}</dt>
-            <dd>
-              <input
-                id="process-solution"
-                v-model="newProcess.solution"
-                type="text"
-                :placeholder="t('placeholder.recommendedProcessSolution')"
-              />
-            </dd>
-            <dt>{{ t("recommendedProcess.layout3d") }}</dt>
-            <dd>
-              <input
-                id="process-layout3d"
-                v-model="newProcess.layout3d"
-                type="text"
-                :placeholder="t('placeholder.recommendedProcessLayout3d')"
-              />
-            </dd>
-            <dt>{{ t("recommendedProcess.remarks") }}</dt>
-            <dd>
-              <input
-                id="process-remarks"
-                v-model="newProcess.remarks"
-                type="text"
-                :placeholder="t('placeholder.recommendedProcessRemarks')"
-              />
-            </dd>
-          </dl>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            {{ t("common.cancel") }}
-          </button>
-          <button class="btn btn-primary" @click="saveProcess">
-            {{ t("common.save") }}
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -183,7 +97,7 @@ const tableColumns: TableColumn[] = [
     key: "id",
     title: t("recommendedProcess.no"),
     width: "80px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "inflowType",
@@ -201,19 +115,19 @@ const tableColumns: TableColumn[] = [
     key: "solution",
     title: t("recommendedProcess.solution"),
     width: "200px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "layout3d",
     title: t("recommendedProcess.layout3d"),
     width: "180px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "remarks",
     title: t("recommendedProcess.remarks"),
     width: "200px",
-    sortable: true,
+    sortable: false,
   },
 ];
 
@@ -230,16 +144,6 @@ const searchQueryInput = ref("");
 const searchOption = ref("");
 const searchQuery = ref("");
 const selectedItems = ref<ProcessItem[]>([]);
-const isRegistModalOpen = ref(false);
-const isEditMode = ref(false);
-const newProcess = ref<ProcessItem>({
-  id: 0,
-  inflowType: "",
-  applicationField: "",
-  solution: "",
-  layout3d: "",
-  remarks: "",
-});
 
 // --- computed로 페이징 및 필터 처리 ---
 const filteredProcessList = computed(() => {
@@ -324,62 +228,6 @@ const handleSearch = () => {
   currentPage.value = 1;
 };
 
-// 등록 버튼 핸들러
-const handleRegist = () => {
-  isRegistModalOpen.value = true;
-  isEditMode.value = false;
-  newProcess.value = {
-    id: 0,
-    inflowType: "",
-    applicationField: "",
-    solution: "",
-    layout3d: "",
-    remarks: "",
-  };
-};
-
-// 공정 저장
-const saveProcess = () => {
-  if (
-    !newProcess.value.inflowType ||
-    !newProcess.value.applicationField ||
-    !newProcess.value.solution ||
-    !newProcess.value.layout3d
-  ) {
-    alert(t("messages.warning.pleaseCompleteRequiredFields"));
-    return;
-  }
-
-  if (isEditMode.value) {
-    // 수정 모드: 기존 공정 정보 업데이트
-    const idx = processList.value.findIndex(
-      (p) => p.id === newProcess.value.id
-    );
-    if (idx !== -1) {
-      processList.value[idx] = { ...newProcess.value };
-      alert(t("messages.success.processInfoUpdated"));
-    }
-  } else {
-    // 등록 모드: 새 공정 추가
-    const nextId = Math.max(...processList.value.map((p) => p.id), 0) + 1;
-    processList.value.push({
-      ...newProcess.value,
-      id: nextId,
-    });
-    alert(t("messages.success.processRegistered"));
-  }
-  isRegistModalOpen.value = false;
-  newProcess.value = {
-    id: 0,
-    inflowType: "",
-    applicationField: "",
-    solution: "",
-    layout3d: "",
-    remarks: "",
-  };
-  isEditMode.value = false;
-};
-
 // 선택된 항목 삭제
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {
@@ -399,18 +247,6 @@ const handleDelete = () => {
     selectedItems.value = [];
     alert(t("messages.success.deleted"));
   }
-};
-
-// 선택된 항목 수정
-const handleEdit = () => {
-  if (selectedItems.value.length !== 1) {
-    alert(t("messages.warning.selectOneItemToEdit"));
-    return;
-  }
-  const itemToEdit = selectedItems.value[0];
-  isRegistModalOpen.value = true;
-  isEditMode.value = true;
-  newProcess.value = { ...itemToEdit };
 };
 </script>
 

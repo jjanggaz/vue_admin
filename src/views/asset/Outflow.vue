@@ -641,7 +641,7 @@ import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useInflowStore } from "@/stores/inflow";
-import WaterCodeManagement from "./WaterCodeManagement.vue";
+import WaterCodeManagement from "./components/WaterCodeManagement.vue";
 
 const { t } = useI18n();
 const outflowStore = useInflowStore();

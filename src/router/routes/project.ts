@@ -3,7 +3,6 @@ const ProjectManagement = () => import("@/views/project/ProjectManagement.vue");
 const Project = () => import("@/views/project/Project.vue");
 const ProjectApp = () => import("@/views/project/ProjectApp.vue");
 const ProjectItem = () => import("@/views/project/ProjectItem.vue");
-const ProjectDetail = () => import("@/views/project/ProjectDetail.vue");
 
 export const projectRoute = {
   path: "/project",
@@ -50,15 +49,6 @@ export const projectRoute = {
           "pageTitles.projectManagement",
           "tabs.project.projectItem",
         ],
-      },
-    },
-    {
-      path: "detail/:id",
-      name: "ProjectDetail",
-      component: ProjectDetail,
-      meta: {
-        titleKey: "projectDetail.title",
-        breadcrumbKeys: ["pageTitles.projectManagement", "projectDetail.title"],
       },
     },
   ],

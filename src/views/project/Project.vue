@@ -73,7 +73,7 @@ import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
-import ProjectDetail from "./ProjectDetail.vue";
+import ProjectDetail from "./components/ProjectDetail.vue";
 import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
 
 const { t } = useI18n();

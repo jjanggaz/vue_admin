@@ -375,6 +375,7 @@
     "symbolImage": "심볼 이미지",
     "symbolImagePlaceholder": "심볼 이미지가 표시됩니다",
     "noSymbolImage": "저장된 심볼 이미지가 없습니다.",
+    "noAttachedSymbolImage": "첨부한 심볼 이미지가 없습니다.",
     "machineType": {
       "pump": "펌프",
       "motor": "모터",
@@ -845,7 +846,11 @@
       "projectItem": "항목관리"
     },
     "machine": {
+      "structure": "구조물",
       "machine": "기계",
+      "pipe": "배관 자재",
+      "electrical": "전기 자재",
+      "measurement": "계측기",
       "machineCodeManagement": "코드관리",
       "cost": "단가 관리"
     },

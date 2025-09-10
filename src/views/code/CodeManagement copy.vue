@@ -231,7 +231,7 @@ import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
-import CodeRegistrationModal from "./CodeRegistrationModal.vue";
+import CodeRegistrationModal from "./components/CodeRegistrationModal.vue";
 import { request } from "../../utils/request";
 import { useI18n } from "vue-i18n";
 
@@ -419,9 +419,9 @@ const loadData = async () => {
 
   // 정렬 설정
   // if (params.order_by !== undefined)
-    // queryParams.order_by = params.order_by;
+  // queryParams.order_by = params.order_by;
   // if (params.order_direction !== undefined)
-    // queryParams.order_direction = params.order_direction;
+  // queryParams.order_direction = params.order_direction;
 
   // if (params.offset !== undefined)
   //   queryParams.offset = params.offset.toString();
@@ -440,10 +440,9 @@ const loadData = async () => {
     body: JSON.stringify(queryParams),
   });
 
-  console.log('결과값 : ')
-  console.log(result)
-  
-  
+  console.log("결과값 : ");
+  console.log(result);
+
   // // API 응답 구조에 따라 처리
   // if (Array.isArray(response)) {
   //   // 응답이 배열인 경우

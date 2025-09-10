@@ -285,6 +285,15 @@
                 </label>
               </div>
             </dd>
+            <dt>{{ t("common.symbolImage") }}</dt>
+            <dd>
+              <div class="symbol-image-preview">
+                <span v-if="!symbolImageContent" class="no-symbol-message">{{
+                  t("common.noAttachedSymbolImage")
+                }}</span>
+                <div v-else v-html="symbolImageContent"></div>
+              </div>
+            </dd>
           </dl>
 
           <div class="modal-content-wrapper">
@@ -1235,6 +1244,28 @@ const handleFileUpload = (event: Event) => {
     }
 
     uploadForm.value.file = file;
+
+    // SVG 미리보기: 파일 내용을 읽어 symbolImageContent에 주입
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const result = String(reader.result || "");
+        // 간단한 검증: '<svg' 태그 포함 여부 확인
+        if (result.includes("<svg")) {
+          symbolImageContent.value = result;
+        } else {
+          symbolImageContent.value = "";
+        }
+      } catch (e) {
+        console.error("SVG 미리보기 로드 실패:", e);
+        symbolImageContent.value = "";
+      }
+    };
+    reader.onerror = () => {
+      console.error("파일 읽기 에러");
+      symbolImageContent.value = "";
+    };
+    reader.readAsText(file);
   }
 };
 

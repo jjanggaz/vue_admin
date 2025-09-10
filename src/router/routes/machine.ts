@@ -1,13 +1,13 @@
 // 기계 관리 페이지
-const MachineList = () => import("@/views/machine/MachineList.vue");
+const MachineManagement = () => import("@/views/machine/MachineManagement.vue");
 const Machine = () => import("@/views/machine/Machine.vue");
 const MachineCodeManagement = () =>
   import("@/views/machine/MachineCodeManagement.vue");
 
 export const machineRoute = {
   path: "/machine",
-  name: "MachineList",
-  component: MachineList,
+  name: "MachineManagement",
+  component: MachineManagement,
   redirect: "/machine/machine",
   meta: {
     requiresAuth: true,

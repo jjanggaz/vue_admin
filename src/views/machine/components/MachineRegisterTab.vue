@@ -93,9 +93,15 @@
     <div class="section-header">
       <div class="section-title">⊙ {{ t("common.machineList") }}</div>
       <div class="section-actions">
-        <button class="btn-outline" @click.prevent>excel 양식 다운로드</button>
-        <button class="btn-outline" @click.prevent>excel 업로드</button>
-        <button class="btn-outline" @click.prevent>모델 대량 업로드</button>
+        <button class="btn-outline" @click.prevent="onDownloadExcelTemplate">
+          excel 양식 다운로드
+        </button>
+        <button class="btn-outline" @click.prevent="onUploadExcel">
+          excel 업로드
+        </button>
+        <button class="btn-outline" @click.prevent="onBulkUploadModels">
+          모델 대량 업로드
+        </button>
       </div>
     </div>
     <DataTable :columns="columns" :data="rows" :selectable="false"> </DataTable>
@@ -233,6 +239,60 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
     }
   }
 });
+
+// 공통 검증 함수: 단위/기계명/기계종분류 필수 체크
+function validateBasicSelections(): boolean {
+  if (!selectedUnit.value) {
+    alert("단위를 선택해주세요.");
+    return false;
+  }
+  if (!selectedMachineName.value) {
+    alert("기계명을 선택해주세요.");
+    return false;
+  }
+  if (!selectedThirdDept.value) {
+    alert("기계종분류를 선택해주세요.");
+    return false;
+  }
+
+  // 기계유형 선택 validation
+  if (
+    machineStore.fourthDepth &&
+    machineStore.fourthDepth.length > 0 &&
+    !selectedFourthDept.value
+  ) {
+    alert("기계유형을 선택해주세요.");
+    return false;
+  }
+
+  // 기계유형분류 선택 validation
+  if (
+    machineStore.fifthDepth &&
+    machineStore.fifthDepth.length > 0 &&
+    !selectedFifthDept.value
+  ) {
+    alert("기계유형분류를 선택해주세요.");
+    return false;
+  }
+
+  return true;
+}
+
+// 버튼 핸들러들
+function onDownloadExcelTemplate() {
+  if (!validateBasicSelections()) return;
+  // TODO: 템플릿 다운로드 로직 연결
+}
+
+function onUploadExcel() {
+  if (!validateBasicSelections()) return;
+  // TODO: 엑셀 업로드 로직 연결
+}
+
+function onBulkUploadModels() {
+  if (!validateBasicSelections()) return;
+  // TODO: 모델 대량 업로드 로직 연결
+}
 </script>
 
 <style scoped lang="scss">

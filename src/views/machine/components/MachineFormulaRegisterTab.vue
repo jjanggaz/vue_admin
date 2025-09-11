@@ -80,7 +80,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 계산식 파일</span>
+        <span class="label required">⊙ 계산식파일</span>
         <div class="file-upload-group">
           <input
             type="text"
@@ -331,6 +331,26 @@ async function handleRegister() {
 
   if (!formulaFile.value) {
     alert("계산식 파일을 첨부해주세요.");
+    return;
+  }
+
+  // 기계유형 선택 validation
+  if (
+    machineStore.fourthDepth &&
+    machineStore.fourthDepth.length > 0 &&
+    !selectedFourthDept.value
+  ) {
+    alert("기계유형을 선택해주세요.");
+    return;
+  }
+
+  // 기계유형분류 선택 validation
+  if (
+    machineStore.fifthDepth &&
+    machineStore.fifthDepth.length > 0 &&
+    !selectedFifthDept.value
+  ) {
+    alert("기계유형분류를 선택해주세요.");
     return;
   }
 

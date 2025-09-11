@@ -196,18 +196,18 @@ const formulaFile = ref<File | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 
 // 기계명 선택 시 바로 3차 깊이별 조회
-watch(selectedMachineName, async (newValue, oldValue) => {
-  if (newValue && newValue !== oldValue) {
-    // 모든 하위 단계들 초기화
-    selectedThirdDept.value = "";
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep1Enabled.value = false;
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
+watch(selectedMachineName, async (newValue, _oldValue) => {
+  // 먼저 항상 하위 단계들 초기화 및 비활성화
+  selectedThirdDept.value = "";
+  selectedFourthDept.value = "";
+  selectedFifthDept.value = "";
+  isStep1Enabled.value = false;
+  isStep2Enabled.value = false;
+  isStep3Enabled.value = false;
 
+  // 값이 있을 때만 3차 코드 조회 후 1단계 활성화
+  if (newValue) {
     try {
-      // 3차 깊이별 공통코드 조회 API 호출
       const response = await machineStore.fetchThirdDepth(newValue, 3);
       if (response?.response && response.response.length > 0) {
         isStep1Enabled.value = true;

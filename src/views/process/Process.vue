@@ -3,7 +3,7 @@
     <!-- Add Button -->
     <div class="action-bar">
       <div class="search-bar">
-        <!-- 첫 번째 줄: 언어, 단위 -->
+        <!-- 조회조건: 언어, 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼 -->
         <div class="search-row first-row">
           <div class="group-form">
             <label for="searchLanguage" class="label-title">{{ t("codeManagement.categories.language") }}</label>
@@ -33,10 +33,6 @@
               </select>
             </div>
           </div>
-        </div>
-        
-        <!-- 두 번째 줄: 공정구분, 공정중분류, 공정명, 버튼들 -->
-        <div class="search-row second-row">
           <div class="group-form">
             <label for="searchOption" class="label-title">{{
               t("process.processType")
@@ -997,10 +993,17 @@ const viewDetail = (item: ProcessItem) => {
   }
 };
 
-const closeDetailModal = () => {
+const closeDetailModal = async () => {
   isDetailModalOpen.value = false;
   selectedProcessId.value = undefined;
   isRegisterMode.value = false; // 등록 모드 초기화
+  
+  // 메인화면 그리드 재조회
+  try {
+    await processStore.searchProcesses();
+  } catch (error) {
+    console.error('메인화면 그리드 재조회 실패:', error);
+  }
 };
 
 // ProcessDetail 컴포넌트에서 직접 업데이트를 처리하므로 이 함수는 불필요
@@ -1124,6 +1127,27 @@ const handleRegistSubCategoryChange = () => {
 // 검색 기능 구현
 const handleSearch = async () => {
   try {
+    // 언어와 단위 정보를 processStore에 설정
+    console.log("검색 전 언어/단위 설정:", {
+      selectedLanguage: selectedLanguage.value,
+      selectedUnit: selectedUnit.value,
+      processStoreLanguage: processStore.searchLanguage,
+      processStoreUnit: processStore.searchUnit
+    });
+    
+    if (typeof processStore.setSearchLanguage === 'function') {
+      processStore.setSearchLanguage(selectedLanguage.value);
+      processStore.setSearchUnit(selectedUnit.value);
+      
+      console.log("검색 후 언어/단위 설정:", {
+        processStoreLanguage: processStore.searchLanguage,
+        processStoreUnit: processStore.searchUnit
+      });
+    } else {
+      console.error("processStore.setSearchLanguage 또는 setSearchUnit 함수가 존재하지 않습니다.");
+      return;
+    }
+    
     await processStore.searchProcesses();
   } catch (error: any) {
     const errorMessage = error?.message || "검색 중 오류가 발생했습니다.";
@@ -1186,6 +1210,21 @@ const handleRegistProcessNameCodeSearch = async () => {
 onMounted(async () => {
   try {
     console.log("=== Process.vue onMounted 시작 ===");
+    console.log("processStore 상태 확인:", {
+      searchLanguage: processStore.searchLanguage,
+      searchUnit: processStore.searchUnit,
+      searchLanguageType: typeof processStore.searchLanguage,
+      searchUnitType: typeof processStore.searchUnit
+    });
+
+    // 0. 초기 언어와 단위 설정
+    if (typeof processStore.setSearchLanguage === 'function') {
+      processStore.setSearchLanguage(selectedLanguage.value);
+      processStore.setSearchUnit(selectedUnit.value);
+      console.log("0. 초기 언어와 단위 설정 완료:", selectedLanguage.value, selectedUnit.value);
+    } else {
+      console.error("processStore.setSearchLanguage 또는 setSearchUnit 함수가 존재하지 않습니다.");
+    }
 
     // 1. 초기 공정구분 옵션 로드
     try {
@@ -1254,15 +1293,35 @@ onMounted(async () => {
       flex-wrap: wrap;
       
       &.first-row {
-        // 첫 번째 줄: 언어, 단위
+        // 조회조건: 언어, 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
+        flex-wrap: nowrap;
+        
         .group-form {
           flex: 0 0 auto;
           min-width: 0;
           
           // 셀렉트 폭 조정
           .form-select {
-            max-width: 100px;
+            max-width: 120px;
             min-width: 80px;
+          }
+          
+          // 공정구분 셀렉트 폭 조정
+          &:nth-child(3) .form-select {
+            max-width: 150px;
+            min-width: 120px;
+          }
+          
+          // 공정중분류 셀렉트 폭 조정
+          &:nth-child(4) .form-select {
+            max-width: 180px;
+            min-width: 150px;
+          }
+          
+          // 공정명 셀렉트 폭 조정
+          &:nth-child(5) .form-select {
+            max-width: 200px;
+            min-width: 180px;
           }
           
           // 라벨 폭 조정
@@ -1274,7 +1333,7 @@ onMounted(async () => {
       }
       
       &.second-row {
-        // 두 번째 줄: 공정구분, 공정중분류, 공정명, 버튼들
+        // 두 번째 줄: 등록/삭제 버튼들
         .group-form {
           flex: 0 0 auto;
           min-width: 0;
@@ -1402,7 +1461,7 @@ onMounted(async () => {
     
     .modal-header {
       cursor: default;
-      padding: 10px 0 5px 0;
+      padding: 5px 0 2px 0;
       margin: 0;
     }
     

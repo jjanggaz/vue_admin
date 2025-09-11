@@ -151,16 +151,6 @@
               컴포넌트
             </button>
           </template>
-          <template #cell-processManagement="{ item, index }">
-            <button 
-              class="btn-process-management" 
-              :disabled="!item.isSaved"
-              @click="handleProcessManagementClick(item, index)"
-              :title="!item.isSaved ? '계산식을 먼저 저장해주세요' : '공정카드 보기'"
-            >
-              공정카드
-            </button>
-          </template>
         </DataTable>
         
         <!-- 컴포넌트 섹션 -->
@@ -188,12 +178,12 @@
         </div>
 
         <!-- 공정카드 섹션 -->
-        <div v-if="showPfdSection" class="pfd-section">
+        <div class="pfd-section">
           <div class="tab-header">
             <div class="grid-title">
               <h4>공정카드</h4>
             </div>
-            <div class="tab-actions">
+            <div class="tab-actions" v-if="!props.isRegisterMode || (props.isRegisterMode && isBasicInfoRegistered)">
               <button @click="openPfdModal" class="btn btn-primary">
                 {{ t("common.add") }}
               </button>
@@ -201,11 +191,18 @@
                 {{ t("common.delete") }}
               </button>
               <button @click="handlePfdSave" class="btn btn-success">저장</button>
-              <button @click="closePfdSection" class="btn btn-secondary">닫기</button>
+            </div>
+          </div>
+          
+          <!-- 공정 등록 모드에서 기본정보 미등록 시 안내 메시지 -->
+          <div v-if="props.isRegisterMode && !isBasicInfoRegistered" class="formula-placeholder">
+            <div class="placeholder-message">
+              <p>{{ t("process.registerBasicInfoForPfd") }}</p>
             </div>
           </div>
           
           <DataTable
+            v-if="!props.isRegisterMode || (props.isRegisterMode && isBasicInfoRegistered)"
             :columns="pfdColumns"
             :data="processStore.pfdList"
             :selectable="false"
@@ -261,6 +258,7 @@
               </button>
             </template>
           </DataTable>
+        </div>
         </div>
         
         <!-- P&ID 목록 섹션 -->
@@ -341,9 +339,16 @@
               </div>
             </template>
             <template #cell-pidComponent="{ item }">
-              <button class="btn btn-sm btn-primary" @click="openPidComponentModal(item)">P&ID 컴포넌트</button>
+              <button 
+                class="btn btn-sm btn-primary" 
+                :disabled="!item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')"
+                @click="openPidComponentModal(item)"
+              >
+                P&ID 컴포넌트
+              </button>
             </template>
           </DataTable>
+          </div>
           
           <!-- Hidden file inputs -->
           <input
@@ -407,8 +412,8 @@
             <template #cell-no="{ item, index }">
               <span>{{ item.no || index + 1 }}</span>
             </template>
-            <template #cell-pidId="{ item }">
-              <span class="pid-id-display">{{ item.pidId || '-' }}</span>
+            <template #cell-pid_id="{ item }">
+              <span class="pid-id-display">{{ item.pid_id || '-' }}</span>
             </template>
             <template #cell-category="{ item }">
               <select 
@@ -469,20 +474,20 @@
                 </option>
               </select>
             </template>
-            <template #cell-normalQuantity="{ item }">
+            <template #cell-standard_quantity="{ item }">
               <input 
                 type="number" 
-                v-model="item.normalQuantity" 
+                v-model="item.standard_quantity" 
                 class="form-control"
                 placeholder="0"
                 min="0"
                 step="1"
               />
             </template>
-            <template #cell-spareQuantity="{ item }">
+            <template #cell-spare_quantity="{ item }">
               <input 
                 type="number" 
-                v-model="item.spareQuantity" 
+                v-model="item.spare_quantity" 
                 class="form-control"
                 placeholder="0"
                 min="0"
@@ -492,7 +497,6 @@
           </DataTable>
         </div>
         
-      </div>
     </div>
 
     <!-- 계산식 파일 첨부 모달 -->
@@ -582,7 +586,6 @@
           <button @click="closePfdModal" class="btn btn-secondary">
             {{ t("common.cancel") }}
           </button>
-        </div>
       </div>
     </div>
   </div>
@@ -709,19 +712,13 @@ const hasProcessSymbolFile = computed(() => {
 // 컬럼 정의
 const formulaColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false },
-  { key: "no", title: "No.", sortable: true },
-  { key: "registeredFormula", title: "등록 계산식", sortable: true },
-  { key: "registrationDate", title: "등록일자", sortable: true },
+  { key: "no", title: "No.", sortable: false },
+  { key: "registeredFormula", title: "등록 계산식", sortable: false },
+  { key: "registrationDate", title: "등록일자", sortable: false },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
   {
     key: "component",
     title: "컴포넌트",
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "processManagement",
-    title: "공정카드",
     width: "100px",
     sortable: false,
   },
@@ -732,9 +729,9 @@ const formulaColumns: TableColumn[] = [
 const pfdColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false },
   { key: "no", title: "No.", sortable: false },
-  { key: "pfdFileName", title: "공정카드 파일", sortable: true },
+  { key: "pfdFileName", title: "공정카드 파일", sortable: false },
   { key: "svgFile", title: "Svg 파일", sortable: false },
-  { key: "registrationDate", title: "등록일자", sortable: true },
+  { key: "registrationDate", title: "등록일자", sortable: false },
   { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false }
 ];
 
@@ -760,13 +757,13 @@ const mappingPidColumns: TableColumn[] = [
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false, width: "60px" },
-  { key: "pidId", title: "P&ID ID", sortable: false, width: "120px" },
+  { key: "pid_id", title: "P&ID ID", sortable: false, width: "120px" },
   { key: "category", title: "구분 *", sortable: false, width: "100px" },
   { key: "middleCategory", title: "중분류 *", sortable: false, width: "120px" },
   { key: "smallCategory", title: "소분류 *", sortable: false, width: "120px" },
   { key: "equipmentType", title: "장비유형 *", sortable: false, width: "150px" },
-  { key: "normalQuantity", title: "수량(상용)", sortable: false, width: "100px" },
-  { key: "spareQuantity", title: "수량(예비)", sortable: false, width: "100px" }
+  { key: "standard_quantity", title: "수량(상용)", sortable: false, width: "100px" },
+  { key: "spare_quantity", title: "수량(예비)", sortable: false, width: "100px" }
 ];
 
 // 유틸리티 함수들 (사용하지 않음)
@@ -1327,7 +1324,6 @@ const uploadPfdFiles = () => {
   processStore.setPfdList(updatedPfdList);
   
   console.log('PFD 파일 업로드 완료:', newPfdItems.length, '개');
-  alert(`공정카드 파일 ${newPfdItems.length}개가 그리드에 추가되었습니다.\n저장 버튼을 클릭하면 서버에도 반영됩니다.`);
   
   closePfdModal();
 };
@@ -1373,7 +1369,7 @@ const handleComponentClick = (item: any, index: number) => {
 };
 
 // P&ID 컴포넌트 버튼 클릭 핸들러
-const openPidComponentModal = (item: any) => {
+const openPidComponentModal = async (item: any) => {
   console.log("P&ID 컴포넌트 버튼 클릭:", item);
   
   // drawing_id 저장
@@ -1390,9 +1386,9 @@ const openPidComponentModal = (item: any) => {
   showPidComponentSection.value = true;
   console.log("P&ID 컴포넌트 섹션 표시 상태:", showPidComponentSection.value);
   
-  // P&ID 컴포넌트 데이터 초기화 및 로드 (항상 1행 보장)
+  // P&ID 컴포넌트 데이터 초기화 및 로드
   pidComponentList.value = [];
-  loadPidComponentData(item);
+  await loadPidComponentData(item);
   
   // P&ID 컴포넌트 섹션으로 스크롤
   setTimeout(() => {
@@ -1405,12 +1401,51 @@ const openPidComponentModal = (item: any) => {
 };
 
 // P&ID 컴포넌트 데이터 로드
-const loadPidComponentData = (pidItem: any) => {
+const loadPidComponentData = async (pidItem: any) => {
   console.log("P&ID 컴포넌트 데이터 로드:", pidItem);
   
-  // 데이터 초기화 (자동 행 추가 없음)
+  // 데이터 초기화
   pidComponentList.value = [];
   console.log("P&ID 컴포넌트 데이터 초기화 완료");
+  
+  // drawing_id가 있는 경우에만 API 호출
+  if (pidItem.drawing_id) {
+    try {
+      const requestData = {
+        search_field: "pid_id",
+        search_value: pidItem.drawing_id
+      };
+      
+      console.log("P&ID 컴포넌트 검색 API 요청:", requestData);
+      
+      const response = await request('/api/process/components/search', undefined, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      console.log("P&ID 컴포넌트 검색 API 응답:", response);
+      
+      if (response && response.response && Array.isArray(response.response)) {
+        // 응답 데이터에 No 컬럼 추가
+        pidComponentList.value = response.response.map((item: any, index: number) => ({
+          ...item,
+          no: index + 1
+        }));
+        console.log("P&ID 컴포넌트 데이터 로드 완료:", pidComponentList.value);
+      } else {
+        console.log("P&ID 컴포넌트 데이터가 없습니다.");
+        pidComponentList.value = [];
+      }
+    } catch (error) {
+      console.error("P&ID 컴포넌트 데이터 로드 실패:", error);
+      pidComponentList.value = [];
+    }
+  } else {
+    console.log("drawing_id가 없어 P&ID 컴포넌트 데이터를 로드하지 않습니다.");
+  }
 };
 
 // P&ID 컴포넌트 구분 변경 핸들러
@@ -1612,6 +1647,12 @@ const handleProcessManagementClick = (item: any, index: number) => {
   
   // 해당 row 선택
   selectedFormulaItems.value = item;
+  
+  // 공정 등록 모드에서는 기본정보가 등록된 후에만 공정카드 섹션 표시
+  if (props.isRegisterMode && !isBasicInfoRegistered.value) {
+    console.log("공정 등록 모드에서 기본정보가 등록되지 않아 공정카드 섹션을 표시하지 않습니다.");
+    return;
+  }
   
   // 공정카드 섹션 표시
   showPfdSection.value = true;
@@ -2476,9 +2517,35 @@ const processPfdChanges = async (processId: string) => {
       );
     });
     
+    // 수정된 행들 감지 (Svg 파일 변경 포함)
+    const modifiedRows = processStore.pfdList.filter(currentItem => {
+      // drawing_id가 있는 기존 행들 중에서
+      if (!currentItem.drawing_id || currentItem.drawing_id.startsWith('temp_')) return false;
+      
+      // initialPfdList에서 해당 행 찾기
+      const initialItem = processStore.initialPfdList.find(initialItem => 
+        initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
+      );
+      
+      if (!initialItem) return false;
+      
+      // PFD 파일이나 Svg 파일이 변경된 경우 감지
+      const currentPfdFile = (currentItem as any)._file;
+      const currentSvgFile = (currentItem as any).svgFile;
+      const initialPfdFile = (initialItem as any)?._file;
+      const initialSvgFile = (initialItem as any)?.svgFile;
+      
+      const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
+      const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
+                            (!currentSvgFile && initialSvgFile);
+      
+      return pfdFileChanged || svgFileChanged;
+    });
+    
     console.log('PFD 변경사항 확인:', {
       deletedRows: deletedRows.length,
       addedRows: addedRows.length,
+      modifiedRows: modifiedRows.length,
       initialCount: processStore.initialPfdList.length,
       currentCount: processStore.pfdList.length
     });
@@ -2535,15 +2602,29 @@ const processPfdChanges = async (processId: string) => {
         console.log('=== PFD 추가 API 호출 시작 ===');
         for (const pfdItem of addedRows) {
           const file = (pfdItem as any)._file;
-          if (!file) {
-            console.warn('PFD 파일이 없어서 건너뛰기:', pfdItem);
+          const svgFile = (pfdItem as any).svgFile;
+          
+          // PFD 파일이나 Svg 파일 중 하나라도 있어야 처리
+          if (!file && !svgFile) {
+            console.warn('PFD 파일과 Svg 파일이 모두 없어서 건너뛰기:', pfdItem);
             continue;
           }
           
           const formData = new FormData();
           formData.append('process_id', processId);
           formData.append('drawing_type', 'PFD');
-          formData.append('file', file);
+          
+          // PFD 파일이 있는 경우에만 전달
+          if (file) {
+            console.log('PFD 파일 전달:', file.name);
+            formData.append('file', file);
+          }
+          
+          // Svg 파일이 있는 경우에만 전달
+          if (svgFile) {
+            console.log('Svg 파일 정보를 symbolFile로 전달:', (pfdItem as any).svgFileName);
+            formData.append('symbolFile', svgFile);
+          }
           
           console.log('PFD API 호출 시작...');
           const response = await request('/api/process/drawing/create', undefined, {
@@ -2600,8 +2681,83 @@ const processPfdChanges = async (processId: string) => {
       }
     }
     
+    // 수정된 행 처리 (Svg 파일 변경)
+    if (modifiedRows.length > 0) {
+      try {
+        console.log('=== PFD 수정 API 호출 시작 ===');
+        for (const pfdItem of modifiedRows) {
+          console.log('수정된 PFD 항목:', pfdItem);
+          
+          // Svg 파일이 변경된 경우 처리
+          const initialItem = processStore.initialPfdList.find(initialItem => 
+            initialItem.drawing_id && initialItem.drawing_id === pfdItem.drawing_id
+          );
+          
+          // 변경된 파일 정보 확인
+          const currentPfdFile = (pfdItem as any)._file;
+          const currentSvgFile = (pfdItem as any).svgFile;
+          const initialPfdFile = (initialItem as any)?._file;
+          const initialSvgFile = (initialItem as any)?.svgFile;
+          
+          // PFD 파일이나 Svg 파일이 변경된 경우에만 처리
+          const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
+          const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
+                                (!currentSvgFile && initialSvgFile);
+          
+          if (pfdFileChanged || svgFileChanged) {
+            console.log('파일 변경 감지:', { 
+              pfdFileChanged, 
+              svgFileChanged, 
+              pfdFileName: currentPfdFile?.name,
+              svgFileName: (currentSvgFile as any)?.name 
+            });
+            
+            const formData = new FormData();
+            formData.append('process_id', processId);
+            formData.append('drawing_type', 'PFD');
+            
+            // PFD 파일이 변경된 경우에만 전달
+            if (pfdFileChanged && currentPfdFile) {
+              console.log('PFD 파일 업데이트:', currentPfdFile.name);
+              formData.append('file', currentPfdFile);
+            }
+            
+            // Svg 파일이 변경된 경우에만 전달
+            if (svgFileChanged) {
+              if (currentSvgFile) {
+                console.log('Svg 파일 업데이트:', (currentSvgFile as any).name);
+                formData.append('symbolFile', currentSvgFile);
+              } else {
+                console.log('Svg 파일 삭제');
+                formData.append('symbolFile', ''); // 빈 값으로 전송하여 삭제
+              }
+            }
+            
+            const response = await request(`/api/process/drawing/${pfdItem.drawing_id}`, undefined, {
+              method: 'PATCH',
+              body: formData
+            });
+            
+            console.log('PFD 파일 업데이트 API 호출 완료:', response);
+            
+            if (!response.success) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            console.log('PFD 파일 업데이트 완료:', pfdItem.drawing_id);
+          } else {
+            console.log('파일 변경사항 없음, 건너뛰기:', pfdItem.drawing_id);
+          }
+        }
+        console.log("수정된 PFD 처리 완료");
+      } catch (error) {
+        console.error("PFD 수정 실패:", error);
+        throw error;
+      }
+    }
+    
     // 변경사항이 없으면 메시지 표시
-    if (deletedRows.length === 0 && addedRows.length === 0) {
+    if (deletedRows.length === 0 && addedRows.length === 0 && modifiedRows.length === 0) {
       console.log('PFD 변경사항이 없습니다.');
       alert('저장할 PFD 변경사항이 없습니다.');
       return;
@@ -2981,6 +3137,10 @@ const createNewProcess = async () => {
     // 기본정보 등록 완료 상태로 설정
     isBasicInfoRegistered.value = true;
     
+    // 기본 정보 저장 후 공정카드 데이터 로드
+    await refreshPfdData();
+    console.log("공정카드 데이터 로드 완료");
+    
     // 공정 등록 성공 후 화면을 닫지 않고 유지
     // emit('update-success'); // 주석 처리하여 모달이 닫히지 않도록 함
     
@@ -3117,6 +3277,10 @@ const saveBasicProcessInfo = async (processId: string) => {
         await processStore.updateProcess(processId, processDetailForSave);
         console.log("기본 정보 업데이트 완료");
         alert('기본 정보가 저장되었습니다.');
+        
+        // 기본 정보 저장 후 공정카드 데이터 로드
+        await refreshPfdData();
+        console.log("공정카드 데이터 로드 완료");
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
         throw updateError;
@@ -3842,27 +4006,67 @@ const confirmMappingPid = async () => {
     
     console.log('삭제된 P&ID row들:', deletedRows);
     
-    // 파일 객체가 있는 항목들 중에서 새로 추가된 항목들만 (drawing_id가 없거나 undefined인 항목들)
+    // 새로 추가된 항목들과 파일이 변경된 기존 항목들을 필터링
     const validMappings = mappingPidList.value.filter(item => {
       const hasFile = !!item.pidFile;
       const isNewItem = (!item.drawing_id || item.drawing_id === undefined);
-      // 기존 항목이지만 새 파일이 업로드된 경우도 저장 대상으로 포함
       const hasNewFile = hasFile && item.pidFile instanceof File;
-      const isValid = hasNewFile; // 파일 객체가 있으면 저장 대상
       
-      console.log(`필터링 체크 - ${item.pidFileName || 'no name'}:`, {
-        hasFile,
-        isNewItem,
-        hasNewFile,
-        isValid,
-        drawing_id: item.drawing_id,
-        isFileInstance: item.pidFile instanceof File
-      });
+      // 새로 추가된 항목인 경우 (PFD 파일 또는 Svg 파일이 있으면)
+      if (isNewItem) {
+        const hasSvgFile = !!(item as any).svgFile;
+        const hasAnyFile = hasNewFile || hasSvgFile;
+        
+        console.log(`새 항목 - ${item.pidFileName || 'no name'}:`, { 
+          hasFile, 
+          isNewItem, 
+          hasNewFile, 
+          hasSvgFile, 
+          hasAnyFile 
+        });
+        
+        return hasAnyFile;
+      }
       
-      return isValid;
+      // 기존 항목에서 파일이 변경된 경우 (PFD 파일 또는 Svg 파일)
+      if (item.drawing_id) {
+        const initialItem = initialMappingPidList.value.find(initialItem => 
+          initialItem.drawing_id && initialItem.drawing_id === item.drawing_id
+        );
+        
+        if (initialItem) {
+          // PFD 파일 변경 감지
+          const currentPfdFile = item.pidFile;
+          const initialPfdFile = (initialItem as any).pidFile;
+          const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
+          
+          // Svg 파일 변경 감지
+          const currentSvgFile = (item as any).svgFile;
+          const initialSvgFile = (initialItem as any)?.svgFile;
+          const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
+                                (!currentSvgFile && initialSvgFile);
+          
+          const hasChanges = pfdFileChanged || svgFileChanged;
+          
+          console.log(`기존 항목 체크 - ${item.pidFileName || 'no name'}:`, {
+            drawing_id: item.drawing_id,
+            pfdFileChanged,
+            svgFileChanged,
+            hasChanges,
+            currentPfdFileName: currentPfdFile?.name,
+            initialPfdFileName: initialPfdFile?.name,
+            currentSvgFileName: (currentSvgFile as any)?.name,
+            initialSvgFileName: (initialSvgFile as any)?.name
+          });
+          
+          return hasChanges;
+        }
+      }
+      
+      return false;
     });
     
-    console.log('새로 추가된 P&ID 항목들 (drawing_id가 없고 파일 객체가 있는 항목들):', validMappings);
+    console.log('변경된 P&ID 항목들 (새 항목 + 파일 변경된 기존 항목):', validMappings);
     console.log('현재 mappingPidList 전체:', mappingPidList.value);
     console.log('validMappings 조건 확인:', mappingPidList.value.map(item => ({
       pidFile: !!item.pidFile,
@@ -3960,10 +4164,23 @@ const confirmMappingPid = async () => {
     // 3. 새 데이터 저장이 필요한 경우
     if (validMappings.length > 0) {
       console.log('새 데이터 저장 시작 - 항목 수:', validMappings.length);
-      // 필수 입력 검증 (파일 객체가 있는 항목들에 대해서만)
-      const invalidItems = validMappings.filter(item => 
-        !item.pidFileName || item.pidFileName.trim() === ''
-      );
+      // 필수 입력 검증 (PFD 파일이 있는 항목들에 대해서만)
+      const invalidItems = validMappings.filter(item => {
+        const hasPfdFile = !!item.pidFile;
+        const hasSvgFile = !!(item as any).svgFile;
+        
+        // PFD 파일이 있는 경우에만 파일명 검증
+        if (hasPfdFile && (!item.pidFileName || item.pidFileName.trim() === '')) {
+          return true;
+        }
+        
+        // PFD 파일도 Svg 파일도 없는 경우는 유효하지 않음
+        if (!hasPfdFile && !hasSvgFile) {
+          return true;
+        }
+        
+        return false;
+      });
       
       if (invalidItems.length > 0) {
         alert('P&ID 파일명은 필수 입력 항목입니다.\n모든 항목을 입력해주세요.');
@@ -4005,27 +4222,22 @@ const confirmMappingPid = async () => {
             parent_drawing_id: item.parent_drawing_id,
             pidFile: item.pidFile?.name,
             excelFile: item.excelFile?.name || '없음',
+            svgFile: (item as any).svgFile?.name || '없음',
             isNewItem: isNewItem
           });
-          
-          if (isNewItem) {
-            // 새 데이터 - 생성 API 호출
-          console.log('새 데이터 - 생성 API 호출');
-          } else {
-            // 기존 데이터 - 수정 API 호출
-            console.log('기존 데이터 - 수정 API 호출');
-          }
           
           const formData = new FormData();
           formData.append('process_id', processId);
           formData.append('drawing_type', 'PNID');
           formData.append('parent_drawing_id', item.parent_drawing_id);
           
-          // P&ID 파일 추가
-          const pidFileBlob = new Blob([item.pidFile], { 
-            type: item.pidFile.type || 'application/octet-stream' 
-          });
-          formData.append('siteFile', pidFileBlob, item.pidFile.name);
+          // P&ID 파일 추가 (있는 경우에만)
+          if (item.pidFile) {
+            const pidFileBlob = new Blob([item.pidFile], { 
+              type: item.pidFile.type || 'application/octet-stream' 
+            });
+            formData.append('siteFile', pidFileBlob, item.pidFile.name);
+          }
           
           // Excel 파일 추가 (있는 경우에만)
           if (item.excelFile) {
@@ -4035,13 +4247,34 @@ const confirmMappingPid = async () => {
           formData.append('excelFile', excelFileBlob, item.excelFile.name);
           }
           
+          // Svg 파일이 변경된 경우 symbolFile로 전달
+          const currentSvgFile = (item as any).svgFile;
+          const initialItem = initialMappingPidList.value.find(initialItem => 
+            initialItem.drawing_id && initialItem.drawing_id === item.drawing_id
+          );
+          const initialSvgFile = (initialItem as any)?.svgFile;
+          
+          // Svg 파일 변경 감지
+          const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
+                                (!currentSvgFile && initialSvgFile);
+          
+          if (svgFileChanged) {
+            if (currentSvgFile) {
+              console.log('P&ID Svg 파일 업데이트:', (currentSvgFile as any).name);
+              formData.append('symbolFile', currentSvgFile);
+            } else {
+              console.log('P&ID Svg 파일 삭제');
+              formData.append('symbolFile', ''); // 빈 값으로 전송하여 삭제
+            }
+          }
+          
           formData.append('remarks', item.remarks || '');
           
           console.log('P&ID 매핑 FormData 내용:');
           console.log('process_id:', processId);
           console.log('drawing_type:', 'PNID');
           console.log('parent_drawing_id:', item.parent_drawing_id);
-          console.log('pid_file:', item.pidFile.name);
+          console.log('pid_file:', item.pidFile?.name || '없음');
           console.log('excel_file:', item.excelFile?.name || '없음');
           
           let response;
@@ -4065,8 +4298,9 @@ const confirmMappingPid = async () => {
             console.log('drawing_type:', 'PNID');
             console.log('parent_drawing_id:', item.parent_drawing_id);
             console.log('drawing_id:', item.drawing_id);
-            console.log('pid_file:', item.pidFile.name);
+            console.log('pid_file:', item.pidFile?.name || '없음');
             console.log('excel_file:', item.excelFile?.name || '없음');
+            console.log('svg_file:', (item as any).svgFile?.name || '없음');
             
             response = await request(`/api/process/drawing/${item.drawing_id}`, undefined, {
               method: 'PATCH',
@@ -4106,6 +4340,11 @@ const confirmMappingPid = async () => {
           
           // 저장 성공 후 그리드 상태 유지 (새로고침하지 않음)
           console.log('P&ID 저장 완료 - 그리드 상태 유지');
+          
+          // 초기값 업데이트 (Svg 파일 변경사항 반영)
+          const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
+          initialMappingPidList.value = updatedMappingPidList;
+          console.log('P&ID 초기값 업데이트 완료');
         }
         
       } catch (error: any) {
@@ -4372,14 +4611,14 @@ const handleSelectAllMappingPid = () => {
   }
 };
 
-const handleMappingPidSelectionChange = () => {
+const handleMappingPidSelectionChange = async () => {
   console.log('선택된 P&ID 항목들:', selectedMappingPidItems.value);
   
   // P&ID 목록 row가 선택되면 P&ID 컴포넌트 버튼 클릭 이벤트 호출
   if (selectedMappingPidItems.value) {
     const selectedItem = selectedMappingPidItems.value;
     console.log('P&ID 선택으로 인한 P&ID 컴포넌트 버튼 클릭 시뮬레이션');
-    openPidComponentModal(selectedItem);
+    await openPidComponentModal(selectedItem);
   }
 };
 
@@ -4407,6 +4646,8 @@ onMounted(async () => {
     if (!props.isRegisterMode) {
       // 공정 상세 모드일 때만 processId 사용
       processId = props.processId || (route.params.id as string);
+      // 공정 상세 모드에서는 기본정보가 이미 등록되어 있다고 가정
+      isBasicInfoRegistered.value = true;
     }
     
     console.log('ProcessDetail 컴포넌트 마운트 - processId:', processId, 'isRegisterMode:', props.isRegisterMode);
@@ -4438,6 +4679,11 @@ onMounted(async () => {
       // 공정카드 그리드 초기화
       processStore.setPfdList([]);
       processStore.setInitialPfdList([]);
+      
+      // P&ID 목록 초기화
+      mappingPidList.value = [];
+      initialMappingPidList.value = [];
+      selectedMappingPidItems.value = [];
       
       // P&ID 매핑 그리드 초기화
       mappingPidList.value = [];
@@ -4913,6 +5159,19 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
   width: 60px; /* 버튼 폭 줄임 */
   padding: 14px 12px; /* 세로 패딩 더 늘림 */
   font-size: 13px; /* 폰트 크기 줄임 */
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+  
+  &:hover {
+    background-color: #004085 !important;
+    border-color: #004085 !important;
+  }
+  
+  &:focus {
+    background-color: #0056b3 !important;
+    border-color: #0056b3 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25) !important;
+  }
 }
 
 /* 필수 입력 표시 스타일 */
@@ -5077,21 +5336,21 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: #0056b3;
   color: white;
 }
 
 .btn-success {
-  background: #28a745;
+  background: #0056b3;
   color: white;
 }
 
 .btn-success:hover {
-  background: #218838;
+  background: #004085;
 }
 
 .btn-danger:hover {
-  background: #c82333;
+  background: #004085;
 }
 
 .btn-danger:disabled {
@@ -5100,12 +5359,12 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .btn-secondary {
-  background: #6c757d;
+  background: #0056b3;
   color: white;
 }
 
 .btn-secondary:hover {
-  background: #545b62;
+  background: #004085;
 }
 
 .modal-overlay {
@@ -5314,7 +5573,7 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 
 /* 컴포넌트 버튼 스타일 */
 .btn-component {
-  background-color: #10b981;
+  background-color: #007bff;
   color: white;
   border: none;
   padding: 4px 8px;
@@ -5326,11 +5585,11 @@ watch(() => props.processId, async (newProcessId, oldProcessId) => {
 }
 
 .btn-component:hover {
-  background-color: #059669;
+  background-color: #0056b3;
 }
 
 .btn-component:active {
-  background-color: #047857;
+  background-color: #004085;
 }
 
 /* 공정관리 버튼 스타일 */

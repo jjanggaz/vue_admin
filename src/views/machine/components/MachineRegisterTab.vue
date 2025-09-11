@@ -37,43 +37,6 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ revit 모델</span>
-        <div class="file-upload-group">
-          <input
-            type="text"
-            class="input file-name-input"
-            :value="revitFileName"
-            readonly
-            placeholder="파일을 선택하세요"
-          />
-          <input
-            type="file"
-            ref="revitFileInput"
-            @change="handleRevitFileChange"
-            accept=".rvt"
-            style="display: none"
-            :disabled="isRegistered"
-          />
-          <button
-            type="button"
-            class="btn-file"
-            @click="$refs.revitFileInput.click()"
-            v-if="!isRegistered"
-          >
-            파일 선택
-          </button>
-          <button
-            type="button"
-            class="btn-register"
-            @click="handleRegister"
-            :disabled="isRegistered"
-            v-if="!isRegistered"
-          >
-            등록
-          </button>
-        </div>
-      </div>
-      <div class="group-form inline">
         <span class="label required">⊙ 기계종분류</span>
         <select
           class="input select-sm"
@@ -155,10 +118,6 @@ const machineStore = useMachineStore();
 // 단위 선택 상태
 const selectedUnit = ref("");
 
-// revit 파일 관련 상태
-const revitFileName = ref("");
-const revitFile = ref<File | null>(null);
-
 // 단계별 enable 상태
 const isStep1Enabled = ref(false); // 기계종분류
 const isStep2Enabled = ref(false); // 기계유형
@@ -175,6 +134,7 @@ const columns: TableColumn[] = [
   { key: "no", title: "순번", width: "80px" },
   { key: "model", title: "기계 모델명", width: "220px" },
   { key: "d3", title: "3D 모델 (DTDX)", width: "220px" },
+  { key: "revit", title: "REVIT 모델", width: "220px" },
   { key: "d2", title: "2D 심볼", width: "220px" },
   { key: "etc", title: "…", width: "120px" },
 ];
@@ -185,6 +145,7 @@ const rows = ref([
     no: 1,
     model: "송풍기 A",
     d3: "model_a.dtdx",
+    revit: "model_a.rvt",
     d2: "symbol_a.svg",
     etc: "비고1",
   },
@@ -193,91 +154,37 @@ const rows = ref([
     no: 2,
     model: "송풍기 B",
     d3: "model_b.dtdx",
+    revit: "model_b.rvt",
     d2: "symbol_b.svg",
     etc: "비고2",
   },
 ]);
 
-function handleRevitFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-
-  if (file) {
-    // .rvt 확장자 validation
-    const allowedExtensions = [".rvt"];
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
-
-    if (!allowedExtensions.includes(fileExtension)) {
-      alert("Revit 모델 파일은 .rvt 확장자만 허용됩니다.");
-      input.value = ""; // 파일 선택 초기화
-      revitFileName.value = "";
-      revitFile.value = null;
-      return;
-    }
-
-    // 파일 크기 validation (예: 100MB 제한)
-    const maxSize = 100 * 1024 * 1024; // 100MB
-    if (file.size > maxSize) {
-      alert("파일 크기는 100MB를 초과할 수 없습니다.");
-      input.value = ""; // 파일 선택 초기화
-      revitFileName.value = "";
-      revitFile.value = null;
-      return;
-    }
-
-    revitFileName.value = file.name;
-    revitFile.value = file;
-  } else {
-    revitFileName.value = "";
-    revitFile.value = null;
-  }
-}
-
-async function handleRegister() {
-  // 1단계: 기본 필수 항목 validation
-
-  if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
-    return;
-  }
-
-  if (!selectedMachineName.value) {
-    alert("기계명을 선택해주세요.");
-    return;
-  }
-
-  if (!revitFile.value) {
-    alert("Revit 모델 파일을 선택해주세요.");
-    return;
-  }
-
-  try {
-    // 3차 깊이별 공통코드 조회 API 호출
-    await machineStore.fetchThirdDepth(selectedMachineName.value, 3);
-
-    // 모든 하위 단계들 초기화
-    selectedThirdDept.value = "";
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep1Enabled.value = false;
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
-
-    // 등록 완료 상태로 변경
-    isRegistered.value = true;
-
-    // 1단계 완료 - 기계종분류 활성화
-    isStep1Enabled.value = true;
-  } catch (error) {
-    console.error("3차 깊이별 공통코드 조회 실패:", error);
-    alert("3차 깊이별 공통코드 조회에 실패했습니다.");
-  }
-}
-
 // watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedThirdDept, async (newValue, oldValue) => {
+watch(selectedMachineName, async (newValue, _oldValue) => {
+  // 모든 하위 단계들 초기화
+  selectedThirdDept.value = "";
+  selectedFourthDept.value = "";
+  selectedFifthDept.value = "";
+  isStep1Enabled.value = false;
+  isStep2Enabled.value = false;
+  isStep3Enabled.value = false;
+
+  if (newValue) {
+    try {
+      // 3차 깊이별 공통코드 조회 API 호출
+      await machineStore.fetchThirdDepth(newValue, 3);
+
+      // 1단계 완료 - 기계종분류 활성화
+      isStep1Enabled.value = true;
+    } catch (error) {
+      console.error("3차 깊이별 공통코드 조회 실패:", error);
+      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
+    }
+  }
+});
+
+watch(selectedThirdDept, async (newValue, _oldValue) => {
   if (isStep1Enabled.value) {
     // 기계종분류가 변경되면 하위 단계들 초기화
     selectedFourthDept.value = "";
@@ -303,7 +210,7 @@ watch(selectedThirdDept, async (newValue, oldValue) => {
   }
 });
 
-watch(selectedFourthDept, async (newValue, oldValue) => {
+watch(selectedFourthDept, async (newValue, _oldValue) => {
   if (isStep2Enabled.value) {
     // 기계유형이 변경되면 하위 단계 초기화
     selectedFifthDept.value = "";

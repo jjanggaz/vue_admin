@@ -3,19 +3,6 @@
     <!-- 상단 필터: MachineRegisterTab와 동일한 스타일/구성 -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.language") }}</span>
-        <select class="input select-sm" v-model="selectedLanguage">
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="lang in machineStore.langCodes"
-            :key="lang.code_id"
-            :value="lang.code_value_en"
-          >
-            {{ lang.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
         <span class="label required">⊙ {{ t("common.unit") }}</span>
         <select class="input select-sm" v-model="selectedUnit">
           <option value="">{{ t("common.select") }}</option>
@@ -92,17 +79,35 @@
           </option>
         </select>
       </div>
-    </div>
-
-    <!-- 계산식 버전 표 -->
-    <DataTable
-      :columns="versionColumns"
-      :data="versionRows"
-      :selectable="false"
-    />
-
-    <div class="actions">
-      <button class="btn-primary">+ 계산식 추가</button>
+      <div class="group-form inline">
+        <span class="label required">⊙ 계산식 파일</span>
+        <div class="file-upload-group">
+          <input
+            type="text"
+            class="input file-name-input"
+            :value="formulaFileName"
+            readonly
+            placeholder="파일을 선택하세요"
+          />
+          <input
+            type="file"
+            ref="formulaFileInput"
+            @change="handleFormulaFileChange"
+            accept=".py"
+            style="display: none"
+          />
+          <button
+            type="button"
+            class="btn-file"
+            @click="$refs.formulaFileInput.click()"
+          >
+            파일 선택
+          </button>
+          <button type="button" class="btn-register" @click="handleRegister">
+            등록
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 계산식 리스트 -->
@@ -131,7 +136,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
@@ -139,8 +144,7 @@ import { useMachineStore } from "@/stores/machineStore";
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
-// 언어와 단위 선택 상태
-const selectedLanguage = ref("");
+// 단위 선택 상태
 const selectedUnit = ref("");
 const selectedMachineName = ref("");
 
@@ -153,32 +157,6 @@ const selectedFifthDept = ref("");
 const isStep1Enabled = ref(false); // 기계종분류
 const isStep2Enabled = ref(false); // 기계유형
 const isStep3Enabled = ref(false); // 기계유형분류
-
-const versionColumns: TableColumn[] = [
-  { key: "no", title: t("common.no"), width: "60px" },
-  { key: "version", title: "계산식 버전", width: "200px" },
-  { key: "createdAt", title: "생성일자", width: "160px" },
-  { key: "applied", title: "적용버전", width: "120px" },
-  { key: "remark", title: "비고", width: "160px" },
-];
-const versionRows = [
-  {
-    id: 1,
-    no: 1,
-    version: "○○○.PY",
-    createdAt: "2025-01-01",
-    applied: "○",
-    remark: "*****",
-  },
-  {
-    id: 2,
-    no: 2,
-    version: "v1.1.py",
-    createdAt: "2025-01-10",
-    applied: "",
-    remark: "",
-  },
-];
 
 const listColumns: TableColumn[] = [
   { key: "no", title: "No.", width: "80px" },
@@ -211,6 +189,11 @@ const selectedItems = ref<any[]>([]);
 const handleSelectionChange = (items: any[]) => {
   selectedItems.value = items;
 };
+
+// 계산식 파일 업로드 관련 상태
+const formulaFileName = ref("");
+const formulaFile = ref<File | null>(null);
+const formulaFileInput = ref<HTMLInputElement | null>(null);
 
 // 기계명 선택 시 바로 3차 깊이별 조회
 watch(selectedMachineName, async (newValue, oldValue) => {
@@ -289,6 +272,92 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
     }
   }
 });
+
+// 계산식 파일 업로드 핸들러
+function handleFormulaFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+
+  if (file) {
+    // .py 확장자 validation
+    const allowedExtensions = [".py"];
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert("계산식 파일은 .py 확장자만 허용됩니다.");
+      input.value = ""; // 파일 선택 초기화
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      return;
+    }
+
+    // 파일 크기 validation (예: 10MB 제한)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      input.value = ""; // 파일 선택 초기화
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      return;
+    }
+
+    formulaFileName.value = file.name;
+    formulaFile.value = file;
+  } else {
+    formulaFileName.value = "";
+    formulaFile.value = null;
+  }
+}
+
+// 등록 함수
+async function handleRegister() {
+  // 필수 항목 validation
+  if (!selectedUnit.value) {
+    alert("단위를 선택해주세요.");
+    return;
+  }
+
+  if (!selectedMachineName.value) {
+    alert("기계명을 선택해주세요.");
+    return;
+  }
+
+  if (!selectedThirdDept.value) {
+    alert("기계종분류를 선택해주세요.");
+    return;
+  }
+
+  if (!formulaFile.value) {
+    alert("계산식 파일을 첨부해주세요.");
+    return;
+  }
+
+  try {
+    // 여기에 실제 등록 API 호출 로직 추가
+    console.log("등록 데이터:", {
+      unit: selectedUnit.value,
+      machineName: selectedMachineName.value,
+      thirdDept: selectedThirdDept.value,
+      fourthDept: selectedFourthDept.value,
+      fifthDept: selectedFifthDept.value,
+      file: formulaFile.value,
+    });
+
+    alert("계산식이 성공적으로 등록되었습니다.");
+
+    // 등록 후 초기화
+    formulaFileName.value = "";
+    formulaFile.value = null;
+    if (formulaFileInput.value) {
+      formulaFileInput.value.value = "";
+    }
+  } catch (error) {
+    console.error("등록 실패:", error);
+    alert("등록에 실패했습니다.");
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -493,6 +562,102 @@ $desktop: 1200px;
 
   @media (max-width: $mobile) {
     max-height: 60vh;
+  }
+}
+
+// 파일 업로드 영역 스타일
+.upload-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f7f9fc;
+  border: 1px solid #e5e9f2;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.upload-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  @media (max-width: $mobile) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+.file-upload-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: $mobile) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
+.file-name-input {
+  flex: 1;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+
+  @media (max-width: $mobile) {
+    min-width: auto;
+  }
+}
+
+.btn-file {
+  background: #6b7280;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background: #5a6268;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+.btn-register {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover:not(:disabled) {
+    background: #1557b0;
+  }
+
+  &:disabled {
+    background: #d0d5dd;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 </style>

@@ -606,7 +606,7 @@ function mapMachineType(val: string) {
 }
 
 onMounted(async () => {
-  await machineStore.fetchCommonCodes("EQUIP");
+  await machineStore.fetchCommonCodes("STRUCT");
   await loadData();
 });
 </script>

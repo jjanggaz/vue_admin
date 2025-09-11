@@ -102,6 +102,20 @@
         <button class="btn-outline" @click.prevent="onBulkUploadModels">
           모델 대량 업로드
         </button>
+        <input
+          type="file"
+          ref="excelFileInput"
+          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          style="display: none"
+          @change="handleExcelFileChange"
+        />
+        <input
+          type="file"
+          ref="bulkFileInput"
+          accept=".zip,.7z,application/zip,application/x-zip-compressed,application/x-7z-compressed"
+          style="display: none"
+          @change="handleBulkFileChange"
+        />
       </div>
     </div>
     <DataTable :columns="columns" :data="rows" :selectable="false"> </DataTable>
@@ -135,6 +149,13 @@ const selectedMachineName = ref("");
 const selectedThirdDept = ref("");
 const selectedFourthDept = ref("");
 const selectedFifthDept = ref("");
+
+// 엑셀 업로드 입력 ref
+const excelFileInput = ref<HTMLInputElement | null>(null);
+const excelFileName = ref<string>("");
+// 대량 업로드 입력 ref
+const bulkFileInput = ref<HTMLInputElement | null>(null);
+const bulkFileName = ref<string>("");
 
 const columns: TableColumn[] = [
   { key: "no", title: "순번", width: "80px" },
@@ -286,12 +307,82 @@ function onDownloadExcelTemplate() {
 
 function onUploadExcel() {
   if (!validateBasicSelections()) return;
-  // TODO: 엑셀 업로드 로직 연결
+  // 파일 선택 트리거
+  excelFileInput.value?.click();
 }
 
 function onBulkUploadModels() {
   if (!validateBasicSelections()) return;
-  // TODO: 모델 대량 업로드 로직 연결
+  // 파일 선택 트리거
+  bulkFileInput.value?.click();
+}
+
+// 엑셀 파일 변경 핸들러
+function handleExcelFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+
+  if (!file) {
+    excelFileName.value = "";
+    return;
+  }
+
+  // 확장자 검증
+  const allowed = [".xlsx", ".xls"];
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  if (!allowed.includes(ext)) {
+    alert("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.");
+    input.value = "";
+    excelFileName.value = "";
+    return;
+  }
+
+  // 크기 검증 (예: 10MB)
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    input.value = "";
+    excelFileName.value = "";
+    return;
+  }
+
+  excelFileName.value = file.name;
+
+  // TODO: 실제 파싱/업로드 로직 연결 (예: FormData 전송 또는 xlsx 파싱)
+}
+
+// 대량 업로드 파일 변경 핸들러
+function handleBulkFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+
+  if (!file) {
+    bulkFileName.value = "";
+    return;
+  }
+
+  // 확장자 검증
+  const allowed = [".zip", ".7z"];
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  if (!allowed.includes(ext)) {
+    alert("압축 파일(.zip, .7z)만 업로드 가능합니다.");
+    input.value = "";
+    bulkFileName.value = "";
+    return;
+  }
+
+  // 크기 검증 (예: 200MB)
+  const maxSize = 200 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    input.value = "";
+    bulkFileName.value = "";
+    return;
+  }
+
+  bulkFileName.value = file.name;
+
+  // TODO: 전송 로직 연결 (예: FormData로 업로드)
 }
 </script>
 

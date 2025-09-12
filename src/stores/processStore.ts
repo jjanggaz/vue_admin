@@ -863,6 +863,56 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
+  // 로딩 상태 변경 없이 중분류 코드를 로드하는 메서드
+  const loadSubCategoryCodesSilent = async (parentKey: string) => {
+    try {
+      console.log("중분류 코드 조용히 검색 시작: /api/process/code/search");
+
+      const requestData = {
+        search_field: "parent_key",
+        search_value: parentKey,
+        order_by: "code_order",
+        order_direction: "asc",
+      };
+
+      const result = await request("/api/process/code/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      console.log("API 응답:", result);
+
+      if (result.success) {
+        console.log("API 응답 데이터:", result.response);
+
+        // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
+        if (result.response && Array.isArray(result.response)) {
+          const newOptions = result.response.map((item: any) => ({
+            value: item.code_key,
+            label: item.code_value,
+          }));
+
+          // 배열을 직접 교체하지 않고 기존 배열을 수정
+          searchSubCategoryOptions.value.splice(0, searchSubCategoryOptions.value.length, ...newOptions);
+
+          console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
+        } else {
+          console.log("중분류 데이터가 없습니다.");
+          // 빈 배열로 설정
+          searchSubCategoryOptions.value.splice(0, searchSubCategoryOptions.value.length);
+        }
+      } else {
+        throw new Error(`중분류 코드 검색 실패: ${result.message}`);
+      }
+    } catch (error: any) {
+      console.error("중분류 코드 검색 실패:", error);
+      throw error;
+    }
+  };
+
   const loadProcessNameCodes = async (parentKey: string) => {
     try {
       setLoading(true);
@@ -907,6 +957,56 @@ export const useProcessStore = defineStore("process", () => {
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 로딩 상태 변경 없이 공정명 코드를 로드하는 메서드
+  const loadProcessNameCodesSilent = async (parentKey: string) => {
+    try {
+      console.log("공정명 코드 조용히 검색 시작: /api/process/code/search");
+
+      const requestData = {
+        search_field: "parent_key",
+        search_value: parentKey,
+        order_by: "code_order",
+        order_direction: "asc",
+      };
+
+      const result = await request("/api/process/code/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      console.log("API 응답:", result);
+
+      if (result.success) {
+        console.log("API 응답 데이터:", result.response);
+
+        // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
+        if (result.response && Array.isArray(result.response)) {
+          const newOptions = result.response.map((item: any) => ({
+            value: item.code_key,
+            label: item.code_value,
+          }));
+
+          // 배열을 직접 교체하지 않고 기존 배열을 수정
+          searchProcessNameOptions.value.splice(0, searchProcessNameOptions.value.length, ...newOptions);
+
+          console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
+        } else {
+          console.log("공정명 데이터가 없습니다.");
+          // 빈 배열로 설정
+          searchProcessNameOptions.value.splice(0, searchProcessNameOptions.value.length);
+        }
+      } else {
+        throw new Error(`공정명 코드 검색 실패: ${result.message}`);
+      }
+    } catch (error: any) {
+      console.error("공정명 코드 검색 실패:", error);
+      throw error;
     }
   };
 
@@ -1744,6 +1844,8 @@ export const useProcessStore = defineStore("process", () => {
     loadProcessTypeCodes,
     loadSubCategoryCodes,
     loadProcessNameCodes,
+    loadSubCategoryCodesSilent,
+    loadProcessNameCodesSilent,
     deleteProcesses,
     createProcess,
     updateProcess,

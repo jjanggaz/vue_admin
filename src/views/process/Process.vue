@@ -40,11 +40,12 @@
             <div class="form-item">
               <select
                 id="searchProcessType"
-                v-model="processStore.searchProcessType"
+                :value="processStore.searchProcessType || ''"
                 class="form-select"
                 @change="handleSearchProcessTypeChange"
+                :key="`searchProcessType-${processStore.searchProcessTypeOptions.length}`"
               >
-                <option :value="null">{{ t("common.select") }}</option>
+                <option value="">{{ t("common.select") }}</option>
                 <option
                   v-for="option in processStore.searchProcessTypeOptions"
                   :key="option.value"
@@ -62,11 +63,12 @@
             <div class="form-item">
               <select
                 id="searchSubCategory"
-                v-model="processStore.searchSubCategoryInput"
+                :value="processStore.searchSubCategoryInput || ''"
                 class="form-select"
                 @change="handleSubCategoryChange"
+                :key="`searchSubCategory-${processStore.searchSubCategoryOptions.length}`"
               >
-                <option :value="null">{{ t("common.select") }}</option>
+                <option value="">{{ t("common.select") }}</option>
                 <option
                   v-for="option in processStore.searchSubCategoryOptions"
                   :key="option.value"
@@ -84,10 +86,11 @@
             <div class="form-item">
               <select
                 id="searchProcessName"
-                v-model="processStore.searchProcessName"
+                :value="processStore.searchProcessName || ''"
                 class="form-select"
+                :key="`searchProcessName-${processStore.searchProcessNameOptions.length}`"
               >
-                <option :value="null">{{ t("common.select") }}</option>
+                <option value="">{{ t("common.select") }}</option>
                 <option
                   v-for="option in processStore.searchProcessNameOptions"
                   :key="option.value"
@@ -1041,15 +1044,19 @@ const handleUnitChange = () => {
 };
 
 // 검색 옵션 변경 핸들러
-const handleSearchProcessTypeChange = () => {
-  const selectedValue = processStore.searchProcessType;
+const handleSearchProcessTypeChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value || null;
+  
+  // 즉시 값 업데이트
+  processStore.setSearchProcessType(selectedValue);
 
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 중분류 옵션 초기화
-    processStore.searchSubCategoryOptions.length = 0;
+    processStore.searchSubCategoryOptions.splice(0, processStore.searchSubCategoryOptions.length);
     processStore.setSearchSubCategoryInput(null);
     // 공정명 옵션도 초기화
-    processStore.searchProcessNameOptions.length = 0;
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
     processStore.setSearchProcessName(null);
 
   } else {
@@ -1062,7 +1069,7 @@ const handleSearchProcessTypeChange = () => {
       console.log("  key:", selectedOption.value);
       console.log("  value:", selectedOption.label);
       // 공정명 옵션 초기화
-      processStore.searchProcessNameOptions.length = 0;
+      processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
       processStore.setSearchProcessName(null);
       handleSubCategoryCode();
     } else {
@@ -1072,12 +1079,16 @@ const handleSearchProcessTypeChange = () => {
 };
 
 // 중분류 변경 핸들러
-const handleSubCategoryChange = () => {
-  const selectedValue = processStore.searchSubCategoryInput;
+const handleSubCategoryChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value || null;
+  
+  // 즉시 값 업데이트
+  processStore.setSearchSubCategoryInput(selectedValue);
 
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    processStore.searchProcessNameOptions.length = 0;
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
     processStore.setSearchProcessName(null);
     console.log("중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
   } else {
@@ -1092,8 +1103,8 @@ const handleRegistProcessTypeChange = () => {
 
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 중분류 및 공정명 옵션 초기화
-    processStore.searchSubCategoryOptions.length = 0;
-    processStore.searchProcessNameOptions.length = 0;
+    processStore.searchSubCategoryOptions.splice(0, processStore.searchSubCategoryOptions.length);
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
     registForm.value.processSubCategory = null;
     registForm.value.processNm = null;
     console.log(
@@ -1112,7 +1123,7 @@ const handleRegistSubCategoryChange = () => {
 
   if (selectedValue === null || selectedValue === "") {
     // null 또는 공백값이 선택된 경우 공정명 옵션 초기화
-    processStore.searchProcessNameOptions.length = 0;
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
     registForm.value.processNm = null;
     console.log(
       "등록 모달 중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화"
@@ -1159,7 +1170,7 @@ const handleSearch = async () => {
 const handleSubCategoryCode = async () => {
   try {
     if (processStore.searchProcessType) {
-      await processStore.loadSubCategoryCodes(processStore.searchProcessType);
+      await processStore.loadSubCategoryCodesSilent(processStore.searchProcessType);
     }
   } catch (error: any) {
     const errorMessage = error?.message || "중분류 코드 로드 실패";
@@ -1171,7 +1182,7 @@ const handleSubCategoryCode = async () => {
 const handleProcessNameCodeSearch = async () => {
   try {
     if (processStore.searchSubCategoryInput) {
-      await processStore.loadProcessNameCodes(
+      await processStore.loadProcessNameCodesSilent(
         processStore.searchSubCategoryInput
       );
     }
@@ -1185,7 +1196,7 @@ const handleProcessNameCodeSearch = async () => {
 const handleRegistMiddleCodeSearch = async () => {
   try {
     if (registForm.value.processType) {
-      await processStore.loadSubCategoryCodes(registForm.value.processType);
+      await processStore.loadSubCategoryCodesSilent(registForm.value.processType);
     }
   } catch (error: any) {
     const errorMessage = error?.message || "등록 모달 중분류 코드 로드 실패";
@@ -1197,7 +1208,7 @@ const handleRegistMiddleCodeSearch = async () => {
 const handleRegistProcessNameCodeSearch = async () => {
   try {
     if (registForm.value.processSubCategory) {
-      await processStore.loadProcessNameCodes(
+      await processStore.loadProcessNameCodesSilent(
         registForm.value.processSubCategory
       );
     }

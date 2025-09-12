@@ -24,7 +24,11 @@
         
         <div class="form-group">
             <label class="required">{{ t("process.processType") }} <span class="required-mark">*</span></label>
-          <select v-model="processStore.processDetail.processType" @change="handleProcessTypeChange">
+          <select 
+            :value="processStore.processDetail.processType || ''" 
+            @change="handleProcessTypeChange"
+            :key="`processType-${processStore.processTypeOptions.length}`"
+          >
             <option value="">{{ t("common.select") }}</option>
             <option v-for="option in processStore.processTypeOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -34,7 +38,11 @@
         
         <div class="form-group">
             <label class="required">{{ t("process.subCategory") }} <span class="required-mark">*</span></label>
-          <select v-model="processStore.processDetail.subCategory" @change="handleSubCategoryChange">
+          <select 
+            :value="processStore.processDetail.subCategory || ''" 
+            @change="handleSubCategoryChange"
+            :key="`subCategory-${processStore.searchSubCategoryOptions.length}`"
+          >
             <option value="">{{ t("common.select") }}</option>
             <option v-for="option in processStore.searchSubCategoryOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -44,7 +52,11 @@
         
                  <div class="form-group">
             <label class="required">{{ t("process.processName") }} <span class="required-mark">*</span></label>
-           <select v-model="processStore.processDetail.processName" @change="handleProcessNameChange">
+           <select 
+             :value="processStore.processDetail.processName || ''" 
+             @change="handleProcessNameChange"
+             :key="`processName-${processStore.searchProcessNameOptions.length}`"
+           >
              <option value="">{{ t("common.select") }}</option>
              <option v-for="option in processStore.searchProcessNameOptions" :key="option.value" :value="option.value">
                {{ option.label }}
@@ -393,8 +405,8 @@
               <button 
                 class="btn btn-danger" 
                 @click="deletePidComponentRow"
-                :disabled="pidComponentList.length === 0"
-                title="현재 행을 삭제합니다"
+                :disabled="selectedPidComponentItems.length === 0"
+                title="선택된 행을 삭제합니다"
               >
                 삭제
               </button>
@@ -407,6 +419,9 @@
             :columns="pidComponentColumns"
             :data="pidComponentList"
             :selectable="true"
+            :selected-items="selectedPidComponentItems"
+            :row-key="'component_id'"
+            selection-mode="multiple"
             @selection-change="handlePidComponentSelectionChange"
           >
             <template #cell-no="{ item, index }">
@@ -646,6 +661,7 @@ const svgFileInput = ref<HTMLInputElement>();
 const pidComponentList = ref<any[]>([]);
 const selectedPidComponentItems = ref<any[]>([]);
 const currentDrawingId = ref<string>(''); // 현재 선택된 drawing_id 저장
+const deletedPidComponentIds = ref<any>([]); // 삭제된 컴포넌트 ID들 추적
 
 // P&ID 컴포넌트 추가 버튼 비활성화 여부 (제한 없음)
 const isAddButtonDisabled = computed(() => {
@@ -654,24 +670,24 @@ const isAddButtonDisabled = computed(() => {
 
 // P&ID 컴포넌트 select 옵션 데이터
 const categoryOptions = ref([
-  { value: '', label: '선택하세요' },
+  { value: null, label: '선택하세요' },
   { value: 'STRUCT_WWTP', label: '토목' },
   { value: 'EQUIP', label: '기계' }
 ]);
 
 // 중분류 옵션 (동적으로 로드됨)
 const middleCategoryOptions = ref([
-  { value: '', label: '선택하세요' }
+  { value: null, label: '선택하세요' }
 ]);
 
 // 소분류 옵션 (동적으로 로드됨)
 const smallCategoryOptions = ref([
-  { value: '', label: '선택하세요' }
+  { value: null, label: '선택하세요' }
 ]);
 
 // 장비유형 옵션 (동적으로 로드됨)
 const equipmentTypeOptions = ref([
-  { value: '', label: '선택하세요' }
+  { value: null, label: '선택하세요' }
 ]);
 
 // P&ID 목록 메인화면 표시 상태
@@ -687,6 +703,7 @@ const selectedFormulaForComponent = ref<any>(null);
 // P&ID 컴포넌트 섹션 표시 여부
 const showPidComponentSection = ref(false);
 const selectedPidForComponent = ref<any>(null);
+const pidComponentDrawingId = ref<string>(''); // P&ID Components용 drawing_id 저장
 
 // 기본정보 등록 완료 상태 (공정 등록 모드에서만 사용)
 const isBasicInfoRegistered = ref(false);
@@ -1089,30 +1106,72 @@ const deletePidDrawingAPI = async (drawingId: string) => {
 };
 
 // 이벤트 핸들러들
-const handleProcessTypeChange = () => {
-  if (processStore.processDetail.processType) {
-    processStore.loadSubCategoryCodes(processStore.processDetail.processType);
+const handleProcessTypeChange = async (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value || null;
+  
+  // 즉시 값 업데이트
+  processStore.processDetail.processType = selectedValue;
+  
+  // 하위 선택값들 즉시 초기화
+  processStore.processDetail.subCategory = null;
+  processStore.processDetail.processName = null;
+  
+  // DOM 업데이트를 기다린 후 API 호출
+  await nextTick();
+  
+  try {
+    if (selectedValue) {
+      // 로딩 상태를 변경하지 않고 조용히 API 호출
+      await processStore.loadSubCategoryCodesSilent(selectedValue);
   } else {
     // 공정구분이 선택되지 않은 경우 중분류와 공정명 옵션 초기화
-    processStore.searchSubCategoryOptions = [];
-    processStore.searchProcessNameOptions = [];
+      processStore.searchSubCategoryOptions.splice(0, processStore.searchSubCategoryOptions.length);
+      processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
+    }
+  } catch (error) {
+    console.error('공정 중분류 로드 실패:', error);
+    // 오류 발생 시에도 옵션 초기화
+    processStore.searchSubCategoryOptions.splice(0, processStore.searchSubCategoryOptions.length);
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
   }
-  processStore.processDetail.subCategory = '';
-  processStore.processDetail.processName = '';
 };
 
-const handleSubCategoryChange = () => {
-  if (processStore.processDetail.processType && processStore.processDetail.subCategory) {
-    processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
+const handleSubCategoryChange = async (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value || null;
+  
+  // 즉시 값 업데이트
+  processStore.processDetail.subCategory = selectedValue;
+  
+  // 하위 선택값 즉시 초기화
+  processStore.processDetail.processName = null;
+  
+  // DOM 업데이트를 기다린 후 API 호출
+  await nextTick();
+  
+  try {
+    if (processStore.processDetail.processType && selectedValue) {
+      // 로딩 상태를 변경하지 않고 조용히 API 호출
+      await processStore.loadProcessNameCodesSilent(selectedValue);
   } else {
     // 중분류가 선택되지 않은 경우 공정명 옵션 초기화
-    processStore.searchProcessNameOptions = [];
+      processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
+    }
+  } catch (error) {
+    console.error('공정명 로드 실패:', error);
+    // 오류 발생 시에도 옵션 초기화
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
   }
-  processStore.processDetail.processName = '';
 };
 
-const handleProcessNameChange = () => {
-  // 공정명 변경 처리
+const handleProcessNameChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value;
+  console.log('공정명 변경:', selectedValue);
+  
+  // processStore에 값 설정
+  processStore.setProcessDetail({ processName: selectedValue });
 };
 
 const handleLanguageChange = () => {
@@ -1382,9 +1441,24 @@ const openPidComponentModal = async (item: any) => {
   // 선택된 P&ID 정보 저장
   selectedPidForComponent.value = item;
   
+  // P&ID Components용 drawing_id 저장 (계속 사용하기 위해)
+  pidComponentDrawingId.value = item.drawing_id || '';
+  console.log("=== P&ID Components 섹션 열기 ===");
+  console.log("전달받은 item:", item);
+  console.log("item.drawing_id:", item.drawing_id);
+  console.log("P&ID Components용 drawing_id 저장:", pidComponentDrawingId.value);
+  
   // P&ID 컴포넌트 섹션 표시
   showPidComponentSection.value = true;
   console.log("P&ID 컴포넌트 섹션 표시 상태:", showPidComponentSection.value);
+  
+  // 선택 상태 초기화
+  selectedPidComponentItems.value = [];
+  console.log("P&ID 컴포넌트 선택 상태 초기화 완료");
+  
+  // currentDrawingId 재설정 (혹시 누락된 경우를 대비)
+  currentDrawingId.value = item.drawing_id || '';
+  console.log("P&ID Components용 drawing_id 재설정:", currentDrawingId.value);
   
   // P&ID 컴포넌트 데이터 초기화 및 로드
   pidComponentList.value = [];
@@ -1429,12 +1503,14 @@ const loadPidComponentData = async (pidItem: any) => {
       console.log("P&ID 컴포넌트 검색 API 응답:", response);
       
       if (response && response.response && Array.isArray(response.response)) {
-        // 응답 데이터에 No 컬럼 추가
+        // 응답 데이터에 No 컬럼과 고유 ID 추가
         pidComponentList.value = response.response.map((item: any, index: number) => ({
           ...item,
+          id: item.component_id || `loaded_comp_${Date.now()}_${index}`, // component_id를 id로 사용
           no: index + 1
         }));
         console.log("P&ID 컴포넌트 데이터 로드 완료:", pidComponentList.value);
+        console.log("로드된 데이터의 component_id들:", pidComponentList.value.map(item => item.component_id));
       } else {
         console.log("P&ID 컴포넌트 데이터가 없습니다.");
         pidComponentList.value = [];
@@ -1681,50 +1757,131 @@ const closePidComponentSection = () => {
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
   currentDrawingId.value = ''; // drawing_id 초기화
+  pidComponentDrawingId.value = ''; // P&ID Components용 drawing_id 초기화
+  deletedPidComponentIds.value = []; // 삭제 목록 초기화
   console.log('P&ID 컴포넌트 섹션 닫기 완료');
 };
 
 // P&ID 컴포넌트 행 추가
 const addPidComponentRow = () => {
+  console.log('=== P&ID 컴포넌트 행 추가 시작 ===');
+  console.log('pidComponentDrawingId.value:', pidComponentDrawingId.value);
+  console.log('selectedPidForComponent.value:', selectedPidForComponent.value);
+  console.log('currentDrawingId.value:', currentDrawingId.value);
+  
+  // P&ID Components용으로 저장된 drawing_id 사용 (가장 안전한 방법)
+  const pidId = pidComponentDrawingId.value || selectedPidForComponent.value?.drawing_id || currentDrawingId.value || '';
+  
+  console.log('최종 선택된 pidId:', pidId);
+  
   const newRow = {
-    id: `pid_comp_${Date.now()}`,
+    id: `pid_comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 더 고유한 ID 생성
+    component_id: `temp_comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 임시 component_id 생성
     no: pidComponentList.value.length + 1,
-    pidId: currentDrawingId.value, // 저장된 drawing_id 자동 입력
-    category: '',
-    middleCategory: '',
-    smallCategory: '',
-    equipmentType: '',
-    normalQuantity: '0',
-    spareQuantity: '0'
+    pid_id: pidId, // P&ID 그리드에서 전달된 drawing_id 값 사용 (컬럼명과 일치)
+    category: null, // null로 설정하여 기본 옵션 선택
+    middleCategory: null,
+    smallCategory: null,
+    equipmentType: null,
+    standard_quantity: '0', // 컬럼명과 일치하도록 수정
+    spare_quantity: '0' // 컬럼명과 일치하도록 수정
   };
+  
   pidComponentList.value.push(newRow);
   console.log('P&ID 컴포넌트 새 행 추가:', newRow);
-  console.log('자동 입력된 P&ID ID:', currentDrawingId.value);
+  console.log('자동 입력된 P&ID ID:', pidId);
+  console.log('저장된 P&ID Components drawing_id:', pidComponentDrawingId.value);
+  console.log('선택된 P&ID 항목:', selectedPidForComponent.value);
+  console.log('=== P&ID 컴포넌트 행 추가 완료 ===');
 };
 
 // P&ID 컴포넌트 선택 변경 핸들러
-const handlePidComponentSelectionChange = () => {
+const handlePidComponentSelectionChange = (selectedItems: any[]) => {
+  // DataTable에서 전달받은 선택된 항목들을 그대로 사용
+  selectedPidComponentItems.value = selectedItems;
   console.log('선택된 P&ID 컴포넌트 항목들:', selectedPidComponentItems.value);
+  console.log('선택된 항목 수:', selectedPidComponentItems.value.length);
+  console.log('선택된 항목들의 ID들:', selectedPidComponentItems.value.map(item => item.id));
+  console.log('선택된 항목들의 component_id들:', selectedPidComponentItems.value.map(item => item.component_id));
+  
+  // 현재 그리드의 모든 항목 ID도 출력
+  console.log('그리드의 모든 항목 ID들:', pidComponentList.value.map(item => item.id));
+  console.log('그리드의 모든 항목 component_id들:', pidComponentList.value.map(item => item.component_id));
 };
 
-// P&ID 컴포넌트 전체 선택/해제
-const handleSelectAllPidComponent = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.checked) {
-    selectedPidComponentItems.value = [...pidComponentList.value];
-  } else {
-    selectedPidComponentItems.value = [];
-  }
-  console.log('P&ID 컴포넌트 전체 선택 상태:', target.checked);
-};
+// P&ID 컴포넌트 전체 선택/해제 (DataTable의 내장 기능 사용)
+// const handleSelectAllPidComponent = (event: Event) => {
+//   const target = event.target as HTMLInputElement;
+//   if (target.checked) {
+//     selectedPidComponentItems.value = [...pidComponentList.value];
+//   } else {
+//     selectedPidComponentItems.value = [];
+//   }
+//   console.log('P&ID 컴포넌트 전체 선택 상태:', target.checked);
+// };
 
 // P&ID 컴포넌트 행 삭제
 const deletePidComponentRow = () => {
-  // 현재 행 삭제 (1행만 있으므로 전체 삭제)
-  pidComponentList.value = [];
+  if (selectedPidComponentItems.value.length === 0) {
+    alert('삭제할 행을 선택해주세요.');
+    return;
+  }
+  
+  console.log('=== P&ID 컴포넌트 삭제 시작 ===');
+  console.log('선택된 항목들:', selectedPidComponentItems.value);
+  
+  // 삭제할 항목들을 구분 (저장된 항목과 임시 항목)
+  const savedItems = selectedPidComponentItems.value.filter(item => item.component_id);
+  const tempItems = selectedPidComponentItems.value.filter(item => !item.component_id);
+  
+  console.log('저장된 항목 수:', savedItems.length);
+  console.log('임시 항목 수:', tempItems.length);
+  
+  // 삭제할 항목들을 삭제 목록에 추가 (저장 시 처리)
+  const allItemsToDelete = selectedPidComponentItems.value;
+  
+  if (allItemsToDelete.length > 0) {
+    // 저장된 항목들의 component_id를 삭제 목록에 추가 (중복 방지)
+    const savedComponentIds = savedItems.map(item => item.component_id);
+    if (savedComponentIds.length > 0) {
+      // 중복 제거하여 추가
+      const newComponentIds = savedComponentIds.filter(id => !deletedPidComponentIds.value.includes(id));
+      if (newComponentIds.length > 0) {
+        deletedPidComponentIds.value.push(...newComponentIds);
+        console.log('삭제할 컴포넌트 ID들 추가:', newComponentIds);
+      } else {
+        console.log('이미 삭제 목록에 있는 컴포넌트 ID들:', savedComponentIds);
+      }
+    }
+    
+    // 임시 항목들의 id를 삭제 목록에 추가 (중복 방지)
+    const tempItemIds = tempItems.map(item => item.id);
+    if (tempItemIds.length > 0) {
+      // 임시 항목 삭제를 위한 별도 배열 사용
+      if (!deletedPidComponentIds.value.tempItemIds) {
+        deletedPidComponentIds.value.tempItemIds = [];
+      }
+      // 중복 제거하여 추가
+      const newTempItemIds = tempItemIds.filter(id => !deletedPidComponentIds.value.tempItemIds.includes(id));
+      if (newTempItemIds.length > 0) {
+        deletedPidComponentIds.value.tempItemIds.push(...newTempItemIds);
+        console.log('삭제할 임시 항목 ID들 추가:', newTempItemIds);
+      } else {
+        console.log('이미 삭제 목록에 있는 임시 항목 ID들:', tempItemIds);
+      }
+    }
+    
+    console.log('현재 삭제 목록:', deletedPidComponentIds.value);
+  }
+  
+  // UI에서 즉시 삭제 (시각적 피드백)
+  const selectedIds = selectedPidComponentItems.value.map(item => item.id);
+  pidComponentList.value = pidComponentList.value.filter(item => !selectedIds.includes(item.id));
+  
+  // 선택 상태 초기화
   selectedPidComponentItems.value = [];
   
-  console.log('P&ID 컴포넌트 행 삭제 완료');
+  console.log('P&ID 컴포넌트 UI에서 삭제 완료 (API 호출은 저장 시)');
 };
 
 // 장비유형 코드로부터 이름을 가져오는 헬퍼 함수
@@ -1734,6 +1891,76 @@ const getEquipmentTypeName = (equipmentTypeCode: string) => {
   // equipmentTypeOptions에서 해당 코드의 이름을 찾기
   const option = equipmentTypeOptions.value.find(opt => opt.value === equipmentTypeCode);
   return option ? option.label : equipmentTypeCode;
+};
+
+// P&ID 컴포넌트 삭제 API
+const deletePidComponentAPI = async (componentId: string) => {
+  try {
+    console.log('P&ID 컴포넌트 삭제 API 호출 시작 - componentId:', componentId);
+    
+    const response = await fetch(`/api/process/component/delete/${componentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem('authUserId') || '',
+        'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+      },
+      credentials: 'include'
+    });
+
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    if (!responseData.success) {
+      throw new Error(`API error: ${responseData.message || 'Unknown error'}`);
+    }
+
+    console.log('P&ID 컴포넌트 삭제 API 호출 성공:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error('P&ID 컴포넌트 삭제 API 호출 실패:', error);
+    throw error;
+  }
+};
+
+// P&ID 컴포넌트 수정 API
+const updatePidComponentAPI = async (componentId: string, componentData: any) => {
+  try {
+    console.log('P&ID 컴포넌트 수정 API 호출 시작 - componentId:', componentId);
+    console.log('수정할 데이터:', componentData);
+    
+    const response = await fetch(`/api/process/component/update/${componentId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem('authUserId') || '',
+        'wai_lang': localStorage.getItem('wai_lang') || 'ko'
+      },
+      credentials: 'include',
+      body: JSON.stringify(componentData)
+    });
+
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    if (!responseData.success) {
+      throw new Error(`API error: ${responseData.message || 'Unknown error'}`);
+    }
+
+    console.log('P&ID 컴포넌트 수정 API 호출 성공:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error('P&ID 컴포넌트 수정 API 호출 실패:', error);
+    throw error;
+  }
 };
 
 // P&ID 컴포넌트 저장 핸들러
@@ -1773,8 +2000,35 @@ const handlePidComponentSave = async () => {
       return;
     }
     
-    // 그리드 데이터가 없으면 저장하지 않음
-    if (pidComponentList.value.length === 0) {
+    // 삭제할 컴포넌트들 처리
+    const hasDeletions = deletedPidComponentIds.value.length > 0 || deletedPidComponentIds.value.tempItemIds?.length > 0;
+    const hasData = pidComponentList.value.length > 0;
+    
+    if (hasDeletions) {
+      console.log('=== 삭제할 컴포넌트 처리 시작 ===');
+      console.log('삭제할 컴포넌트 ID들:', deletedPidComponentIds.value);
+      
+      // 저장된 항목들 서버에서 삭제
+      for (const componentId of deletedPidComponentIds.value) {
+        if (typeof componentId === 'string') {
+          console.log(`서버에서 삭제할 컴포넌트: ${componentId}`);
+          await deletePidComponentAPI(componentId);
+        }
+      }
+      
+      // 임시 항목들은 이미 UI에서 삭제되었으므로 별도 처리 불필요
+      if (deletedPidComponentIds.value.tempItemIds?.length > 0) {
+        console.log('임시 항목들은 이미 UI에서 삭제됨:', deletedPidComponentIds.value.tempItemIds);
+      }
+      
+      console.log('=== 삭제할 컴포넌트 처리 완료 ===');
+      
+      // 삭제 목록 초기화
+      deletedPidComponentIds.value = [];
+    }
+    
+    // 그리드 데이터가 없고 삭제할 항목도 없으면 저장하지 않음
+    if (pidComponentList.value.length === 0 && deletedPidComponentIds.value.length === 0) {
       alert('저장할 데이터가 없습니다.');
       return;
     }
@@ -1782,36 +2036,79 @@ const handlePidComponentSave = async () => {
     // UUID 형식 검증
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
-    // 그리드에서 데이터 추출
-    const componentData = pidComponentList.value.map(item => {
-      // UUID 형식 검증
-      if (!item.pidId || item.pidId.length === 0) {
-        throw new Error('P&ID ID가 누락되었습니다.');
-      }
-      
-      // UUID 형식이 아닌 경우 에러
-      if (!uuidRegex.test(item.pidId)) {
-        throw new Error('P&ID ID가 올바른 UUID 형식이 아닙니다: ' + item.pidId);
-      }
-      
-      return {
-        component_type: item.category, // 구분 code
-        component_code: item.equipmentType, // 장비유형 code
-        item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 value
-        standard_quantity: parseInt(item.normalQuantity) || 0, // 수량(상용)
-        spare_quantity: parseInt(item.spareQuantity) || 0, // 수량(예비)
-        pid_id: item.pidId // 그리드의 pid_id
-      };
-    });
+    // 수정할 항목과 신규 추가할 항목 구분
+    const updateItems = pidComponentList.value.filter(item => item.component_id && !item.component_id.startsWith('temp_comp_')); // 실제 component_id가 있으면 수정
+    const createItems = pidComponentList.value.filter(item => !item.component_id || item.component_id.startsWith('temp_comp_')); // component_id가 없거나 임시 ID면 신규
     
-    console.log('추출된 컴포넌트 데이터:', componentData);
-    console.log('P&ID ID 값들:', pidComponentList.value.map(item => ({ pidId: item.pidId, type: typeof item.pidId })));
+    console.log('수정할 항목 수:', updateItems.length);
+    console.log('신규 추가할 항목 수:', createItems.length);
+    
+    // 수정할 항목들 처리
+    if (updateItems.length > 0) {
+      console.log('=== 기존 항목 수정 처리 시작 ===');
+      for (const item of updateItems) {
+        console.log(`수정할 항목 상세 정보:`, {
+          component_id: item.component_id,
+          standard_quantity: item.standard_quantity,
+          spare_quantity: item.spare_quantity,
+          standard_quantityType: typeof item.standard_quantity,
+          spare_quantityType: typeof item.spare_quantity
+        });
+        
+        const updateData = {
+          component_code: item.equipmentType, // 장비유형 코드
+          component_type: item.category, // 구분 코드 (중분류가 아닌 구분)
+          item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 label
+          standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
+          spare_quantity: Number(item.spare_quantity) || 0 // 수량(예비)
+        };
+        
+        console.log(`항목 ${item.component_id} 수정 데이터:`, updateData);
+        console.log(`수량 값 확인 - standard_quantity: "${item.standard_quantity}", spare_quantity: "${item.spare_quantity}"`);
+        console.log(`파싱된 수량 값 - standard_quantity: ${updateData.standard_quantity}, spare_quantity: ${updateData.spare_quantity}`);
+        await updatePidComponentAPI(item.component_id, updateData);
+      }
+      console.log('=== 기존 항목 수정 처리 완료 ===');
+    }
+    
+    // 신규 추가할 항목들 처리
+    if (createItems.length > 0) {
+      console.log('=== 신규 항목 추가 처리 시작 ===');
+      
+      // UUID 형식 검증
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      const componentData = createItems.map(item => {
+        // UUID 형식 검증 (pid_id 필드 사용)
+        if (!item.pid_id || item.pid_id.length === 0) {
+          throw new Error('P&ID ID가 누락되었습니다.');
+        }
+        
+        // UUID 형식이 아닌 경우 에러
+        if (!uuidRegex.test(item.pid_id)) {
+          throw new Error('P&ID ID가 올바른 UUID 형식이 아닙니다: ' + item.pid_id);
+        }
+        
+        // 임시 component_id 제거
+        const { component_id, ...itemWithoutTempId } = item;
+        
+        return {
+          component_type: item.category, // 구분 code
+          component_code: item.equipmentType, // 장비유형 code
+          item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 value
+          standard_quantity: parseInt(item.standard_quantity) || 0, // 수량(상용)
+          spare_quantity: parseInt(item.spare_quantity) || 0, // 수량(예비)
+          pid_id: item.pid_id // 그리드의 pid_id
+        };
+      });
+    
+      console.log('추출된 신규 컴포넌트 데이터:', componentData);
     
     // API 요청 데이터 준비
     const requestData = {
       components: componentData
     };
-    console.log('API 요청 데이터:', requestData);
+      console.log('신규 추가 API 요청 데이터:', requestData);
     console.log('JSON 변환된 요청 데이터:', JSON.stringify(requestData));
     
     // API 호출
@@ -1823,87 +2120,35 @@ const handlePidComponentSave = async () => {
       body: JSON.stringify(requestData)
     });
     
-    console.log('API 응답 전체:', response);
+      console.log('신규 추가 API 응답 전체:', response);
+      
+      if (!response.success) {
+        throw new Error(`신규 추가 실패: ${response.message || '알 수 없는 오류'}`);
+      }
+      
+      console.log('=== 신규 항목 추가 처리 완료 ===');
+    }
     
-    if (response.success) {
-      alert('P&ID 컴포넌트 데이터가 성공적으로 저장되었습니다.');
-      console.log('P&ID 컴포넌트 저장 성공:', response);
+    // 모든 처리 완료 후 성공 메시지
+    if (hasDeletions && !hasData) {
+      // 삭제만 있는 경우
+      alert('P&ID 컴포넌트가 성공적으로 삭제되었습니다.');
     } else {
-      console.log('API 응답 실패 - response:', response);
-      console.log('API 응답 실패 - response.response:', response.response);
-      
-      // 원본 서버 응답에서 failed_component_ids 확인
-      if (response.failed_component_ids) {
-        console.log('원본 응답의 실패한 컴포넌트 ID들:', response.failed_component_ids);
-      }
-      if (response.created_component_ids) {
-        console.log('원본 응답의 생성된 컴포넌트 ID들:', response.created_component_ids);
-      }
-      if (response.total_count !== undefined) {
-        console.log('원본 응답의 총 컴포넌트 수:', response.total_count);
-        console.log('원본 응답의 성공한 컴포넌트 수:', response.success_count);
-      }
-      
-      throw new Error(response.message || '저장에 실패했습니다.');
+      // 수정/추가가 있는 경우
+      alert('P&ID 컴포넌트 데이터가 성공적으로 저장되었습니다.');
+    }
+    console.log('P&ID 컴포넌트 저장 성공');
+    
+    // 저장 성공 후 P&ID Components 그리드 새로고침
+    if (selectedPidForComponent.value) {
+      console.log('P&ID Components 그리드 새로고침 시작');
+      await loadPidComponentData(selectedPidForComponent.value);
+      console.log('P&ID Components 그리드 새로고침 완료');
     }
     
   } catch (error) {
     console.error('P&ID 컴포넌트 저장 실패:', error);
-    
-    // 서버 응답의 전체 내용 확인
-    console.log('에러 객체 전체:', error);
-    console.log('에러 response 속성:', error.response);
-    console.log('에러 message:', error.message);
-    console.log('에러 status:', error.status);
-    
-    // failed_component_ids는 error 객체의 최상위에 있음
-    if (error.failed_component_ids) {
-      console.log('실패한 컴포넌트 ID들:', error.failed_component_ids);
-    }
-    if (error.created_component_ids) {
-      console.log('생성된 컴포넌트 ID들:', error.created_component_ids);
-    }
-    if (error.total_count !== undefined) {
-      console.log('총 컴포넌트 수:', error.total_count);
-      console.log('성공한 컴포넌트 수:', error.success_count);
-    }
-    
-    // 원본 서버 응답에서 추가 정보 확인
-    console.log('에러 객체의 모든 키들:', Object.keys(error));
-    console.log('에러 객체의 모든 값들:', Object.values(error));
-    
-    // error.response가 JSON 문자열인 경우 파싱
-    let parsedResponse = null;
-    if (error.response && typeof error.response === 'string') {
-      try {
-        parsedResponse = JSON.parse(error.response);
-        console.log('파싱된 response:', parsedResponse);
-      } catch (e) {
-        console.log('response 파싱 실패:', e);
-      }
-    }
-    
-    // 상세한 에러 메시지 표시
-    let errorMessage = 'P&ID 컴포넌트 저장에 실패했습니다.';
-    if (error.message) {
-      errorMessage += '\n에러: ' + error.message;
-    }
-    
-    // 서버 응답의 상세 정보 추가 (error 객체의 최상위에서 가져옴)
-    if (error.total_count !== undefined) {
-      errorMessage += `\n총 ${error.total_count}개 중 ${error.success_count}개 성공`;
-    }
-    if (error.failed_component_ids && error.failed_component_ids.length > 0) {
-      errorMessage += `\n실패한 컴포넌트: ${error.failed_component_ids.length}개`;
-      console.log('실패한 컴포넌트 상세:', error.failed_component_ids);
-    }
-    
-    // 파싱된 response에서 상세 정보 추가
-    if (parsedResponse && parsedResponse.detail) {
-      errorMessage += '\n상세: ' + parsedResponse.detail;
-    }
-    
-    alert(errorMessage);
+    alert(`P&ID 컴포넌트 저장 실패: ${error.message}`);
   }
 };
 
@@ -2476,10 +2721,15 @@ const handlePfdSave = async () => {
     }
     
     // PFD 변경사항 처리
-    await processPfdChanges(processId);
+    const hasChanges = await processPfdChanges(processId);
     
+    if (hasChanges) {
     console.log('공정카드 저장 완료');
     alert('공정카드가 저장되었습니다.');
+    } else {
+      console.log('저장할 변경사항이 없습니다.');
+      alert('저장할 PFD 변경사항이 없습니다.');
+    }
     
   } catch (error: any) {
     console.error('공정카드 저장 실패:', error);
@@ -2756,11 +3006,10 @@ const processPfdChanges = async (processId: string) => {
       }
     }
     
-    // 변경사항이 없으면 메시지 표시
+    // 변경사항이 없으면 false 반환
     if (deletedRows.length === 0 && addedRows.length === 0 && modifiedRows.length === 0) {
       console.log('PFD 변경사항이 없습니다.');
-      alert('저장할 PFD 변경사항이 없습니다.');
-      return;
+      return false;
     }
     
     // 초기값 업데이트
@@ -2768,6 +3017,7 @@ const processPfdChanges = async (processId: string) => {
     processStore.setInitialPfdList(updatedPfdList);
     
     console.log('=== PFD 변경사항 처리 완료 ===');
+    return true;
   }
 };
 
@@ -2830,10 +3080,15 @@ const handleFormulaSave = async () => {
     }
     
     // 계산식 변경사항 처리
-    await processFormulaChanges(processId);
+    const hasChanges = await processFormulaChanges(processId);
     
+    if (hasChanges) {
     console.log('계산식 저장 완료');
     alert('계산식이 저장되었습니다.');
+    } else {
+      console.log('저장할 변경사항이 없습니다.');
+      alert('저장할 계산식 변경사항이 없습니다.');
+    }
     
   } catch (error: any) {
     console.error('계산식 저장 실패:', error);
@@ -2928,11 +3183,10 @@ const processFormulaChanges = async (processId: string) => {
       }
     }
     
-    // 변경사항이 없으면 메시지 표시
+    // 변경사항이 없으면 false 반환
     if (deletedRows.length === 0 && addedRows.length === 0) {
       console.log('계산식 변경사항이 없습니다.');
-      alert('저장할 계산식 변경사항이 없습니다.');
-      return;
+      return false;
     }
     
     // 초기값 업데이트
@@ -2940,6 +3194,7 @@ const processFormulaChanges = async (processId: string) => {
     processStore.setInitialFormulaList(updatedFormulaList);
     
     console.log('=== 계산식 변경사항 처리 완료 ===');
+    return true;
   }
 };
 
@@ -3021,6 +3276,15 @@ const createNewProcess = async () => {
       alert('공정 중분류를 선택해주세요.');
       return;
     }
+    
+    console.log('공정명 검증:', {
+      processName: processStore.processDetail.processName,
+      processNameType: typeof processStore.processDetail.processName,
+      isEmpty: !processStore.processDetail.processName,
+      isNull: processStore.processDetail.processName === null,
+      isUndefined: processStore.processDetail.processName === undefined,
+      isEmptyString: processStore.processDetail.processName === ''
+    });
     
     if (!processStore.processDetail.processName) {
       alert('공정명을 선택해주세요.');
@@ -3785,6 +4049,16 @@ const openMappingPidModal = async (pfdItem: any) => {
     return;
   }
   
+  // P&ID 창이 다시 열릴 때 'P&ID Components' 섹션이 열려 있으면 닫기
+  if (showPidComponentSection.value) {
+    showPidComponentSection.value = false;
+    selectedPidForComponent.value = null;
+    pidComponentList.value = [];
+    selectedPidComponentItems.value = [];
+    currentDrawingId.value = '';
+    console.log('P&ID Components 섹션을 닫았습니다.');
+  }
+  
   currentPfdItemForMapping.value = pfdItem;
   selectedMappingPidItems.value = []; // 선택된 항목들 초기화
   showPidListInMain.value = true; // 메인화면에 표시
@@ -3852,7 +4126,7 @@ const updatePfdPidMappingInfo = async (drawingId: string, pfdItemId: string) => 
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        search_field: 'parent_drawing_id',
+        search_field: 'drawing_id',
         search_value: drawingId,
         order_by: 'created_at'
       })
@@ -3918,7 +4192,7 @@ const refreshPfdData = async () => {
                 'Accept': 'application/json',
               },
               body: JSON.stringify({
-                search_field: 'parent_drawing_id',
+                search_field: 'drawing_id',
                 search_value: drawingId,
                 order_by: 'created_at'
               })
@@ -3966,8 +4240,33 @@ const confirmMappingPid = async () => {
     console.log('초기 P&ID 목록:', initialMappingPidList.value);
     console.log('초기 목록 개수:', initialMappingPidList.value.length);
     console.log('현재 목록 개수:', mappingPidList.value.length);
-    console.log('초기 목록:', initialMappingPidList.value);
-    console.log('현재 목록:', mappingPidList.value);
+    
+    // 각 항목의 상세 정보 출력
+    console.log('=== 초기 목록 상세 정보 ===');
+    initialMappingPidList.value.forEach((item, index) => {
+      console.log(`초기 항목 ${index + 1}:`, {
+        drawing_id: item.drawing_id,
+        pidFileName: item.pidFileName,
+        hasPidFile: !!(item as any).pidFile,
+        hasSvgFile: !!(item as any).svgFile,
+        pidFileObject: (item as any).pidFile,
+        svgFileObject: (item as any).svgFile,
+        allKeys: Object.keys(item)
+      });
+    });
+    
+    console.log('=== 현재 목록 상세 정보 ===');
+    mappingPidList.value.forEach((item, index) => {
+      console.log(`현재 항목 ${index + 1}:`, {
+        drawing_id: item.drawing_id,
+        pidFileName: item.pidFileName,
+        hasPidFile: !!(item as any).pidFile,
+        hasSvgFile: !!(item as any).svgFile,
+        pidFileObject: (item as any).pidFile,
+        svgFileObject: (item as any).svgFile,
+        allKeys: Object.keys(item)
+      });
+    });
     
     // process_id 설정
     let processId: string;
@@ -4006,89 +4305,28 @@ const confirmMappingPid = async () => {
     
     console.log('삭제된 P&ID row들:', deletedRows);
     
-    // 새로 추가된 항목들과 파일이 변경된 기존 항목들을 필터링
+    // 새로 추가된 항목들만 필터링 (drawing_id가 없고 파일이 있는 항목)
     const validMappings = mappingPidList.value.filter(item => {
-      const hasFile = !!item.pidFile;
-      const isNewItem = (!item.drawing_id || item.drawing_id === undefined);
-      const hasNewFile = hasFile && item.pidFile instanceof File;
-      
-      // 새로 추가된 항목인 경우 (PFD 파일 또는 Svg 파일이 있으면)
-      if (isNewItem) {
+      const isNewItem = !item.drawing_id;
+      const hasPidFile = !!(item as any).pidFile;
         const hasSvgFile = !!(item as any).svgFile;
-        const hasAnyFile = hasNewFile || hasSvgFile;
+      const hasAnyFile = hasPidFile || hasSvgFile;
         
-        console.log(`새 항목 - ${item.pidFileName || 'no name'}:`, { 
-          hasFile, 
+      const shouldInclude = isNewItem && hasAnyFile;
+      
+      console.log(`항목 체크 - ${item.pidFileName || 'no name'}:`, { 
           isNewItem, 
-          hasNewFile, 
+        hasPidFile,
           hasSvgFile, 
-          hasAnyFile 
-        });
-        
-        return hasAnyFile;
-      }
-      
-      // 기존 항목에서 파일이 변경된 경우 (PFD 파일 또는 Svg 파일)
-      if (item.drawing_id) {
-        const initialItem = initialMappingPidList.value.find(initialItem => 
-          initialItem.drawing_id && initialItem.drawing_id === item.drawing_id
-        );
-        
-        if (initialItem) {
-          // PFD 파일 변경 감지
-          const currentPfdFile = item.pidFile;
-          const initialPfdFile = (initialItem as any).pidFile;
-          const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
-          
-          // Svg 파일 변경 감지
-          const currentSvgFile = (item as any).svgFile;
-          const initialSvgFile = (initialItem as any)?.svgFile;
-          const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
-                                (!currentSvgFile && initialSvgFile);
-          
-          const hasChanges = pfdFileChanged || svgFileChanged;
-          
-          console.log(`기존 항목 체크 - ${item.pidFileName || 'no name'}:`, {
-            drawing_id: item.drawing_id,
-            pfdFileChanged,
-            svgFileChanged,
-            hasChanges,
-            currentPfdFileName: currentPfdFile?.name,
-            initialPfdFileName: initialPfdFile?.name,
-            currentSvgFileName: (currentSvgFile as any)?.name,
-            initialSvgFileName: (initialSvgFile as any)?.name
-          });
-          
-          return hasChanges;
-        }
-      }
-      
-      return false;
-    });
-    
-    console.log('변경된 P&ID 항목들 (새 항목 + 파일 변경된 기존 항목):', validMappings);
-    console.log('현재 mappingPidList 전체:', mappingPidList.value);
-    console.log('validMappings 조건 확인:', mappingPidList.value.map(item => ({
-      pidFile: !!item.pidFile,
-      pidFileValue: item.pidFile,
-      pidFileName: item.pidFileName,
-      drawing_id: item.drawing_id,
-      isNewItem: !item.drawing_id, // drawing_id가 없으면 새 항목
-      condition1: !!item.pidFile,
-      condition2: (!item.drawing_id || item.drawing_id === undefined),
-      bothConditions: !!item.pidFile && (!item.drawing_id || item.drawing_id === undefined)
-    })));
-    
-    // 각 항목의 상태를 상세히 로깅
-    mappingPidList.value.forEach((item, index) => {
-      console.log(`항목 ${index + 1}:`, {
-        pidFile: !!item.pidFile,
-        pidFileName: item.pidFileName,
-        drawing_id: item.drawing_id,
-        isExistingItem: !!item.drawing_id,
-        willBeSaved: !!item.pidFile
+        hasAnyFile,
+        shouldInclude,
+        drawing_id: item.drawing_id
       });
+      
+      return shouldInclude;
     });
+    
+    console.log('새로 추가된 P&ID 항목들:', validMappings);
     
     // 1. 삭제 처리
     if (deletedRows.length > 0) {
@@ -4150,6 +4388,16 @@ const confirmMappingPid = async () => {
       alert('P&ID 항목이 삭제되었습니다.');
       // PFD 데이터 새로고침
       await refreshPfdData();
+      // P&ID Components 그리드 새로고침 - mappingPidList에서 최신 drawing_id 사용
+      if (mappingPidList.value.length > 0) {
+        const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
+        console.log('P&ID Components 새로고침용 최신 P&ID 아이템:', latestPidItem);
+        await loadPidComponentData(latestPidItem);
+      } else {
+        // P&ID가 모두 삭제된 경우 P&ID Components 그리드 초기화
+        pidComponentList.value = [];
+        console.log('P&ID가 모두 삭제되어 P&ID Components 그리드 초기화');
+      }
       // P&ID 모달이 삭제되어 함수 호출 제거
       return;
     }
@@ -4161,7 +4409,7 @@ const confirmMappingPid = async () => {
       console.log('저장할 새 데이터 수:', validMappings.length);
     }
     
-    // 3. 새 데이터 저장이 필요한 경우
+    // 3. 저장이 필요한 경우 (새 데이터가 있는 경우만)
     if (validMappings.length > 0) {
       console.log('새 데이터 저장 시작 - 항목 수:', validMappings.length);
       // 필수 입력 검증 (PFD 파일이 있는 항목들에 대해서만)
@@ -4338,8 +4586,21 @@ const confirmMappingPid = async () => {
             console.log('PFD hasPidMapping 상태 업데이트 완료');
           }
           
-          // 저장 성공 후 그리드 상태 유지 (새로고침하지 않음)
-          console.log('P&ID 저장 완료 - 그리드 상태 유지');
+          // 저장 성공 후 P&ID 매핑 목록만 새로고침
+          console.log('P&ID 저장 완료 - P&ID 매핑 목록 새로고침');
+          if (currentPfdItemForMapping.value) {
+            console.log('P&ID 새로고침용 PFD 아이템:', currentPfdItemForMapping.value);
+            await loadMappingPidList(currentPfdItemForMapping.value);
+            
+            // P&ID Components 그리드도 새로고침 - mappingPidList에서 최신 drawing_id 사용
+            if (mappingPidList.value.length > 0) {
+              const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
+              console.log('P&ID Components 새로고침용 최신 P&ID 아이템:', latestPidItem);
+              await loadPidComponentData(latestPidItem);
+            }
+          } else {
+            console.warn('currentPfdItemForMapping.value가 없어서 P&ID 목록 새로고침을 건너뜁니다.');
+          }
           
           // 초기값 업데이트 (Svg 파일 변경사항 반영)
           const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
@@ -4352,22 +4613,42 @@ const confirmMappingPid = async () => {
         alert(`P&ID 매핑 저장 실패: ${error.message}`);
         return;
       }
-    } else {
-      // 아무 작업도 수행하지 않은 경우
-      console.log('아무 작업도 수행하지 않음');
-      console.log('삭제된 항목 수:', deletedRows.length);
-      console.log('저장할 새 데이터 수:', validMappings.length);
-      console.log('현재 목록 전체:', mappingPidList.value);
-      
-      if (deletedRows.length === 0 && validMappings.length === 0) {
-        console.log('조건 확인: 삭제할 항목 없음, 저장할 새 데이터 없음');
-        alert('저장할 P&ID 매핑 데이터가 없습니다.\n새 파일을 선택하거나 기존 항목을 삭제해주세요.');
-      }
     }
     
+    // 실제 변경사항이 있는지 확인 (삭제된 항목이 있거나 새로 추가된 항목이 있는 경우)
+    const hasRealChanges = deletedRows.length > 0 || validMappings.length > 0;
+    
+    console.log('변경사항 확인:', {
+      deletedRows: deletedRows.length,
+      validMappings: validMappings.length,
+      hasRealChanges,
+      initialLength: initialMappingPidList.value.length,
+      currentLength: mappingPidList.value.length,
+      deletedRowDetails: deletedRows.map(row => ({ drawing_id: row.drawing_id, pidFileName: row.pidFileName })),
+      validMappingDetails: validMappings.map(item => ({ pidFileName: item.pidFileName, hasPidFile: !!(item as any).pidFile, hasSvgFile: !!(item as any).svgFile }))
+    });
+    
+    if (!hasRealChanges) {
+      console.log('조건 확인: 실제로 변경사항 없음');
+      alert('변경사항이 없습니다.');
+      throw new Error('변경사항 없음 - 함수 종료');
+    }
+    
+    // 이 지점에 도달했다면 실제로 저장이 필요한 경우
+    console.log('실제 저장이 필요한 경우 - validMappings:', validMappings.length, 'deletedRows:', deletedRows.length);
+    
     // P&ID 모달이 삭제되어 함수 호출 제거
+    console.log('P&ID 매핑 저장 완료');
+    alert('P&ID 매핑이 저장되었습니다.');
+    return true;
     
   } catch (error: any) {
+    // 변경사항 없음 오류는 무시
+    if (error.message === '변경사항 없음 - 함수 종료') {
+      console.log('변경사항 없음으로 함수 종료됨');
+      return;
+    }
+    
     console.error('P&ID 매핑 저장 실패:', error);
     alert(`P&ID 매핑 저장 실패: ${error.message}`);
   }
@@ -4375,20 +4656,23 @@ const confirmMappingPid = async () => {
 
 const loadMappingPidList = async (pfdItem: any) => {
   try {
-    console.log('P&ID 매핑 목록 로드 시작:', pfdItem);
-    console.log('parent_drawing_id:', pfdItem.drawing_id);
+    console.log('=== P&ID 매핑 목록 로드 시작 ===');
+    console.log('전달받은 pfdItem:', pfdItem);
+    console.log('pfdItem.drawing_id:', pfdItem?.drawing_id);
+    console.log('pfdItem.id:', pfdItem?.id);
+    console.log('pfdItem.no:', pfdItem?.no);
     
-    const parentDrawingId = pfdItem.drawing_id;
-    if (!parentDrawingId) {
-      console.error('parent_drawing_id가 없습니다.');
+    const drawingId = pfdItem?.drawing_id;
+    if (!drawingId) {
+      console.error('drawing_id가 없습니다. pfdItem:', pfdItem);
       mappingPidList.value = [];
       return;
     }
     
     // P&ID 도면 검색 API 호출
     const requestBody = {
-      search_field: "parent_drawing_id",
-      search_value: parentDrawingId
+      search_field: "drawing_id",
+      search_value: drawingId
     };
     
     console.log('P&ID 도면 검색 API 호출:', requestBody);
@@ -4409,6 +4693,8 @@ const loadMappingPidList = async (pfdItem: any) => {
     
     const pidDrawingsData = response.response || [];
     console.log('P&ID 도면 검색 API 응답:', pidDrawingsData);
+    console.log('API 응답 데이터 타입:', typeof pidDrawingsData);
+    console.log('API 응답 데이터 길이:', Array.isArray(pidDrawingsData) ? pidDrawingsData.length : '배열이 아님');
     
     if (Array.isArray(pidDrawingsData) && pidDrawingsData.length > 0) {
       // child_drawings 배열을 기반으로 그리드 데이터 생성
@@ -4484,7 +4770,7 @@ const loadMappingPidList = async (pfdItem: any) => {
             pidFileName: pidFileName,
             excelFileName: childDrawing.excel_file_name || childDrawing.excel_file || '',
             remarks: childDrawing.remarks || '',
-          parent_drawing_id: parentDrawingId,
+          parent_drawing_id: drawingId,
             drawing_id: drawingId,
             current_file_drawing_id: childDrawing.detail?.current_file?.drawing_id || childDrawing.current_file?.drawing_id,
             file_id: childDrawing.detail?.current_file?.file_id || childDrawing.file_id,
@@ -4499,8 +4785,10 @@ const loadMappingPidList = async (pfdItem: any) => {
       mappingPidList.value = pidItems;
         // 초기값 저장 (깊은 복사)
         initialMappingPidList.value = JSON.parse(JSON.stringify(pidItems));
-      console.log('P&ID 매핑 목록 로드 완료:', mappingPidList.value.length, '개');
-        console.log('P&ID 초기값 저장 완료:', initialMappingPidList.value.length, '개');
+      console.log('=== P&ID 매핑 목록 로드 완료 ===');
+      console.log('로드된 P&ID 항목 수:', mappingPidList.value.length, '개');
+      console.log('로드된 P&ID 목록:', mappingPidList.value);
+      console.log('P&ID 초기값 저장 완료:', initialMappingPidList.value.length, '개');
       } else {
         // child_drawings가 없는 경우 빈 배열로 설정
         mappingPidList.value = [];

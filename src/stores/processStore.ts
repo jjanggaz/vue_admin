@@ -386,7 +386,6 @@ export const useProcessStore = defineStore("process", () => {
   const searchProcesses = async () => {
     try {
       setLoading(true);
-      console.log("검색 시작: /api/process/master/search");
 
       let requestData;
 
@@ -430,27 +429,12 @@ export const useProcessStore = defineStore("process", () => {
       }
 
       // 언어와 단위 정보 추가
-      console.log("언어와 단위 값 확인:", {
-        searchLanguage: searchLanguage.value,
-        searchUnit: searchUnit.value,
-        searchLanguageType: typeof searchLanguage.value,
-        searchUnitType: typeof searchUnit.value
-      });
 
       requestData = {
         ...baseRequestData,
         language_code: searchLanguage.value,
         unit_system_code: searchUnit.value,
       };
-
-      console.log("검색 요청 데이터:", requestData);
-      console.log("검색 조건 상태:", {
-        searchProcessName: searchProcessName.value,
-        searchSubCategoryInput: searchSubCategoryInput.value,
-        searchProcessType: searchProcessType.value,
-        searchLanguage: searchLanguage.value,
-        searchUnit: searchUnit.value
-      });
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -460,8 +444,6 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("검색 API 응답:", result);
-
       // API 응답 구조 검증 및 안전한 처리
       if (result && result.success !== false) {
         let processDataArray = [];
@@ -470,7 +452,6 @@ export const useProcessStore = defineStore("process", () => {
         if (Array.isArray(result.response)) {
           // 직접 배열로 응답이 온 경우
           processDataArray = result.response;
-          console.log("직접 배열 응답:", processDataArray);
         } else if (
           result.response &&
           result.response.items &&
@@ -478,21 +459,16 @@ export const useProcessStore = defineStore("process", () => {
         ) {
           // items 배열로 응답이 온 경우
           processDataArray = result.response.items;
-          console.log("items 배열 응답:", processDataArray);
         } else if (result.response && typeof result.response === "object") {
           // 단일 객체로 응답이 온 경우 배열로 변환
           processDataArray = [result.response];
-          console.log("단일 객체를 배열로 변환:", processDataArray);
         } else {
-          console.log("응답 데이터가 없거나 예상과 다른 구조입니다.");
           processDataArray = [];
         }
 
         // 검색 결과를 processList에 설정
         if (processDataArray.length > 0) {
           // API 응답 데이터 구조 확인
-          console.log("API 응답 데이터 샘플 (첫 번째 항목):", processDataArray[0]);
-          console.log("API 응답에서 symbol_id 확인:", processDataArray[0]?.symbol_id);
           
           processList.value = processDataArray.map((item: any) => ({
             id:
@@ -530,13 +506,6 @@ export const useProcessStore = defineStore("process", () => {
           // 검색 후 체크박스(선택된 항목들) 초기화
           selectedItems.value = [];
 
-          console.log("processList 업데이트 완료:", processList.value);
-          console.log(
-            "페이징 정보 - 총 개수:",
-            totalCount.value,
-            "총 페이지:",
-            totalPages.value
-          );
         } else {
           // 검색 결과가 없는 경우
           processList.value = [];
@@ -545,11 +514,9 @@ export const useProcessStore = defineStore("process", () => {
           currentPage.value = 1;
           // 체크박스(선택된 항목들) 초기화
           selectedItems.value = [];
-          console.log("검색 결과가 없습니다.");
         }
       } else {
         // API 호출 실패 또는 success: false인 경우
-        console.log("검색 실패:", result?.message || "알 수 없는 오류");
         processList.value = [];
         totalCount.value = 0;
         totalPages.value = 1;
@@ -610,12 +577,8 @@ export const useProcessStore = defineStore("process", () => {
   const searchProcessById = async (processId: string) => {
     try {
       setLoading(true);
-      console.log("ProcessDetail 검색 시작: /api/process/master/search");
-      console.log("전달받은 processId:", processId);
-      console.log("processId 타입:", typeof processId);
 
       if (!processId || processId === "undefined" || processId === "null") {
-        console.log("processId가 없거나 유효하지 않아서 검색을 건너뜁니다.");
         return null;
       }
 
@@ -623,7 +586,6 @@ export const useProcessStore = defineStore("process", () => {
       const validProcessId = String(processId).trim();
       
       if (!validProcessId) {
-        console.log("processId가 빈 문자열이어서 검색을 건너뜁니다.");
         return null;
       }
 
@@ -632,8 +594,6 @@ export const useProcessStore = defineStore("process", () => {
         search_value: validProcessId,
       };
 
-      console.log("검색 요청 데이터:", requestData);
-      console.log("요청 데이터 JSON:", JSON.stringify(requestData));
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -643,7 +603,6 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("검색 API 응답:", result);
 
       // API 응답 구조 검증 및 안전한 처리
       if (result && result.success !== false) {
@@ -653,7 +612,6 @@ export const useProcessStore = defineStore("process", () => {
         if (Array.isArray(result.response) && result.response.length > 0) {
           // 배열로 응답이 온 경우 첫 번째 항목만 사용
           processData = result.response[0];
-          console.log("배열 응답에서 첫 번째 항목 사용:", processData);
         } else if (
           result.response &&
           result.response.items &&
@@ -662,7 +620,6 @@ export const useProcessStore = defineStore("process", () => {
         ) {
           // items 배열로 응답이 온 경우 첫 번째 항목만 사용
           processData = result.response.items[0];
-          console.log("items 배열에서 첫 번째 항목 사용:", processData);
         } else if (
           result.response &&
           typeof result.response === "object" &&
@@ -670,29 +627,12 @@ export const useProcessStore = defineStore("process", () => {
         ) {
           // 단일 객체로 응답이 온 경우
           processData = result.response;
-          console.log("단일 객체 응답 사용:", processData);
         } else {
-          console.log("검색 결과가 없거나 응답 형식이 올바르지 않습니다.");
-          console.log("응답 데이터:", result.response);
           return null;
         }
 
         // 검색된 데이터를 화면에 표시
         if (processData) {
-          console.log("=== 검색된 공정 데이터 ===");
-          console.log("전체 API 응답 데이터:", JSON.stringify(processData, null, 2));
-          console.log(
-            "level2_code_value (공정구분):",
-            processData.level2_code_value
-          );
-          console.log(
-            "level3_code_value (공정 중분류):",
-            processData.level3_code_value
-          );
-          console.log("process_name (공정명):", processData.process_name);
-          console.log("process_name 타입:", typeof processData.process_name);
-          console.log("symbol_uri (공정심볼):", processData.symbol_uri);
-          console.log("================================");
 
           // 전역변수에 공정 데이터 저장
           setGlobalProcessData({
@@ -722,28 +662,15 @@ export const useProcessStore = defineStore("process", () => {
             unit_system_code: processData.unit_system_code || null,  // 단위 시스템 코드
           });
 
-          // setProcessDetail 호출 후 값 확인
-          console.log("=== setProcessDetail 호출 후 확인 ===");
-          console.log("설정된 processName:", processData.process_name || null);
-          console.log("설정된 processName 타입:", typeof (processData.process_name || null));
-          console.log("설정된 subCategory:", processData.level3_code_key || null);
-          console.log("설정된 processType:", processData.level2_code_key || null);
-          console.log("설정된 symbolId:", processData.symbol_id || null);
-          console.log("=====================================");
 
           if (processData.symbol_uri) {
             // 파일 정보 설정 (실제 구현에서는 파일 객체로 변환 필요)
-            console.log("공정 심볼 파일:", processData.symbol_uri);
-            console.log("원본 공정심볼 파일명:", processData.symbol_uri);
-            console.log("원본 심볼 ID:", processData.symbol_id);
           }
 
-          console.log("화면 입력 필드 업데이트 완료");
           return processData;
         }
       } else {
         // API 호출 실패 또는 success: false인 경우
-        console.log("검색 실패:", result?.message || "알 수 없는 오류");
         const errorMessage =
           result?.message ||
           result?.response?.message ||
@@ -770,7 +697,6 @@ export const useProcessStore = defineStore("process", () => {
   const loadProcessTypeCodes = async () => {
     try {
       setLoading(true);
-      console.log("공정 코드 검색 시작: /api/process/code/search");
 
       const requestData = {
         search_field: "parent_key",
@@ -787,11 +713,7 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("API 응답:", result);
-
       if (result.success) {
-        console.log("API 응답 데이터:", result.response);
-
         // result.response에서 code_key를 키로, code_value를 값으로 하는 공정구분 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           const options = result.response.map((item: any) => ({
@@ -801,9 +723,6 @@ export const useProcessStore = defineStore("process", () => {
 
           processTypeOptions.value = options;
           searchProcessTypeOptions.value = options;
-
-          console.log("생성된 공정구분 옵션:", processTypeOptions.value);
-          console.log("생성된 검색 옵션:", searchProcessTypeOptions.value);
         }
       } else {
         throw new Error(`공정 코드 검색 실패: ${result.message}`);
@@ -819,7 +738,6 @@ export const useProcessStore = defineStore("process", () => {
   const loadSubCategoryCodes = async (parentKey: string) => {
     try {
       setLoading(true);
-      console.log("중분류 코드 검색 시작: /api/process/code/search");
 
       const requestData = {
         search_field: "parent_key",
@@ -836,21 +754,13 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("API 응답:", result);
-
       if (result.success) {
-        console.log("API 응답 데이터:", result.response);
-
         // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           searchSubCategoryOptions.value = result.response.map((item: any) => ({
             value: item.code_key,
             label: item.code_value,
           }));
-
-          console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
-        } else {
-          console.log("중분류 데이터가 없습니다.");
         }
       } else {
         throw new Error(`중분류 코드 검색 실패: ${result.message}`);
@@ -866,7 +776,6 @@ export const useProcessStore = defineStore("process", () => {
   // 로딩 상태 변경 없이 중분류 코드를 로드하는 메서드
   const loadSubCategoryCodesSilent = async (parentKey: string) => {
     try {
-      console.log("중분류 코드 조용히 검색 시작: /api/process/code/search");
 
       const requestData = {
         search_field: "parent_key",
@@ -883,11 +792,7 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("API 응답:", result);
-
       if (result.success) {
-        console.log("API 응답 데이터:", result.response);
-
         // result.response에서 code_key를 키로, code_value를 값으로 하는 중분류 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           const newOptions = result.response.map((item: any) => ({
@@ -897,12 +802,6 @@ export const useProcessStore = defineStore("process", () => {
 
           // 배열을 직접 교체하지 않고 기존 배열을 수정
           searchSubCategoryOptions.value.splice(0, searchSubCategoryOptions.value.length, ...newOptions);
-
-          console.log("생성된 중분류 옵션:", searchSubCategoryOptions.value);
-        } else {
-          console.log("중분류 데이터가 없습니다.");
-          // 빈 배열로 설정
-          searchSubCategoryOptions.value.splice(0, searchSubCategoryOptions.value.length);
         }
       } else {
         throw new Error(`중분류 코드 검색 실패: ${result.message}`);
@@ -916,7 +815,6 @@ export const useProcessStore = defineStore("process", () => {
   const loadProcessNameCodes = async (parentKey: string) => {
     try {
       setLoading(true);
-      console.log("공정명 코드 검색 시작: /api/process/code/search");
 
       const requestData = {
         search_field: "parent_key",
@@ -933,21 +831,13 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("API 응답:", result);
-
       if (result.success) {
-        console.log("API 응답 데이터:", result.response);
-
         // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           searchProcessNameOptions.value = result.response.map((item: any) => ({
             value: item.code_key,
             label: item.code_value,
           }));
-
-          console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
-        } else {
-          console.log("공정명 데이터가 없습니다.");
         }
       } else {
         throw new Error(`공정명 코드 검색 실패: ${result.message}`);
@@ -963,7 +853,6 @@ export const useProcessStore = defineStore("process", () => {
   // 로딩 상태 변경 없이 공정명 코드를 로드하는 메서드
   const loadProcessNameCodesSilent = async (parentKey: string) => {
     try {
-      console.log("공정명 코드 조용히 검색 시작: /api/process/code/search");
 
       const requestData = {
         search_field: "parent_key",
@@ -983,8 +872,6 @@ export const useProcessStore = defineStore("process", () => {
       console.log("API 응답:", result);
 
       if (result.success) {
-        console.log("API 응답 데이터:", result.response);
-
         // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           const newOptions = result.response.map((item: any) => ({
@@ -994,12 +881,6 @@ export const useProcessStore = defineStore("process", () => {
 
           // 배열을 직접 교체하지 않고 기존 배열을 수정
           searchProcessNameOptions.value.splice(0, searchProcessNameOptions.value.length, ...newOptions);
-
-          console.log("생성된 공정명 옵션:", searchProcessNameOptions.value);
-        } else {
-          console.log("공정명 데이터가 없습니다.");
-          // 빈 배열로 설정
-          searchProcessNameOptions.value.splice(0, searchProcessNameOptions.value.length);
         }
       } else {
         throw new Error(`공정명 코드 검색 실패: ${result.message}`);
@@ -1013,13 +894,10 @@ export const useProcessStore = defineStore("process", () => {
   const deleteProcesses = async (processIds: string[], symbolIds?: string[]) => {
     try {
       setLoading(true);
-      console.log("삭제할 process_id 목록:", processIds);
-      console.log("삭제할 symbol_id 목록:", symbolIds);
 
       // 각 process_id에 대해 삭제 API 호출
       const deletePromises = processIds.map(async (processId, index) => {
         if (!processId) {
-          console.warn("process_id가 없는 항목:", processId);
           return { success: false, message: "process_id가 없습니다." };
         }
 
@@ -1027,19 +905,6 @@ export const useProcessStore = defineStore("process", () => {
           // 해당 process_id에 대응하는 symbol_id 찾기
           const symbolId = symbolIds && symbolIds[index] ? symbolIds[index] : null;
           
-          console.log(`삭제 처리 중 - index: ${index}, processId: ${processId}, symbolId: ${symbolId}`);
-          console.log(`symbolIds 배열:`, symbolIds);
-          console.log(`symbolIds[${index}]:`, symbolIds ? symbolIds[index] : 'symbolIds is null/undefined');
-          console.log(`symbolId 상세 정보:`, {
-            value: symbolId,
-            type: typeof symbolId,
-            isNull: symbolId === null,
-            isUndefined: symbolId === undefined,
-            isEmpty: symbolId === '',
-            isWhitespace: symbolId && symbolId.trim() === '',
-            length: symbolId ? symbolId.length : 'N/A',
-            charCodeAt: symbolId ? symbolId.split('').map(c => c.charCodeAt(0)) : 'N/A'
-          });
           
           // 삭제 요청 데이터 준비
           const deleteData: any = {
@@ -1048,20 +913,11 @@ export const useProcessStore = defineStore("process", () => {
           
           if (symbolId && symbolId !== null && symbolId !== undefined && symbolId !== '') {
             deleteData.symbol_id = symbolId;
-            console.log(`process_id ${processId}와 symbol_id ${symbolId} 삭제 요청`);
-          } else {
-            console.log(`process_id ${processId} 삭제 요청 (symbol_id 없음: ${symbolId})`);
           }
-          
-          console.log('최종 deleteData:', deleteData);
 
           // request 함수의 두 번째 파라미터로 쿼리 파라미터 전달
           const queryParams = symbolIds && symbolIds[index] ? { symbol_id: symbolIds[index] } : undefined;
           
-          console.log('=== DELETE 요청 시작 ===');
-          console.log('processId:', processId);
-          console.log('queryParams:', queryParams);
-          console.log('request 함수 호출 전');
           
           const result = await request(
             `/api/process/master/delete/${processId}`,
@@ -1074,9 +930,6 @@ export const useProcessStore = defineStore("process", () => {
             }
           );
           
-          console.log('request 함수 호출 후');
-
-          console.log(`process_id ${processId} 삭제 결과:`, result);
           return result;
         } catch (error: any) {
           console.error(`process_id ${processId} 삭제 실패:`, error);
@@ -1247,89 +1100,60 @@ export const useProcessStore = defineStore("process", () => {
           body: formData,
         });
         
-        console.log("공정 등록 API 응답 (FormData):", result);
-        console.log("=== API 응답 상세 분석 ===");
-        console.log("result 타입:", typeof result);
-        console.log("result 구조:", result);
-        console.log("result.response 타입:", typeof result.response);
-        console.log("result.response 구조:", result.response);
-        console.log("result.response 키들:", result.response ? Object.keys(result.response) : 'response 없음');
         
         // API 응답의 모든 레벨에서 process_id 검색
-        console.log("=== process_id 검색 시작 ===");
-        console.log("result.process_id:", result.process_id);
-        console.log("result.response.process_id:", result.response?.process_id);
-        console.log("result.response.id:", result.response?.id);
-        console.log("result.response.data:", result.response?.data);
-        console.log("result.response.data.process_id:", result.response?.data?.process_id);
-        console.log("result.response.data.id:", result.response?.data?.id);
         
         // process_id 추출 로직 강화 (모든 가능한 위치에서 process_id 찾기)
         let processId = null;
         
         // 1단계: result.response에서 직접 찾기
-        if (result.response) {
+        if (result.response && typeof result.response === 'object') {
+          const response = result.response as any;
           const directIds = [
-            result.response.process_id,
-            result.response.id,
-            result.response.processId
+            response.process_id,
+            response.id,
+            response.processId
           ];
           
           processId = directIds.find(id => id != null && id !== '');
-          console.log("1단계 - result.response에서 직접 검색:", {
-            directIds: directIds,
-            found: processId
-          });
         }
         
         // 2단계: result.response.data에서 찾기
-        if (!processId && result.response?.data) {
+        if (!processId && result.response?.data && typeof result.response.data === 'object') {
+          const data = result.response.data as any;
           const dataIds = [
-            result.response.data.process_id,
-            result.response.data.id,
-            result.response.data.processId
+            data.process_id,
+            data.id,
+            data.processId
           ];
           
           processId = dataIds.find(id => id != null && id !== '');
-          console.log("2단계 - result.response.data에서 검색:", {
-            dataIds: dataIds,
-            found: processId
-          });
         }
         
         // 3단계: result.response.data.response에서 찾기
-        if (!processId && result.response?.data?.response) {
+        if (!processId && result.response?.data?.response && typeof result.response.data.response === 'object') {
+          const nested = result.response.data.response as any;
           const nestedIds = [
-            result.response.data.response.process_id,
-            result.response.data.response.id,
-            result.response.data.response.processId
+            nested.process_id,
+            nested.id,
+            nested.processId
           ];
           
           processId = nestedIds.find(id => id != null && id !== '');
-          console.log("3단계 - result.response.data.response에서 검색:", {
-            nestedIds: nestedIds,
-            found: processId
-          });
         }
         
         // 4단계: result 전체에서 찾기
         if (!processId) {
+          const resultData = result as any;
           const resultIds = [
-            result.process_id,
-            result.id,
-            result.processId
+            resultData.process_id,
+            resultData.id,
+            resultData.processId
           ];
           
           processId = resultIds.find(id => id != null && id !== '');
-          console.log("4단계 - result 전체에서 검색:", {
-            resultIds: resultIds,
-            found: processId
-          });
         }
         
-        console.log("=== 최종 process_id 추출 결과 ===");
-        console.log("추출된 process_id:", processId);
-        console.log("process_id 타입:", typeof processId);
         
         // process_id를 찾지 못한 경우
         if (!processId) {
@@ -1338,33 +1162,17 @@ export const useProcessStore = defineStore("process", () => {
           throw new Error('process_id를 찾을 수 없습니다. API 응답에 process_id가 포함되어야 합니다.');
         }
         
-        console.log("계산식 파일 저장 조건 확인:", {
-          resultSuccess: result.success,
-          formulaFiles: processData.formula_files,
-          formulaFilesLength: processData.formula_files?.length,
-          extractedProcessId: processId,
-          response: result.response
-        });
         
         // 공정 등록 성공 후 계산식 파일들 별도 저장
         if (result.success && processData.formula_files && processData.formula_files.length > 0 && processId) {
-          console.log('공정 등록 성공 후 계산식 파일들 저장 시작, processId:', processId);
           await saveFormulaFiles(processId, processData.formula_files);
-        } else {
-          console.log('계산식 파일 저장 조건 미충족:', {
-            resultSuccess: result.success,
-            hasFormulaFiles: !!processData.formula_files,
-            formulaFilesLength: processData.formula_files?.length,
-            hasProcessId: !!processId,
-            processId: processId
-          });
         }
         
         return result;
       }
 
       // siteFile이 없는 경우 JSON으로 전송
-      const { siteFile, formula_files, ...createData } = processData;
+      const { formula_files, ...createData } = processData;
       
       const result = await request("/api/process/master/create", undefined, {
         method: "POST",
@@ -1374,89 +1182,59 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(createData),
       });
 
-      console.log("공정 등록 API 응답:", result);
-      console.log("=== API 응답 상세 분석 (JSON) ===");
-      console.log("result 타입:", typeof result);
-      console.log("result 구조:", result);
-      console.log("result.response 타입:", typeof result.response);
-      console.log("result.response 구조:", result.response);
-      console.log("result.response 키들:", result.response ? Object.keys(result.response) : 'response 없음');
-      
       // API 응답의 모든 레벨에서 process_id 검색
-      console.log("=== process_id 검색 시작 (JSON) ===");
-      console.log("result.process_id:", result.process_id);
-      console.log("result.response.process_id:", result.response?.process_id);
-      console.log("result.response.id:", result.response?.id);
-      console.log("result.response.data:", result.response?.data);
-      console.log("result.response.data.process_id:", result.response?.data?.process_id);
-      console.log("result.response.data.id:", result.response?.data?.id);
       
       // process_id 추출 로직 강화 (모든 가능한 위치에서 process_id 찾기)
       let processId = null;
       
       // 1단계: result.response에서 직접 찾기
-      if (result.response) {
+      if (result.response && typeof result.response === 'object') {
+        const response = result.response as any;
         const directIds = [
-          result.response.process_id,
-          result.response.id,
-          result.response.processId
+          response.process_id,
+          response.id,
+          response.processId
         ];
         
         processId = directIds.find(id => id != null && id !== '');
-        console.log("1단계 - result.response에서 직접 검색 (JSON):", {
-          directIds: directIds,
-          found: processId
-        });
       }
       
       // 2단계: result.response.data에서 찾기
-      if (!processId && result.response?.data) {
+      if (!processId && result.response?.data && typeof result.response.data === 'object') {
+        const data = result.response.data as any;
         const dataIds = [
-          result.response.data.process_id,
-          result.response.data.id,
-          result.response.data.processId
+          data.process_id,
+          data.id,
+          data.processId
         ];
         
         processId = dataIds.find(id => id != null && id !== '');
-        console.log("2단계 - result.response.data에서 검색 (JSON):", {
-          dataIds: dataIds,
-          found: processId
-        });
       }
       
       // 3단계: result.response.data.response에서 찾기
-      if (!processId && result.response?.data?.response) {
+      if (!processId && result.response?.data?.response && typeof result.response.data.response === 'object') {
+        const nested = result.response.data.response as any;
         const nestedIds = [
-          result.response.data.response.process_id,
-          result.response.data.response.id,
-          result.response.data.response.processId
+          nested.process_id,
+          nested.id,
+          nested.processId
         ];
         
         processId = nestedIds.find(id => id != null && id !== '');
-        console.log("3단계 - result.response.data.response에서 검색 (JSON):", {
-          nestedIds: nestedIds,
-          found: processId
-        });
       }
       
       // 4단계: result 전체에서 찾기
       if (!processId) {
+        const resultData = result as any;
         const resultIds = [
-          result.process_id,
-          result.id,
-          result.processId
+          resultData.process_id,
+          resultData.id,
+          resultData.processId
         ];
         
         processId = resultIds.find(id => id != null && id !== '');
-        console.log("4단계 - result 전체에서 검색 (JSON):", {
-          resultIds: resultIds,
-          found: processId
-        });
       }
       
-      console.log("=== 최종 process_id 추출 결과 (JSON) ===");
-      console.log("추출된 process_id:", processId);
-      console.log("process_id 타입:", typeof processId);
       
       // process_id를 찾지 못한 경우
       if (!processId) {
@@ -1465,26 +1243,10 @@ export const useProcessStore = defineStore("process", () => {
         throw new Error('process_id를 찾을 수 없습니다. API 응답에 process_id가 포함되어야 합니다.');
       }
       
-      console.log("계산식 파일 저장 조건 확인 (JSON):", {
-        resultSuccess: result.success,
-        formulaFiles: formula_files,
-        formulaFilesLength: formula_files?.length,
-        extractedProcessId: processId,
-        response: result.response
-      });
       
       // 공정 등록 성공 후 계산식 파일들 별도 저장
       if (result.success && formula_files && formula_files.length > 0 && processId) {
-        console.log('공정 등록 성공 후 계산식 파일들 저장 시작 (JSON), processId:', processId);
         await saveFormulaFiles(processId, formula_files);
-      } else {
-        console.log('계산식 파일 저장 조건 미충족 (JSON):', {
-          resultSuccess: result.success,
-          hasFormulaFiles: !!formula_files,
-          formulaFilesLength: formula_files?.length,
-          hasProcessId: !!processId,
-          processId: processId
-        });
       }
 
       // HTTP 상태 코드 확인 (409 Conflict 등)

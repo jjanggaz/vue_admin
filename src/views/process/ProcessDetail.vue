@@ -172,7 +172,7 @@
               <h4>컴포넌트 목록</h4>
             </div>
             <div class="tab-actions">
-              <button @click="() => { console.log('닫기 버튼 클릭됨'); closeComponentSection(); }" class="btn btn-secondary">닫기</button>
+              <button @click="closeComponentSection" class="btn btn-secondary">닫기</button>
             </div>
           </div>
           
@@ -264,7 +264,6 @@
                 :disabled="!item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_')"
                 @click="openMappingPidModal(item)"
                 :title="!item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_') ? 'PFD를 먼저 저장해주세요' : (item.hasPidMapping ? 'P&ID 매핑 보기' : 'P&ID 매핑 추가')"
-                @mouseenter="console.log('P&ID 버튼 상태:', { drawing_id: item.drawing_id, hasPidMapping: item.hasPidMapping, disabled: !item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_') })"
               >
                 P&ID
               </button>
@@ -797,10 +796,7 @@ const formatDate = (date: Date): string => {
 // API 함수들
 const searchPfdDrawingAPI = async (processId: string) => {
   try {
-    console.log('PFD 도면 검색 API 호출 시작 - 엔드포인트: /api/process/drawing_master/search');
-    
     if (!processId) {
-      console.warn('processId가 없어서 PFD 도면 검색을 건너뜁니다.');
       return [];
     }
     
@@ -808,8 +804,6 @@ const searchPfdDrawingAPI = async (processId: string) => {
       drawing_type: 'PFD',
       process_id: parseInt(processId, 10)
     };
-    
-    console.log('PFD 도면 검색 요청 데이터:', requestBody);
     
     const response = await request('/api/process/drawing_master/search', {}, {
       method: 'POST',
@@ -820,24 +814,12 @@ const searchPfdDrawingAPI = async (processId: string) => {
       body: JSON.stringify(requestBody),
     });
 
-    console.log('PFD 도면 검색 API 응답:', response);
-    console.log('PFD 도면 검색 API 응답.response:', response.response);
-    console.log('PFD 도면 검색 API 응답.response 타입:', typeof response.response);
-    console.log('PFD 도면 검색 API 응답.response 길이:', response.response?.length);
-
     if (!response.success) {
       console.error('PFD 도면 검색 API 응답 오류:', response);
       return [];
     }
 
     const pfdItems = response.response?.map((item: any, index: number) => {
-      console.log(`PFD 아이템 ${index + 1} - 원본 API 응답:`, item);
-      console.log(`PFD 아이템 ${index + 1} - 모든 키:`, Object.keys(item));
-      
-      // drawing_id 필드 확인
-      console.log(`PFD 아이템 ${index + 1} - drawing_id:`, item.drawing_id);
-      console.log(`PFD 아이템 ${index + 1} - id:`, item.id);
-      console.log(`PFD 아이템 ${index + 1} - drawing_id 또는 id 존재 여부:`, !!(item.drawing_id || item.id));
       
       // API 응답에서 파일명을 찾기 위한 모든 가능한 필드 확인
       const possibleFileNameFields = ['file_name', 'drawing_name', 'pfd', 'name', 'filename', 'original_name'];
@@ -846,21 +828,16 @@ const searchPfdDrawingAPI = async (processId: string) => {
       // current_file.file_name을 우선적으로 확인
       if (item.current_file?.file_name) {
         fileName = item.current_file.file_name;
-        console.log(`PFD 아이템 ${index + 1} - 파일명 발견 (current_file.file_name):`, fileName);
       } else {
         for (const field of possibleFileNameFields) {
           if (item[field]) {
             fileName = item[field];
-            console.log(`PFD 아이템 ${index + 1} - 파일명 발견 (${field}):`, fileName);
             break;
           }
         }
       }
       
-      console.log(`PFD 아이템 ${index + 1} - 최종 파일명:`, fileName);
-      
       const drawingId = item.drawing_id || item.id;
-      console.log(`PFD 아이템 ${index + 1} - 최종 drawing_id:`, drawingId);
       
       return {
         id: `pfd-${index + 1}`,
@@ -873,7 +850,6 @@ const searchPfdDrawingAPI = async (processId: string) => {
       };
     }) || [];
 
-    console.log('PFD 도면 데이터 변환 결과:', pfdItems);
     return pfdItems;
   } catch (error) {
     console.error('PFD 도면 검색 API 호출 실패:', error);
@@ -885,14 +861,11 @@ const searchPfdDrawingAPI = async (processId: string) => {
 // 계산식 검색 API 호출 함수
 const searchFormulaAPI = async () => {
   try {
-    console.log('계산식 검색 API 호출 시작 - 엔드포인트: /api/process/formula/search');
-    
     let processId: string;
     
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때는 생성된 공정 ID 사용
       if (!createdProcessId.value) {
-        console.warn('공정이 등록되지 않아서 계산식 검색을 건너뜁니다.');
         return { data: [] };
       }
       processId = createdProcessId.value;
@@ -900,7 +873,6 @@ const searchFormulaAPI = async () => {
       // 공정 상세 모드일 때는 기존 로직 사용
       processId = props.processId || (route.params.id as string);
     if (!processId) {
-      console.warn('processId가 없어서 계산식 검색을 건너뜁니다.');
       return { data: [] };
       }
     }
@@ -912,9 +884,6 @@ const searchFormulaAPI = async () => {
       //process_id: processId // 동적으로 process_id 사용
     };
     
-    console.log('요청 데이터:', requestBody);
-    console.log('사용된 processId:', processId);
-    
     const response = await request('/api/process/formula/search', {}, {
       method: 'POST',
       headers: {
@@ -923,8 +892,6 @@ const searchFormulaAPI = async () => {
       },
       body: JSON.stringify(requestBody),
     });
-
-    console.log('API 응답:', response);
 
     if (!response.success) {
       // request 함수에서 반환된 오류 응답 처리
@@ -938,7 +905,6 @@ const searchFormulaAPI = async () => {
       
       if (isAuthError) {
         console.warn('⚠️ 인증이 만료되었습니다. 로그인이 필요합니다.');
-        console.log('인증 오류 응답:', response);
         
         // 인증 오류 시 빈 데이터 반환
         return { 
@@ -951,7 +917,6 @@ const searchFormulaAPI = async () => {
       
       // 400 상태 코드이지만 실제로는 404 오류인 경우 처리
       if (response.status === 404 || (response.status === 400 && response.message?.includes('Not Found'))) {
-        console.log('API 엔드포인트가 존재하지 않습니다. 임시 더미 데이터로 초기화합니다.');
         console.warn('⚠️ /api/process/formula/search API가 구현되지 않았습니다. 백엔드 개발자에게 문의하세요.');
         
         // 임시로 더미 데이터 반환하여 그리드가 정상적으로 표시되도록 함
@@ -982,7 +947,6 @@ const searchFormulaAPI = async () => {
             response.response?.error_code === 'SESSION_REQUIRED') {
           
           console.warn('⚠️ 400 오류에서 인증 문제를 발견했습니다. 인증이 필요합니다.');
-          console.log('400 인증 오류 응답:', response);
           
           return { 
             success: false,
@@ -992,27 +956,22 @@ const searchFormulaAPI = async () => {
           };
         }
         
-        console.log('API 요청 형식이 잘못되었습니다. 빈 데이터로 초기화합니다.');
-        console.log('400 오류 상세:', response);
         return { data: [] };
       }
       
       throw new Error(`HTTP error! status: ${response.status}, message: ${response.message}`);
     }
 
-    console.log('계산식 검색 API 호출 성공:', response);
     return response;
   } catch (error: any) {
     console.error('계산식 검색 API 호출 실패:', error);
     
     // 네트워크 오류나 기타 오류 시에도 빈 데이터 반환
     if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
-      console.log('네트워크 오류로 인해 빈 데이터로 초기화합니다.');
       return { data: [] };
     }
     
     // 기타 오류 시에도 빈 데이터 반환하여 화면이 정상적으로 로드되도록 함
-    console.log('API 호출 실패로 인해 빈 데이터로 초기화합니다.');
     return { data: [] };
   }
 };
@@ -1041,7 +1000,13 @@ const createFormulaAPI = async (processId: string, formulaName: string, formulaC
     }
 
     const data = response;
-    console.log('계산식 생성 API 응답:', data);
+    
+    // API 응답에서 status가 'skipped'인 경우 처리
+    if (data.response && data.response.status === 'skipped') {
+      console.warn('계산식이 이미 존재하여 건너뛰었습니다:', data.response.message);
+      throw new Error(`계산식이 이미 존재합니다: ${data.response.message}`);
+    }
+    
     return data;
   } catch (error: any) {
     console.error('계산식 생성 API 호출 실패:', error);
@@ -1051,10 +1016,6 @@ const createFormulaAPI = async (processId: string, formulaName: string, formulaC
 
 const deleteFormulaAPI = async (formulaId: string) => {
   try {
-    console.log('--- deleteFormulaAPI 호출 시작 ---');
-    console.log('formulaId:', formulaId);
-    console.log('API URL:', `/api/process/formula/delete/${formulaId}`);
-    
     const response = await request(`/api/process/formula/delete/${formulaId}`, {}, {
       method: 'DELETE',
       headers: {
@@ -1063,18 +1024,13 @@ const deleteFormulaAPI = async (formulaId: string) => {
       }
     });
 
-    console.log('API 응답 수신:', response);
-
     if (!response.success) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('--- deleteFormulaAPI 성공 ---');
     return response;
   } catch (error: any) {
-    console.error('--- deleteFormulaAPI 실패 ---');
-    console.error('formulaId:', formulaId);
-    console.error('error:', error);
+    console.error('계산식 삭제 API 호출 실패:', error);
     throw error;
   }
 };
@@ -1083,8 +1039,6 @@ const deleteFormulaAPI = async (formulaId: string) => {
 // P&ID drawing 삭제 API
 const deletePidDrawingAPI = async (drawingId: string) => {
   try {
-    console.log('P&ID drawing 삭제 API 호출 시작 - drawingId:', drawingId);
-    
     const response = await request(`/api/process/drawing/delete/${drawingId}`, {}, {
       method: 'DELETE',
       headers: {
@@ -1097,7 +1051,6 @@ const deletePidDrawingAPI = async (drawingId: string) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('P&ID drawing 삭제 API 호출 성공:', response);
     return response;
   } catch (error) {
     console.error('P&ID drawing 삭제 API 호출 실패:', error);
@@ -1168,19 +1121,16 @@ const handleSubCategoryChange = async (event: Event) => {
 const handleProcessNameChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value;
-  console.log('공정명 변경:', selectedValue);
   
   // processStore에 값 설정
   processStore.setProcessDetail({ processName: selectedValue });
 };
 
 const handleLanguageChange = () => {
-  console.log('언어 변경:', selectedLanguage.value);
   // 언어 변경 시 필요한 로직 추가
 };
 
 const handleUnitChange = () => {
-  console.log('단위 변경:', selectedUnit.value);
   // 단위 변경 시 필요한 로직 추가
 };
 
@@ -1200,7 +1150,6 @@ const handleFileChange = async (key: string, event: Event) => {
     processStore.setSelectedFile(key, file);
     
     if (key === 'processSymbol') {
-      console.log('공정심볼 파일 선택됨:', file.name);
       
       if (!processStore.processDetail.originalProcessSymbol) {
         const currentSymbol = processStore.processDetail.processSymbol;
@@ -1291,7 +1240,6 @@ const handleFormulaFilesSelected = (event: Event) => {
     }
     
     selectedFormulaFiles.value = formulaFiles;
-    console.log("Selected Formula files (Python only):", selectedFormulaFiles.value);
   }
 };
 
@@ -1325,7 +1273,6 @@ const handlePfdFilesSelected = (event: Event) => {
     }
     
     selectedPfdFiles.value = pfdFiles;
-    console.log("Selected PFD files:", selectedPfdFiles.value);
   }
 };
 
@@ -1353,7 +1300,6 @@ const uploadFormulaFiles = () => {
   const updatedFormulaList = [...processStore.formulaList, ...newFormulaItems];
   processStore.setFormulaList(updatedFormulaList);
   
-  console.log('계산식 파일 업로드 완료:', newFormulaItems.length, '개');
   alert(`계산식 파일 ${newFormulaItems.length}개가 그리드에 추가되었습니다.`);
   
   closeFormulaModal();
@@ -1382,14 +1328,12 @@ const uploadPfdFiles = () => {
   const updatedPfdList = [...processStore.pfdList, ...newPfdItems];
   processStore.setPfdList(updatedPfdList);
   
-  console.log('PFD 파일 업로드 완료:', newPfdItems.length, '개');
   
   closePfdModal();
 };
 
 // 선택 관련 함수들
 const handleFormulaSelectionChange = () => {
-  console.log('선택된 계산식 항목:', selectedFormulaItems.value);
   
   // 계산식 row가 선택되면 공정카드 버튼 클릭 이벤트 호출
   if (selectedFormulaItems.value) {
@@ -1397,7 +1341,6 @@ const handleFormulaSelectionChange = () => {
     const selectedIndex = processStore.formulaList.findIndex(item => item.id === selectedItem.id);
     
     if (selectedIndex !== -1) {
-      console.log('계산식 선택으로 인한 공정카드 버튼 클릭 시뮬레이션');
       handleProcessManagementClick(selectedItem, selectedIndex);
     }
   }
@@ -1405,7 +1348,6 @@ const handleFormulaSelectionChange = () => {
 
 // 컴포넌트 버튼 클릭 핸들러
 const handleComponentClick = (item: any, index: number) => {
-  console.log("컴포넌트 버튼 클릭:", item, index);
   
   // 해당 row 선택
   selectedFormulaItems.value = item;
@@ -1415,12 +1357,9 @@ const handleComponentClick = (item: any, index: number) => {
   
   // 컴포넌트 섹션 표시
   showComponentSection.value = true;
-  console.log("컴포넌트 섹션 표시 상태:", showComponentSection.value);
-  
   // 컴포넌트 섹션으로 스크롤
   setTimeout(() => {
     const componentSection = document.querySelector('.component-section');
-    console.log("컴포넌트 섹션 요소:", componentSection);
     if (componentSection) {
       componentSection.scrollIntoView({ behavior: 'smooth' });
     }
@@ -1429,11 +1368,8 @@ const handleComponentClick = (item: any, index: number) => {
 
 // P&ID 컴포넌트 버튼 클릭 핸들러
 const openPidComponentModal = async (item: any) => {
-  console.log("P&ID 컴포넌트 버튼 클릭:", item);
-  
   // drawing_id 저장
   currentDrawingId.value = item.drawing_id || '';
-  console.log("저장된 drawing_id:", currentDrawingId.value);
   
   // 해당 row 선택
   selectedMappingPidItems.value = item;
@@ -1443,22 +1379,14 @@ const openPidComponentModal = async (item: any) => {
   
   // P&ID Components용 drawing_id 저장 (계속 사용하기 위해)
   pidComponentDrawingId.value = item.drawing_id || '';
-  console.log("=== P&ID Components 섹션 열기 ===");
-  console.log("전달받은 item:", item);
-  console.log("item.drawing_id:", item.drawing_id);
-  console.log("P&ID Components용 drawing_id 저장:", pidComponentDrawingId.value);
-  
   // P&ID 컴포넌트 섹션 표시
   showPidComponentSection.value = true;
-  console.log("P&ID 컴포넌트 섹션 표시 상태:", showPidComponentSection.value);
   
   // 선택 상태 초기화
   selectedPidComponentItems.value = [];
-  console.log("P&ID 컴포넌트 선택 상태 초기화 완료");
   
   // currentDrawingId 재설정 (혹시 누락된 경우를 대비)
   currentDrawingId.value = item.drawing_id || '';
-  console.log("P&ID Components용 drawing_id 재설정:", currentDrawingId.value);
   
   // P&ID 컴포넌트 데이터 초기화 및 로드
   pidComponentList.value = [];
@@ -1467,20 +1395,27 @@ const openPidComponentModal = async (item: any) => {
   // P&ID 컴포넌트 섹션으로 스크롤
   setTimeout(() => {
     const pidComponentSection = document.querySelector('.pid-component-section');
-    console.log("P&ID 컴포넌트 섹션 요소:", pidComponentSection);
     if (pidComponentSection) {
       pidComponentSection.scrollIntoView({ behavior: 'smooth' });
     }
   }, 100);
 };
 
-// P&ID 컴포넌트 데이터 로드
+// P&ID 컴포넌트 데이터 로드 (기존 데이터 초기화)
 const loadPidComponentData = async (pidItem: any) => {
-  console.log("P&ID 컴포넌트 데이터 로드:", pidItem);
-  
   // 데이터 초기화
   pidComponentList.value = [];
-  console.log("P&ID 컴포넌트 데이터 초기화 완료");
+  
+  await loadPidComponentDataInternal(pidItem);
+};
+
+// P&ID 컴포넌트 데이터 로드 (기존 데이터 유지)
+const loadPidComponentDataWithoutClear = async (pidItem: any) => {
+  await loadPidComponentDataInternal(pidItem);
+};
+
+// P&ID 컴포넌트 데이터 로드 내부 함수
+const loadPidComponentDataInternal = async (pidItem: any) => {
   
   // drawing_id가 있는 경우에만 API 호출
   if (pidItem.drawing_id) {
@@ -1490,7 +1425,6 @@ const loadPidComponentData = async (pidItem: any) => {
         search_value: pidItem.drawing_id
       };
       
-      console.log("P&ID 컴포넌트 검색 API 요청:", requestData);
       
       const response = await request('/api/process/components/search', undefined, {
         method: 'POST',
@@ -1500,33 +1434,28 @@ const loadPidComponentData = async (pidItem: any) => {
         body: JSON.stringify(requestData),
       });
       
-      console.log("P&ID 컴포넌트 검색 API 응답:", response);
       
       if (response && response.response && Array.isArray(response.response)) {
         // 응답 데이터에 No 컬럼과 고유 ID 추가
-        pidComponentList.value = response.response.map((item: any, index: number) => ({
+        const newComponents = response.response.map((item: any, index: number) => ({
           ...item,
           id: item.component_id || `loaded_comp_${Date.now()}_${index}`, // component_id를 id로 사용
-          no: index + 1
+          no: pidComponentList.value.length + index + 1 // 기존 데이터 개수를 고려한 번호
         }));
-        console.log("P&ID 컴포넌트 데이터 로드 완료:", pidComponentList.value);
-        console.log("로드된 데이터의 component_id들:", pidComponentList.value.map(item => item.component_id));
-      } else {
-        console.log("P&ID 컴포넌트 데이터가 없습니다.");
-        pidComponentList.value = [];
+        
+        // 기존 데이터에 새로운 데이터 추가
+        pidComponentList.value = [...pidComponentList.value, ...newComponents];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 데이터 로드 실패:", error);
       pidComponentList.value = [];
     }
   } else {
-    console.log("drawing_id가 없어 P&ID 컴포넌트 데이터를 로드하지 않습니다.");
   }
 };
 
 // P&ID 컴포넌트 구분 변경 핸들러
 const handlePidComponentCategoryChange = async (item: any) => {
-  console.log("P&ID 컴포넌트 구분 변경:", item.category);
   
   if (item.category) {
     try {
@@ -1538,7 +1467,6 @@ const handlePidComponentCategoryChange = async (item: any) => {
         order_direction: "asc",
       };
       
-      console.log("P&ID 컴포넌트 중분류 API 요청:", requestData);
       
       const response = await request('/api/process/code/search', undefined, {
         method: 'POST',
@@ -1548,7 +1476,6 @@ const handlePidComponentCategoryChange = async (item: any) => {
         body: JSON.stringify(requestData),
       });
       
-      console.log("P&ID 컴포넌트 중분류 API 응답:", response);
       
       if (response.success && response.response && Array.isArray(response.response)) {
         const subCategoryOptions = response.response.map((item: any) => ({
@@ -1556,18 +1483,9 @@ const handlePidComponentCategoryChange = async (item: any) => {
           label: item.code_value,
         }));
         
-        console.log("P&ID 컴포넌트 중분류 옵션 생성:", subCategoryOptions);
-        
         middleCategoryOptions.value = [
           { value: '', label: '선택하세요' },
           ...subCategoryOptions
-        ];
-        
-        console.log("P&ID 컴포넌트 중분류 옵션 설정 완료:", middleCategoryOptions.value);
-      } else {
-        console.log("P&ID 컴포넌트 중분류 API 응답이 올바르지 않음");
-        middleCategoryOptions.value = [
-          { value: '', label: '선택하세요' }
         ];
       }
     } catch (error) {
@@ -2866,8 +2784,8 @@ const processPfdChanges = async (processId: string) => {
           
           // PFD 파일이 있는 경우에만 전달
           if (file) {
-            console.log('PFD 파일 전달:', file.name);
-            formData.append('file', file);
+            console.log('PFD 파일을 siteFile로 전달:', file.name);
+            formData.append('siteFile', file);
           }
           
           // Svg 파일이 있는 경우에만 전달
@@ -2968,8 +2886,8 @@ const processPfdChanges = async (processId: string) => {
             
             // PFD 파일이 변경된 경우에만 전달
             if (pfdFileChanged && currentPfdFile) {
-              console.log('PFD 파일 업데이트:', currentPfdFile.name);
-              formData.append('file', currentPfdFile);
+              console.log('PFD 파일을 siteFile로 업데이트:', currentPfdFile.name);
+              formData.append('siteFile', currentPfdFile);
             }
             
             // Svg 파일이 변경된 경우에만 전달
@@ -3162,21 +3080,43 @@ const processFormulaChanges = async (processId: string) => {
     // 추가된 행 처리
     if (addedRows.length > 0) {
       try {
-        const formulaPromises = addedRows.map(formula => 
-          createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file)
+        const results = await Promise.allSettled(
+          addedRows.map(formula => 
+            createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file)
+          )
         );
-        await Promise.all(formulaPromises);
-        console.log("추가된 계산식 처리 완료");
         
-        // 저장된 계산식의 isSaved 상태를 true로 업데이트
+        // 성공한 계산식과 실패한 계산식 분리
+        const successfulFormulas: any[] = [];
+        const failedFormulas: any[] = [];
+        
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            successfulFormulas.push(addedRows[index]);
+          } else {
+            failedFormulas.push({ formula: addedRows[index], error: result.reason });
+            console.warn(`계산식 추가 실패: ${addedRows[index].registeredFormula}`, result.reason);
+          }
+        });
+        
+        console.log(`계산식 처리 완료: 성공 ${successfulFormulas.length}개, 실패 ${failedFormulas.length}개`);
+        
+        // 성공한 계산식의 isSaved 상태를 true로 업데이트
         const updatedFormulaList = processStore.formulaList.map(item => {
-          if (addedRows.some(addedRow => addedRow.id === item.id)) {
+          if (successfulFormulas.some(successfulFormula => successfulFormula.id === item.id)) {
             return { ...item, isSaved: true };
           }
           return item;
         });
         processStore.setFormulaList(updatedFormulaList);
         console.log("계산식 저장 상태 업데이트 완료");
+        
+        // 실패한 계산식이 있는 경우 사용자에게 알림
+        if (failedFormulas.length > 0) {
+          const failedNames = failedFormulas.map(f => f.formula.registeredFormula).join(', ');
+          alert(`일부 계산식 저장에 실패했습니다:\n${failedNames}\n\n중복된 계산식이거나 오류가 발생했습니다.`);
+        }
+        
       } catch (error) {
         console.error("계산식 추가 실패:", error);
         throw error;
@@ -4053,7 +3993,7 @@ const openMappingPidModal = async (pfdItem: any) => {
   if (showPidComponentSection.value) {
     showPidComponentSection.value = false;
     selectedPidForComponent.value = null;
-    pidComponentList.value = [];
+    // pidComponentList.value = []; // 그리드 초기화 제거 - 저장된 데이터 유지
     selectedPidComponentItems.value = [];
     currentDrawingId.value = '';
     console.log('P&ID Components 섹션을 닫았습니다.');
@@ -4070,7 +4010,7 @@ const openMappingPidModal = async (pfdItem: any) => {
   if (mappingPidList.value.length === 0) {
     showPidComponentSection.value = false;
     selectedPidForComponent.value = null;
-    pidComponentList.value = [];
+    // pidComponentList.value = []; // 그리드 초기화 제거 - 저장된 데이터 유지
     selectedPidComponentItems.value = [];
     currentDrawingId.value = '';
   }
@@ -4392,7 +4332,7 @@ const confirmMappingPid = async () => {
       if (mappingPidList.value.length > 0) {
         const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
         console.log('P&ID Components 새로고침용 최신 P&ID 아이템:', latestPidItem);
-        await loadPidComponentData(latestPidItem);
+        await loadPidComponentDataWithoutClear(latestPidItem);
       } else {
         // P&ID가 모두 삭제된 경우 P&ID Components 그리드 초기화
         pidComponentList.value = [];
@@ -4596,7 +4536,8 @@ const confirmMappingPid = async () => {
             if (mappingPidList.value.length > 0) {
               const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
               console.log('P&ID Components 새로고침용 최신 P&ID 아이템:', latestPidItem);
-              await loadPidComponentData(latestPidItem);
+              // 기존 P&ID Components 데이터를 유지하면서 새로 추가된 P&ID의 Components만 로드
+              await loadPidComponentDataWithoutClear(latestPidItem);
             }
           } else {
             console.warn('currentPfdItemForMapping.value가 없어서 P&ID 목록 새로고침을 건너뜁니다.');

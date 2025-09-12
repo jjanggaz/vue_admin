@@ -117,7 +117,8 @@
             </div>
           </div>
           <div class="tab-content">
-            <component :is="modalActiveComponent" />
+            <MachineRegisterTab v-if="modalActiveTab === 0" />
+            <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
           </div>
         </div>
         <div class="modal-footer">
@@ -193,17 +194,13 @@ const machineStore = useMachineStore();
 
 // 모달 탭 구성 (ProjectDetail 스타일)
 const modalTabs = [
-  { key: "machine", label: "기계 등록", component: MachineRegisterTab },
+  { key: "machine", label: "기계 등록" },
   {
     key: "formula",
     label: "기계 계산식 등록",
-    component: MachineFormulaRegisterTab,
   },
 ];
 const modalActiveTab = ref(0);
-const modalActiveComponent = computed(
-  () => modalTabs[modalActiveTab.value].component
-);
 
 interface MachineItem {
   id: string;

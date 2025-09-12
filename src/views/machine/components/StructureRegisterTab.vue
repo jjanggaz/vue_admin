@@ -7,7 +7,7 @@
         <select
           class="input select-sm"
           v-model="selectedUnit"
-          :disabled="isRegistered"
+          :disabled="isRegistered || props.isEditMode"
         >
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -24,7 +24,7 @@
         <select
           class="input select-md"
           v-model="selectedMachineName"
-          :disabled="isRegistered"
+          :disabled="isRegistered || props.isEditMode"
         >
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -40,7 +40,7 @@
         <span class="label required">⊙ {{ t("common.structureForm") }}</span>
         <select
           class="input select-sm"
-          :disabled="!isStep1Enabled"
+          :disabled="!isStep1Enabled || props.isEditMode"
           v-model="selectedThirdDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -57,7 +57,7 @@
         <span class="label">⊙ {{ t("columns.machine.structureName") }}</span>
         <select
           class="input select-sm"
-          :disabled="!isStep2Enabled"
+          :disabled="!isStep2Enabled || props.isEditMode"
           v-model="selectedFourthDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -76,7 +76,7 @@
         >
         <select
           class="input select-sm"
-          :disabled="!isStep3Enabled"
+          :disabled="!isStep3Enabled || props.isEditMode"
           v-model="selectedFifthDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -89,41 +89,146 @@
           </option>
         </select>
       </div>
-    </div>
-
-    <!-- 리스트 테이블 -->
-    <div class="section-header">
-      <div class="section-title">⊙ {{ t("common.machineList") }}</div>
-      <div class="section-actions">
-        <button class="btn-outline" @click.prevent="onDownloadExcelTemplate">
-          excel 양식 다운로드
-        </button>
-        <button class="btn-outline" @click.prevent="onUploadExcel">
-          excel 업로드
-        </button>
-        <button class="btn-outline" @click.prevent="onBulkUploadModels">
-          모델 대량 업로드
-        </button>
+      <div class="group-form inline">
+        <span class="label">⊙ 비고</span>
         <input
-          type="file"
-          ref="excelFileInput"
-          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-          style="display: none"
-          @change="handleExcelFileChange"
-        />
-        <input
-          type="file"
-          ref="bulkFileInput"
-          accept=".zip,.7z,application/zip,application/x-zip-compressed,application/x-7z-compressed"
-          style="display: none"
-          @change="handleBulkFileChange"
+          type="text"
+          class="input"
+          v-model="remarks"
+          placeholder="비고를 입력하세요"
         />
       </div>
+      <div class="group-form inline">
+        <span class="label">⊙ 3D 구조물 계산식</span>
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="formulaFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="formulaFileInput"
+            accept=".py"
+            style="display: none"
+            @change="handleFormulaFileChange"
+          />
+          <button class="btn-file" @click="formulaFileInput?.click()">
+            파일 선택
+          </button>
+        </div>
+      </div>
+      <div class="group-form inline">
+        <span class="label">⊙ 3D 구조물 DTD모델</span>
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="dtdFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="dtdFileInput"
+            accept=".dtdx"
+            style="display: none"
+            @change="handleDtdFileChange"
+          />
+          <button class="btn-file" @click="dtdFileInput?.click()">
+            파일 선택
+          </button>
+        </div>
+      </div>
+      <div class="group-form inline">
+        <span class="label">⊙ 3D REVIT모델</span>
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="revitFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="revitFileInput"
+            accept=".rvt"
+            style="display: none"
+            @change="handleRevitFileChange"
+          />
+          <button class="btn-file" @click="revitFileInput?.click()">
+            파일 선택
+          </button>
+          <button
+            v-if="!props.isEditMode"
+            class="btn-register"
+            @click="onRegister"
+          >
+            등록
+          </button>
+          <button v-if="props.isEditMode" class="btn-update" @click="onUpdate">
+            수정
+          </button>
+        </div>
+      </div>
     </div>
-    <DataTable :columns="columns" :data="rows" :selectable="false"> </DataTable>
-    <div class="pagination-container">
-      <Pagination :current-page="1" :total-pages="1" />
-    </div>
+
+    <!-- 등록시 테이블 -->
+    <template v-if="!props.isEditMode">
+      <div class="section-header">
+        <div class="section-title">
+          ⊙ {{ t("common.structure3DRegisterList") }}
+        </div>
+        <div class="section-actions">
+          <button
+            class="btn-outline btn-delete"
+            @click.prevent="onDeleteSelected"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+      <DataTable
+        :columns="columns"
+        :data="rows"
+        :selectable="true"
+        :selection-mode="'single'"
+        :select-header-text="t('common.selectColumn')"
+        :show-select-all="false"
+      >
+      </DataTable>
+      <div class="pagination-container">
+        <Pagination :current-page="1" :total-pages="1" />
+      </div>
+    </template>
+    <!-- 수정시 테이블 -->
+    <template v-if="props.isEditMode">
+      <div class="section-header">
+        <div class="section-title">
+          ⊙ {{ t("common.structure3DFormulaVersionManagement") }}
+        </div>
+        <div class="section-actions">
+          <button
+            class="btn-outline btn-delete"
+            @click.prevent="onDeleteSelectedEditMode"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+      <DataTable
+        :columns="editModeColumns"
+        :data="editModeRows"
+        :selectable="true"
+        :selection-mode="'single'"
+        :select-header-text="t('common.selectColumn')"
+        :show-select-all="false"
+      >
+      </DataTable>
+      <div class="pagination-container">
+        <Pagination :current-page="1" :total-pages="1" />
+      </div>
+    </template>
   </div>
 </template>
 
@@ -133,6 +238,15 @@ import { ref, watch } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
+
+// Props 정의
+interface Props {
+  isEditMode?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isEditMode: false,
+});
 
 const { t } = useI18n();
 const machineStore = useMachineStore();
@@ -152,40 +266,127 @@ const selectedThirdDept = ref("");
 const selectedFourthDept = ref("");
 const selectedFifthDept = ref("");
 
-// 엑셀 업로드 입력 ref
-const excelFileInput = ref<HTMLInputElement | null>(null);
-const excelFileName = ref<string>("");
-// 대량 업로드 입력 ref
-const bulkFileInput = ref<HTMLInputElement | null>(null);
-const bulkFileName = ref<string>("");
+// 비고 입력
+const remarks = ref("");
+
+// 파일 업로드 ref들
+const formulaFileInput = ref<HTMLInputElement | null>(null);
+const formulaFileName = ref<string>("");
+const dtdFileInput = ref<HTMLInputElement | null>(null);
+const dtdFileName = ref<string>("");
+const revitFileInput = ref<HTMLInputElement | null>(null);
+const revitFileName = ref<string>("");
 
 const columns: TableColumn[] = [
-  { key: "no", title: "순번", width: "80px" },
-  { key: "model", title: "기계 모델명", width: "220px" },
-  { key: "d3", title: "3D 모델 (DTDX)", width: "220px" },
-  { key: "revit", title: "REVIT 모델", width: "220px" },
-  { key: "d2", title: "2D 심볼", width: "220px" },
-  { key: "etc", title: "…", width: "120px" },
+  { key: "no", title: t("columns.machine.no"), width: "60px" },
+  { key: "structureType", title: t("common.structureType"), width: "120px" },
+  { key: "structureForm", title: t("common.structureForm"), width: "120px" },
+  {
+    key: "structureName",
+    title: t("columns.machine.structureName"),
+    width: "150px",
+  },
+  {
+    key: "structureTypeDetail",
+    title: t("columns.machine.structureTypeDetail"),
+    width: "120px",
+  },
+  { key: "formula", title: t("columns.machine.formula"), width: "100px" },
+  { key: "model3d", title: t("columns.machine.model3d"), width: "100px" },
+  { key: "revitModel", title: t("columns.machine.revitModel"), width: "120px" },
+  { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
 ];
 
+// 수정 모드용 컬럼 (첨부 이미지 기준)
+const editModeColumns: TableColumn[] = [
+  { key: "no", title: t("columns.machine.no"), width: "60px" },
+  { key: "structureType", title: t("common.structureType"), width: "120px" },
+  { key: "structureForm", title: t("common.structureForm"), width: "120px" },
+  {
+    key: "structureName",
+    title: t("columns.machine.structureName"),
+    width: "150px",
+  },
+  {
+    key: "structureTypeDetail",
+    title: t("columns.machine.structureTypeDetail"),
+    width: "120px",
+  },
+  { key: "formulaVersion", title: t("common.formulaVersion"), width: "120px" },
+  { key: "creationDate", title: t("common.creationDate"), width: "120px" },
+  { key: "appliedVersion", title: t("common.appliedVersion"), width: "120px" },
+  { key: "unit", title: t("common.unit"), width: "100px" },
+  { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
+];
+
+// 등록 모드용 데이터
 const rows = ref([
   {
     id: 1,
     no: 1,
-    model: "송풍기 A",
-    d3: "model_a.dtdx",
-    revit: "model_a.rvt",
-    d2: "symbol_a.svg",
-    etc: "비고1",
+    structureType: "기초",
+    structureForm: "직사각형",
+    structureName: "구조물명1",
+    structureTypeDetail: "RC",
+    formula: "계산식1",
+    model3d: "3D모델파일.dwg",
+    revitModel: "Revit모델.rvt",
+    remarks: "특이사항 없음",
   },
   {
     id: 2,
     no: 2,
-    model: "송풍기 B",
-    d3: "model_b.dtdx",
-    revit: "model_b.rvt",
-    d2: "symbol_b.svg",
-    etc: "비고2",
+    structureType: "벽체",
+    structureForm: "원형",
+    structureName: "구조물명2",
+    structureTypeDetail: "S",
+    formula: "계산식2",
+    model3d: "없음",
+    revitModel: "없음",
+    remarks: "검토 필요",
+  },
+]);
+
+// 수정 모드용 데이터 (첨부 이미지 기준)
+const editModeRows = ref([
+  {
+    id: 1,
+    no: 1,
+    structureType: "기초",
+    structureForm: "직사각형",
+    structureName: "구조물명1",
+    structureTypeDetail: "RC",
+    formulaVersion: "v1.0",
+    creationDate: "2024-01-15",
+    appliedVersion: "v1.0",
+    unit: "m",
+    remarks: "특이사항 없음",
+  },
+  {
+    id: 2,
+    no: 2,
+    structureType: "벽체",
+    structureForm: "원형",
+    structureName: "구조물명2",
+    structureTypeDetail: "S",
+    formulaVersion: "v2.1",
+    creationDate: "2024-01-20",
+    appliedVersion: "v2.0",
+    unit: "m",
+    remarks: "검토 필요",
+  },
+  {
+    id: 3,
+    no: 3,
+    structureType: "기초",
+    structureForm: "원형",
+    structureName: "구조물명3",
+    structureTypeDetail: "RC",
+    formulaVersion: "v1.5",
+    creationDate: "2024-01-25",
+    appliedVersion: "v1.5",
+    unit: "m",
+    remarks: "최신 버전",
   },
 ]);
 
@@ -300,91 +501,95 @@ function validateBasicSelections(): boolean {
 
   return true;
 }
-
-// 버튼 핸들러들
-function onDownloadExcelTemplate() {
+function onDeleteSelected() {
   if (!validateBasicSelections()) return;
-  // TODO: 템플릿 다운로드 로직 연결
+  // TODO: 선택된 항목 삭제 로직 구현
 }
 
-function onUploadExcel() {
+function onDeleteSelectedEditMode() {
   if (!validateBasicSelections()) return;
-  // 파일 선택 트리거
-  excelFileInput.value?.click();
+  // TODO: 선택된 항목 삭제 로직 구현
 }
 
-function onBulkUploadModels() {
-  if (!validateBasicSelections()) return;
-  // 파일 선택 트리거
-  bulkFileInput.value?.click();
-}
-
-// 엑셀 파일 변경 핸들러
-function handleExcelFileChange(e: Event) {
+// 파일 변경 핸들러들
+function handleFormulaFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
-
-  if (!file) {
-    excelFileName.value = "";
-    return;
+  if (file) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      return;
+    }
+    formulaFileName.value = file.name;
   }
-
-  // 확장자 검증
-  const allowed = [".xlsx", ".xls"];
-  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-  if (!allowed.includes(ext)) {
-    alert("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.");
-    input.value = "";
-    excelFileName.value = "";
-    return;
-  }
-
-  // 크기 검증 (예: 10MB)
-  const maxSize = 10 * 1024 * 1024;
-  if (file.size > maxSize) {
-    alert("파일 크기는 10MB를 초과할 수 없습니다.");
-    input.value = "";
-    excelFileName.value = "";
-    return;
-  }
-
-  excelFileName.value = file.name;
-
-  // TODO: 실제 파싱/업로드 로직 연결 (예: FormData 전송 또는 xlsx 파싱)
 }
 
-// 대량 업로드 파일 변경 핸들러
-function handleBulkFileChange(e: Event) {
+function handleDtdFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
+  if (file) {
+    if (file.size > 200 * 1024 * 1024) {
+      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+      return;
+    }
+    dtdFileName.value = file.name;
+  }
+}
 
-  if (!file) {
-    bulkFileName.value = "";
+function handleRevitFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+  if (file) {
+    if (file.size > 200 * 1024 * 1024) {
+      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+      return;
+    }
+    revitFileName.value = file.name;
+  }
+}
+
+// 등록 함수
+function onRegister() {
+  if (!validateBasicSelections()) return;
+
+  // 파일 첨부 validation
+  if (!formulaFileName.value) {
+    alert("3D 구조물 계산식 파일을 선택해주세요.");
+    return;
+  }
+  if (!dtdFileName.value) {
+    alert("3D 구조물 DTD모델 파일을 선택해주세요.");
+    return;
+  }
+  if (!revitFileName.value) {
+    alert("3D REVIT모델 파일을 선택해주세요.");
     return;
   }
 
-  // 확장자 검증
-  const allowed = [".zip", ".7z"];
-  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-  if (!allowed.includes(ext)) {
-    alert("압축 파일(.zip, .7z)만 업로드 가능합니다.");
-    input.value = "";
-    bulkFileName.value = "";
+  // TODO: 등록 로직 구현
+  alert("구조물이 등록되었습니다.");
+}
+
+// 수정 함수
+function onUpdate() {
+  if (!validateBasicSelections()) return;
+
+  // 파일 첨부 validation
+  if (!formulaFileName.value) {
+    alert("3D 구조물 계산식 파일을 선택해주세요.");
+    return;
+  }
+  if (!dtdFileName.value) {
+    alert("3D 구조물 DTD모델 파일을 선택해주세요.");
+    return;
+  }
+  if (!revitFileName.value) {
+    alert("3D REVIT모델 파일을 선택해주세요.");
     return;
   }
 
-  // 크기 검증 (예: 200MB)
-  const maxSize = 200 * 1024 * 1024;
-  if (file.size > maxSize) {
-    alert("파일 크기는 200MB를 초과할 수 없습니다.");
-    input.value = "";
-    bulkFileName.value = "";
-    return;
-  }
-
-  bulkFileName.value = file.name;
-
-  // TODO: 전송 로직 연결 (예: FormData로 업로드)
+  // TODO: 수정 로직 구현
+  alert("구조물이 수정되었습니다.");
 }
 </script>
 
@@ -623,6 +828,33 @@ $desktop: 1200px;
   }
 }
 
+.btn-update {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:active {
+    background: #1d4ed8;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
 .section-title {
   margin: 10px 0;
   font-weight: 600;
@@ -669,6 +901,21 @@ $desktop: 1200px;
 
   @media (max-width: $mobile) {
     gap: 6px;
+  }
+}
+
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  .input {
+    flex: 1;
+  }
+
+  .btn-file {
+    flex-shrink: 0;
   }
 }
 

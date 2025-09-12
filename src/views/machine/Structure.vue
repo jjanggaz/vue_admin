@@ -141,7 +141,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <component :is="modalComponent" />
+          <StructureRegisterTab :is-edit-mode="isEditMode" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
@@ -213,8 +213,7 @@ import { useMachineStore } from "@/stores/machineStore";
 const { t } = useI18n();
 const structureStore = useMachineStore();
 
-// 모달 컴포넌트
-const modalComponent = StructureRegisterTab;
+// 모달 컴포넌트는 일반 컴포넌트로 변경됨
 
 interface MachineItem {
   id: string;
@@ -527,8 +526,6 @@ const handleEdit = () => {
   };
   isRegistModalOpen.value = true;
 };
-
-// (기존 단일 등록/수정 저장 핸들러 제거)
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {

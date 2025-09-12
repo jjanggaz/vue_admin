@@ -4,24 +4,11 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
-          <label for="language">{{ t("common.language") }}</label>
-          <select id="language" v-model="selectedLanguage" class="form-select">
-            <option value="">{{ t("common.select") }}</option>
-            <option
-              v-for="lang in machineStore.langCodes"
-              :key="lang.code_id"
-              :value="lang.code_value_en"
-            >
-              {{ lang.code_value }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-item">
           <label for="unit">{{ t("common.unit") }}</label>
           <select id="unit" v-model="selectedUnit" class="form-select">
             <option value="">{{ t("common.select") }}</option>
             <option
-              v-for="unit in machineStore.unitSystems"
+              v-for="unit in structureStore.unitSystems"
               :key="unit.unit_system_id"
               :value="unit.system_code.toLowerCase()"
             >
@@ -30,11 +17,46 @@
           </select>
         </div>
         <div class="filter-item">
+          <label for="structureType">{{ t("common.structureType") }}</label>
+          <select
+            id="structureType"
+            v-model="selectedStructureType"
+            class="form-select"
+            @change="handleStructureTypeChange"
+          >
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="type in structureStore.secondDepth"
+              :key="type.code_id"
+              :value="type.code_key"
+            >
+              {{ type.code_value }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="structureForm">{{ t("common.structureForm") }}</label>
+          <select
+            id="structureForm"
+            v-model="selectedStructureForm"
+            class="form-select"
+          >
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="form in structureStore.thirdDepth"
+              :key="form.code_id"
+              :value="form.code_key"
+            >
+              {{ form.code_value }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-item">
           <label for="search">{{ t("common.search") }}</label>
           <input
             type="text"
             id="search"
-            :placeholder="t('placeholder.machineSearch')"
+            :placeholder="t('placeholder.structureSearch')"
             v-model="searchQueryInput"
             @keyup.enter="handleSearch"
             class="form-input"
@@ -48,7 +70,7 @@
 
     <!-- 기계 리스트 헤더 -->
     <div class="machine-list-header">
-      <h2>{{ t("common.machineList") }}</h2>
+      <h2>{{ t("common.structureList") }}</h2>
       <div class="action-buttons">
         <button class="btn btn-primary btn-register" @click="openRegistModal">
           {{ t("common.register") }}
@@ -119,19 +141,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <div class="tabs-wrapper">
-            <div
-              v-for="(tab, idx) in modalTabs"
-              :key="tab.key"
-              :class="['tab', { active: modalActiveTab === idx }]"
-              @click="modalActiveTab = idx"
-            >
-              {{ tab.label }}
-            </div>
-          </div>
-          <div class="tab-content">
-            <component :is="modalActiveComponent" />
-          </div>
+          <component :is="modalComponent" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
@@ -196,27 +206,15 @@
 import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import MachineRegisterTab from "./components/MachineRegisterTab.vue";
-import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
+import StructureRegisterTab from "./components/StructureRegisterTab.vue";
 import { useI18n } from "vue-i18n";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
-const machineStore = useMachineStore();
+const structureStore = useMachineStore();
 
-// 모달 탭 구성 (ProjectDetail 스타일)
-const modalTabs = [
-  { key: "machine", label: "기계 등록", component: MachineRegisterTab },
-  {
-    key: "formula",
-    label: "기계 계산식 등록",
-    component: MachineFormulaRegisterTab,
-  },
-];
-const modalActiveTab = ref(0);
-const modalActiveComponent = computed(
-  () => modalTabs[modalActiveTab.value].component
-);
+// 모달 컴포넌트
+const modalComponent = StructureRegisterTab;
 
 interface MachineItem {
   id: string;
@@ -261,32 +259,26 @@ interface RegistForm {
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
-    key: "code",
-    title: t("columns.machine.mcId"),
+    key: "structureType",
+    title: t("common.structureType"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "structureForm",
+    title: t("common.structureForm"),
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "structureName",
+    title: t("columns.machine.structureName"),
     width: "150px",
     sortable: true,
   },
   {
-    key: "name",
-    title: t("columns.machine.name"),
-    width: "150px",
-    sortable: true,
-  },
-  {
-    key: "type",
-    title: t("columns.machine.type"),
-    width: "100px",
-    sortable: true,
-  },
-  {
-    key: "capacity",
-    title: t("columns.machine.capacity"),
-    width: "100px",
-    sortable: true,
-  },
-  {
-    key: "model",
-    title: t("columns.machine.model"),
+    key: "structureTypeDetail",
+    title: t("columns.machine.structureTypeDetail"),
     width: "120px",
     sortable: true,
   },
@@ -297,15 +289,21 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "company",
-    title: t("columns.machine.company"),
+    key: "model3d",
+    title: t("columns.machine.model3d"),
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "revitModel",
+    title: t("columns.machine.revitModel"),
     width: "120px",
     sortable: true,
   },
   {
-    key: "details",
-    title: t("columns.machine.details"),
-    width: "80px",
+    key: "remarks",
+    title: t("columns.machine.remarks"),
+    width: "100px",
     sortable: false,
   },
 ];
@@ -317,8 +315,9 @@ const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 const searchQuery = ref("");
-const selectedLanguage = ref("");
 const selectedUnit = ref("");
+const selectedStructureType = ref("");
+const selectedStructureForm = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newMachine = ref<RegistForm>({
@@ -567,10 +566,10 @@ const closeDetailModal = () => {
 const loadData = () => {
   machineList.value = Array.from({ length: 15 }, (_, i) => ({
     id: (i + 1).toString(),
-    name: `기계${i + 1}`,
-    code: `EQ-${String(i + 1).padStart(3, "0")}`,
-    type: ["펌프", "모터", "컨베이어"][i % 3],
-    description: `기계 ${i + 1}에 대한 설명입니다.`,
+    name: `구조물${i + 1}`,
+    code: `ST-${String(i + 1).padStart(3, "0")}`,
+    type: ["콘크리트", "강철", "목재"][i % 3],
+    description: `구조물 ${i + 1}에 대한 설명입니다.`,
     createdAt: `2023-01-${(i % 28) + 1}`,
     capacity: "****",
     capacityMax: "****",
@@ -594,6 +593,14 @@ const loadData = () => {
     execution_price: "1,420,000",
     proposal_price: "1,390,000",
     note: "-",
+    // 구조물 관련 필드 추가
+    structureType: ["기초", "벽체", "지붕", "기둥", "보"][i % 5],
+    structureForm: ["직사각형", "원형", "타원형", "다각형", "곡선형"][i % 5],
+    structureName: `구조물명${i + 1}`,
+    structureTypeDetail: ["RC", "S", "SRC", "목구조", "조적"][i % 5],
+    model3d: i % 3 === 0 ? "3D모델파일.dwg" : "없음",
+    revitModel: i % 4 === 0 ? "Revit모델.rvt" : "없음",
+    remarks: i % 2 === 0 ? "특이사항 없음" : "검토 필요",
   }));
 };
 
@@ -605,8 +612,16 @@ function mapMachineType(val: string) {
   return val;
 }
 
+// 구조물 구분 변경 핸들러
+const handleStructureTypeChange = async () => {
+  selectedStructureForm.value = ""; // 구조물 형태 초기화
+  if (selectedStructureType.value) {
+    await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
+  }
+};
+
 onMounted(async () => {
-  await machineStore.fetchCommonCodes("STRUCT");
+  await structureStore.fetchCommonCodes("STRUCT");
   await loadData();
 });
 </script>

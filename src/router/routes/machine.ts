@@ -1,10 +1,10 @@
 // 기계 관리 페이지
 const MachineManagement = () => import("@/views/machine/MachineManagement.vue");
-const Structure = () => import("@/views/machine/structure.vue");
+const Structure = () => import("@/views/machine/Structure.vue");
 const Machine = () => import("@/views/machine/Machine.vue");
-const Pipe = () => import("@/views/machine/pipe.vue");
+const Pipe = () => import("@/views/machine/Pipe.vue");
 const Electrical = () => import("@/views/machine/Electrical.vue");
-const Measurement = () => import("@/views/machine/measurement.vue");
+const Measurement = () => import("@/views/machine/Measurement.vue");
 const MachineCodeManagement = () =>
   import("@/views/machine/MachineCodeManagement.vue");
 

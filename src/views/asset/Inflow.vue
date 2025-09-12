@@ -1551,6 +1551,7 @@ const selectedImperialFormula = computed(() => {
 const openModal = () => {
   isModalOpen.value = true;
   newTabName.value = "";
+  symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
 };
 
 const openCodeManagementModal = () => {

@@ -1226,6 +1226,7 @@ const currentImperialGridData = computed(() => {
 const openModal = async () => {
   isModalOpen.value = true;
   newTabName.value = "";
+  symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
 
   // 모달 오픈 시 수질 파라미터 데이터를 가져와서 DataTable에 표시
   try {

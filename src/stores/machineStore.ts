@@ -145,11 +145,6 @@ export const useMachineStore = defineStore("machine", () => {
       });
 
       if (response?.response) {
-        // 언어 코드 설정
-        if (response.response.langCodes) {
-          langCodes.value = response.response.langCodes;
-        }
-
         // 단위 시스템 설정
         if (response.response.unitSystems) {
           unitSystems.value = response.response.unitSystems;

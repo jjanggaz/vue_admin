@@ -4,19 +4,6 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
-          <label for="language">{{ t("common.language") }}</label>
-          <select id="language" v-model="selectedLanguage" class="form-select">
-            <option value="">{{ t("common.select") }}</option>
-            <option
-              v-for="lang in machineStore.langCodes"
-              :key="lang.code_id"
-              :value="lang.code_value_en"
-            >
-              {{ lang.code_value }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-item">
           <label for="unit">{{ t("common.unit") }}</label>
           <select id="unit" v-model="selectedUnit" class="form-select">
             <option value="">{{ t("common.select") }}</option>
@@ -317,7 +304,6 @@ const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 const searchQuery = ref("");
-const selectedLanguage = ref("");
 const selectedUnit = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);

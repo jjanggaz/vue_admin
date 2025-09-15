@@ -88,7 +88,7 @@
                 id="searchProcessName"
                 :value="processStore.searchProcessName || ''"
                 class="form-select"
-                :key="`searchProcessName-${processStore.searchProcessNameOptions.length}`"
+                @change="handleProcessNameChange"
               >
                 <option value="">{{ t("common.select") }}</option>
                 <option
@@ -397,7 +397,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import ProcessDetail from "./ProcessDetail.vue";
@@ -406,6 +406,24 @@ import { useProcessStore, type ProcessItem } from "@/stores/processStore";
 
 const { t } = useI18n();
 const processStore = useProcessStore();
+
+// 공정명 값 변경 추적
+watch(() => processStore.searchProcessName, (newValue, oldValue) => {
+  console.log('공정명 값 변경 감지:', {
+    oldValue,
+    newValue,
+    timestamp: new Date().toISOString()
+  });
+}, { immediate: true });
+
+// 중분류 값 변경 추적
+watch(() => processStore.searchSubCategoryInput, (newValue, oldValue) => {
+  console.log('중분류 값 변경 감지:', {
+    oldValue,
+    newValue,
+    timestamp: new Date().toISOString()
+  });
+}, { immediate: true });
 
 interface RegistForm {
   processType: string | null;
@@ -1044,7 +1062,7 @@ const handleUnitChange = () => {
 };
 
 // 검색 옵션 변경 핸들러
-const handleSearchProcessTypeChange = (event: Event) => {
+const handleSearchProcessTypeChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value || null;
   
@@ -1068,10 +1086,17 @@ const handleSearchProcessTypeChange = (event: Event) => {
       console.log("공정구분 변경:");
       console.log("  key:", selectedOption.value);
       console.log("  value:", selectedOption.label);
-      // 공정명 옵션 초기화
+      
+      // 중분류 옵션과 값 초기화 (공정구분이 변경되면 중분류는 '-- 선택 --' 상태로)
+      processStore.searchSubCategoryOptions.splice(0, processStore.searchSubCategoryOptions.length);
+      processStore.setSearchSubCategoryInput(null);
+      
+      // 공정명 옵션과 값 초기화
       processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
       processStore.setSearchProcessName(null);
-      handleSubCategoryCode();
+      
+      // 새로운 공정구분에 맞는 중분류 옵션 로드
+      await handleSubCategoryCode();
     } else {
       console.log("공정구분 변경: 선택되지 않음");
     }
@@ -1079,7 +1104,7 @@ const handleSearchProcessTypeChange = (event: Event) => {
 };
 
 // 중분류 변경 핸들러
-const handleSubCategoryChange = (event: Event) => {
+const handleSubCategoryChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value || null;
   
@@ -1093,8 +1118,25 @@ const handleSubCategoryChange = (event: Event) => {
     console.log("중분류 변경: null 또는 공백값 선택 - 공정명 옵션 초기화");
   } else {
     console.log("중분류 변경:", selectedValue);
-    handleProcessNameCodeSearch();
+    
+    // 공정명 옵션과 값 초기화 (중분류가 변경되면 공정명은 '-- 선택 --' 상태로)
+    processStore.searchProcessNameOptions.splice(0, processStore.searchProcessNameOptions.length);
+    processStore.setSearchProcessName(null);
+    
+    // 새로운 중분류에 맞는 공정명 옵션 로드
+    await handleProcessNameCodeSearch();
   }
+};
+
+// 공정명 변경 핸들러
+const handleProcessNameChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target.value || null;
+  
+  // 즉시 값 업데이트
+  processStore.setSearchProcessName(selectedValue);
+  
+  console.log("공정명 변경:", selectedValue);
 };
 
 // 등록 모달 공정구분 변경 핸들러
@@ -1160,6 +1202,7 @@ const handleSearch = async () => {
     }
     
     await processStore.searchProcesses();
+    
   } catch (error: any) {
     const errorMessage = error?.message || "검색 중 오류가 발생했습니다.";
     alert(`검색 실패: ${errorMessage}`);

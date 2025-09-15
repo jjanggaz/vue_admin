@@ -980,20 +980,30 @@ const searchFormulaAPI = async () => {
 
 const createFormulaAPI = async (processId: string, formulaName: string, formulaCode: string, siteFile?: File) => {
   try {
+    console.log('createFormulaAPI 호출됨:', {
+      processId,
+      formulaName,
+      formulaCode,
+      siteFile: siteFile ? siteFile.name : '없음'
+    });
+    
     const formData = new FormData();
     formData.append('process_id', processId);
     formData.append('formula_name', formulaName);
     formData.append('formula_code', formulaCode);
     formData.append('formula_scope', 'PROCESS'); // 서버에서 요구하는 필드
     if (siteFile) {
-      formData.append('python_file', siteFile); // 서버에서 요구하는 필드명
+      formData.append('siteFile', siteFile); // 서버에서 요구하는 필드명
     }
 
+    console.log('FormData 생성 완료, API 호출 시작');
     const response = await request('/api/process/formula/create', undefined, {
       method: 'POST',
       body: formData
       // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
     });
+    
+    console.log('createFormulaAPI 응답 수신:', response);
 
     if (!response.success) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -3051,6 +3061,20 @@ const processFormulaChanges = async (processId: string) => {
       currentCount: processStore.formulaList.length
     });
     
+    // addedRows 상세 정보 로그
+    if (addedRows.length > 0) {
+      console.log('추가된 계산식 상세 정보:', addedRows);
+      addedRows.forEach((row, index) => {
+        console.log(`추가된 계산식 ${index + 1}:`, {
+          id: row.id,
+          registeredFormula: row.registeredFormula,
+          formula_code: row.formula_code,
+          _file: (row as any)._file,
+          formula_id: row.formula_id
+        });
+      });
+    }
+    
     // 삭제된 행 처리
     if (deletedRows.length > 0) {
       try {
@@ -3080,10 +3104,20 @@ const processFormulaChanges = async (processId: string) => {
     // 추가된 행 처리
     if (addedRows.length > 0) {
       try {
+        console.log('=== 계산식 추가 API 호출 시작 ===');
+        console.log('processId:', processId);
+        console.log('추가할 계산식 개수:', addedRows.length);
+        
         const results = await Promise.allSettled(
-          addedRows.map(formula => 
-            createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file)
-          )
+          addedRows.map((formula, index) => {
+            console.log(`계산식 ${index + 1} API 호출 시작:`, {
+              processId: processId,
+              formulaName: formula.registeredFormula,
+              formulaCode: formula.formula_code || '',
+              file: (formula as any)._file
+            });
+            return createFormulaAPI(processId, formula.registeredFormula, formula.formula_code || '', (formula as any)._file);
+          })
         );
         
         // 성공한 계산식과 실패한 계산식 분리
@@ -3104,12 +3138,14 @@ const processFormulaChanges = async (processId: string) => {
         // 성공한 계산식의 isSaved 상태를 true로 업데이트
         const updatedFormulaList = processStore.formulaList.map(item => {
           if (successfulFormulas.some(successfulFormula => successfulFormula.id === item.id)) {
+            console.log(`계산식 저장 완료 - ${item.registeredFormula} (ID: ${item.id})`);
             return { ...item, isSaved: true };
           }
           return item;
         });
         processStore.setFormulaList(updatedFormulaList);
         console.log("계산식 저장 상태 업데이트 완료");
+        console.log("업데이트된 계산식 목록:", updatedFormulaList);
         
         // 실패한 계산식이 있는 경우 사용자에게 알림
         if (failedFormulas.length > 0) {
@@ -3132,6 +3168,7 @@ const processFormulaChanges = async (processId: string) => {
     // 초기값 업데이트
     const updatedFormulaList = JSON.parse(JSON.stringify(processStore.formulaList));
     processStore.setInitialFormulaList(updatedFormulaList);
+    console.log('초기값 업데이트 완료:', updatedFormulaList);
     
     console.log('=== 계산식 변경사항 처리 완료 ===');
     return true;

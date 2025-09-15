@@ -117,8 +117,14 @@
             </div>
           </div>
           <div class="tab-content">
-            <MachineRegisterTab v-if="modalActiveTab === 0" />
-            <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
+            <template v-if="!isEditMode">
+              <MachineRegisterTab v-if="modalActiveTab === 0" />
+              <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
+            </template>
+            <template v-else>
+              <MachineUpdateTab v-if="modalActiveTab === 0" />
+              <MachineFormulaUpdateTab v-if="modalActiveTab === 1" />
+            </template>
           </div>
         </div>
         <div class="modal-footer">
@@ -186,6 +192,8 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import MachineRegisterTab from "./components/MachineRegisterTab.vue";
 import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
+import MachineUpdateTab from "./components/MachineUpdateTab.vue";
+import MachineFormulaUpdateTab from "./components/MachineFormulaUpdateTab.vue";
 import { useI18n } from "vue-i18n";
 import { useMachineStore } from "@/stores/machineStore";
 

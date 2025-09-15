@@ -141,7 +141,12 @@
           </button>
         </div>
         <div class="modal-body">
-          <StructureRegisterTab :is-edit-mode="isEditMode" />
+          <template v-if="!isEditMode">
+            <StructureRegisterTab />
+          </template>
+          <template v-else>
+            <StructureUpdateTab />
+          </template>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
@@ -207,6 +212,7 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import StructureRegisterTab from "./components/StructureRegisterTab.vue";
+import StructureUpdateTab from "./components/StructureUpdateTab.vue";
 import { useI18n } from "vue-i18n";
 import { useMachineStore } from "@/stores/machineStore";
 

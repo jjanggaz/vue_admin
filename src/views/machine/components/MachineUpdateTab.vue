@@ -20,7 +20,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureType") }}</span>
+        <span class="label required">⊙ 기계명</span>
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -37,7 +37,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureForm") }}</span>
+        <span class="label required">⊙ 기계종분류</span>
         <select
           class="input select-sm"
           :disabled="!isStep1Enabled"
@@ -54,7 +54,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("columns.machine.structureName") }}</span>
+        <span class="label">⊙ 기계유형</span>
         <select
           class="input select-sm"
           :disabled="!isStep2Enabled"
@@ -71,9 +71,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
-        >
+        <span class="label">⊙ 기계유형분류</span>
         <select
           class="input select-sm"
           :disabled="!isStep3Enabled"
@@ -89,104 +87,38 @@
           </option>
         </select>
       </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 비고</span>
-        <input
-          type="text"
-          class="input"
-          v-model="remarks"
-          placeholder="비고를 입력하세요"
-        />
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 계산식</span>
-        <div class="file-input-wrapper">
-          <input
-            type="text"
-            class="input"
-            :value="formulaFileName || '선택된 파일 없음'"
-            readonly
-          />
-          <input
-            type="file"
-            ref="formulaFileInput"
-            accept=".py"
-            style="display: none"
-            @change="handleFormulaFileChange"
-          />
-          <button class="btn-file" @click="formulaFileInput?.click()">
-            파일 선택
-          </button>
-        </div>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 DTD모델</span>
-        <div class="file-input-wrapper">
-          <input
-            type="text"
-            class="input"
-            :value="dtdFileName || '선택된 파일 없음'"
-            readonly
-          />
-          <input
-            type="file"
-            ref="dtdFileInput"
-            accept=".dtdx"
-            style="display: none"
-            @change="handleDtdFileChange"
-          />
-          <button class="btn-file" @click="dtdFileInput?.click()">
-            파일 선택
-          </button>
-        </div>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 3D REVIT모델</span>
-        <div class="file-input-wrapper">
-          <input
-            type="text"
-            class="input"
-            :value="revitFileName || '선택된 파일 없음'"
-            readonly
-          />
-          <input
-            type="file"
-            ref="revitFileInput"
-            accept=".rvt"
-            style="display: none"
-            @change="handleRevitFileChange"
-          />
-          <button class="btn-file" @click="revitFileInput?.click()">
-            파일 선택
-          </button>
-          <button class="btn-register" @click="onRegister">등록</button>
-        </div>
-      </div>
     </div>
 
-    <!-- 등록시 테이블 -->
+    <!-- 리스트 테이블 -->
     <div class="section-header">
-      <div class="section-title">
-        ⊙ {{ t("common.structure3DRegisterList") }}
-      </div>
+      <div class="section-title">⊙ {{ t("common.machineList") }}</div>
       <div class="section-actions">
-        <button
-          class="btn-outline btn-delete"
-          @click.prevent="onDeleteSelected"
-        >
-          삭제
+        <button class="btn-outline" @click.prevent="onDownloadExcelTemplate">
+          excel 양식 다운로드
         </button>
+        <button class="btn-outline" @click.prevent="onUploadExcel">
+          excel 업로드
+        </button>
+        <button class="btn-outline" @click.prevent="onBulkUploadModels">
+          모델 대량 업로드
+        </button>
+        <input
+          type="file"
+          ref="excelFileInput"
+          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          style="display: none"
+          @change="handleExcelFileChange"
+        />
+        <input
+          type="file"
+          ref="bulkFileInput"
+          accept=".zip,.7z,application/zip,application/x-zip-compressed,application/x-7z-compressed"
+          style="display: none"
+          @change="handleBulkFileChange"
+        />
       </div>
     </div>
-    <DataTable
-      :columns="columns"
-      :data="rows"
-      :selectable="true"
-      :selection-mode="'single'"
-      :select-header-text="t('common.selectColumn')"
-      :show-select-all="false"
-    >
-    </DataTable>
+    <DataTable :columns="columns" :data="rows" :selectable="false"> </DataTable>
     <div class="pagination-container">
       <Pagination :current-page="1" :total-pages="1" />
     </div>
@@ -200,8 +132,6 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
-// 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
-
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
@@ -209,79 +139,53 @@ const machineStore = useMachineStore();
 const selectedUnit = ref("");
 
 // 단계별 enable 상태
-const isStep1Enabled = ref(false); // 구조물 형태
-const isStep2Enabled = ref(false); // 구조물명
-const isStep3Enabled = ref(false); // 구조물타입
+const isStep1Enabled = ref(false); // 기계종분류
+const isStep2Enabled = ref(false); // 기계유형
+const isStep3Enabled = ref(false); // 기계유형분류
 const isRegistered = ref(false); // 등록 완료 상태
 
-// 선택된 구조물 구분
+// 선택된 기계명
 const selectedMachineName = ref("");
 const selectedThirdDept = ref("");
 const selectedFourthDept = ref("");
 const selectedFifthDept = ref("");
 
-// 비고 입력
-const remarks = ref("");
-
-// 파일 업로드 ref들
-const formulaFileInput = ref<HTMLInputElement | null>(null);
-const formulaFileName = ref<string>("");
-const dtdFileInput = ref<HTMLInputElement | null>(null);
-const dtdFileName = ref<string>("");
-const revitFileInput = ref<HTMLInputElement | null>(null);
-const revitFileName = ref<string>("");
+// 엑셀 업로드 입력 ref
+const excelFileInput = ref<HTMLInputElement | null>(null);
+const excelFileName = ref<string>("");
+// 대량 업로드 입력 ref
+const bulkFileInput = ref<HTMLInputElement | null>(null);
+const bulkFileName = ref<string>("");
 
 const columns: TableColumn[] = [
-  { key: "no", title: t("columns.machine.no"), width: "60px" },
-  { key: "structureType", title: t("common.structureType"), width: "120px" },
-  { key: "structureForm", title: t("common.structureForm"), width: "120px" },
-  {
-    key: "structureName",
-    title: t("columns.machine.structureName"),
-    width: "150px",
-  },
-  {
-    key: "structureTypeDetail",
-    title: t("columns.machine.structureTypeDetail"),
-    width: "120px",
-  },
-  { key: "formula", title: t("columns.machine.formula"), width: "100px" },
-  { key: "model3d", title: t("columns.machine.model3d"), width: "100px" },
-  { key: "revitModel", title: t("columns.machine.revitModel"), width: "120px" },
-  { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
+  { key: "no", title: "순번", width: "80px" },
+  { key: "model", title: "기계 모델명", width: "220px" },
+  { key: "d3", title: "3D 모델 (DTDX)", width: "220px" },
+  { key: "revit", title: "REVIT 모델", width: "220px" },
+  { key: "d2", title: "2D 심볼", width: "220px" },
+  { key: "etc", title: "…", width: "120px" },
 ];
 
-// 수정 관련 컬럼 제거
-
-// 등록 모드용 데이터
 const rows = ref([
   {
     id: 1,
     no: 1,
-    structureType: "기초",
-    structureForm: "직사각형",
-    structureName: "구조물명1",
-    structureTypeDetail: "RC",
-    formula: "계산식1",
-    model3d: "3D모델파일.dwg",
-    revitModel: "Revit모델.rvt",
-    remarks: "특이사항 없음",
+    model: "송풍기 A",
+    d3: "model_a.dtdx",
+    revit: "model_a.rvt",
+    d2: "symbol_a.svg",
+    etc: "비고1",
   },
   {
     id: 2,
     no: 2,
-    structureType: "벽체",
-    structureForm: "원형",
-    structureName: "구조물명2",
-    structureTypeDetail: "S",
-    formula: "계산식2",
-    model3d: "없음",
-    revitModel: "없음",
-    remarks: "검토 필요",
+    model: "송풍기 B",
+    d3: "model_b.dtdx",
+    revit: "model_b.rvt",
+    d2: "symbol_b.svg",
+    etc: "비고2",
   },
 ]);
-
-// 수정 관련 데이터 제거
 
 // watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
 watch(selectedMachineName, async (newValue, _oldValue) => {
@@ -298,7 +202,7 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
       // 3차 깊이별 공통코드 조회 API 호출
       await machineStore.fetchThirdDepth(newValue, 3);
 
-      // 1단계 완료 - 구조물 형태 활성화
+      // 1단계 완료 - 기계종분류 활성화
       isStep1Enabled.value = true;
     } catch (error) {
       console.error("3차 깊이별 공통코드 조회 실패:", error);
@@ -309,7 +213,7 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
 
 watch(selectedThirdDept, async (newValue, _oldValue) => {
   if (isStep1Enabled.value) {
-    // 구조물 형태가 변경되면 하위 단계들 초기화
+    // 기계종분류가 변경되면 하위 단계들 초기화
     selectedFourthDept.value = "";
     selectedFifthDept.value = "";
     isStep2Enabled.value = false;
@@ -335,7 +239,7 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
 
 watch(selectedFourthDept, async (newValue, _oldValue) => {
   if (isStep2Enabled.value) {
-    // 구조물명이 변경되면 하위 단계 초기화
+    // 기계유형이 변경되면 하위 단계 초기화
     selectedFifthDept.value = "";
     isStep3Enabled.value = false;
 
@@ -357,110 +261,129 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
   }
 });
 
-// 공통 검증 함수: 단위/구조물구분/구조물형태 필수 체크
+// 공통 검증 함수: 단위/기계명/기계종분류 필수 체크
 function validateBasicSelections(): boolean {
   if (!selectedUnit.value) {
     alert("단위를 선택해주세요.");
     return false;
   }
   if (!selectedMachineName.value) {
-    alert("구조물 구분을 선택해주세요.");
+    alert("기계명을 선택해주세요.");
     return false;
   }
   if (!selectedThirdDept.value) {
-    alert("구조물 형태를 선택해주세요.");
+    alert("기계종분류를 선택해주세요.");
     return false;
   }
 
-  // 구조물명 선택 validation
+  // 기계유형 선택 validation
   if (
     machineStore.fourthDepth &&
     machineStore.fourthDepth.length > 0 &&
     !selectedFourthDept.value
   ) {
-    alert("구조물명을 선택해주세요.");
+    alert("기계유형을 선택해주세요.");
     return false;
   }
 
-  // 구조물타입 선택 validation
+  // 기계유형분류 선택 validation
   if (
     machineStore.fifthDepth &&
     machineStore.fifthDepth.length > 0 &&
     !selectedFifthDept.value
   ) {
-    alert("구조물타입을 선택해주세요.");
+    alert("기계유형분류를 선택해주세요.");
     return false;
   }
 
   return true;
 }
-function onDeleteSelected() {
+
+// 버튼 핸들러들
+function onDownloadExcelTemplate() {
   if (!validateBasicSelections()) return;
-  // TODO: 선택된 항목 삭제 로직 구현
+  // TODO: 템플릿 다운로드 로직 연결
 }
 
-// 편집 모드 삭제 로직 제거
-
-// 파일 변경 핸들러들
-function handleFormulaFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
-      return;
-    }
-    formulaFileName.value = file.name;
-  }
-}
-
-function handleDtdFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
-      return;
-    }
-    dtdFileName.value = file.name;
-  }
-}
-
-function handleRevitFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
-      return;
-    }
-    revitFileName.value = file.name;
-  }
-}
-
-// 등록 함수
-function onRegister() {
+function onUploadExcel() {
   if (!validateBasicSelections()) return;
-
-  // 파일 첨부 validation
-  if (!formulaFileName.value) {
-    alert("3D 구조물 계산식 파일을 선택해주세요.");
-    return;
-  }
-  if (!dtdFileName.value) {
-    alert("3D 구조물 DTD모델 파일을 선택해주세요.");
-    return;
-  }
-  if (!revitFileName.value) {
-    alert("3D REVIT모델 파일을 선택해주세요.");
-    return;
-  }
-
-  // TODO: 등록 로직 구현
-  alert("구조물이 등록되었습니다.");
+  // 파일 선택 트리거
+  excelFileInput.value?.click();
 }
 
-// 수정 로직 제거 (StructureUpdateTab에서 처리)
+function onBulkUploadModels() {
+  if (!validateBasicSelections()) return;
+  // 파일 선택 트리거
+  bulkFileInput.value?.click();
+}
+
+// 엑셀 파일 변경 핸들러
+function handleExcelFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+
+  if (!file) {
+    excelFileName.value = "";
+    return;
+  }
+
+  // 확장자 검증
+  const allowed = [".xlsx", ".xls"];
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  if (!allowed.includes(ext)) {
+    alert("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.");
+    input.value = "";
+    excelFileName.value = "";
+    return;
+  }
+
+  // 크기 검증 (예: 10MB)
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    input.value = "";
+    excelFileName.value = "";
+    return;
+  }
+
+  excelFileName.value = file.name;
+
+  // TODO: 실제 파싱/업로드 로직 연결 (예: FormData 전송 또는 xlsx 파싱)
+}
+
+// 대량 업로드 파일 변경 핸들러
+function handleBulkFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+
+  if (!file) {
+    bulkFileName.value = "";
+    return;
+  }
+
+  // 확장자 검증
+  const allowed = [".zip", ".7z"];
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  if (!allowed.includes(ext)) {
+    alert("압축 파일(.zip, .7z)만 업로드 가능합니다.");
+    input.value = "";
+    bulkFileName.value = "";
+    return;
+  }
+
+  // 크기 검증 (예: 200MB)
+  const maxSize = 200 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    input.value = "";
+    bulkFileName.value = "";
+    return;
+  }
+
+  bulkFileName.value = file.name;
+
+  // TODO: 전송 로직 연결 (예: FormData로 업로드)
+}
 </script>
 
 <style scoped lang="scss">
@@ -698,33 +621,6 @@ $desktop: 1200px;
   }
 }
 
-.btn-update {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #2563eb;
-  }
-
-  &:active {
-    background: #1d4ed8;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-}
-
 .section-title {
   margin: 10px 0;
   font-weight: 600;
@@ -771,21 +667,6 @@ $desktop: 1200px;
 
   @media (max-width: $mobile) {
     gap: 6px;
-  }
-}
-
-.file-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-
-  .input {
-    flex: 1;
-  }
-
-  .btn-file {
-    flex-shrink: 0;
   }
 }
 

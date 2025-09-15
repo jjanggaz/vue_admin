@@ -4,11 +4,7 @@
     <div class="filter-bar">
       <div class="group-form inline">
         <span class="label required">⊙ {{ t("common.unit") }}</span>
-        <select
-          class="input select-sm"
-          v-model="selectedUnit"
-          :disabled="isRegistered"
-        >
+        <select class="input select-sm" v-model="selectedUnit" :disabled="true">
           <option value="">{{ t("common.select") }}</option>
           <option
             v-for="unit in machineStore.unitSystems"
@@ -24,7 +20,7 @@
         <select
           class="input select-md"
           v-model="selectedMachineName"
-          :disabled="isRegistered"
+          :disabled="true"
         >
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -40,7 +36,7 @@
         <span class="label required">⊙ {{ t("common.structureForm") }}</span>
         <select
           class="input select-sm"
-          :disabled="!isStep1Enabled"
+          :disabled="true"
           v-model="selectedThirdDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -57,7 +53,7 @@
         <span class="label">⊙ {{ t("columns.machine.structureName") }}</span>
         <select
           class="input select-sm"
-          :disabled="!isStep2Enabled"
+          :disabled="true"
           v-model="selectedFourthDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -76,7 +72,7 @@
         >
         <select
           class="input select-sm"
-          :disabled="!isStep3Enabled"
+          :disabled="true"
           v-model="selectedFifthDept"
         >
           <option value="">{{ t("common.select") }}</option>
@@ -159,28 +155,27 @@
           <button class="btn-file" @click="revitFileInput?.click()">
             파일 선택
           </button>
-          <button class="btn-register" @click="onRegister">등록</button>
+          <button class="btn-update" @click="onUpdate">수정</button>
         </div>
       </div>
     </div>
-
-    <!-- 등록시 테이블 -->
+    <!-- 수정시 테이블 -->
     <div class="section-header">
       <div class="section-title">
-        ⊙ {{ t("common.structure3DRegisterList") }}
+        ⊙ {{ t("common.structure3DFormulaVersionManagement") }}
       </div>
       <div class="section-actions">
         <button
           class="btn-outline btn-delete"
-          @click.prevent="onDeleteSelected"
+          @click.prevent="onDeleteSelectedEditMode"
         >
           삭제
         </button>
       </div>
     </div>
     <DataTable
-      :columns="columns"
-      :data="rows"
+      :columns="editModeColumns"
+      :data="editModeRows"
       :selectable="true"
       :selection-mode="'single'"
       :select-header-text="t('common.selectColumn')"
@@ -200,7 +195,7 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
-// 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
+// 수정 전용 컴포넌트로 사용 (등록 모드 관련 props 제거)
 
 const { t } = useI18n();
 const machineStore = useMachineStore();
@@ -212,7 +207,7 @@ const selectedUnit = ref("");
 const isStep1Enabled = ref(false); // 구조물 형태
 const isStep2Enabled = ref(false); // 구조물명
 const isStep3Enabled = ref(false); // 구조물타입
-const isRegistered = ref(false); // 등록 완료 상태
+// 등록 완료 상태 제거 (수정 전용)
 
 // 선택된 구조물 구분
 const selectedMachineName = ref("");
@@ -231,7 +226,10 @@ const dtdFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 
-const columns: TableColumn[] = [
+// 등록용 컬럼 제거
+
+// 수정 모드용 컬럼 (첨부 이미지 기준)
+const editModeColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px" },
   { key: "structureType", title: t("common.structureType"), width: "120px" },
   { key: "structureForm", title: t("common.structureForm"), width: "120px" },
@@ -245,16 +243,17 @@ const columns: TableColumn[] = [
     title: t("columns.machine.structureTypeDetail"),
     width: "120px",
   },
-  { key: "formula", title: t("columns.machine.formula"), width: "100px" },
-  { key: "model3d", title: t("columns.machine.model3d"), width: "100px" },
-  { key: "revitModel", title: t("columns.machine.revitModel"), width: "120px" },
+  { key: "formulaVersion", title: t("common.formulaVersion"), width: "120px" },
+  { key: "creationDate", title: t("common.creationDate"), width: "120px" },
+  { key: "appliedVersion", title: t("common.appliedVersion"), width: "120px" },
+  { key: "unit", title: t("common.unit"), width: "100px" },
   { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
 ];
 
-// 수정 관련 컬럼 제거
+// 등록용 데이터 제거
 
-// 등록 모드용 데이터
-const rows = ref([
+// 수정 모드용 데이터 (첨부 이미지 기준)
+const editModeRows = ref([
   {
     id: 1,
     no: 1,
@@ -262,9 +261,10 @@ const rows = ref([
     structureForm: "직사각형",
     structureName: "구조물명1",
     structureTypeDetail: "RC",
-    formula: "계산식1",
-    model3d: "3D모델파일.dwg",
-    revitModel: "Revit모델.rvt",
+    formulaVersion: "v1.0",
+    creationDate: "2024-01-15",
+    appliedVersion: "v1.0",
+    unit: "m",
     remarks: "특이사항 없음",
   },
   {
@@ -274,14 +274,26 @@ const rows = ref([
     structureForm: "원형",
     structureName: "구조물명2",
     structureTypeDetail: "S",
-    formula: "계산식2",
-    model3d: "없음",
-    revitModel: "없음",
+    formulaVersion: "v2.1",
+    creationDate: "2024-01-20",
+    appliedVersion: "v2.0",
+    unit: "m",
     remarks: "검토 필요",
   },
+  {
+    id: 3,
+    no: 3,
+    structureType: "기초",
+    structureForm: "원형",
+    structureName: "구조물명3",
+    structureTypeDetail: "RC",
+    formulaVersion: "v1.5",
+    creationDate: "2024-01-25",
+    appliedVersion: "v1.5",
+    unit: "m",
+    remarks: "최신 버전",
+  },
 ]);
-
-// 수정 관련 데이터 제거
 
 // watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
 watch(selectedMachineName, async (newValue, _oldValue) => {
@@ -394,12 +406,12 @@ function validateBasicSelections(): boolean {
 
   return true;
 }
-function onDeleteSelected() {
+// 등록 목록 삭제 로직 제거
+
+function onDeleteSelectedEditMode() {
   if (!validateBasicSelections()) return;
   // TODO: 선택된 항목 삭제 로직 구현
 }
-
-// 편집 모드 삭제 로직 제거
 
 // 파일 변경 핸들러들
 function handleFormulaFileChange(e: Event) {
@@ -438,8 +450,10 @@ function handleRevitFileChange(e: Event) {
   }
 }
 
-// 등록 함수
-function onRegister() {
+// 등록 함수 제거 (수정 전용)
+
+// 수정 함수
+function onUpdate() {
   if (!validateBasicSelections()) return;
 
   // 파일 첨부 validation
@@ -456,11 +470,9 @@ function onRegister() {
     return;
   }
 
-  // TODO: 등록 로직 구현
-  alert("구조물이 등록되었습니다.");
+  // TODO: 수정 로직 구현
+  alert("구조물이 수정되었습니다.");
 }
-
-// 수정 로직 제거 (StructureUpdateTab에서 처리)
 </script>
 
 <style scoped lang="scss">

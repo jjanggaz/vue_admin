@@ -387,69 +387,87 @@ export const useProcessStore = defineStore("process", () => {
     try {
       setLoading(true);
 
-      let requestData;
-
-      // 기본 검색 조건 구성
-      let baseRequestData: any = {};
-
-      // 1. searchProcessName.value != null 인 경우
-      if (searchProcessName.value != null) {
-        baseRequestData = {
-          search_field: "process_code",
-          search_value: searchProcessName.value,
-        };
+      // 조회조건에 따른 search_field와 search_value 설정
+      let searchField = "";
+      let searchValue = "";
+      
+      // 1. 공정구분만 선택된 경우
+      if (searchProcessType.value && !searchSubCategoryInput.value && !searchProcessName.value) {
+        searchField = "level2_code_key";
+        searchValue = searchProcessType.value;
       }
-      // 2. searchProcessName.value == null && searchSubCategoryInput.value != null 인 경우
-      else if (
-        searchProcessName.value == null &&
-        searchSubCategoryInput.value != null
-      ) {
-        baseRequestData = {
-          search_field: "level3_code_key",
-          search_value: searchSubCategoryInput.value,
-        };
+      // 2. 공정구분과 공정 중분류만 선택된 경우
+      else if (searchProcessType.value && searchSubCategoryInput.value && !searchProcessName.value) {
+        searchField = "level3_code_key";
+        searchValue = searchSubCategoryInput.value;
       }
-      // 3. searchProcessName.value == null && searchSubCategoryInput.value == null && searchProcessType.value != null 인 경우
-      else if (
-        searchProcessName.value == null &&
-        searchSubCategoryInput.value == null &&
-        searchProcessType.value != null
-      ) {
-        baseRequestData = {
-          search_field: "level2_code_key",
-          search_value: searchProcessType.value,
-        };
+      // 3. 공정구분, 공정 중분류, 공정명이 모두 선택된 경우
+      else if (searchProcessType.value && searchSubCategoryInput.value && searchProcessName.value) {
+        searchField = "process_code";
+        searchValue = searchProcessName.value;
       }
-      // 4. 모든 값이 null인 경우 - 기본 검색
+      // 기본값 (모든 조건이 없는 경우)
       else {
-        baseRequestData = {
-          search_field: "process_name",
-          search_value: "",
-        };
+        searchField = "process_code";
+        searchValue = searchProcessName.value || "";
       }
-
-      // 언어와 단위 정보 추가
-
-      requestData = {
-        ...baseRequestData,
+      
+      const requestData = {
+        search_field: searchField,
+        search_value: searchValue,
         language_code: searchLanguage.value,
         unit_system_code: searchUnit.value,
+        level2_code_key: searchProcessType.value,
+        level3_code_key: searchSubCategoryInput.value,
       };
 
-      const result = await request("/api/process/master/search", undefined, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      console.log("=== 조회조건 분석 ===");
+      console.log("공정구분:", searchProcessType.value);
+      console.log("공정 중분류:", searchSubCategoryInput.value);
+      console.log("공정명:", searchProcessName.value);
+      console.log("선택된 search_field:", searchField);
+      console.log("선택된 search_value:", searchValue);
+      
+      console.log("=== API 호출 시작 ===");
+      console.log("API URL:", "/api/process/master/search");
+      console.log("Request Body:", JSON.stringify(requestData));
+      
+      let result;
+      try {
+        result = await request("/api/process/master/search", undefined, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+        console.log("=== API 호출 성공 ===");
+      } catch (requestError) {
+        console.error("=== API 호출 실패 ===");
+        console.error("request 함수에서 에러 발생:", requestError);
+        throw requestError;
+      }
+      
+      console.log("=== API 호출 완료 ===");
+
+      // API 응답 디버깅
+      console.log("=== API 응답 디버깅 ===");
+      console.log("requestData:", requestData);
+      console.log("API 응답 result:", result);
+      console.log("result.success:", result?.success);
+      console.log("result.response:", result?.response);
+      console.log("result.response 타입:", typeof result?.response);
+      console.log("result.response 배열 여부:", Array.isArray(result?.response));
 
       // API 응답 구조 검증 및 안전한 처리
       if (result && result.success !== false) {
         let processDataArray = [];
 
-        // 응답 데이터 구조에 따른 처리
-        if (Array.isArray(result.response)) {
+        // 서버 응답 구조에 따른 처리
+        if (result.items && Array.isArray(result.items)) {
+          // 서버에서 직접 items 배열로 응답하는 경우
+          processDataArray = result.items;
+        } else if (Array.isArray(result.response)) {
           // 직접 배열로 응답이 온 경우
           processDataArray = result.response;
         } else if (
@@ -457,7 +475,7 @@ export const useProcessStore = defineStore("process", () => {
           result.response.items &&
           Array.isArray(result.response.items)
         ) {
-          // items 배열로 응답이 온 경우
+          // response.items 배열로 응답이 온 경우
           processDataArray = result.response.items;
         } else if (result.response && typeof result.response === "object") {
           // 단일 객체로 응답이 온 경우 배열로 변환
@@ -470,34 +488,39 @@ export const useProcessStore = defineStore("process", () => {
         if (processDataArray.length > 0) {
           // API 응답 데이터 구조 확인
           
-          processList.value = processDataArray.map((item: any) => ({
-            id:
-              item.id ||
-              item.process_id ||
-              item.process_code ||
-              `process_${Date.now()}_${Math.random()}`,
-            process_id: item.process_id || item.id || item.process_code || "",
-            process_type: item.level2_code_key || "",
-            process_type_nm: item.level2_code_value || "",
-            process_nm: item.process_name || "",
-            process_name: item.process_name || "", // 그리드에서 사용할 process_name 추가
-            sub_category: item.level3_code_key || "",
-            sub_category_nm: item.level3_code_value || "",
-            level3_code_key: item.level3_code_key || "", // 그리드에서 사용할 level3_code_key 추가
-            process_code: item.process_code || "",
-            process_symbol: item.symbol_uri || "📄",
-            symbol_id: item.symbol_id || null,
-            symbol_download: (() => {
-              const value = item.symbol_download || item.symbol_uri;
-              // null, undefined, 빈 문자열, '{}', 'null', 빈 객체 등의 경우 null 반환
-              if (!value || value === '' || value === '{}' || value === 'null' || value === 'undefined' || 
-                  (typeof value === 'object' && Object.keys(value).length === 0)) {
-                return null;
-              }
-              return value;
-            })(),
-            viewDetail: "",
-          }));
+          processList.value = processDataArray.map((item: any) => {
+            // process_info 객체에서 데이터 추출
+            const processInfo = item.process_info || item;
+            
+            return {
+              id:
+                processInfo.id ||
+                processInfo.process_id ||
+                processInfo.process_code ||
+                `process_${Date.now()}_${Math.random()}`,
+              process_id: processInfo.process_id || processInfo.id || processInfo.process_code || "",
+              process_type: processInfo.level2_code_key || "",
+              process_type_nm: processInfo.level2_code_value || "",
+              process_nm: processInfo.process_name || "",
+              process_name: processInfo.process_name || "", // 그리드에서 사용할 process_name 추가
+              sub_category: processInfo.level3_code_key || "",
+              sub_category_nm: processInfo.level3_code_value || "",
+              level3_code_key: processInfo.level3_code_key || "", // 그리드에서 사용할 level3_code_key 추가
+              process_code: processInfo.process_code || "",
+              process_symbol: processInfo.symbol_uri || "📄",
+              symbol_id: processInfo.symbol_id || null,
+              symbol_download: (() => {
+                const value = processInfo.symbol_download || processInfo.symbol_uri;
+                // null, undefined, 빈 문자열, '{}', 'null', 빈 객체 등의 경우 null 반환
+                if (!value || value === '' || value === '{}' || value === 'null' || value === 'undefined' || 
+                    (typeof value === 'object' && Object.keys(value).length === 0)) {
+                  return null;
+                }
+                return value;
+              })(),
+              viewDetail: "",
+            };
+          });
 
           totalCount.value = processList.value.length;
           totalPages.value = Math.ceil(totalCount.value / pageSize.value);
@@ -532,7 +555,11 @@ export const useProcessStore = defineStore("process", () => {
         throw new Error(errorMessage);
       }
     } catch (error: any) {
-      console.error("검색 중 예외 발생:", error);
+      console.error("=== 검색 중 예외 발생 ===");
+      console.error("에러 타입:", typeof error);
+      console.error("에러 객체:", error);
+      console.error("에러 메시지:", error?.message);
+      console.error("에러 스택:", error?.stack);
 
       // 오류 상세 정보 로깅
       if (error.response) {
@@ -574,26 +601,25 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
-  const searchProcessById = async (processId: string) => {
+  const searchProcessById = async (processCode: string) => {
     try {
       setLoading(true);
 
-      if (!processId || processId === "undefined" || processId === "null") {
+      if (!processCode || processCode === "undefined" || processCode === "null") {
         return null;
       }
 
-      // processId가 문자열이 아닌 경우 문자열로 변환
-      const validProcessId = String(processId).trim();
+      // processCode가 문자열이 아닌 경우 문자열로 변환
+      const validProcessCode = String(processCode).trim();
       
-      if (!validProcessId) {
+      if (!validProcessCode) {
         return null;
       }
 
       const requestData = {
-        search_field: "process_id",
-        search_value: validProcessId,
+        search_field: "process_code",
+        search_value: validProcessCode,
       };
-
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -648,7 +674,7 @@ export const useProcessStore = defineStore("process", () => {
 
           // 검색된 데이터를 화면 입력 필드에 설정
           setProcessDetail({
-            process_id: processData.process_id || processId,
+            process_id: processData.process_id || processCode,
             processType: processData.level2_code_key || null,
             subCategory: processData.level3_code_key || null,
             processName: processData.process_name || null,

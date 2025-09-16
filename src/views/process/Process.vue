@@ -384,7 +384,8 @@
           <ProcessDetail
             v-else
             :key="`process-detail-${selectedProcessId}`"
-            :process-id="String(selectedProcessId)"
+            :process-id="String(selectedProcessIdForApi || selectedProcessId)"
+            :process-code="String(selectedProcessId)"
             :is-register-mode="isRegisterMode"
             ref="processDetailRef"
             class="popup-mode"
@@ -502,6 +503,7 @@ const formulaFileInput = ref<HTMLInputElement | null>(null);
 const pfdFileInput = ref<HTMLInputElement | null>(null);
 const selectedProcessSymbolFile = ref<File | null>(null);
  const selectedProcessId = ref<string | undefined>(undefined);
+ const selectedProcessIdForApi = ref<string | undefined>(undefined);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
  const isComponentMounted = ref(false);
 
@@ -583,6 +585,7 @@ const handleRegist = () => {
   // ProcessDetail 모달을 공정 등록 모드로 열기
   isRegisterMode.value = true;
   selectedProcessId.value = 'new'; // 새 공정임을 나타내는 값
+  selectedProcessIdForApi.value = undefined; // API 호출용 ID 초기화
   isDetailModalOpen.value = true;
 };
 
@@ -1005,25 +1008,41 @@ const saveProcessRegistration = async () => {
 
 // 상세 보기 이동
 const viewDetail = (item: ProcessItem) => {
-  // process_id가 없으면 id를 사용
-  const processId = item.process_id || item.id;
+  // process_code와 process_id를 모두 사용하여 상세보기
+  const processCode = item.process_code;
+  const processId = item.process_id;
   
-  if (processId) {
-    selectedProcessId.value = processId;
+  if (processCode) {
+    selectedProcessId.value = processCode; // process_code를 저장
+    selectedProcessIdForApi.value = processId; // process_id를 API 호출용으로 저장
     isDetailModalOpen.value = true;
   }
 };
 
 const closeDetailModal = async () => {
-  isDetailModalOpen.value = false;
-  selectedProcessId.value = undefined;
-  isRegisterMode.value = false; // 등록 모드 초기화
+  console.log('=== closeDetailModal 함수 호출 시작 ===');
   
-  // 메인화면 그리드 재조회
   try {
-    await processStore.searchProcesses();
+    console.log('모달 닫기 시작');
+    isDetailModalOpen.value = false;
+    selectedProcessId.value = undefined;
+    selectedProcessIdForApi.value = undefined;
+    isRegisterMode.value = false; // 등록 모드 초기화
+    
+    console.log('모달 상태 초기화 완료');
+    
+    // 메인화면 그리드 재조회
+    try {
+      console.log('메인화면 그리드 재조회 시작');
+      await processStore.searchProcesses();
+      console.log('메인화면 그리드 재조회 완료');
+    } catch (error) {
+      console.error('메인화면 그리드 재조회 실패:', error);
+    }
+    
+    console.log('=== closeDetailModal 함수 호출 완료 ===');
   } catch (error) {
-    console.error('메인화면 그리드 재조회 실패:', error);
+    console.error('closeDetailModal 함수 실행 중 오류:', error);
   }
 };
 
@@ -1188,6 +1207,11 @@ const handleSearch = async () => {
       processStoreUnit: processStore.searchUnit
     });
     
+    // processStore 함수 존재 여부 확인
+    console.log("processStore.setSearchLanguage 타입:", typeof processStore.setSearchLanguage);
+    console.log("processStore.setSearchUnit 타입:", typeof processStore.setSearchUnit);
+    console.log("processStore 객체:", processStore);
+    
     if (typeof processStore.setSearchLanguage === 'function') {
       processStore.setSearchLanguage(selectedLanguage.value);
       processStore.setSearchUnit(selectedUnit.value);
@@ -1198,10 +1222,13 @@ const handleSearch = async () => {
       });
     } else {
       console.error("processStore.setSearchLanguage 또는 setSearchUnit 함수가 존재하지 않습니다.");
+      console.log("processStore에서 사용 가능한 함수들:", Object.keys(processStore));
       return;
     }
     
+    console.log("=== searchProcesses 호출 시작 ===");
     await processStore.searchProcesses();
+    console.log("=== searchProcesses 호출 완료 ===");
     
   } catch (error: any) {
     const errorMessage = error?.message || "검색 중 오류가 발생했습니다.";

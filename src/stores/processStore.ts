@@ -67,6 +67,8 @@ export interface PidItem {
   svgFile?: File;
   svgFileName?: string;
   svg_drawing_id?: string;
+  excel_file_name?: string;
+  svg_file_name?: string;
 }
 
 export interface PfdItem {

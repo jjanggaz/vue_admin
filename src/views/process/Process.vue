@@ -114,8 +114,9 @@
                 class="btn btn-primary btn-delete"
                 @click="handleDelete"
                 :disabled="processStore.selectedItems.length === 0"
+                :title="`선택된 항목: ${processStore.selectedItems.length}개`"
               >
-                {{ t("process.deleteSelected") }}
+                {{ t("process.deleteSelected") }} ({{ processStore.selectedItems.length }})
               </button>
             </div>
           </div>
@@ -628,19 +629,29 @@ const handleRegist = () => {
 
 
 const handleDelete = async () => {
+  console.log('=== 삭제 버튼 클릭 ===');
+  console.log('selectedItems.length:', processStore.selectedItems.length);
+  console.log('selectedItems:', processStore.selectedItems);
+  
   if (processStore.selectedItems.length === 0) {
+    console.log('선택된 항목이 없음');
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", {
-        count: processStore.selectedItems.length,
-      })
-    )
-  ) {
+  console.log('삭제 확인 대화상자 표시');
+  const confirmed = confirm(
+    t("messages.confirm.deleteItems", {
+      count: processStore.selectedItems.length,
+    })
+  );
+  
+  console.log('삭제 확인 결과:', confirmed);
+  
+  if (confirmed) {
     try {
+      console.log('삭제 처리 시작');
+      
       // 선택된 항목들의 process_id 추출
       const selectedProcessIds = processStore.selectedItems.map(
         (item) => item.process_id
@@ -664,11 +675,15 @@ const handleDelete = async () => {
         });
       });
 
+      console.log('processStore.deleteProcesses 호출 시작');
+      
       // processStore를 통한 삭제 처리
       const { successCount, failCount } = await processStore.deleteProcesses(
         selectedProcessIds,
         selectedSymbolIds
       );
+
+      console.log('삭제 처리 완료:', { successCount, failCount });
 
       if (failCount > 0) {
         alert(
@@ -677,10 +692,14 @@ const handleDelete = async () => {
       } else {
         alert(t("messages.success.deleted"));
       }
+      
+      console.log('삭제 후 그리드 새로고침');
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);
       alert(`삭제 처리 중 오류가 발생했습니다: ${error.message}`);
     }
+  } else {
+    console.log('삭제 취소됨');
   }
 };
 
@@ -1066,7 +1085,13 @@ const handleSortChange = (sortInfo: {
 
 // 선택된 항목 변경 핸들러
 const handleSelectionChange = (items: ProcessItem[]) => {
+  console.log('=== 그리드 선택 변경 ===');
+  console.log('선택된 항목 수:', items.length);
+  console.log('선택된 항목들:', items);
+  
   processStore.setSelectedItems(items);
+  
+  console.log('processStore.selectedItems 업데이트 완료:', processStore.selectedItems.length);
 };
 
 // 언어 및 단위 변경 핸들러

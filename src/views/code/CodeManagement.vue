@@ -200,9 +200,15 @@
               <input
                 id="code-high-code"
                 v-model="newCode.parent_key"
-                type="text"
+                type="hidden"
                 :placeholder="t('placeholder.codeHighCode')"
                 :disabled="true"
+              />
+              <input
+                id="code-level"
+                v-model="newCode.code_level"
+                type="hidden"
+                :placeholder="t('placeholder.codeLevel')"
               />
             </dd>
             <dt>{{ t("columns.code.code") }}</dt>
@@ -239,15 +245,6 @@
                 v-model="newCode.code_order"
                 type="number"
                 :placeholder="t('placeholder.codeOrder')"
-              />
-            </dd>
-            <dt>{{ t("columns.code.code_level") }}</dt>
-            <dd>
-              <input
-                id="code-level"
-                v-model="newCode.code_level"
-                type="text"
-                :placeholder="t('placeholder.codeLevel')"
               />
             </dd>
             <dt>{{ t("columns.code.usageStatus") }}</dt>
@@ -302,13 +299,13 @@
               <input
                 id="code_id"
                 v-model="newCode.code_id"
-                type="text"
+                type="hidden"
                 :disabled="isEditMode"
               />
               <input
                 id="code-high-code"
                 v-model="newCode.parent_key"
-                type="text"
+                type="hidden"
                 :placeholder="t('placeholder.codeHighCode')"
                 :disabled="isEditMode"
               />
@@ -339,6 +336,15 @@
                 v-model="newCode.code_value_en"
                 type="text"
                 :placeholder="t('placeholder.codeCodeName')"
+              />
+            </dd>
+            <dt>{{ t("columns.code.orderMovement") }}</dt>
+            <dd>
+              <input
+                id="code-order"
+                v-model="newCode.code_order"
+                type="number"
+                :placeholder="t('placeholder.codeOrder')"
               />
             </dd>
             <dt>{{ t("columns.code.usageStatus") }}</dt>
@@ -602,18 +608,18 @@ const tableColumns: TableColumn[] = [
     width: "150px",
     sortable: true,
   },
-  {
-    key: "code_order",
-    title: t("columns.code.orderMovement"),
-    width: "100px",
-    sortable: true,
-  },
-  {
-    key: "code_level",
-    title: t("columns.code.code_level"),
-    width: "100px",
-    sortable: true,
-  },
+  // {
+  //   key: "code_order",
+  //   title: t("columns.code.orderMovement"),
+  //   width: "100px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "code_level",
+  //   title: t("columns.code.code_level"),
+  //   width: "100px",
+  //   sortable: true,
+  // },
   {
     key: "is_active",
     title: t("columns.code.usageStatus"),
@@ -1070,8 +1076,9 @@ const handleDelete = async () => {
     try {
       const code_id = selectedItems.value[0].code_id;
 
-      const response = await codeStore.deleteCode(code_id);
-      console.log("삭제 응답:", response);
+      // const response = await codeStore.deleteCode(code_id);
+      // console.log("삭제 응답:", response);
+      console.log("삭제에 대한 API는 적용 안 함");
 
       // 성공 시 로컬 데이터에서 제거
       codeStore.removeLocalCode(code_id);

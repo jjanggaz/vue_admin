@@ -372,13 +372,21 @@
                 <span v-if="item.excelFileName || item.excel_file_name" class="selected-file">
                   {{ item.excel_file_name || item.excelFileName }}
                   <button 
-                    v-if="item.drawing_id && !item.drawing_id.startsWith('temp_pid_drawing_')" 
-                    @click="downloadExcel(item.drawing_id)" 
+                    v-if="(item.excel_file_name || item.excelFileName) && item.excel_drawing_id" 
+                    @click="downloadMappingExcel(item.excel_drawing_id, item.excel_file_name || item.excelFileName)" 
                     class="btn btn-sm btn-outline-primary download-btn"
-                    title="Excel 다운로드"
+                    title="매핑 Excel 다운로드"
                   >
                     <i class="fas fa-download"></i>
                   </button>
+                  <span 
+                    v-else-if="(item.excel_file_name || item.excelFileName) && !item.excel_drawing_id" 
+                    class="text-muted"
+                    style="font-size: 11px;"
+                    title="excel_drawing_id가 없어 다운로드할 수 없습니다"
+                  >
+                    (다운로드 불가)
+                  </span>
                 </span>
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
               </div>
@@ -396,21 +404,21 @@
                 <span v-if="item.svgFileName || item.svg_file_name" class="selected-file">
                   {{ item.svg_file_name || item.svgFileName }}
                   <button 
-                    v-if="item.svg_drawing_id && !item.svg_drawing_id.startsWith('temp_svg_drawing_')" 
-                    @click="downloadSvg(item.svg_drawing_id)" 
+                    v-if="(item.svg_file_name || item.svgFileName) && item.svg_drawing_id" 
+                    @click="downloadMappingSvg(item.svg_drawing_id, item.svg_file_name || item.svgFileName)" 
                     class="btn btn-sm btn-outline-primary download-btn"
-                    title="Svg 파일 다운로드"
+                    title="매핑 Svg 다운로드"
                   >
                     <i class="fas fa-download"></i>
                   </button>
-                  <button 
-                    v-else-if="(item.svg_file_name || item.svgFileName) && item.drawing_id && !item.drawing_id.startsWith('temp_pid_drawing_')" 
-                    @click="downloadPidSvg(item)" 
-                    class="btn btn-sm btn-outline-primary download-btn"
-                    title="P&ID SVG 도면 다운로드"
+                  <span 
+                    v-else-if="(item.svg_file_name || item.svgFileName) && !item.svg_drawing_id" 
+                    class="text-muted"
+                    style="font-size: 11px;"
+                    title="svg_drawing_id가 없어 다운로드할 수 없습니다"
                   >
-                    <i class="fas fa-download"></i>
-                  </button>
+                    (다운로드 불가)
+                  </span>
                 </span>
                 <span v-else class="no-file">{{ t("common.noFile") }}</span>
               </div>
@@ -1150,16 +1158,27 @@ const createFormulaAPI = async (processId: string, formulaName: string, formulaC
     
     console.log('createFormulaAPI 응답 수신:', response);
 
-    if (!response.success) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data = response;
+    console.log('createFormulaAPI 응답 데이터 구조 분석:', {
+      success: data.success,
+      status: data.status,
+      response: data.response,
+      responseStatus: data.response?.status,
+      responseMessage: data.response?.message
+    });
     
-    // API 응답에서 status가 'skipped'인 경우 처리
+    // API 응답에서 status가 'skipped'인 경우 처리 (중복 파일로 인한 건너뛰기)
     if (data.response && data.response.status === 'skipped') {
       console.warn('계산식이 이미 존재하여 건너뛰었습니다:', data.response.message);
+      console.log('중복된 계산식 정보:', data.response.data);
+      
+      // 중복된 파일이 있는 경우 실패로 처리 (최상위 success: true 무시)
       throw new Error(`계산식이 이미 존재합니다: ${data.response.message}`);
+    }
+    
+    // 일반적인 HTTP 에러 처리
+    if (!response.success) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     return data;
@@ -1523,14 +1542,22 @@ const handleComponentClick = (item: any, index: number) => {
 
 // P&ID 컴포넌트 버튼 클릭 핸들러
 const openPidComponentModal = async (item: any) => {
+  console.log('=== P&ID 컴포넌트 모달 열기 ===');
+  console.log('전달받은 item:', item);
+  console.log('item.drawing_id:', item.drawing_id);
+  console.log('item.current_file_drawing_id:', item.current_file_drawing_id);
+  
   // P&ID row가 저장된 상태인지 확인
   if (!isPidRowSaved(item)) {
     alert('P&ID 컴포넌트를 보려면 먼저 P&ID를 저장해주세요.');
     return;
   }
   
-  // drawing_id 저장
-  currentDrawingId.value = item.drawing_id || '';
+  // drawing_id 저장 (우선순위: current_file_drawing_id > drawing_id)
+  const drawingIdToUse = item.current_file_drawing_id || item.drawing_id || '';
+  console.log('사용할 drawing_id:', drawingIdToUse);
+  
+  currentDrawingId.value = drawingIdToUse;
   
   // 해당 row 선택
   selectedMappingPidItems.value = item;
@@ -1539,7 +1566,14 @@ const openPidComponentModal = async (item: any) => {
   selectedPidForComponent.value = item;
   
   // P&ID Components용 drawing_id 저장 (계속 사용하기 위해)
-  pidComponentDrawingId.value = item.drawing_id || '';
+  pidComponentDrawingId.value = drawingIdToUse;
+  
+  console.log('설정된 값들:', {
+    currentDrawingId: currentDrawingId.value,
+    pidComponentDrawingId: pidComponentDrawingId.value,
+    selectedPidForComponent: selectedPidForComponent.value
+  });
+  
   // P&ID 컴포넌트 섹션 표시
   showPidComponentSection.value = true;
   
@@ -2699,6 +2733,200 @@ const downloadPfd = async (drawingId: string) => {
 };
 
 // Excel 파일 다운로드 함수
+// 매핑 Svg 다운로드 함수 (svg_drawing_id 사용)
+const downloadMappingSvg = async (svgDrawingId: string, svgFileName?: string) => {
+  try {
+    console.log('=== 매핑 Svg 파일 다운로드 시작 ===');
+    console.log('svgDrawingId:', svgDrawingId);
+    console.log('svgFileName:', svgFileName);
+    
+    if (!svgDrawingId) {
+      console.error('svg_drawing_id가 없습니다. 매핑 Svg 다운로드를 할 수 없습니다.');
+      alert('매핑 Svg 파일을 다운로드할 수 없습니다. svg_drawing_id가 필요합니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드 URL 획득
+    const response = await fetch(`/api/process/drawing/download/${svgDrawingId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 응답을 JSON으로 파싱
+    const responseData = await response.json();
+    
+    console.log('매핑 Svg API 응답 전체 구조:', responseData);
+    
+    // response_body 파싱 (JSON 문자열을 객체로 변환)
+    let actualDownloadData = null;
+    if (responseData.response_body) {
+      try {
+        actualDownloadData = JSON.parse(responseData.response_body);
+        console.log('매핑 Svg response_body 파싱 결과:', actualDownloadData);
+      } catch (e) {
+        console.error('매핑 Svg response_body 파싱 실패:', e);
+      }
+    }
+    
+    // 실제 다운로드 URL과 파일 정보 추출
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
+    const fileInfo = actualDownloadData?.file_info;
+    
+    console.log('매핑 Svg 추출된 downloadUrl:', downloadUrl);
+    console.log('매핑 Svg 추출된 fileInfo:', fileInfo);
+    
+    // download_url이 있으면 실제 파일 다운로드
+    if (downloadUrl) {
+      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name > 기본값)
+      let fileName = 'mapping_svg_file.svg';
+      
+      console.log('매핑 Svg 파일명 추출 디버깅:');
+      console.log('- 파라미터 svgFileName:', svgFileName);
+      console.log('- fileInfo 존재 여부:', !!fileInfo);
+      console.log('- fileInfo.file_name 존재 여부:', !!(fileInfo && fileInfo.file_name));
+      console.log('- fileInfo.file_name 값:', fileInfo?.file_name);
+      
+      if (svgFileName) {
+        fileName = svgFileName;
+        console.log('파라미터에서 추출된 파일명:', fileName);
+      } else if (fileInfo && fileInfo.file_name) {
+        fileName = fileInfo.file_name;
+        console.log('fileInfo.file_name에서 추출된 파일명:', fileName);
+      } else {
+        console.log('파일명을 찾을 수 없음, 기본값 사용:', fileName);
+      }
+      
+      console.log('매핑 Svg 파일 다운로드 URL:', downloadUrl);
+      console.log('매핑 Svg 파일명:', fileName);
+      
+      // 직접 링크로 다운로드
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('매핑 Svg 파일 다운로드 완료:', fileName);
+      return;
+    } else {
+      throw new Error('다운로드 URL을 찾을 수 없습니다.');
+    }
+    
+  } catch (error: any) {
+    console.error('매핑 Svg 파일 다운로드 실패:', error);
+    alert(`매핑 Svg 파일 다운로드에 실패했습니다: ${error.message}`);
+  }
+};
+
+// 매핑 Excel 다운로드 함수 (excel_drawing_id 사용)
+const downloadMappingExcel = async (excelDrawingId: string, excelFileName?: string) => {
+  try {
+    console.log('=== 매핑 Excel 파일 다운로드 시작 ===');
+    console.log('excelDrawingId:', excelDrawingId);
+    console.log('excelFileName:', excelFileName);
+    
+    if (!excelDrawingId) {
+      console.error('excel_drawing_id가 없습니다. 매핑 Excel 다운로드를 할 수 없습니다.');
+      alert('매핑 Excel 파일을 다운로드할 수 없습니다. excel_drawing_id가 필요합니다.');
+      return;
+    }
+    
+    // API 호출하여 파일 다운로드 URL 획득
+    const response = await fetch(`/api/process/drawing/download/${excelDrawingId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'system_code': import.meta.env.VITE_SYSTEM_CODE,
+        'user_Id': localStorage.getItem("authUserId") || "",
+        'wai_lang': localStorage.getItem("wai_lang") || "ko",
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 응답을 JSON으로 파싱
+    const responseData = await response.json();
+    
+    console.log('매핑 Excel API 응답 전체 구조:', responseData);
+    
+    // response_body 파싱 (JSON 문자열을 객체로 변환)
+    let actualDownloadData = null;
+    if (responseData.response_body) {
+      try {
+        actualDownloadData = JSON.parse(responseData.response_body);
+        console.log('매핑 Excel response_body 파싱 결과:', actualDownloadData);
+      } catch (e) {
+        console.error('매핑 Excel response_body 파싱 실패:', e);
+      }
+    }
+    
+    // 실제 다운로드 URL과 파일 정보 추출
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
+    const fileInfo = actualDownloadData?.file_info;
+    
+    console.log('매핑 Excel 추출된 downloadUrl:', downloadUrl);
+    console.log('매핑 Excel 추출된 fileInfo:', fileInfo);
+    
+    // download_url이 있으면 실제 파일 다운로드
+    if (downloadUrl) {
+      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name > 기본값)
+      let fileName = 'mapping_excel_file.xlsx';
+      
+      console.log('매핑 Excel 파일명 추출 디버깅:');
+      console.log('- 파라미터 excelFileName:', excelFileName);
+      console.log('- fileInfo 존재 여부:', !!fileInfo);
+      console.log('- fileInfo.file_name 존재 여부:', !!(fileInfo && fileInfo.file_name));
+      console.log('- fileInfo.file_name 값:', fileInfo?.file_name);
+      
+      if (excelFileName) {
+        fileName = excelFileName;
+        console.log('파라미터에서 추출된 파일명:', fileName);
+      } else if (fileInfo && fileInfo.file_name) {
+        fileName = fileInfo.file_name;
+        console.log('fileInfo.file_name에서 추출된 파일명:', fileName);
+      } else {
+        console.log('파일명을 찾을 수 없음, 기본값 사용:', fileName);
+      }
+      
+      console.log('매핑 Excel 파일 다운로드 URL:', downloadUrl);
+      console.log('매핑 Excel 파일명:', fileName);
+      
+      // 직접 링크로 다운로드
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('매핑 Excel 파일 다운로드 완료:', fileName);
+      return;
+    } else {
+      throw new Error('다운로드 URL을 찾을 수 없습니다.');
+    }
+    
+  } catch (error: any) {
+    console.error('매핑 Excel 파일 다운로드 실패:', error);
+    alert(`매핑 Excel 파일 다운로드에 실패했습니다: ${error.message}`);
+  }
+};
+
 const downloadExcel = async (drawingId: string) => {
   try {
     console.log('=== Excel 파일 다운로드 시작 ===');
@@ -4141,8 +4369,23 @@ const handleFormulaSave = async () => {
     const hasChanges = await processFormulaChanges(processId);
     
     if (hasChanges) {
-    console.log('계산식 저장 완료');
-    alert('계산식이 저장되었습니다.');
+      console.log('계산식 저장 완료');
+      
+      // 저장 완료 후 그리드 상태 확인
+      console.log("=== 저장 완료 후 그리드 상태 확인 ===");
+      console.log("processStore.formulaList 길이:", processStore.formulaList.length);
+      console.log("processStore.formulaList 내용:", processStore.formulaList.map(item => ({
+        id: item.id,
+        registeredFormula: item.registeredFormula,
+        isSaved: item.isSaved,
+        file_name: item.file_name
+      })));
+      
+      // 계산식 그리드 새로고침 (저장된 데이터가 이미 그리드에 반영되어 있으므로 생략)
+      // await refreshFormulaData();
+      // console.log('계산식 그리드 새로고침 완료');
+      
+      alert('계산식 저장이 완료되었습니다.');
     } else {
       console.log('저장할 변경사항이 없습니다.');
       alert('저장할 계산식 변경사항이 없습니다.');
@@ -4175,13 +4418,25 @@ const processFormulaChanges = async (processId: string) => {
     const addedRows = processStore.formulaList.filter(currentItem => {
       // 새로 추가된 행은 id가 'formula_'로 시작하고 formula_id가 없는 경우
       if (currentItem.id.startsWith('formula_') && !currentItem.formula_id) {
+        console.log('새로 추가된 계산식 감지 (ID 기준):', currentItem.id);
         return true;
       }
+      
+      // isSaved가 false인 행은 새로 추가된 행으로 간주
+      if (currentItem.isSaved === false) {
+        console.log('새로 추가된 계산식 감지 (isSaved 기준):', currentItem.id);
+        return true;
+      }
+      
       // 기존 행이지만 formula_id가 있고 initialFormulaList에 없는 경우
       if (!currentItem.formula_id) return false;
-      return !processStore.initialFormulaList.some(initialItem => 
+      const isNewItem = !processStore.initialFormulaList.some(initialItem => 
         initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
       );
+      if (isNewItem) {
+        console.log('새로 추가된 계산식 감지 (formula_id 기준):', currentItem.formula_id);
+      }
+      return isNewItem;
     });
     
     console.log('계산식 변경사항 확인:', {
@@ -4190,6 +4445,21 @@ const processFormulaChanges = async (processId: string) => {
       initialCount: processStore.initialFormulaList.length,
       currentCount: processStore.formulaList.length
     });
+    
+    // 디버깅을 위한 상세 로그
+    console.log('=== 계산식 그리드 상세 분석 ===');
+    console.log('현재 formulaList:', processStore.formulaList.map(item => ({
+      id: item.id,
+      formula_id: item.formula_id,
+      registeredFormula: item.registeredFormula,
+      isSaved: item.isSaved
+    })));
+    console.log('초기 initialFormulaList:', processStore.initialFormulaList.map(item => ({
+      id: item.id,
+      formula_id: item.formula_id,
+      registeredFormula: item.registeredFormula,
+      isSaved: item.isSaved
+    })));
     
     // addedRows 상세 정보 로그
     if (addedRows.length > 0) {
@@ -4292,15 +4562,54 @@ const processFormulaChanges = async (processId: string) => {
         console.log("계산식 저장 상태 업데이트 완료");
         console.log("업데이트된 계산식 목록:", updatedFormulaList);
         
+        // 그리드 상태 확인
+        console.log("=== 그리드 상태 확인 ===");
+        console.log("processStore.formulaList 길이:", processStore.formulaList.length);
+        console.log("processStore.formulaList 내용:", processStore.formulaList.map(item => ({
+          id: item.id,
+          registeredFormula: item.registeredFormula,
+          isSaved: item.isSaved,
+          file_name: item.file_name
+        })));
+        
         // 실패한 계산식이 있는 경우 사용자에게 알림
         if (failedFormulas.length > 0) {
           const failedNames = failedFormulas.map(f => f.formula.registeredFormula).join(', ');
-          alert(`일부 계산식 저장에 실패했습니다:\n${failedNames}\n\n중복된 계산식이거나 오류가 발생했습니다.`);
+          const failedReasons = failedFormulas.map(f => f.error.message || f.error).join('\n');
+          alert(`일부 계산식 저장에 실패했습니다:\n${failedNames}\n\n실패 사유:\n${failedReasons}`);
         }
         
       } catch (error) {
         console.error("계산식 추가 실패:", error);
         throw error;
+      }
+    }
+    
+    // 추가된 행이 감지되지 않은 경우 대안 로직 실행
+    if (addedRows.length === 0 && processStore.formulaList.length > processStore.initialFormulaList.length) {
+      console.log('=== 추가된 행 감지 실패 - 대안 로직 실행 ===');
+      console.log('현재 행 수:', processStore.formulaList.length);
+      console.log('초기 행 수:', processStore.initialFormulaList.length);
+      
+      // 현재 행에서 초기 행에 없는 항목들을 찾기
+      const alternativeAddedRows = processStore.formulaList.filter(currentItem => {
+        // 초기 목록에 같은 ID나 formula_id가 없으면 새로 추가된 것으로 간주
+        const existsInInitial = processStore.initialFormulaList.some(initialItem => {
+          if (initialItem.id === currentItem.id) return true;
+          if (initialItem.formula_id && currentItem.formula_id && initialItem.formula_id === currentItem.formula_id) return true;
+          return false;
+        });
+        
+        if (!existsInInitial) {
+          console.log('대안 로직으로 새로 추가된 계산식 감지:', currentItem.id);
+          return true;
+        }
+        return false;
+      });
+      
+      if (alternativeAddedRows.length > 0) {
+        console.log('대안 로직으로 추가된 행 감지 성공:', alternativeAddedRows.length, '개');
+        addedRows.push(...alternativeAddedRows);
       }
     }
     
@@ -4314,12 +4623,24 @@ const processFormulaChanges = async (processId: string) => {
     const updatedFormulaList = JSON.parse(JSON.stringify(processStore.formulaList));
     processStore.setInitialFormulaList(updatedFormulaList);
     
+    // 초기값 업데이트 후 그리드 상태 재확인
+    console.log("=== 초기값 업데이트 후 그리드 상태 ===");
+    console.log("processStore.formulaList 길이:", processStore.formulaList.length);
+    console.log("processStore.initialFormulaList 길이:", processStore.initialFormulaList.length);
+    
     // 그리드 갱신을 위한 강제 리렌더링 트리거
     console.log('계산식 그리드 갱신 완료 - file_name 포함:', updatedFormulaList.map(item => ({
       id: item.id,
       formula_id: item.formula_id,
-      file_name: item.file_name
+      file_name: item.file_name,
+      isSaved: item.isSaved
     })));
+    
+    // 최종 그리드 상태 확인
+    console.log("=== 최종 그리드 상태 확인 ===");
+    console.log("processStore.formulaList 최종 길이:", processStore.formulaList.length);
+    console.log("processStore.initialFormulaList 최종 길이:", processStore.initialFormulaList.length);
+    console.log("processStore.formulaList 최종 내용:", processStore.formulaList);
     
     console.log('=== 계산식 변경사항 처리 완료 ===');
     return true;
@@ -4545,7 +4866,7 @@ const createNewProcess = async () => {
     }
     
     console.log('새 공정 생성 완료:', response);
-    alert('공정이 성공적으로 등록되었습니다.');
+    alert('공정이 성공적으로 등록되었습니다.\n계산식과 공정카드 그리드가 새로고침되었습니다.');
     
     // 생성된 공정 ID 저장
     if (response.response && response.response.data && response.response.data.response && response.response.data.response.process_id) {
@@ -4562,8 +4883,12 @@ const createNewProcess = async () => {
     await refreshPfdData();
     console.log("공정카드 데이터 로드 완료");
     
-    // 공정 등록 성공 후 메인화면 갱신 및 모달 닫기
-    emit('update-success');
+    // 계산식 데이터도 새로고침
+    await refreshFormulaData();
+    console.log("계산식 데이터 로드 완료");
+    
+    // 공정 등록 성공 후 창은 닫지 않고 그리드만 갱신
+    console.log("공정 등록 완료 - 그리드 갱신 완료");
     
   } catch (error: any) {
     console.error('새 공정 생성 실패:', error);
@@ -5392,6 +5717,42 @@ const refreshPfdData = async () => {
   }
 };
 
+// 계산식 데이터 새로고침 함수
+const refreshFormulaData = async () => {
+  try {
+    console.log('계산식 데이터 새로고침 시작...');
+    
+    const formulaResult = await searchFormulaAPI();
+    
+    if (formulaResult && formulaResult.response && Array.isArray(formulaResult.response)) {
+      console.log('계산식 API 응답 데이터:', formulaResult.response);
+      
+      const formulaItems = formulaResult.response.map((item: any, index: number) => {
+        return {
+          id: `existing_formula_${item.id || index}`,
+          formula_id: item.formula_id || item.id,
+          formula_name: item.formula_name || 'NONE',
+          formula_description: item.formula_description || '',
+          file_name: item.file_name || null,
+          _originalData: item // 원본 데이터 보존
+        };
+      });
+      
+      processStore.setFormulaList(formulaItems);
+      const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
+      processStore.setInitialFormulaList(initialFormulaData);
+      
+      console.log('계산식 데이터 새로고침 완료:', formulaItems.length, '개');
+    } else {
+      console.log('계산식 데이터가 없습니다.');
+      processStore.setFormulaList([]);
+      processStore.setInitialFormulaList([]);
+    }
+  } catch (error) {
+    console.error('계산식 데이터 새로고침 실패:', error);
+  }
+};
+
 const confirmMappingPid = async () => {
   try {
     console.log('P&ID 매핑 확인:', mappingPidList.value);
@@ -5606,9 +5967,19 @@ const confirmMappingPid = async () => {
       console.log('P&ID 삭제만 수행됨 - 저장할 새 데이터 없음');
       console.log('삭제된 항목 수:', deletedRows.length);
       console.log('저장할 새 데이터 수:', validMappings.length);
-      alert('P&ID 항목이 삭제되었습니다.');
+      alert('P&ID 항목이 삭제되었습니다.\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.');
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
       await refreshPfdData();
+      
+      // P&ID 그리드도 새로고침 (삭제된 항목들이 반영되도록)
+      console.log('=== P&ID 삭제 완료 - P&ID 그리드 새로고침 시작 ===');
+      if (currentPfdItemForMapping.value) {
+        // P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침
+        console.log('P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침');
+        await openMappingPidModal(currentPfdItemForMapping.value);
+        console.log('P&ID 그리드 새로고침 완료');
+      }
+      
       // P&ID Components 그리드 새로고침 - mappingPidList에서 최신 drawing_id 사용
       if (mappingPidList.value.length > 0) {
         const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
@@ -5885,7 +6256,7 @@ const confirmMappingPid = async () => {
             }
           });
           
-          alert(`P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.\n그리드가 갱신되었습니다.`);
+          alert(`P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.`);
           
           // PFD 아이템의 hasPidMapping 상태 업데이트
           if (currentPfdItemForMapping.value) {
@@ -5906,30 +6277,17 @@ const confirmMappingPid = async () => {
           await refreshPfdData();
           console.log('공정카드 그리드 새로고침 완료');
           
-          // P&ID 저장 성공 후 저장된 데이터로 그리드 업데이트 (API 재호출 대신)
-          console.log('P&ID 저장 성공 - 저장된 데이터로 그리드 업데이트');
+          // P&ID 그리드도 새로고침 (저장된 최신 데이터로 업데이트)
+          console.log('=== P&ID 저장 완료 - P&ID 그리드 새로고침 시작 ===');
+          if (currentPfdItemForMapping.value) {
+            // P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침
+            console.log('P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침');
+            await openMappingPidModal(currentPfdItemForMapping.value);
+            console.log('P&ID 그리드 새로고침 완료');
+          }
           
-          // 저장 성공한 항목들의 drawing_id 업데이트
-          successfulSaves.forEach((saveResponse, index) => {
-            const validMapping = validMappings[index];
-            if (saveResponse.response?.drawing_id && validMapping) {
-              const itemIndex = mappingPidList.value.findIndex(item => item.id === validMapping.id);
-              if (itemIndex !== -1) {
-                // 임시 drawing_id를 실제 drawing_id로 업데이트
-                if (!mappingPidList.value[itemIndex].drawing_id || mappingPidList.value[itemIndex].drawing_id.startsWith('temp_')) {
-                  mappingPidList.value[itemIndex].drawing_id = saveResponse.response.drawing_id;
-                  console.log('P&ID drawing_id 업데이트:', saveResponse.response.drawing_id);
-                }
-              }
-            }
-          });
-          
-          // 초기값 업데이트 (변경사항 반영)
-          const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
-          initialMappingPidList.value = updatedMappingPidList;
-          
+          // P&ID 저장 성공 - openMappingPidModal에서 그리드가 새로고침됨
           console.log('=== P&ID 저장 후 그리드 갱신 완료 ===');
-          console.log('P&ID 초기값 업데이트 완료:', updatedMappingPidList.length, '개');
         }
         
       } catch (error: any) {
@@ -6085,17 +6443,30 @@ const loadMappingPidList = async (pfdItem: any) => {
           // 매핑 Excel 파일명 추출 - detail 객체에서 가져오기
           const excelFileName = childDrawing.detail?.excel_file_name || childDrawing.excel_file_name || '';
           
+          // Excel drawing_id 추출 - detail 객체에서 가져오기
+          const excelDrawingId = childDrawing.detail?.excel_drawing_id || childDrawing.excel_drawing_id || null;
+          
           // SVG 도면 파일명 추출 - detail 객체에서 가져오기
           const svgFileName = childDrawing.detail?.svg_file_name || childDrawing.svg_file_name || '';
+          
+          // SVG drawing_id 추출 - detail 객체에서 가져오기
+          const svgDrawingId = childDrawing.detail?.svg_drawing_id || childDrawing.svg_drawing_id || null;
           
           console.log(`P&ID 아이템 ${index + 1} - 추출된 파일명들:`, {
             pidFileName,
             excelFileName,
             svgFileName,
+            excelDrawingId,
+            svgDrawingId,
+            excel_drawing_id_원본: childDrawing.excel_drawing_id,
+            svg_drawing_id_원본: childDrawing.svg_drawing_id,
+            detail_excel_drawing_id: childDrawing.detail?.excel_drawing_id,
+            detail_svg_drawing_id: childDrawing.detail?.svg_drawing_id,
             detail_svg_file_name: childDrawing.detail?.svg_file_name,
             detail_excel_file_name: childDrawing.detail?.excel_file_name,
             childDrawing_svg_file_name: childDrawing.svg_file_name,
-            childDrawing_excel_file_name: childDrawing.excel_file_name
+            childDrawing_excel_file_name: childDrawing.excel_file_name,
+            전체_childDrawing_객체: childDrawing
           });
           
           // drawing_id 설정
@@ -6115,8 +6486,8 @@ const loadMappingPidList = async (pfdItem: any) => {
             parent_drawing_id: drawingId,
             drawing_id: drawingId,
             symbol_id: childDrawing.symbol_id || null,
-            excel_drawing_id: childDrawing.excel_drawing_id || null,
-            svg_drawing_id: childDrawing.svg_drawing_id || null,
+            excel_drawing_id: excelDrawingId,
+            svg_drawing_id: svgDrawingId,
             current_file_drawing_id: childDrawing.detail?.current_file?.drawing_id || childDrawing.current_file?.drawing_id,
             file_id: childDrawing.detail?.current_file?.file_id || childDrawing.file_id,
             excel_file_name: excelFileName, // 매핑 Excel 파일명

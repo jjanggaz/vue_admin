@@ -3579,7 +3579,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         console.log('Excel 파일명 업데이트:', excelFile.name);
       }
       
-      alert(`Excel 파일 "${excelFile.name}"이 성공적으로 업로드되었습니다.\n사용된 API: ${apiEndpoint}`);
+      alert(`Excel 파일 "${excelFile.name}"이 성공적으로 업로드되었습니다.`);
     } else {
       console.error('❌ P&ID Excel 파일 업로드 실패:', response);
       console.error('실패 상세 정보:', {
@@ -3975,7 +3975,7 @@ const handlePfdSave = async () => {
       await refreshPfdData();
       console.log('PFD 그리드 새로고침 완료');
       
-      alert('공정카드가 저장되었습니다.\n그리드가 갱신되었습니다.');
+      alert('공정카드가 저장되었습니다.');
     } else {
       console.log('저장할 변경사항이 없습니다.');
       alert('변경사항이 없습니다.');
@@ -4875,7 +4875,7 @@ const createNewProcess = async () => {
     }
     
     console.log('새 공정 생성 완료:', response);
-    alert('공정이 성공적으로 등록되었습니다.\n계산식과 공정카드 그리드가 새로고침되었습니다.');
+    alert('공정이 성공적으로 등록되었습니다.');
     
     // 생성된 공정 ID 저장
     if (response.response && response.response.data && response.response.data.response && response.response.data.response.process_id) {
@@ -5976,12 +5976,12 @@ const confirmMappingPid = async () => {
       console.log('P&ID 삭제만 수행됨 - 저장할 새 데이터 없음');
       console.log('삭제된 항목 수:', deletedRows.length);
       console.log('저장할 새 데이터 수:', validMappings.length);
-      alert('P&ID 항목이 삭제되었습니다.\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.');
+      alert('P&ID 항목이 삭제되었습니다.');
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
       await refreshPfdData();
       
-      // P&ID 삭제 완료 후 공정카드 그리드의 P&ID 버튼 클릭 이벤트 시뮬레이션
-      console.log('=== P&ID 삭제 완료 - 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 시작 ===');
+      // P&ID 삭제 완료 후 그리드 상태 업데이트 (데이터 유지, DIV는 열린 상태 유지)
+      console.log('=== P&ID 삭제 완료 - 그리드 상태 업데이트 시작 (데이터 유지, DIV 열린 상태 유지) ===');
       if (currentPfdItemForMapping.value) {
         console.log('현재 PFD 아이템:', {
           id: currentPfdItemForMapping.value.id,
@@ -5989,18 +5989,17 @@ const confirmMappingPid = async () => {
           pfdFileName: currentPfdItemForMapping.value.pfdFileName
         });
         
-        // P&ID 그리드를 명시적으로 닫고 다시 열어서 완전히 새로고침
-        console.log('1단계: 기존 P&ID 그리드 닫기');
-        showPidListInMain.value = false;
+        // P&ID 삭제 성공 후 초기값 업데이트 (그리드 데이터는 유지)
+        console.log('1단계: P&ID 삭제 성공 후 초기값 업데이트');
         
-        // 잠깐 대기 (UI 업데이트 시간 확보)
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 현재 그리드 데이터를 초기값으로 설정 (삭제된 상태를 반영)
+        console.log('2단계: 현재 그리드 상태를 초기값으로 업데이트');
+        const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
+        initialMappingPidList.value = updatedMappingPidList;
         
-        // P&ID 버튼 클릭 이벤트와 동일한 동작 수행
-        console.log('2단계: P&ID 버튼 클릭 이벤트 시뮬레이션 - 완전히 새로운 그리드 로드');
-        await openMappingPidModal(currentPfdItemForMapping.value);
-        
-        console.log('3단계: P&ID 그리드 새로고침 완료');
+        console.log('3단계: P&ID 그리드 상태 업데이트 완료 (데이터 유지)');
+        console.log('업데이트된 초기값 길이:', initialMappingPidList.value.length);
+        console.log('현재 그리드 데이터 길이:', mappingPidList.value.length);
       }
       
       // P&ID Components 그리드 새로고침 - mappingPidList에서 최신 drawing_id 사용
@@ -6018,6 +6017,14 @@ const confirmMappingPid = async () => {
           console.log('P&ID가 모두 삭제되어 P&ID Components 섹션 닫기');
           closePidComponentSection();
         }
+        
+        // P&ID가 모두 삭제된 경우에만 P&ID DIV도 닫기
+        console.log('P&ID가 모두 삭제되어 P&ID DIV 닫기');
+        showPidListInMain.value = false;
+        currentPfdItemForMapping.value = null;
+        mappingPidList.value = [];
+        selectedMappingPidItems.value = [];
+        initialMappingPidList.value = [];
       }
       // P&ID 모달이 삭제되어 함수 호출 제거
       return;
@@ -6308,7 +6315,7 @@ const confirmMappingPid = async () => {
           } else if (skippedSaves.length > 0) {
             alertMessage = `P&ID 매핑 ${skippedSaves.length}개가 성공적으로 업데이트되었습니다.`;
           }
-          alertMessage += '\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.';
+          // 디버깅 관련 문구 제거 - 저장 완료 메시지만 표시
           
           alert(alertMessage);
           
@@ -6340,18 +6347,17 @@ const confirmMappingPid = async () => {
               pfdFileName: currentPfdItemForMapping.value.pfdFileName
             });
             
-            // P&ID 그리드를 명시적으로 닫고 다시 열어서 완전히 새로고침
-            console.log('1단계: 기존 P&ID 그리드 닫기');
-            showPidListInMain.value = false;
+            // P&ID 저장 성공 후 초기값 업데이트 (그리드 데이터는 유지)
+            console.log('1단계: P&ID 저장 성공 후 초기값 업데이트');
             
-            // 잠깐 대기 (UI 업데이트 시간 확보)
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // 현재 그리드 데이터를 초기값으로 설정 (저장된 상태를 반영)
+            console.log('2단계: 현재 그리드 상태를 초기값으로 업데이트');
+            const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
+            initialMappingPidList.value = updatedMappingPidList;
             
-            // P&ID 버튼 클릭 이벤트와 동일한 동작 수행
-            console.log('2단계: P&ID 버튼 클릭 이벤트 시뮬레이션 - 완전히 새로운 그리드 로드');
-            await openMappingPidModal(currentPfdItemForMapping.value);
-            
-            console.log('3단계: P&ID 그리드 새로고침 완료');
+            console.log('3단계: P&ID 그리드 상태 업데이트 완료 (데이터 유지)');
+            console.log('업데이트된 초기값 길이:', initialMappingPidList.value.length);
+            console.log('현재 그리드 데이터 길이:', mappingPidList.value.length);
             console.log('현재 P&ID 그리드 상태:', {
               showPidListInMain: showPidListInMain.value,
               mappingPidListLength: mappingPidList.value.length,
@@ -6361,7 +6367,7 @@ const confirmMappingPid = async () => {
             console.warn('⚠️ currentPfdItemForMapping.value가 없어서 P&ID 그리드를 새로고침할 수 없습니다.');
           }
           
-          console.log('=== P&ID 저장 후 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 완료 ===');
+          console.log('=== P&ID 저장 후 그리드 상태 업데이트 완료 (데이터 유지, DIV 열린 상태 유지) ===');
         }
         
       } catch (error: any) {

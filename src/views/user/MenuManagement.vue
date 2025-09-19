@@ -387,7 +387,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 500px;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
 }

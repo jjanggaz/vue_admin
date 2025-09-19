@@ -805,10 +805,6 @@ const designcondConcreteColumns: TableColumn[] = [
     justify-content: center;
     border-radius: 50%;
     transition: background-color 0.2s;
-
-    &:hover {
-      background-color: #e9ecef;
-    }
   }
 }
 

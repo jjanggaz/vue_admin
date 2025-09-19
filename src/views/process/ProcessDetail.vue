@@ -853,7 +853,7 @@ const mappingPidColumns: TableColumn[] = [
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false, width: "60px" },
-  { key: "pid_id", title: "P&ID ID", sortable: false, width: "120px" },
+  { key: "pid_id", title: "POC IN", sortable: false, width: "120px" },
   { key: "category", title: "구분 *", sortable: false, width: "100px" },
   { key: "middleCategory", title: "중분류 *", sortable: false, width: "120px" },
   { key: "smallCategory", title: "소분류 *", sortable: false, width: "120px" },
@@ -1609,6 +1609,252 @@ const loadPidComponentDataWithoutClear = async (pidItem: any) => {
   await loadPidComponentDataInternal(pidItem);
 };
 
+// component_hierachy 파싱 함수
+const parseComponentHierarchy = (hierarchyString: string) => {
+  console.log('=== component_hierachy 파싱 시작 ===');
+  console.log('입력 문자열:', hierarchyString);
+  
+  const result = {
+    level1_code_key: '',
+    level2_code_key: '',
+    level3_code_key: ''
+  };
+  
+  if (!hierarchyString) {
+    console.log('hierarchy 문자열이 비어있음');
+    return result;
+  }
+  
+  try {
+    // " | " 기준으로 각 레벨 분리
+    const levels = hierarchyString.split(' | ');
+    console.log('분리된 레벨들:', levels);
+    
+    levels.forEach((level, index) => {
+      console.log(`레벨 ${index + 1} 처리:`, level);
+      
+      // 각 레벨에서 코드키 추출: "(레벨X) CODE_KEY / 설명1 / 설명2" 형태
+      const match = level.match(/\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/.*$/);
+      if (match && match[1]) {
+        const codeKey = match[1];
+        console.log(`레벨 ${index + 1} 코드키 추출:`, codeKey);
+        
+        if (index === 0) {
+          result.level1_code_key = codeKey;
+        } else if (index === 1) {
+          result.level2_code_key = codeKey;
+        } else if (index === 2) {
+          result.level3_code_key = codeKey;
+        }
+      } else {
+        console.log(`레벨 ${index + 1} 코드키 추출 실패:`, level);
+      }
+    });
+    
+    console.log('파싱 완료 결과:', result);
+    
+  } catch (error) {
+    console.error('component_hierachy 파싱 중 오류:', error);
+  }
+  
+  console.log('=== component_hierachy 파싱 끝 ===');
+  return result;
+};
+
+// 로드된 데이터를 기반으로 select 박스 옵션들 자동 생성 함수
+const generateSelectOptionsFromLoadedData = async () => {
+  console.log('=== 로드된 데이터 기반 select 옵션 자동 생성 시작 ===');
+  
+  try {
+    // 로드된 컴포넌트들에서 고유한 값들 추출
+    const uniqueLevel1Codes = [...new Set(pidComponentList.value.map(item => item.level1_code_key).filter(Boolean))];
+    const uniqueLevel2Codes = [...new Set(pidComponentList.value.map(item => item.level2_code_key).filter(Boolean))];
+    const uniqueLevel3Codes = [...new Set(pidComponentList.value.map(item => item.level3_code_key).filter(Boolean))];
+    const uniqueEquipmentTypes = [...new Set(pidComponentList.value.map(item => item.component_type).filter(Boolean))];
+    
+    console.log('추출된 고유 코드들:', {
+      level1Codes: uniqueLevel1Codes,
+      level2Codes: uniqueLevel2Codes,
+      level3Codes: uniqueLevel3Codes,
+      equipmentTypes: uniqueEquipmentTypes
+    });
+    
+    // 중분류 옵션 생성 (level2_code_key 기반)
+    if (uniqueLevel2Codes.length > 0) {
+      console.log('중분류 옵션 생성 시작...');
+      
+      // 실제 중분류 옵션을 API에서 가져오는 대신, 로드된 데이터 기반으로 생성
+      const middleOptions = await Promise.all(uniqueLevel2Codes.map(async (code) => {
+        // 해당 코드의 상위 레벨 찾기
+        const parentCode = pidComponentList.value.find(item => item.level2_code_key === code)?.level1_code_key;
+        
+        if (parentCode) {
+          try {
+            const requestData = {
+              search_field: "parent_key",
+              search_value: parentCode,
+              order_by: "code_order",
+              order_direction: "asc",
+            };
+            
+            const response = await request('/api/process/code/search', undefined, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestData),
+            });
+            
+            if (response.success && response.response && Array.isArray(response.response)) {
+              return response.response.filter(item => item.code_key === code).map((item: any) => ({
+                value: item.code_key,
+                label: item.code_value,
+              }));
+            }
+          } catch (error) {
+            console.error(`중분류 ${code} API 호출 실패:`, error);
+          }
+        }
+        
+        // API 호출 실패 시 기본값 반환
+        return [{
+          value: code,
+          label: code
+        }];
+      }));
+      
+      // 중복 제거 및 평탄화
+      const flatMiddleOptions = middleOptions.flat().filter((option, index, self) => 
+        self.findIndex(o => o.value === option.value) === index
+      );
+      
+      middleCategoryOptions.value = [
+        { value: '', label: '선택하세요' },
+        ...flatMiddleOptions
+      ];
+      
+      console.log('중분류 옵션 생성 완료:', middleCategoryOptions.value);
+    }
+    
+    // 소분류 옵션 생성 (level3_code_key 기반)
+    if (uniqueLevel3Codes.length > 0) {
+      console.log('소분류 옵션 생성 시작...');
+      
+      const smallOptions = await Promise.all(uniqueLevel3Codes.map(async (code) => {
+        // 해당 코드의 상위 레벨 찾기
+        const parentCode = pidComponentList.value.find(item => item.level3_code_key === code)?.level2_code_key;
+        
+        if (parentCode) {
+          try {
+            const requestData = {
+              search_field: "parent_key",
+              search_value: parentCode,
+              order_by: "code_order",
+              order_direction: "asc",
+            };
+            
+            const response = await request('/api/process/code/search', undefined, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestData),
+            });
+            
+            if (response.success && response.response && Array.isArray(response.response)) {
+              return response.response.filter(item => item.code_key === code).map((item: any) => ({
+                value: item.code_key,
+                label: item.code_value,
+              }));
+            }
+          } catch (error) {
+            console.error(`소분류 ${code} API 호출 실패:`, error);
+          }
+        }
+        
+        // API 호출 실패 시 기본값 반환
+        return [{
+          value: code,
+          label: code
+        }];
+      }));
+      
+      // 중복 제거 및 평탄화
+      const flatSmallOptions = smallOptions.flat().filter((option, index, self) => 
+        self.findIndex(o => o.value === option.value) === index
+      );
+      
+      smallCategoryOptions.value = [
+        { value: '', label: '선택하세요' },
+        ...flatSmallOptions
+      ];
+      
+      console.log('소분류 옵션 생성 완료:', smallCategoryOptions.value);
+    }
+    
+    // 장비유형 옵션 생성 (component_type 기반)
+    if (uniqueEquipmentTypes.length > 0) {
+      console.log('장비유형 옵션 생성 시작...');
+      
+      const equipmentOptions = await Promise.all(uniqueEquipmentTypes.map(async (code) => {
+        // 해당 코드의 상위 레벨 찾기
+        const parentCode = pidComponentList.value.find(item => item.component_type === code)?.level3_code_key;
+        
+        if (parentCode) {
+          try {
+            const requestData = {
+              search_field: "parent_key",
+              search_value: parentCode,
+              order_by: "code_order",
+              order_direction: "asc",
+            };
+            
+            const response = await request('/api/process/code/search', undefined, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestData),
+            });
+            
+            if (response.success && response.response && Array.isArray(response.response)) {
+              return response.response.filter(item => item.code_key === code).map((item: any) => ({
+                value: item.code_key,
+                label: item.code_value,
+              }));
+            }
+          } catch (error) {
+            console.error(`장비유형 ${code} API 호출 실패:`, error);
+          }
+        }
+        
+        // API 호출 실패 시 기본값 반환
+        return [{
+          value: code,
+          label: code
+        }];
+      }));
+      
+      // 중복 제거 및 평탄화
+      const flatEquipmentOptions = equipmentOptions.flat().filter((option, index, self) => 
+        self.findIndex(o => o.value === option.value) === index
+      );
+      
+      equipmentTypeOptions.value = [
+        { value: '', label: '선택하세요' },
+        ...flatEquipmentOptions
+      ];
+      
+      console.log('장비유형 옵션 생성 완료:', equipmentTypeOptions.value);
+    }
+    
+  } catch (error) {
+    console.error('select 옵션 자동 생성 중 오류:', error);
+  }
+  
+  console.log('=== 로드된 데이터 기반 select 옵션 자동 생성 완료 ===');
+};
+
 // P&ID 컴포넌트 데이터 로드 내부 함수
 const loadPidComponentDataInternal = async (pidItem: any) => {
   
@@ -1661,15 +1907,53 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
       console.log('=== P&ID 컴포넌트 API 응답 결과 끝 ===');
       
       if (response && response.response && Array.isArray(response.response)) {
-        // 응답 데이터에 No 컬럼과 고유 ID 추가
-        const newComponents = response.response.map((item: any, index: number) => ({
-          ...item,
-          id: item.component_id || `loaded_comp_${Date.now()}_${index}`, // component_id를 id로 사용
-          no: pidComponentList.value.length + index + 1 // 기존 데이터 개수를 고려한 번호
-        }));
+        // 응답 데이터에 No 컬럼과 고유 ID 추가, component_hierachy 파싱
+        const newComponents = response.response.map((item: any, index: number) => {
+          // component_hierachy 파싱
+          const hierarchyData = parseComponentHierarchy(item.component_hierachy);
+          
+          console.log(`컴포넌트 ${index + 1} hierarchy 파싱 결과:`, {
+            원본: item.component_hierachy,
+            파싱결과: hierarchyData
+          });
+          
+          return {
+            ...item,
+            id: item.component_id || `loaded_comp_${Date.now()}_${index}`, // component_id를 id로 사용
+            no: pidComponentList.value.length + index + 1, // 기존 데이터 개수를 고려한 번호
+            // 파싱된 hierarchy 데이터 추가
+            level1_code_key: hierarchyData.level1_code_key,
+            level2_code_key: hierarchyData.level2_code_key,
+            level3_code_key: hierarchyData.level3_code_key,
+            // P&ID Components 그리드 select 박스용 매핑
+            category: hierarchyData.level1_code_key, // 구분
+            middleCategory: hierarchyData.level2_code_key, // 중분류
+            smallCategory: hierarchyData.level3_code_key, // 소분류
+            equipmentType: item.component_type // 장비유형
+          };
+        });
         
         // 기존 데이터에 새로운 데이터 추가
         pidComponentList.value = [...pidComponentList.value, ...newComponents];
+        
+        console.log('=== P&ID Components 그리드 데이터 최종 결과 ===');
+        console.log('총 컴포넌트 수:', pidComponentList.value.length);
+        pidComponentList.value.forEach((component, index) => {
+          if (component.category || component.middleCategory || component.smallCategory || component.equipmentType) {
+            console.log(`컴포넌트 ${index + 1} 매핑 정보:`, {
+              id: component.id,
+              구분_category: component.category,
+              중분류_middleCategory: component.middleCategory,
+              소분류_smallCategory: component.smallCategory,
+              장비유형_equipmentType: component.equipmentType,
+              원본_component_type: component.component_type
+            });
+          }
+        });
+        console.log('=== P&ID Components 그리드 데이터 최종 결과 끝 ===');
+        
+        // 로드된 데이터를 기반으로 select 박스 옵션들 자동 생성
+        await generateSelectOptionsFromLoadedData();
       }
     } catch (error) {
       console.log('=== P&ID 컴포넌트 API 호출 에러 ===');

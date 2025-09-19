@@ -2515,18 +2515,35 @@ const handlePidComponentSave = async () => {
           spare_quantityType: typeof item.spare_quantity
         });
         
-        const updateData = {
-          component_code: item.equipmentType, // 장비유형 코드
-          component_type: item.category, // 구분 코드 (중분류가 아닌 구분)
-          item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 label
+        // ProcessDetail 컴포넌트의 processId 가져오기
+        let processId: string;
+        if (props.isRegisterMode) {
+          processId = createdProcessId.value || '';
+        } else {
+          processId = props.processId || (route.params.id as string) || '';
+        }
+        
+        const componentData = {
+          process_id: processId, // ProcessDetail 컴포넌트 마운트 - processId
+          mapping_type: "PID_EXCEL", // 고정값
+          pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
+          component_type: item.equipmentType, // 장비유형 select의 code
           standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
-          spare_quantity: Number(item.spare_quantity) || 0 // 수량(예비)
+          spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
+          is_active: true // 고정값
         };
         
-        console.log(`항목 ${item.component_id} 수정 데이터:`, updateData);
-        console.log(`수량 값 확인 - standard_quantity: "${item.standard_quantity}", spare_quantity: "${item.spare_quantity}"`);
-        console.log(`파싱된 수량 값 - standard_quantity: ${updateData.standard_quantity}, spare_quantity: ${updateData.spare_quantity}`);
-        await updatePidComponentAPI(item.component_id, updateData);
+        console.log(`항목 ${item.component_id} 수정 데이터 (새로운 구조):`, componentData);
+        console.log(`매개변수 확인:`, {
+          process_id: componentData.process_id,
+          mapping_type: componentData.mapping_type,
+          pid_id: componentData.pid_id,
+          component_type: componentData.component_type,
+          standard_quantity: componentData.standard_quantity,
+          spare_quantity: componentData.spare_quantity,
+          is_active: componentData.is_active
+        });
+        await updatePidComponentAPI(item.component_id, componentData);
       }
       console.log('=== 기존 항목 수정 처리 완료 ===');
     }
@@ -2537,6 +2554,14 @@ const handlePidComponentSave = async () => {
       
       // UUID 형식 검증
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      // ProcessDetail 컴포넌트의 processId 가져오기
+      let processId: string;
+      if (props.isRegisterMode) {
+        processId = createdProcessId.value || '';
+      } else {
+        processId = props.processId || (route.params.id as string) || '';
+      }
       
       const componentData = createItems.map(item => {
         // UUID 형식 검증 (pid_id 필드 사용)
@@ -2549,16 +2574,14 @@ const handlePidComponentSave = async () => {
           throw new Error('P&ID ID가 올바른 UUID 형식이 아닙니다: ' + item.pid_id);
         }
         
-        // 임시 component_id 제거
-        const { component_id, ...itemWithoutTempId } = item;
-        
         return {
-          component_type: item.category, // 구분 code
-          component_code: item.equipmentType, // 장비유형 code
-          item_name: getEquipmentTypeName(item.equipmentType), // 장비유형 value
-          standard_quantity: parseInt(item.standard_quantity) || 0, // 수량(상용)
-          spare_quantity: parseInt(item.spare_quantity) || 0, // 수량(예비)
-          pid_id: item.pid_id // 그리드의 pid_id
+          process_id: processId, // ProcessDetail 컴포넌트 마운트 - processId
+          mapping_type: "PID_EXCEL", // 고정값
+          pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
+          component_type: item.equipmentType, // 장비유형 select의 code
+          standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
+          spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
+          is_active: true // 고정값
         };
       });
     
@@ -2571,6 +2594,15 @@ const handlePidComponentSave = async () => {
       console.log('신규 추가 API 요청 데이터:', requestData);
     console.log('JSON 변환된 요청 데이터:', JSON.stringify(requestData));
     
+    console.log('=== P&ID 컴포넌트 신규 추가 API 호출 시작 ===');
+    console.log('API 엔드포인트:', '/api/process/component/create');
+    console.log('요청 헤더:', {
+      'Content-Type': 'application/json',
+      'system_code': import.meta.env.VITE_SYSTEM_CODE,
+      'user_Id': localStorage.getItem("authUserId") || "",
+      'wai_lang': localStorage.getItem("wai_lang") || "ko"
+    });
+    
     // API 호출
     const response = await request('/api/process/component/create', undefined, {
       method: 'POST',
@@ -2580,11 +2612,32 @@ const handlePidComponentSave = async () => {
       body: JSON.stringify(requestData)
     });
     
-      console.log('신규 추가 API 응답 전체:', response);
+    console.log('=== P&ID 컴포넌트 신규 추가 API 응답 ===');
+    console.log('신규 추가 API 응답 전체:', response);
+    console.log('응답 성공 여부:', response.success);
+    console.log('응답 상태:', response.status);
+    console.log('응답 메시지:', response.message);
+    console.log('응답 데이터:', response.response);
+    
+    if (!response.success) {
+      console.error('=== P&ID 컴포넌트 신규 추가 API 실패 ===');
+      console.error('실패 상태:', response.status);
+      console.error('실패 메시지:', response.message);
+      console.error('실패 응답 데이터:', response.response);
       
-      if (!response.success) {
+      // 백엔드 오류 분석
+      if (response.status === 500 && response.message && response.message.includes('AttributeError')) {
+        console.error('🚨 백엔드 AttributeError 감지:');
+        console.error('- 오류 유형: current_user.user_id 접근 오류');
+        console.error('- 원인: current_user가 딕셔너리로 전달되었는데 객체 속성으로 접근 시도');
+        console.error('- 해결방안: 백엔드에서 current_user["user_id"] 또는 getattr() 사용 필요');
+        console.error('- 전송된 데이터:', JSON.stringify(requestData));
+        
+        throw new Error(`백엔드 오류: current_user.user_id 접근 실패\n백엔드 개발자에게 문의하세요.\n\n오류 세부사항:\n- 파일: process_pid_components.py:51\n- 원인: 'dict' object has no attribute 'user_id'\n- 해결: current_user['user_id'] 사용 필요`);
+      } else {
         throw new Error(`신규 추가 실패: ${response.message || '알 수 없는 오류'}`);
       }
+    }
       
       console.log('=== 신규 항목 추가 처리 완료 ===');
     }
@@ -2599,12 +2652,44 @@ const handlePidComponentSave = async () => {
     }
     console.log('P&ID 컴포넌트 저장 성공');
     
-    // 저장 성공 후 P&ID Components 그리드 새로고침
-    if (selectedPidForComponent.value) {
-      console.log('P&ID Components 그리드 새로고침 시작');
-      await loadPidComponentData(selectedPidForComponent.value);
-      console.log('P&ID Components 그리드 새로고침 완료');
+    // 저장 성공 후 그리드 상태 업데이트 (API 재호출 대신 저장된 데이터 반영)
+    console.log('P&ID Components 저장 성공 후 그리드 상태 업데이트');
+    
+    // 신규 추가된 항목들의 임시 ID를 실제 component_id로 업데이트
+    if (createItems.length > 0) {
+      console.log('신규 추가된 항목들의 상태 업데이트 시작');
+      
+      createItems.forEach((createItem, index) => {
+        const itemIndex = pidComponentList.value.findIndex(item => item.id === createItem.id);
+        if (itemIndex !== -1) {
+          // 저장 완료 상태로 표시
+          pidComponentList.value[itemIndex].isSaved = true;
+          console.log(`신규 항목 ${createItem.id} 저장 완료 상태로 업데이트`);
+        }
+      });
     }
+    
+    // 수정된 항목들의 상태 업데이트
+    if (updateItems.length > 0) {
+      console.log('수정된 항목들의 상태 업데이트 시작');
+      
+      updateItems.forEach((updateItem) => {
+        const itemIndex = pidComponentList.value.findIndex(item => item.component_id === updateItem.component_id);
+        if (itemIndex !== -1) {
+          // 저장 완료 상태로 표시
+          pidComponentList.value[itemIndex].isSaved = true;
+          console.log(`수정 항목 ${updateItem.component_id} 저장 완료 상태로 업데이트`);
+        }
+      });
+    }
+    
+    // 초기값 업데이트 (저장된 상태를 반영)
+    const updatedComponentList = JSON.parse(JSON.stringify(pidComponentList.value));
+    initialPidComponentList.value = updatedComponentList;
+    
+    console.log('P&ID Components 그리드 상태 업데이트 완료 (데이터 유지)');
+    console.log('현재 그리드 데이터 수:', pidComponentList.value.length);
+    console.log('업데이트된 초기값 데이터 수:', initialPidComponentList.value.length);
     
   } catch (error) {
     console.error('P&ID 컴포넌트 저장 실패:', error);
@@ -8176,11 +8261,13 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
   table-layout: fixed;
   width: 100%;
   min-width: 810px;
+  border-spacing: 0;
+  border-collapse: separate;
 }
 
 .pid-component-section .data-table th,
 .pid-component-section .data-table td {
-  padding: 8px 6px;
+  padding: 4px 3px;
   text-align: left;
   vertical-align: middle;
   white-space: nowrap;
@@ -8234,10 +8321,10 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
 /* 입력 필드 스타일 */
 .pid-component-section .form-control {
   width: 100%;
-  padding: 6px 8px;
-  font-size: 13px;
+  padding: 3px 5px;
+  font-size: 12px;
   border: 1px solid #ced4da;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* select 요소 스타일 */
@@ -8247,9 +8334,9 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 16px;
-  padding-right: 30px;
+  background-position: right 5px center;
+  background-size: 14px;
+  padding-right: 22px;
 }
 
 .pid-component-section select.form-control:focus {

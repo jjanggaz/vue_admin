@@ -3405,6 +3405,7 @@ const handleSvgFileSelected = (event: Event) => {
       
       // currentPidItemForSvg에 저장
       currentPidItemForSvg.value.svgFileName = file.name;
+      currentPidItemForSvg.value.svg_file_name = file.name; // API 응답 필드와 동기화
       currentPidItemForSvg.value.svgFile = file; // 실제 File 객체 저장
       currentPidItemForSvg.value.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
       
@@ -3412,9 +3413,17 @@ const handleSvgFileSelected = (event: Event) => {
       const itemIndex = mappingPidList.value.findIndex(pidItem => pidItem.id === currentPidItemForSvg.value.id);
       if (itemIndex !== -1) {
         mappingPidList.value[itemIndex].svgFileName = file.name;
+        mappingPidList.value[itemIndex].svg_file_name = file.name; // API 응답 필드와 동기화
         mappingPidList.value[itemIndex].svgFile = file;
         mappingPidList.value[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
-        console.log('Svg 파일이 mappingPidList에 업데이트됨:', file.name);
+        console.log('✅ Svg 파일이 mappingPidList에 업데이트됨:', {
+          index: itemIndex,
+          fileName: file.name,
+          itemId: mappingPidList.value[itemIndex].id,
+          hasFileObject: !!(mappingPidList.value[itemIndex] as any).svgFile
+        });
+      } else {
+        console.error('❌ mappingPidList에서 해당 항목을 찾을 수 없음:', currentPidItemForSvg.value.id);
       }
       
       // P&ID 그리드에서는 즉시 저장하지 않고 저장 버튼 클릭 시에만 처리
@@ -5971,13 +5980,27 @@ const confirmMappingPid = async () => {
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
       await refreshPfdData();
       
-      // P&ID 그리드도 새로고침 (삭제된 항목들이 반영되도록)
-      console.log('=== P&ID 삭제 완료 - P&ID 그리드 새로고침 시작 ===');
+      // P&ID 삭제 완료 후 공정카드 그리드의 P&ID 버튼 클릭 이벤트 시뮬레이션
+      console.log('=== P&ID 삭제 완료 - 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 시작 ===');
       if (currentPfdItemForMapping.value) {
-        // P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침
-        console.log('P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침');
+        console.log('현재 PFD 아이템:', {
+          id: currentPfdItemForMapping.value.id,
+          drawing_id: currentPfdItemForMapping.value.drawing_id,
+          pfdFileName: currentPfdItemForMapping.value.pfdFileName
+        });
+        
+        // P&ID 그리드를 명시적으로 닫고 다시 열어서 완전히 새로고침
+        console.log('1단계: 기존 P&ID 그리드 닫기');
+        showPidListInMain.value = false;
+        
+        // 잠깐 대기 (UI 업데이트 시간 확보)
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // P&ID 버튼 클릭 이벤트와 동일한 동작 수행
+        console.log('2단계: P&ID 버튼 클릭 이벤트 시뮬레이션 - 완전히 새로운 그리드 로드');
         await openMappingPidModal(currentPfdItemForMapping.value);
-        console.log('P&ID 그리드 새로고침 완료');
+        
+        console.log('3단계: P&ID 그리드 새로고침 완료');
       }
       
       // P&ID Components 그리드 새로고침 - mappingPidList에서 최신 drawing_id 사용
@@ -6177,6 +6200,7 @@ const confirmMappingPid = async () => {
                               svgFileChanged ? 'svg_only_change' : 'excel_only_change';
             console.log(`✅ ${svgFileChanged && excelFileChanged ? 'Excel/Svg' : svgFileChanged ? 'Svg' : 'Excel'} 파일만 변경됨 - 메인 P&ID API 호출 건너뛰기`);
             console.log('별도 Excel/Svg API만 호출되고 메인 P&ID API는 건너뜀');
+            console.log('⚠️ 중요: 이 경우에도 그리드 갱신은 실행되어야 함 (skipped: true로 표시)');
             return { success: true, skipped: true, reason: changeType };
           }
           
@@ -6230,13 +6254,32 @@ const confirmMappingPid = async () => {
         
         const results = await Promise.all(pidMappingPromises);
         const successfulSaves = results.filter(r => r && r.success);
+        const skippedSaves = results.filter(r => r && r.skipped);
         
         console.log('P&ID 매핑 저장 완료:', {
           total: results.length,
-          successfulSaves: successfulSaves.length
+          successfulSaves: successfulSaves.length,
+          skippedSaves: skippedSaves.length,
+          totalProcessed: successfulSaves.length + skippedSaves.length,
+          skippedReasons: skippedSaves.map(s => s.reason)
         });
         
-        if (successfulSaves.length > 0) {
+        // 건너뛴 저장에 대한 상세 로그
+        if (skippedSaves.length > 0) {
+          console.log('=== 건너뛴 저장 상세 정보 ===');
+          skippedSaves.forEach((skippedSave, index) => {
+            console.log(`건너뛴 저장 ${index + 1}:`, {
+              reason: skippedSave.reason,
+              success: skippedSave.success,
+              skipped: skippedSave.skipped
+            });
+          });
+        }
+        
+        // 성공한 저장이나 건너뛴 저장(Excel/Svg만 변경)이 있는 경우 그리드 갱신
+        const totalProcessedSaves = successfulSaves.length + skippedSaves.length;
+        
+        if (totalProcessedSaves > 0) {
           // API 응답에서 excel_drawing_id, svg_drawing_id 업데이트
           successfulSaves.forEach((saveResponse, index) => {
             const validMapping = validMappings[index];
@@ -6256,7 +6299,18 @@ const confirmMappingPid = async () => {
             }
           });
           
-          alert(`P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.`);
+          // 알림 메시지 생성
+          let alertMessage = '';
+          if (successfulSaves.length > 0 && skippedSaves.length > 0) {
+            alertMessage = `P&ID 매핑 ${successfulSaves.length}개가 저장되고, ${skippedSaves.length}개가 업데이트되었습니다.`;
+          } else if (successfulSaves.length > 0) {
+            alertMessage = `P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.`;
+          } else if (skippedSaves.length > 0) {
+            alertMessage = `P&ID 매핑 ${skippedSaves.length}개가 성공적으로 업데이트되었습니다.`;
+          }
+          alertMessage += '\n공정카드 그리드와 P&ID 그리드가 새로고침되었습니다.';
+          
+          alert(alertMessage);
           
           // PFD 아이템의 hasPidMapping 상태 업데이트
           if (currentPfdItemForMapping.value) {
@@ -6277,17 +6331,37 @@ const confirmMappingPid = async () => {
           await refreshPfdData();
           console.log('공정카드 그리드 새로고침 완료');
           
-          // P&ID 그리드도 새로고침 (저장된 최신 데이터로 업데이트)
-          console.log('=== P&ID 저장 완료 - P&ID 그리드 새로고침 시작 ===');
+          // P&ID 저장 완료 후 공정카드 그리드의 P&ID 버튼 클릭 이벤트 시뮬레이션
+          console.log('=== P&ID 저장 완료 - 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 시작 ===');
           if (currentPfdItemForMapping.value) {
-            // P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침
-            console.log('P&ID 버튼 클릭 이벤트 시뮬레이션으로 그리드 새로고침');
+            console.log('현재 PFD 아이템:', {
+              id: currentPfdItemForMapping.value.id,
+              drawing_id: currentPfdItemForMapping.value.drawing_id,
+              pfdFileName: currentPfdItemForMapping.value.pfdFileName
+            });
+            
+            // P&ID 그리드를 명시적으로 닫고 다시 열어서 완전히 새로고침
+            console.log('1단계: 기존 P&ID 그리드 닫기');
+            showPidListInMain.value = false;
+            
+            // 잠깐 대기 (UI 업데이트 시간 확보)
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // P&ID 버튼 클릭 이벤트와 동일한 동작 수행
+            console.log('2단계: P&ID 버튼 클릭 이벤트 시뮬레이션 - 완전히 새로운 그리드 로드');
             await openMappingPidModal(currentPfdItemForMapping.value);
-            console.log('P&ID 그리드 새로고침 완료');
+            
+            console.log('3단계: P&ID 그리드 새로고침 완료');
+            console.log('현재 P&ID 그리드 상태:', {
+              showPidListInMain: showPidListInMain.value,
+              mappingPidListLength: mappingPidList.value.length,
+              currentPfdItemForMapping: !!currentPfdItemForMapping.value
+            });
+          } else {
+            console.warn('⚠️ currentPfdItemForMapping.value가 없어서 P&ID 그리드를 새로고침할 수 없습니다.');
           }
           
-          // P&ID 저장 성공 - openMappingPidModal에서 그리드가 새로고침됨
-          console.log('=== P&ID 저장 후 그리드 갱신 완료 ===');
+          console.log('=== P&ID 저장 후 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 완료 ===');
         }
         
       } catch (error: any) {
@@ -6630,21 +6704,51 @@ const handleExcelFileSelected = (event: Event) => {
   if (target.files && target.files[0] && currentPfdItemForMapping.value) {
     const file = target.files[0];
     
+    console.log('Excel 파일 선택 시작:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      currentItem: currentPfdItemForMapping.value.id
+    });
+    
+    // Excel 파일 확장자 검증
+    const allowedExtensions = ['.xlsx', '.xls'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!allowedExtensions.includes(fileExtension)) {
+      alert('Excel 파일은 *.xlsx 또는 *.xls 형식만 선택 가능합니다.');
+      target.value = ''; // 파일 선택 초기화
+      return;
+    }
+    
     // currentPfdItemForMapping에 저장
     currentPfdItemForMapping.value.excelFileName = file.name;
+    currentPfdItemForMapping.value.excel_file_name = file.name; // API 응답 필드와 동기화
     currentPfdItemForMapping.value.excelFile = file; // 실제 File 객체 저장
     
     // mappingPidList에서 해당 항목을 찾아서 업데이트
     const itemIndex = mappingPidList.value.findIndex(item => item.id === currentPfdItemForMapping.value.id);
     if (itemIndex !== -1) {
       mappingPidList.value[itemIndex].excelFileName = file.name;
+      mappingPidList.value[itemIndex].excel_file_name = file.name; // API 응답 필드와 동기화
       mappingPidList.value[itemIndex].excelFile = file;
       mappingPidList.value[itemIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
-      console.log('Excel 파일이 mappingPidList에 업데이트됨:', file.name);
+      console.log('✅ Excel 파일이 mappingPidList에 업데이트됨:', {
+        index: itemIndex,
+        fileName: file.name,
+        itemId: mappingPidList.value[itemIndex].id,
+        hasFileObject: !!(mappingPidList.value[itemIndex] as any).excelFile
+      });
+    } else {
+      console.error('❌ mappingPidList에서 해당 항목을 찾을 수 없음:', currentPfdItemForMapping.value.id);
     }
     
-    console.log('Excel 파일 선택됨:', file.name);
-    console.log('현재 mappingPidList 상태:', mappingPidList.value);
+    console.log('Excel 파일 선택 완료:', file.name);
+    console.log('현재 mappingPidList 상태:', mappingPidList.value.map(item => ({
+      id: item.id,
+      excelFileName: item.excelFileName,
+      excel_file_name: item.excel_file_name,
+      hasFileObject: !!(item as any).excelFile
+    })));
   }
 };
 

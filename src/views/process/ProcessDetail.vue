@@ -1615,11 +1615,17 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
   // drawing_id가 있는 경우에만 API 호출
   if (pidItem.drawing_id) {
     try {
+      console.log('=== P&ID 컴포넌트 API 호출 시작 ===');
+      console.log('사용할 drawing_id:', pidItem.drawing_id);
+      
+      // 기존 API 엔드포인트 사용 (작동 확인됨)
       const requestData = {
         search_field: "pid_id",
         search_value: pidItem.drawing_id
       };
       
+      console.log('API 엔드포인트:', '/api/process/components/search');
+      console.log('요청 데이터:', requestData);
       
       const response = await request('/api/process/components/search', undefined, {
         method: 'POST',
@@ -1629,6 +1635,30 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
         body: JSON.stringify(requestData),
       });
       
+      console.log('=== P&ID 컴포넌트 API 응답 결과 ===');
+      console.log('전체 응답 객체:', response);
+      console.log('응답 성공 여부 (success):', response.success);
+      console.log('응답 HTTP 상태 (status):', response.status);
+      console.log('응답 메시지 (message):', response.message);
+      console.log('응답 데이터 (response):', response.response);
+      
+      if (response && response.response) {
+        console.log('응답 데이터 타입:', typeof response.response);
+        console.log('응답 데이터가 배열인지:', Array.isArray(response.response));
+        
+        if (Array.isArray(response.response)) {
+          console.log('응답 데이터 길이:', response.response.length);
+          console.log('응답 데이터 상세 내용:');
+          response.response.forEach((item, index) => {
+            console.log(`  컴포넌트 ${index + 1}:`, item);
+          });
+        } else {
+          console.log('응답 데이터 내용 (배열이 아님):', response.response);
+        }
+      } else {
+        console.log('응답 데이터가 없습니다.');
+      }
+      console.log('=== P&ID 컴포넌트 API 응답 결과 끝 ===');
       
       if (response && response.response && Array.isArray(response.response)) {
         // 응답 데이터에 No 컬럼과 고유 ID 추가
@@ -1642,7 +1672,14 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
         pidComponentList.value = [...pidComponentList.value, ...newComponents];
       }
     } catch (error) {
+      console.log('=== P&ID 컴포넌트 API 호출 에러 ===');
       console.error("P&ID 컴포넌트 데이터 로드 실패:", error);
+      console.log('에러 상세:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      console.log('=== P&ID 컴포넌트 API 호출 에러 끝 ===');
       pidComponentList.value = [];
     }
   } else {

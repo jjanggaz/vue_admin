@@ -167,41 +167,8 @@
               </div>
             </div>
           </template>
-          <template #cell-component="{ item, index }">
-            <button 
-              class="btn-component" 
-              :disabled="!item.isSaved"
-              @click="handleComponentClick(item, index)"
-              :title="!item.isSaved ? '계산식을 먼저 저장해주세요' : '컴포넌트 보기'"
-            >
-              컴포넌트
-            </button>
-          </template>
         </DataTable>
         
-        <!-- 컴포넌트 섹션 -->
-        <div v-if="showComponentSection" class="component-section">
-          <div class="tab-header">
-            <div class="grid-title">
-              <h4>컴포넌트 목록</h4>
-            </div>
-            <div class="tab-actions">
-              <button @click="closeComponentSection" class="btn btn-secondary">닫기</button>
-            </div>
-          </div>
-          
-          <DataTable
-            :columns="componentColumns"
-            :data="processStore.structList.map((item: any) => ({
-              id: item.id || '',
-              name: item.components || '',
-              type: item.type || '',
-              description: item.inputItem || '',
-              status: item.division || ''
-            }))"
-            :selectable="false"
-          />
-        </div>
 
         <!-- 공정카드 섹션 -->
         <div class="pfd-section">
@@ -502,7 +469,14 @@
               <span>{{ item.no || index + 1 }}</span>
             </template>
             <template #cell-pid_id="{ item }">
-              <span class="pid-id-display">{{ item.pid_id || '-' }}</span>
+              <input 
+                v-model.number="item.input_poc" 
+                type="number"
+                class="form-control"
+                placeholder="POC IN 입력"
+                min="0"
+                step="1"
+              />
             </template>
             <template #cell-category="{ item }">
               <select 
@@ -526,7 +500,7 @@
                 @change="handlePidComponentMiddleCategoryChange(item)"
               >
                 <option 
-                  v-for="option in middleCategoryOptions" 
+                  v-for="option in (item._middleCategoryOptions || middleCategoryOptions)" 
                   :key="option.value" 
                   :value="option.value"
                 >
@@ -541,7 +515,7 @@
                 @change="handlePidComponentSmallCategoryChange(item)"
               >
                 <option 
-                  v-for="option in smallCategoryOptions" 
+                  v-for="option in (item._smallCategoryOptions || smallCategoryOptions)" 
                   :key="option.value" 
                   :value="option.value"
                 >
@@ -555,7 +529,7 @@
                 class="form-control required"
               >
                 <option 
-                  v-for="option in equipmentTypeOptions" 
+                  v-for="option in (item._equipmentTypeOptions || equipmentTypeOptions)" 
                   :key="option.value" 
                   :value="option.value"
                 >
@@ -773,8 +747,6 @@ const showPidListInMain = ref(false);
 const showPfdSection = ref(false);
 
 // 컴포넌트 섹션 표시 상태
-const showComponentSection = ref(false);
-const selectedFormulaForComponent = ref<any>(null);
 
 // P&ID 컴포넌트 섹션 표시 여부
 const showPidComponentSection = ref(false);
@@ -808,13 +780,7 @@ const formulaColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "registeredFormula", title: "등록 계산식", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: false },
-  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
-  {
-    key: "component",
-    title: "컴포넌트",
-    width: "100px",
-    sortable: false,
-  },
+  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true }
 ];
 
 
@@ -1521,24 +1487,6 @@ const handleFormulaSelectionChange = () => {
 };
 
 // 컴포넌트 버튼 클릭 핸들러
-const handleComponentClick = (item: any, index: number) => {
-  
-  // 해당 row 선택
-  selectedFormulaItems.value = item;
-  
-  // 선택된 계산식 정보 저장
-  selectedFormulaForComponent.value = item;
-  
-  // 컴포넌트 섹션 표시
-  showComponentSection.value = true;
-  // 컴포넌트 섹션으로 스크롤
-  setTimeout(() => {
-    const componentSection = document.querySelector('.component-section');
-    if (componentSection) {
-      componentSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, 100);
-};
 
 // P&ID 컴포넌트 버튼 클릭 핸들러
 const openPidComponentModal = async (item: any) => {
@@ -1929,7 +1877,13 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
             category: hierarchyData.level1_code_key, // 구분
             middleCategory: hierarchyData.level2_code_key, // 중분류
             smallCategory: hierarchyData.level3_code_key, // 소분류
-            equipmentType: item.component_type // 장비유형
+            equipmentType: item.component_type, // 장비유형
+            // POC IN 항목을 input_poc로 매핑
+            input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
+            // 각 행별 개별 옵션 저장
+            _middleCategoryOptions: [],
+            _smallCategoryOptions: [],
+            _equipmentTypeOptions: []
           };
         });
         
@@ -1939,14 +1893,17 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
         console.log('=== P&ID Components 그리드 데이터 최종 결과 ===');
         console.log('총 컴포넌트 수:', pidComponentList.value.length);
         pidComponentList.value.forEach((component, index) => {
-          if (component.category || component.middleCategory || component.smallCategory || component.equipmentType) {
+          if (component.category || component.middleCategory || component.smallCategory || component.equipmentType || component.input_poc) {
             console.log(`컴포넌트 ${index + 1} 매핑 정보:`, {
               id: component.id,
+              POC_IN_input_poc: component.input_poc,
               구분_category: component.category,
               중분류_middleCategory: component.middleCategory,
               소분류_smallCategory: component.smallCategory,
               장비유형_equipmentType: component.equipmentType,
-              원본_component_type: component.component_type
+              원본_component_type: component.component_type,
+              수량상용: component.standard_quantity,
+              수량예비: component.spare_quantity
             });
           }
         });
@@ -1972,6 +1929,7 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
 
 // P&ID 컴포넌트 구분 변경 핸들러
 const handlePidComponentCategoryChange = async (item: any) => {
+  console.log('P&ID 컴포넌트 구분 변경:', item.category, '- 행 ID:', item.id);
   
   if (item.category) {
     try {
@@ -1983,6 +1941,7 @@ const handlePidComponentCategoryChange = async (item: any) => {
         order_direction: "asc",
       };
       
+      console.log('중분류 옵션 API 호출 - 행 ID:', item.id, '구분:', item.category);
       
       const response = await request('/api/process/code/search', undefined, {
         method: 'POST',
@@ -1999,34 +1958,43 @@ const handlePidComponentCategoryChange = async (item: any) => {
           label: item.code_value,
         }));
         
-        middleCategoryOptions.value = [
+        // 해당 행의 개별 옵션만 업데이트
+        item._middleCategoryOptions = [
           { value: '', label: '선택하세요' },
           ...subCategoryOptions
         ];
+        
+        console.log(`행 ${item.id} 중분류 옵션 업데이트:`, item._middleCategoryOptions);
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 중분류 옵션 로드 실패:", error);
       // 에러 발생 시 기본 옵션으로 설정
-      middleCategoryOptions.value = [
+      item._middleCategoryOptions = [
         { value: '', label: '선택하세요' }
       ];
     }
   } else {
     // 구분이 선택되지 않았을 때 중분류 옵션 초기화
-    middleCategoryOptions.value = [
+    item._middleCategoryOptions = [
       { value: '', label: '선택하세요' }
     ];
   }
   
-  // 하위 필드들 초기화
+  // 하위 필드들 초기화 (해당 행만)
   item.middleCategory = '';
   item.smallCategory = '';
   item.equipmentType = '';
+  
+  // 하위 옵션들도 초기화 (해당 행만)
+  item._smallCategoryOptions = [{ value: '', label: '선택하세요' }];
+  item._equipmentTypeOptions = [{ value: '', label: '선택하세요' }];
+  
+  console.log(`행 ${item.id} 구분 변경 완료 - 하위 필드들 초기화됨`);
 };
 
 // P&ID 컴포넌트 중분류 변경 핸들러
 const handlePidComponentMiddleCategoryChange = async (item: any) => {
-  console.log("P&ID 컴포넌트 중분류 변경:", item.middleCategory);
+  console.log("P&ID 컴포넌트 중분류 변경:", item.middleCategory, '- 행 ID:', item.id);
   
   if (item.middleCategory) {
     try {
@@ -2038,7 +2006,7 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
         order_direction: "asc",
       };
       
-      console.log("P&ID 컴포넌트 소분류 API 요청:", requestData);
+      console.log("소분류 옵션 API 호출 - 행 ID:", item.id, '중분류:', item.middleCategory);
       
       const response = await request('/api/process/code/search', undefined, {
         method: 'POST',
@@ -2058,34 +2026,40 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
         
         console.log("P&ID 컴포넌트 소분류 옵션 생성:", subCategoryOptions);
         
-        smallCategoryOptions.value = [
+        // 해당 행의 개별 옵션만 업데이트
+        item._smallCategoryOptions = [
           { value: '', label: '선택하세요' },
           ...subCategoryOptions
         ];
         
-        console.log("P&ID 컴포넌트 소분류 옵션 설정 완료:", smallCategoryOptions.value);
+        console.log(`행 ${item.id} 소분류 옵션 업데이트:`, item._smallCategoryOptions);
       } else {
         console.log("P&ID 컴포넌트 소분류 API 응답이 올바르지 않음");
-        smallCategoryOptions.value = [
+        item._smallCategoryOptions = [
           { value: '', label: '선택하세요' }
         ];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 소분류 옵션 로드 실패:", error);
-      smallCategoryOptions.value = [
+      item._smallCategoryOptions = [
         { value: '', label: '선택하세요' }
       ];
     }
   } else {
     // 중분류가 선택되지 않았을 때 소분류 옵션 초기화
-    smallCategoryOptions.value = [
+    item._smallCategoryOptions = [
       { value: '', label: '선택하세요' }
     ];
   }
   
-  // 하위 필드들 초기화
+  // 하위 필드들 초기화 (해당 행만)
   item.smallCategory = '';
   item.equipmentType = '';
+  
+  // 하위 옵션도 초기화 (해당 행만)
+  item._equipmentTypeOptions = [{ value: '', label: '선택하세요' }];
+  
+  console.log(`행 ${item.id} 중분류 변경 완료 - 하위 필드들 초기화됨`);
 };
 
 // P&ID 컴포넌트 소분류 변경 핸들러
@@ -2122,33 +2096,36 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
         
         console.log("P&ID 컴포넌트 장비유형 옵션 생성:", equipmentTypeOptionsData);
         
-        equipmentTypeOptions.value = [
+        // 해당 행의 개별 옵션만 업데이트
+        item._equipmentTypeOptions = [
           { value: '', label: '선택하세요' },
           ...equipmentTypeOptionsData
         ];
         
-        console.log("P&ID 컴포넌트 장비유형 옵션 설정 완료:", equipmentTypeOptions.value);
+        console.log(`행 ${item.id} 장비유형 옵션 업데이트:`, item._equipmentTypeOptions);
       } else {
         console.log("P&ID 컴포넌트 장비유형 API 응답이 올바르지 않음");
-        equipmentTypeOptions.value = [
+        item._equipmentTypeOptions = [
           { value: '', label: '선택하세요' }
         ];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 장비유형 옵션 로드 실패:", error);
-      equipmentTypeOptions.value = [
+      item._equipmentTypeOptions = [
         { value: '', label: '선택하세요' }
       ];
     }
   } else {
-    // 소분류가 선택되지 않았을 때 장비유형 옵션 초기화
-    equipmentTypeOptions.value = [
+    // 소분류가 선택되지 않았을 때 장비유형 옵션 초기화 (해당 행만)
+    item._equipmentTypeOptions = [
       { value: '', label: '선택하세요' }
     ];
   }
   
-  // 하위 필드 초기화
+  // 하위 필드 초기화 (해당 행만)
   item.equipmentType = '';
+  
+  console.log(`행 ${item.id} 소분류 변경 완료 - 하위 필드들 초기화됨`);
 };
 
 // 공정카드 버튼 클릭 핸들러
@@ -2177,12 +2154,6 @@ const handleProcessManagementClick = (item: any, index: number) => {
 
 
 // 컴포넌트 섹션 닫기
-const closeComponentSection = () => {
-  console.log('컴포넌트 섹션 닫기 버튼 클릭');
-  showComponentSection.value = false;
-  selectedFormulaForComponent.value = null;
-  console.log('컴포넌트 섹션 닫기 완료');
-};
 
 // P&ID 컴포넌트 섹션 닫기
 const closePidComponentSection = () => {
@@ -2239,12 +2210,17 @@ const addPidComponentRow = () => {
     component_id: `temp_comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 임시 component_id 생성
     no: pidComponentList.value.length + 1,
     pid_id: pidId, // P&ID 그리드에서 전달된 drawing_id 값 사용 (컬럼명과 일치)
+    input_poc: 0, // POC IN 항목 - 숫자 타입으로 초기화
     category: null, // null로 설정하여 기본 옵션 선택
     middleCategory: null,
     smallCategory: null,
     equipmentType: null,
     standard_quantity: '0', // 컬럼명과 일치하도록 수정
-    spare_quantity: '0' // 컬럼명과 일치하도록 수정
+    spare_quantity: '0', // 컬럼명과 일치하도록 수정
+    // 각 행별 개별 옵션 저장
+    _middleCategoryOptions: [{ value: '', label: '선택하세요' }],
+    _smallCategoryOptions: [{ value: '', label: '선택하세요' }],
+    _equipmentTypeOptions: [{ value: '', label: '선택하세요' }]
   };
   
   pidComponentList.value.push(newRow);
@@ -2528,6 +2504,7 @@ const handlePidComponentSave = async () => {
           mapping_type: "PID_EXCEL", // 고정값
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           component_type: item.equipmentType, // 장비유형 select의 code
+          input_poc: Number(item.input_poc) || 0, // POC IN 값
           standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true // 고정값
@@ -2539,6 +2516,7 @@ const handlePidComponentSave = async () => {
           mapping_type: componentData.mapping_type,
           pid_id: componentData.pid_id,
           component_type: componentData.component_type,
+          input_poc: componentData.input_poc,
           standard_quantity: componentData.standard_quantity,
           spare_quantity: componentData.spare_quantity,
           is_active: componentData.is_active
@@ -2579,6 +2557,7 @@ const handlePidComponentSave = async () => {
           mapping_type: "PID_EXCEL", // 고정값
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           component_type: item.equipmentType, // 장비유형 select의 code
+          input_poc: Number(item.input_poc) || 0, // POC IN 값
           standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true // 고정값
@@ -7842,11 +7821,6 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
 }
 
 
-.component-section {
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 2px solid #e9ecef;
-}
 
 .pfd-section {
   margin-top: 20px;

@@ -3,22 +3,8 @@
     <!-- Add Button -->
     <div class="action-bar">
       <div class="search-bar">
-        <!-- 조회조건: 언어, 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼 -->
+        <!-- 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼 -->
         <div class="search-row first-row">
-          <div class="group-form">
-            <label for="searchLanguage" class="label-title">{{ t("codeManagement.categories.language") }}</label>
-            <div class="form-item">
-              <select
-                id="searchLanguage"
-                v-model="selectedLanguage"
-                class="form-select"
-                @change="handleLanguageChange"
-              >
-                <option value="ko">국문</option>
-                <option value="en">영어</option>
-              </select>
-            </div>
-          </div>
           <div class="group-form">
             <label for="searchUnit" class="label-title">{{ t("codeManagement.categories.unit") }}</label>
             <div class="form-item">
@@ -174,15 +160,8 @@
           <div class="modal-body">
             <!-- 상단: 기본 정보 입력 -->
             <div class="form-section">
-              <!-- 첫 번째 줄: 언어, 단위 -->
+              <!-- 첫 번째 줄: 단위 -->
               <div class="form-row">
-                <div class="form-group">
-                  <label class="essential">{{ t("codeManagement.categories.language") }}</label>
-                  <select v-model="registForm.language" class="form-select">
-                    <option value="ko">국문</option>
-                    <option value="en">영어</option>
-                  </select>
-                </div>
                 <div class="form-group">
                   <label class="essential">{{ t("codeManagement.categories.unit") }}</label>
                   <select v-model="registForm.unit" class="form-select">
@@ -439,7 +418,6 @@ interface RegistForm {
   pidFile: File | null;
   pfdFile: File | null;
   excelFile: File | null;
-  language: string;
   unit: string;
 }
 
@@ -508,8 +486,7 @@ const selectedProcessSymbolFile = ref<File | null>(null);
  const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
  const isComponentMounted = ref(false);
 
-// 언어 및 단위 선택
-const selectedLanguage = ref<string>("ko");
+// 단위 선택
 const selectedUnit = ref<string>("METRIC");
 
 // 등록 폼 데이터
@@ -525,7 +502,6 @@ const registForm = ref<RegistForm>({
   pidFile: null,
   pfdFile: null,
   excelFile: null,
-  language: "ko",
   unit: "metric",
 });
 
@@ -605,7 +581,6 @@ const handleRegist = () => {
      pidFile: null,
      pfdFile: null,
      excelFile: null,
-     language: "ko",
      unit: "metric",
    };
    
@@ -875,7 +850,7 @@ const clearPfdFile = (row: FileUploadRow) => {
 const saveProcessRegistration = async () => {
   try {
     // 기본 정보 검증 (공정명도 필수 입력값)
-    if (!registForm.value.language || !registForm.value.unit || !registForm.value.processType || !registForm.value.processNm) {
+    if (!registForm.value.unit || !registForm.value.processType || !registForm.value.processNm) {
       alert('필수 항목을 입력해주세요.');
       return;
     }
@@ -981,7 +956,6 @@ const saveProcessRegistration = async () => {
 
     // API 호출을 위한 데이터 준비
     const requestData = {
-      language_code: registForm.value.language,
       unit_system_code: registForm.value.unit,
       process_code: processCode,
       process_name: processName,
@@ -1094,12 +1068,7 @@ const handleSelectionChange = (items: ProcessItem[]) => {
   console.log('processStore.selectedItems 업데이트 완료:', processStore.selectedItems.length);
 };
 
-// 언어 및 단위 변경 핸들러
-const handleLanguageChange = () => {
-  console.log('언어 변경:', selectedLanguage.value);
-  // 언어 변경 시 필요한 로직 추가
-};
-
+// 단위 변경 핸들러
 const handleUnitChange = () => {
   console.log('단위 변경:', selectedUnit.value);
   // 단위 변경 시 필요한 로직 추가
@@ -1224,29 +1193,24 @@ const handleRegistSubCategoryChange = () => {
 // 검색 기능 구현
 const handleSearch = async () => {
   try {
-    // 언어와 단위 정보를 processStore에 설정
-    console.log("검색 전 언어/단위 설정:", {
-      selectedLanguage: selectedLanguage.value,
+    // 단위 정보를 processStore에 설정
+    console.log("검색 전 단위 설정:", {
       selectedUnit: selectedUnit.value,
-      processStoreLanguage: processStore.searchLanguage,
       processStoreUnit: processStore.searchUnit
     });
     
     // processStore 함수 존재 여부 확인
-    console.log("processStore.setSearchLanguage 타입:", typeof processStore.setSearchLanguage);
     console.log("processStore.setSearchUnit 타입:", typeof processStore.setSearchUnit);
     console.log("processStore 객체:", processStore);
     
-    if (typeof processStore.setSearchLanguage === 'function') {
-      processStore.setSearchLanguage(selectedLanguage.value);
+    if (typeof processStore.setSearchUnit === 'function') {
       processStore.setSearchUnit(selectedUnit.value);
       
-      console.log("검색 후 언어/단위 설정:", {
-        processStoreLanguage: processStore.searchLanguage,
+      console.log("검색 후 단위 설정:", {
         processStoreUnit: processStore.searchUnit
       });
     } else {
-      console.error("processStore.setSearchLanguage 또는 setSearchUnit 함수가 존재하지 않습니다.");
+      console.error("processStore.setSearchUnit 함수가 존재하지 않습니다.");
       console.log("processStore에서 사용 가능한 함수들:", Object.keys(processStore));
       return;
     }
@@ -1317,19 +1281,16 @@ onMounted(async () => {
   try {
     console.log("=== Process.vue onMounted 시작 ===");
     console.log("processStore 상태 확인:", {
-      searchLanguage: processStore.searchLanguage,
       searchUnit: processStore.searchUnit,
-      searchLanguageType: typeof processStore.searchLanguage,
       searchUnitType: typeof processStore.searchUnit
     });
 
-    // 0. 초기 언어와 단위 설정
-    if (typeof processStore.setSearchLanguage === 'function') {
-      processStore.setSearchLanguage(selectedLanguage.value);
+    // 0. 초기 단위 설정
+    if (typeof processStore.setSearchUnit === 'function') {
       processStore.setSearchUnit(selectedUnit.value);
-      console.log("0. 초기 언어와 단위 설정 완료:", selectedLanguage.value, selectedUnit.value);
+      console.log("0. 초기 단위 설정 완료:", selectedUnit.value);
     } else {
-      console.error("processStore.setSearchLanguage 또는 setSearchUnit 함수가 존재하지 않습니다.");
+      console.error("processStore.setSearchUnit 함수가 존재하지 않습니다.");
     }
 
     // 1. 초기 공정구분 옵션 로드
@@ -1399,7 +1360,7 @@ onMounted(async () => {
       flex-wrap: wrap;
       
       &.first-row {
-        // 조회조건: 언어, 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
+        // 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
         flex-wrap: nowrap;
         
         .group-form {

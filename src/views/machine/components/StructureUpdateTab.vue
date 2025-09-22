@@ -2,21 +2,11 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
+      <!-- 1행: 구조물 타입(비활성), 3D 구조물 계산식, 3D DTD모델, 모델 썸네일 -->
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.unit") }}</span>
-        <select class="input select-sm" v-model="selectedUnit" :disabled="true">
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="unit in machineStore.unitSystems"
-            :key="unit.unit_system_id"
-            :value="unit.system_code.toLowerCase()"
-          >
-            {{ unit.system_name }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureType") }}</span>
+        <span class="label required"
+          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
+        >
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -33,69 +23,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureForm") }}</span>
-        <select
-          class="input select-sm"
-          :disabled="true"
-          v-model="selectedThirdDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.thirdDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ {{ t("columns.machine.structureName") }}</span>
-        <select
-          class="input select-sm"
-          :disabled="true"
-          v-model="selectedFourthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fourthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
-        >
-        <select
-          class="input select-sm"
-          :disabled="true"
-          v-model="selectedFifthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fifthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 비고</span>
-        <input
-          type="text"
-          class="input"
-          v-model="remarks"
-          placeholder="비고를 입력하세요"
-        />
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 계산식</span>
+        <span class="label required">⊙ 3D 구조물 계산식</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -116,7 +44,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 DTD모델</span>
+        <span class="label required">⊙ 3D 구조물 DTD모델</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -137,6 +65,29 @@
         </div>
       </div>
       <div class="group-form inline">
+        <span class="label required">⊙ 모델 썸네일</span>
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="thumbnailFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="thumbnailFileInput"
+            accept=".png,.jpg,.jpeg,.gif,.svg"
+            style="display: none"
+            @change="handleThumbnailFileChange"
+          />
+          <button class="btn-file" @click="thumbnailFileInput?.click()">
+            파일 선택
+          </button>
+        </div>
+      </div>
+
+      <!-- 2행: 3D REVIT모델, 비고 -->
+      <div class="group-form inline">
         <span class="label">⊙ 3D REVIT모델</span>
         <div class="file-input-wrapper">
           <input
@@ -155,8 +106,16 @@
           <button class="btn-file" @click="revitFileInput?.click()">
             파일 선택
           </button>
-          <button class="btn-update" @click="onUpdate">수정</button>
         </div>
+      </div>
+      <div class="group-form inline">
+        <span class="label">⊙ 비고</span>
+        <input
+          type="text"
+          class="input"
+          v-model="remarks"
+          placeholder="비고를 입력하세요"
+        />
       </div>
     </div>
     <!-- 수정시 테이블 -->
@@ -223,6 +182,8 @@ const formulaFileInput = ref<HTMLInputElement | null>(null);
 const formulaFileName = ref<string>("");
 const dtdFileInput = ref<HTMLInputElement | null>(null);
 const dtdFileName = ref<string>("");
+const thumbnailFileInput = ref<HTMLInputElement | null>(null);
+const thumbnailFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 
@@ -231,23 +192,16 @@ const revitFileName = ref<string>("");
 // 수정 모드용 컬럼 (첨부 이미지 기준)
 const editModeColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px" },
-  { key: "structureType", title: t("common.structureType"), width: "120px" },
-  { key: "structureForm", title: t("common.structureForm"), width: "120px" },
-  {
-    key: "structureName",
-    title: t("columns.machine.structureName"),
-    width: "150px",
-  },
   {
     key: "structureTypeDetail",
     title: t("columns.machine.structureTypeDetail"),
-    width: "120px",
+    width: "140px",
   },
   { key: "formulaVersion", title: t("common.formulaVersion"), width: "120px" },
   { key: "creationDate", title: t("common.creationDate"), width: "120px" },
   { key: "appliedVersion", title: t("common.appliedVersion"), width: "120px" },
   { key: "unit", title: t("common.unit"), width: "100px" },
-  { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
+  { key: "remarks", title: t("columns.machine.remarks"), width: "120px" },
 ];
 
 // 등록용 데이터 제거
@@ -438,6 +392,24 @@ function handleDtdFileChange(e: Event) {
   }
 }
 
+function handleThumbnailFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+  if (file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      return;
+    }
+    const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      return;
+    }
+    thumbnailFileName.value = file.name;
+  }
+}
+
 function handleRevitFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
@@ -465,14 +437,16 @@ function onUpdate() {
     alert("3D 구조물 DTD모델 파일을 선택해주세요.");
     return;
   }
-  if (!revitFileName.value) {
-    alert("3D REVIT모델 파일을 선택해주세요.");
+  if (!thumbnailFileName.value) {
+    alert("모델 썸네일 파일을 선택해주세요.");
     return;
   }
 
   // TODO: 수정 로직 구현
   alert("구조물이 수정되었습니다.");
 }
+
+defineExpose({ onUpdate });
 </script>
 
 <style scoped lang="scss">

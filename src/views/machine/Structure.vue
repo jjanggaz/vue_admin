@@ -4,20 +4,9 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
-          <label for="unit">{{ t("common.unit") }}</label>
-          <select id="unit" v-model="selectedUnit" class="form-select">
-            <option value="">{{ t("common.select") }}</option>
-            <option
-              v-for="unit in structureStore.unitSystems"
-              :key="unit.unit_system_id"
-              :value="unit.system_code.toLowerCase()"
-            >
-              {{ unit.system_name }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label for="structureType">{{ t("common.structureType") }}</label>
+          <label for="structureType">{{
+            t("columns.machine.structureTypeDetail")
+          }}</label>
           <select
             id="structureType"
             v-model="selectedStructureType"
@@ -35,32 +24,19 @@
           </select>
         </div>
         <div class="filter-item">
-          <label for="structureForm">{{ t("common.structureForm") }}</label>
-          <select
-            id="structureForm"
-            v-model="selectedStructureForm"
-            class="form-select"
-          >
+          <label for="unit">{{ t("common.unit") }}</label>
+          <select id="unit" v-model="selectedUnit" class="form-select">
             <option value="">{{ t("common.select") }}</option>
             <option
-              v-for="form in structureStore.thirdDepth"
-              :key="form.code_id"
-              :value="form.code_key"
+              v-for="unit in structureStore.unitSystems"
+              :key="unit.unit_system_id"
+              :value="unit.system_code.toLowerCase()"
             >
-              {{ form.code_value }}
+              {{ unit.system_name }}
             </option>
           </select>
         </div>
         <div class="filter-item">
-          <label for="search">{{ t("common.search") }}</label>
-          <input
-            type="text"
-            id="search"
-            :placeholder="t('placeholder.structureSearch')"
-            v-model="searchQueryInput"
-            @keyup.enter="handleSearch"
-            class="form-input"
-          />
           <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
@@ -104,18 +80,6 @@
       <template #cell-no="{ index }">
         {{ (currentPage - 1) * pageSize + index + 1 }}
       </template>
-
-      <!-- 기계타입 슬롯 -->
-      <template #cell-type="{ value }">
-        {{ t("common.machineType." + mapMachineType(value)) }}
-      </template>
-
-      <!-- 상세정보 액션 슬롯 -->
-      <template #cell-details="{ item }">
-        <button class="btn-view" @click.stop="openDetailModal(item)">
-          {{ t("common.view") }}
-        </button>
-      </template>
     </DataTable>
 
     <!-- 페이징 -->
@@ -142,63 +106,24 @@
         </div>
         <div class="modal-body">
           <template v-if="!isEditMode">
-            <StructureRegisterTab />
+            <StructureRegisterTab ref="registerTabRef" />
           </template>
           <template v-else>
-            <StructureUpdateTab />
+            <StructureUpdateTab ref="updateTabRef" />
           </template>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeRegistModal">
-            {{ t("common.close") }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 상세정보 모달 -->
-    <div v-if="isDetailModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%">
-        <div class="modal-header">
-          <h3>{{ t("common.detailInfo") }}</h3>
           <button
-            class="btn-close"
-            @click="closeDetailModal"
-            aria-label="Close"
+            v-if="!isEditMode"
+            class="btn btn-primary"
+            @click="onChildRegister"
           >
-            ×
+            {{ t("common.register") }}
           </button>
-        </div>
-        <div class="modal-body">
-          <div style="overflow-x: auto">
-            <!-- 상세정보 보기 모드: 테이블 2개 구성 -->
-            <template v-if="!isDetailEditMode">
-              <!-- 사양 테이블 -->
-              <DataTable
-                :columns="specTableColumns"
-                :data="specTableData"
-                :loading="false"
-                :selectable="false"
-                :stickyHeader="true"
-              />
-
-              <!-- 간격 -->
-              <div style="height: 16px" />
-
-              <!-- 단가/견적 테이블 -->
-              <DataTable
-                :columns="costTableColumns"
-                :data="costTableData"
-                :loading="false"
-                :selectable="false"
-                :stickyHeader="true"
-              />
-            </template>
-            <!-- 편집 모드 제거 -->
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeDetailModal">
+          <button v-else class="btn btn-primary" @click="onChildUpdate">
+            {{ t("common.edit") }}
+          </button>
+          <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
         </div>
@@ -218,6 +143,10 @@ import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
 const structureStore = useMachineStore();
+const registerTabRef = ref<InstanceType<typeof StructureRegisterTab> | null>(
+  null
+);
+const updateTabRef = ref<InstanceType<typeof StructureUpdateTab> | null>(null);
 
 // 모달 컴포넌트는 일반 컴포넌트로 변경됨
 
@@ -243,14 +172,6 @@ interface MachineItem {
   demandFactor?: string;
   totalWeight?: string;
   material?: string;
-  // 단가/견적 필드
-  unit_price?: string;
-  price_registered_at?: string;
-  estimate_price?: string;
-  estimated_at?: string;
-  execution_price?: string;
-  proposal_price?: string;
-  note?: string;
 }
 
 interface RegistForm {
@@ -264,51 +185,45 @@ interface RegistForm {
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
-    key: "structureType",
-    title: t("common.structureType"),
-    width: "120px",
-    sortable: true,
-  },
-  {
-    key: "structureForm",
-    title: t("common.structureForm"),
-    width: "120px",
-    sortable: true,
-  },
-  {
-    key: "structureName",
-    title: t("columns.machine.structureName"),
-    width: "150px",
-    sortable: true,
-  },
-  {
     key: "structureTypeDetail",
     title: t("columns.machine.structureTypeDetail"),
-    width: "120px",
-    sortable: true,
+    width: "140px",
+    sortable: false,
+  },
+  {
+    key: "unit",
+    title: t("common.unit"),
+    width: "100px",
+    sortable: false,
   },
   {
     key: "formula",
     title: t("columns.machine.formula"),
-    width: "100px",
-    sortable: true,
+    width: "120px",
+    sortable: false,
   },
   {
     key: "model3d",
     title: t("columns.machine.model3d"),
-    width: "100px",
-    sortable: true,
+    width: "160px",
+    sortable: false,
   },
   {
     key: "revitModel",
     title: t("columns.machine.revitModel"),
+    width: "140px",
+    sortable: false,
+  },
+  {
+    key: "createdAt",
+    title: t("common.creationDate"),
     width: "120px",
-    sortable: true,
+    sortable: false,
   },
   {
     key: "remarks",
     title: t("columns.machine.remarks"),
-    width: "100px",
+    width: "140px",
     sortable: false,
   },
 ];
@@ -318,11 +233,8 @@ const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
-const searchQueryInput = ref("");
-const searchQuery = ref("");
 const selectedUnit = ref("");
 const selectedStructureType = ref("");
-const selectedStructureForm = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newMachine = ref<RegistForm>({
@@ -331,141 +243,8 @@ const newMachine = ref<RegistForm>({
   type: "",
   description: "",
 });
-const isDetailModalOpen = ref(false);
-const detailItemData = ref<MachineItem | null>(null);
-// 편집 기능 제거로 관련 상태 제거
-const isDetailEditMode = ref(false);
-
-// 상세 모달용 - 사양 테이블 컬럼/데이터 (상단 표)
-const specTableColumns: TableColumn[] = [
-  { key: "code", title: t("columns.machine.mcId"), width: "120px" },
-  { key: "type", title: t("columns.machine.type"), width: "110px" },
-  { key: "company", title: t("columns.machine.company"), width: "120px" },
-  { key: "model", title: t("columns.machine.model"), width: "120px" },
-  { key: "capacity", title: t("columns.machine.capacity"), width: "110px" },
-  {
-    key: "capacityMax",
-    title: t("columns.machine.capacityMax"),
-    width: "110px",
-  },
-  {
-    key: "dischargePressure",
-    title: t("columns.machine.dischargePressure"),
-    width: "120px",
-  },
-  {
-    key: "dischargeDiameter",
-    title: t("columns.machine.dischargeDiameter"),
-    width: "120px",
-  },
-  { key: "power", title: t("columns.machine.power"), width: "100px" },
-];
-const specTableData = computed(() => {
-  if (!detailItemData.value) return [];
-  const item = detailItemData.value;
-  return [
-    {
-      code: item.code,
-      type: t("common.machineType." + mapMachineType(item.type)),
-      company: item.company,
-      model: item.model,
-      capacity: item.capacity,
-      capacityMax: item.capacityMax,
-      dischargePressure: item.dischargePressure,
-      dischargeDiameter: item.dischargeDiameter,
-      power: item.power,
-    },
-  ];
-});
-
-// 상세 모달용 - 운전/전기/재질 + 단가/견적 (하단 표)
-const costTableColumns: TableColumn[] = [
-  {
-    key: "controlMethod",
-    title: t("columns.machine.controlMethod"),
-    width: "140px",
-  },
-  {
-    key: "ratedVoltage",
-    title: t("columns.machine.ratedVoltage"),
-    width: "120px",
-  },
-  { key: "efficiency", title: t("columns.machine.efficiency"), width: "110px" },
-  {
-    key: "powerFactor",
-    title: t("columns.machine.powerFactor"),
-    width: "110px",
-  },
-  {
-    key: "demandFactor",
-    title: t("columns.machine.demandFactor"),
-    width: "110px",
-  },
-  { key: "formula", title: t("columns.machine.formula"), width: "110px" },
-  {
-    key: "totalWeight",
-    title: t("columns.machine.totalWeight"),
-    width: "120px",
-  },
-  { key: "material", title: t("columns.machine.material"), width: "140px" },
-  { key: "unit_price", title: t("columns.cost.unitPrice"), width: "120px" },
-  {
-    key: "price_registered_at",
-    title: t("columns.cost.unitPriceRegisteredAt"),
-    width: "140px",
-  },
-  {
-    key: "estimate_price",
-    title: t("columns.cost.estimatePrice"),
-    width: "120px",
-  },
-  { key: "estimated_at", title: t("columns.cost.estimatedAt"), width: "120px" },
-  {
-    key: "execution_price",
-    title: t("columns.cost.executionPrice"),
-    width: "120px",
-  },
-  {
-    key: "proposal_price",
-    title: t("columns.cost.proposalPrice"),
-    width: "120px",
-  },
-  { key: "note", title: t("common.etc"), width: "160px" },
-];
-const costTableData = computed(() => {
-  if (!detailItemData.value) return [];
-  const item = detailItemData.value;
-  return [
-    {
-      controlMethod: item.controlMethod ?? "-",
-      ratedVoltage: item.ratedVoltage ?? "-",
-      efficiency: item.efficiency ?? "-",
-      powerFactor: item.powerFactor ?? "-",
-      demandFactor: item.demandFactor ?? "-",
-      formula: item.formula ?? "-",
-      totalWeight: item.totalWeight ?? "-",
-      material: item.material ?? "-",
-      unit_price: item.unit_price ?? "-",
-      price_registered_at: item.price_registered_at ?? "-",
-      estimate_price: item.estimate_price ?? "-",
-      estimated_at: item.estimated_at ?? "-",
-      execution_price: item.execution_price ?? "-",
-      proposal_price: item.proposal_price ?? "-",
-      note: item.note ?? "",
-    },
-  ];
-});
 
 const filteredMachineList = computed(() => {
-  if (searchQuery.value) {
-    return machineList.value.filter((machine) =>
-      Object.values(machine).some(
-        (v) =>
-          v &&
-          v.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    );
-  }
   return machineList.value;
 });
 
@@ -493,7 +272,6 @@ const handlePageChange = (page: number) => {
 
 const handleSearch = () => {
   selectedItems.value = [];
-  searchQuery.value = searchQueryInput.value;
   currentPage.value = 1;
 };
 
@@ -552,15 +330,12 @@ const handleDelete = () => {
   }
 };
 
-const openDetailModal = (item: MachineItem) => {
-  detailItemData.value = item;
-  isDetailModalOpen.value = true;
-  isDetailEditMode.value = false;
+const onChildRegister = () => {
+  registerTabRef.value?.onRegister?.();
 };
-const closeDetailModal = () => {
-  isDetailModalOpen.value = false;
-  detailItemData.value = null;
-  isDetailEditMode.value = false;
+
+const onChildUpdate = () => {
+  updateTabRef.value?.onUpdate?.();
 };
 
 // 편집 로직 제거됨
@@ -607,20 +382,9 @@ const loadData = () => {
   }));
 };
 
-// 기계타입 매핑 (한글 → 영문 키)
-function mapMachineType(val: string) {
-  if (val === "펌프" || val === "pump") return "pump";
-  if (val === "모터" || val === "motor") return "motor";
-  if (val === "컨베이어" || val === "conveyor") return "conveyor";
-  return val;
-}
-
-// 구조물 구분 변경 핸들러
+// 구조물 타입 변경 핸들러 (현재 연동 없음)
 const handleStructureTypeChange = async () => {
-  selectedStructureForm.value = ""; // 구조물 형태 초기화
-  if (selectedStructureType.value) {
-    await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
-  }
+  // 필요 시 선택 변경에 따른 추가 로직을 여기에 구현
 };
 
 onMounted(async () => {

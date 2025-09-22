@@ -319,7 +319,7 @@
     "projectManagement": "프로젝트 관리",
     "assetManagement": "유입종류 관리",
     "processManagement": "공정 관리",
-    "machineListManagement": "기기리스트 관리",
+    "machineListManagement": "공종별 관리",
     "userManagement": "사용자 관리",
     "modelManagement": "3D 모델 관리",
     "revitManagement": "Revit 관리",
@@ -330,7 +330,7 @@
     "machine": "기계",
     "codeManagement": "코드관리",
     "cost": "단가 관리",
-    "machineManagement": "기기리스트 관리"
+    "machineManagement": "공종별 관리"
   },
   "common": {
     "no": "순번",
@@ -822,7 +822,7 @@
     "asset": "유입종류 관리",
     "process": "공정 관리",
     "model": "3D모델 관리",
-    "machine": "기기리스트 관리",
+    "machine": "공종별 관리",
     "user": "사용자 관리",
     "code": "코드 관리",
     "cost": "단가 관리",
@@ -834,7 +834,7 @@
     "assetManagement": "유입종류 관리",
     "processManagement": "공정 관리",
     "modelManagement": "3D 모델 관리",
-    "machineManagement": "기기리스트 관리",
+    "machineManagement": "공종별 관리",
     "userManagement": "사용자 관리",
     "codeManagement": "코드 관리",
     "cost": "단가 관리",

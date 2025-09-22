@@ -2,25 +2,11 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
+      <!-- 1행: 구조물 타입, 3D 구조물 계산식, 3D DTD모델, 모델 썸네일 -->
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.unit") }}</span>
-        <select
-          class="input select-sm"
-          v-model="selectedUnit"
-          :disabled="isRegistered"
+        <span class="label required"
+          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
         >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="unit in machineStore.unitSystems"
-            :key="unit.unit_system_id"
-            :value="unit.system_code.toLowerCase()"
-          >
-            {{ unit.system_name }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureType") }}</span>
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -37,69 +23,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.structureForm") }}</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep1Enabled"
-          v-model="selectedThirdDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.thirdDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ {{ t("columns.machine.structureName") }}</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep2Enabled"
-          v-model="selectedFourthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fourthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label"
-          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
-        >
-        <select
-          class="input select-sm"
-          :disabled="!isStep3Enabled"
-          v-model="selectedFifthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fifthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 비고</span>
-        <input
-          type="text"
-          class="input"
-          v-model="remarks"
-          placeholder="비고를 입력하세요"
-        />
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 계산식</span>
+        <span class="label required">⊙ 3D 구조물 계산식</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -120,7 +44,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 3D 구조물 DTD모델</span>
+        <span class="label required">⊙ 3D 구조물 DTD모델</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -140,6 +64,30 @@
           </button>
         </div>
       </div>
+
+      <div class="group-form inline">
+        <span class="label required">⊙ 모델 썸네일</span>
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="thumbnailFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="thumbnailFileInput"
+            accept=".png,.jpg,.jpeg,.gif,.svg"
+            style="display: none"
+            @change="handleThumbnailFileChange"
+          />
+          <button class="btn-file" @click="thumbnailFileInput?.click()">
+            파일 선택
+          </button>
+        </div>
+      </div>
+
+      <!-- 2행: 3D REVIT모델, 비고 -->
       <div class="group-form inline">
         <span class="label">⊙ 3D REVIT모델</span>
         <div class="file-input-wrapper">
@@ -159,45 +107,25 @@
           <button class="btn-file" @click="revitFileInput?.click()">
             파일 선택
           </button>
-          <button class="btn-register" @click="onRegister">등록</button>
         </div>
       </div>
-    </div>
-
-    <!-- 등록시 테이블 -->
-    <div class="section-header">
-      <div class="section-title">
-        ⊙ {{ t("common.structure3DRegisterList") }}
+      <div class="group-form inline">
+        <span class="label">⊙ 비고</span>
+        <input
+          type="text"
+          class="input"
+          v-model="remarks"
+          placeholder="비고를 입력하세요"
+        />
       </div>
-      <div class="section-actions">
-        <button
-          class="btn-outline btn-delete"
-          @click.prevent="onDeleteSelected"
-        >
-          삭제
-        </button>
-      </div>
-    </div>
-    <DataTable
-      :columns="columns"
-      :data="rows"
-      :selectable="true"
-      :selection-mode="'single'"
-      :select-header-text="t('common.selectColumn')"
-      :show-select-all="false"
-    >
-    </DataTable>
-    <div class="pagination-container">
-      <Pagination :current-page="1" :total-pages="1" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
-import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
+import { ref } from "vue";
+
 import { useMachineStore } from "@/stores/machineStore";
 
 // 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
@@ -205,20 +133,10 @@ import { useMachineStore } from "@/stores/machineStore";
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
-// 단위 선택 상태
-const selectedUnit = ref("");
-
-// 단계별 enable 상태
-const isStep1Enabled = ref(false); // 구조물 형태
-const isStep2Enabled = ref(false); // 구조물명
-const isStep3Enabled = ref(false); // 구조물타입
 const isRegistered = ref(false); // 등록 완료 상태
 
-// 선택된 구조물 구분
+// 선택된 구조물 타입
 const selectedMachineName = ref("");
-const selectedThirdDept = ref("");
-const selectedFourthDept = ref("");
-const selectedFifthDept = ref("");
 
 // 비고 입력
 const remarks = ref("");
@@ -228,175 +146,21 @@ const formulaFileInput = ref<HTMLInputElement | null>(null);
 const formulaFileName = ref<string>("");
 const dtdFileInput = ref<HTMLInputElement | null>(null);
 const dtdFileName = ref<string>("");
+const thumbnailFileInput = ref<HTMLInputElement | null>(null);
+const thumbnailFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 
-const columns: TableColumn[] = [
-  { key: "no", title: t("columns.machine.no"), width: "60px" },
-  { key: "structureType", title: t("common.structureType"), width: "120px" },
-  { key: "structureForm", title: t("common.structureForm"), width: "120px" },
-  {
-    key: "structureName",
-    title: t("columns.machine.structureName"),
-    width: "150px",
-  },
-  {
-    key: "structureTypeDetail",
-    title: t("columns.machine.structureTypeDetail"),
-    width: "120px",
-  },
-  { key: "formula", title: t("columns.machine.formula"), width: "100px" },
-  { key: "model3d", title: t("columns.machine.model3d"), width: "100px" },
-  { key: "revitModel", title: t("columns.machine.revitModel"), width: "120px" },
-  { key: "remarks", title: t("columns.machine.remarks"), width: "100px" },
-];
-
-// 수정 관련 컬럼 제거
-
-// 등록 모드용 데이터
-const rows = ref([
-  {
-    id: 1,
-    no: 1,
-    structureType: "기초",
-    structureForm: "직사각형",
-    structureName: "구조물명1",
-    structureTypeDetail: "RC",
-    formula: "계산식1",
-    model3d: "3D모델파일.dwg",
-    revitModel: "Revit모델.rvt",
-    remarks: "특이사항 없음",
-  },
-  {
-    id: 2,
-    no: 2,
-    structureType: "벽체",
-    structureForm: "원형",
-    structureName: "구조물명2",
-    structureTypeDetail: "S",
-    formula: "계산식2",
-    model3d: "없음",
-    revitModel: "없음",
-    remarks: "검토 필요",
-  },
-]);
-
-// 수정 관련 데이터 제거
-
-// watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedMachineName, async (newValue, _oldValue) => {
-  // 모든 하위 단계들 초기화
-  selectedThirdDept.value = "";
-  selectedFourthDept.value = "";
-  selectedFifthDept.value = "";
-  isStep1Enabled.value = false;
-  isStep2Enabled.value = false;
-  isStep3Enabled.value = false;
-
-  if (newValue) {
-    try {
-      // 3차 깊이별 공통코드 조회 API 호출
-      await machineStore.fetchThirdDepth(newValue, 3);
-
-      // 1단계 완료 - 구조물 형태 활성화
-      isStep1Enabled.value = true;
-    } catch (error) {
-      console.error("3차 깊이별 공통코드 조회 실패:", error);
-      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
-    }
-  }
-});
-
-watch(selectedThirdDept, async (newValue, _oldValue) => {
-  if (isStep1Enabled.value) {
-    // 구조물 형태가 변경되면 하위 단계들 초기화
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 4);
-        if (response?.response && response.response.length > 0) {
-          isStep2Enabled.value = true;
-        } else {
-          isStep2Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("4차 깊이별 공통코드 조회 실패:", error);
-        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep2Enabled.value = false;
-      }
-    }
-  }
-});
-
-watch(selectedFourthDept, async (newValue, _oldValue) => {
-  if (isStep2Enabled.value) {
-    // 구조물명이 변경되면 하위 단계 초기화
-    selectedFifthDept.value = "";
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 5);
-        if (response?.response && response.response.length > 0) {
-          isStep3Enabled.value = true;
-        } else {
-          isStep3Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("5차 깊이별 공통코드 조회 실패:", error);
-        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep3Enabled.value = false;
-      }
-    }
-  }
-});
+// 단계/하위 선택 제거로 watch 로직 삭제
 
 // 공통 검증 함수: 단위/구조물구분/구조물형태 필수 체크
 function validateBasicSelections(): boolean {
-  if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
-    return false;
-  }
   if (!selectedMachineName.value) {
-    alert("구조물 구분을 선택해주세요.");
-    return false;
-  }
-  if (!selectedThirdDept.value) {
-    alert("구조물 형태를 선택해주세요.");
-    return false;
-  }
-
-  // 구조물명 선택 validation
-  if (
-    machineStore.fourthDepth &&
-    machineStore.fourthDepth.length > 0 &&
-    !selectedFourthDept.value
-  ) {
-    alert("구조물명을 선택해주세요.");
-    return false;
-  }
-
-  // 구조물타입 선택 validation
-  if (
-    machineStore.fifthDepth &&
-    machineStore.fifthDepth.length > 0 &&
-    !selectedFifthDept.value
-  ) {
-    alert("구조물타입을 선택해주세요.");
+    alert("구조물 타입을 선택해주세요.");
     return false;
   }
 
   return true;
-}
-function onDeleteSelected() {
-  if (!validateBasicSelections()) return;
-  // TODO: 선택된 항목 삭제 로직 구현
 }
 
 // 편집 모드 삭제 로직 제거
@@ -426,6 +190,24 @@ function handleDtdFileChange(e: Event) {
   }
 }
 
+function handleThumbnailFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+  if (file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      return;
+    }
+    const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
+    if (!allowed.includes(file.type)) {
+      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      return;
+    }
+    thumbnailFileName.value = file.name;
+  }
+}
+
 function handleRevitFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
@@ -451,16 +233,18 @@ function onRegister() {
     alert("3D 구조물 DTD모델 파일을 선택해주세요.");
     return;
   }
-  if (!revitFileName.value) {
-    alert("3D REVIT모델 파일을 선택해주세요.");
+  if (!thumbnailFileName.value) {
+    alert("모델 썸네일 파일을 선택해주세요.");
     return;
   }
+  // REVIT 파일은 선택사항
 
   // TODO: 등록 로직 구현
   alert("구조물이 등록되었습니다.");
 }
 
 // 수정 로직 제거 (StructureUpdateTab에서 처리)
+defineExpose({ onRegister });
 </script>
 
 <style scoped lang="scss">

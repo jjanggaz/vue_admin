@@ -2646,26 +2646,9 @@ const handlePidComponentSave = async () => {
     console.log('현재 그리드 데이터 수:', pidComponentList.value.length);
     // console.log('업데이트된 초기값 데이터 수:', initialPidComponentList.value.length);
     
-    // P&ID 컴포넌트 저장 성공 후 공정카드 그리드의 P&ID 버튼 클릭 이벤트 호출
-    console.log('=== P&ID 컴포넌트 저장 완료 - 공정카드 그리드 P&ID 버튼 클릭 이벤트 시뮬레이션 시작 ===');
-    if (currentPfdItemForMapping.value) {
-      console.log('현재 PFD 아이템:', {
-        id: currentPfdItemForMapping.value.id,
-        drawing_id: currentPfdItemForMapping.value.drawing_id,
-        pfdFileName: currentPfdItemForMapping.value.pfdFileName
-      });
-      
-      // P&ID 그리드 데이터 새로고침 제거 (그리드 내용 지워짐 방지)
-      console.log('=== P&ID 컴포넌트 저장 후 그리드 새로고침 건너뛰기 (데이터 유지) ===');
-      
-      // P&ID 버튼 클릭 이벤트 시뮬레이션 (그리드 새로고침 후)
-      console.log('P&ID 버튼 클릭 이벤트 시뮬레이션 호출');
-      await openMappingPidModal(currentPfdItemForMapping.value);
-      
-      console.log('P&ID 버튼 클릭 이벤트 시뮬레이션 완료');
-    } else {
-      console.warn('⚠️ currentPfdItemForMapping.value가 없어서 P&ID 버튼 클릭 이벤트를 시뮬레이션할 수 없습니다.');
-    }
+    // P&ID 컴포넌트 저장 성공 후 그리드 상태만 업데이트 (DIV 닫히는 현상 방지)
+    console.log('=== P&ID 컴포넌트 저장 완료 - 그리드 상태 업데이트만 수행 ===');
+    console.log('P&ID Components 섹션 유지 (DIV 닫히는 현상 방지)');
     
   } catch (error) {
     console.error('P&ID 컴포넌트 저장 실패:', error);
@@ -6230,14 +6213,9 @@ const openMappingPidModal = async (pfdItem: any) => {
     return;
   }
   
-  // P&ID 창이 다시 열릴 때 'P&ID Components' 섹션이 열려 있으면 닫기
+  // P&ID 창이 다시 열릴 때 'P&ID Components' 섹션은 유지 (DIV 닫히는 현상 방지)
   if (showPidComponentSection.value) {
-    showPidComponentSection.value = false;
-    selectedPidForComponent.value = null;
-    // pidComponentList.value = []; // 그리드 초기화 제거 - 저장된 데이터 유지
-    selectedPidComponentItems.value = [];
-    currentDrawingId.value = '';
-    console.log('P&ID Components 섹션을 닫았습니다.');
+    console.log('P&ID Components 섹션이 열려있지만 유지합니다 (DIV 닫히는 현상 방지)');
   }
   
   currentPfdItemForMapping.value = pfdItem;
@@ -6247,13 +6225,9 @@ const openMappingPidModal = async (pfdItem: any) => {
   // P&ID 목록 데이터 로드 - drawing_id를 parent_drawing_id로 전달
   await loadMappingPidList(pfdItem);
   
-  // P&ID 목록 데이터가 없는 경우 P&ID Components 설정 닫기
+  // P&ID 목록 데이터가 없는 경우에도 P&ID Components 섹션은 유지 (DIV 닫히는 현상 방지)
   if (mappingPidList.value.length === 0) {
-    showPidComponentSection.value = false;
-    selectedPidForComponent.value = null;
-    // pidComponentList.value = []; // 그리드 초기화 제거 - 저장된 데이터 유지
-    selectedPidComponentItems.value = [];
-    currentDrawingId.value = '';
+    console.log('P&ID 목록 데이터가 없지만 P&ID Components 섹션은 유지합니다 (DIV 닫히는 현상 방지)');
   }
 };
 

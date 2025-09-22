@@ -4,9 +4,7 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
-          <label for="structureType">{{
-            t("columns.machine.structureTypeDetail")
-          }}</label>
+          <label for="structureType">구조물 대분류</label>
           <select
             id="structureType"
             v-model="selectedStructureType"
@@ -20,6 +18,25 @@
               :value="type.code_key"
             >
               {{ type.code_value }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="structureTypeDetail">{{
+            t("columns.machine.structureTypeDetail")
+          }}</label>
+          <select
+            id="structureTypeDetail"
+            v-model="selectedStructureTypeDetail"
+            class="form-select"
+          >
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="form in structureStore.thirdDepth"
+              :key="form.code_id"
+              :value="form.code_key"
+            >
+              {{ form.code_value }}
             </option>
           </select>
         </div>
@@ -235,6 +252,7 @@ const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const selectedUnit = ref("");
 const selectedStructureType = ref("");
+const selectedStructureTypeDetail = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const newMachine = ref<RegistForm>({
@@ -382,13 +400,16 @@ const loadData = () => {
   }));
 };
 
-// 구조물 타입 변경 핸들러 (현재 연동 없음)
+// 구조물 대분류 변경 시 하위 구조물 타입 로드
 const handleStructureTypeChange = async () => {
-  // 필요 시 선택 변경에 따른 추가 로직을 여기에 구현
+  selectedStructureTypeDetail.value = "";
+  if (selectedStructureType.value) {
+    await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
+  }
 };
 
 onMounted(async () => {
-  await structureStore.fetchCommonCodes("STRUCT");
+  await structureStore.fetchCommonCodes("STRUCT_WWTP");
   await loadData();
 });
 </script>

@@ -2,7 +2,25 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
-      <!-- 1행: 구조물 타입, 3D 구조물 계산식, 3D DTD모델, 모델 썸네일 -->
+      <!-- 1행: 구조물 대분류, 구조물 타입, 3D 구조물 계산식 -->
+      <div class="group-form inline">
+        <span class="label required">⊙ 구조물 대분류</span>
+        <select
+          class="input select-md"
+          v-model="selectedStructureType"
+          :disabled="isRegistered"
+          @change="handleStructureTypeChange"
+        >
+          <option value="">{{ t("common.select") }}</option>
+          <option
+            v-for="type in structureStore.secondDepth"
+            :key="type.code_id"
+            :value="type.code_key"
+          >
+            {{ type.code_value }}
+          </option>
+        </select>
+      </div>
       <div class="group-form inline">
         <span class="label required"
           >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
@@ -14,11 +32,11 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="machine in machineStore.secondDepth"
-            :key="machine.code_id"
-            :value="machine.code_key"
+            v-for="detail in structureStore.thirdDepth"
+            :key="detail.code_id"
+            :value="detail.code_key"
           >
-            {{ machine.code_value }}
+            {{ detail.code_value }}
           </option>
         </select>
       </div>
@@ -87,7 +105,8 @@
         </div>
       </div>
 
-      <!-- 2행: 3D REVIT모델, 비고 -->
+      <!-- 2행: 3D DTD모델, 모델 썸네일 -->
+      <!-- 3행: 3D REVIT모델, 비고 -->
       <div class="group-form inline">
         <span class="label">⊙ 3D REVIT모델</span>
         <div class="file-input-wrapper">
@@ -126,16 +145,17 @@
 import { useI18n } from "vue-i18n";
 import { ref } from "vue";
 
-import { useMachineStore } from "@/stores/machineStore";
+import { useStructureStore } from "@/stores/structureStore";
 
 // 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
 
 const { t } = useI18n();
-const machineStore = useMachineStore();
+const structureStore = useStructureStore();
 
 const isRegistered = ref(false); // 등록 완료 상태
 
-// 선택된 구조물 타입
+// 선택된 구조물 대분류 및 타입
+const selectedStructureType = ref("");
 const selectedMachineName = ref("");
 
 // 비고 입력
@@ -151,10 +171,23 @@ const thumbnailFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 
-// 단계/하위 선택 제거로 watch 로직 삭제
+// 구조물 대분류 변경 시 하위 구조물 타입 로드
+const handleStructureTypeChange = async () => {
+  selectedMachineName.value = "";
+  // thirdDepth 초기화
+  structureStore.thirdDepth = [];
 
-// 공통 검증 함수: 단위/구조물구분/구조물형태 필수 체크
+  if (selectedStructureType.value) {
+    await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
+  }
+};
+
+// 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
 function validateBasicSelections(): boolean {
+  if (!selectedStructureType.value) {
+    alert("구조물 대분류를 선택해주세요.");
+    return false;
+  }
   if (!selectedMachineName.value) {
     alert("구조물 타입을 선택해주세요.");
     return false;

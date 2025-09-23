@@ -2,7 +2,24 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
-      <!-- 1행: 구조물 타입(비활성), 3D 구조물 계산식, 3D DTD모델, 모델 썸네일 -->
+      <!-- 1행: 구조물 대분류(비활성), 구조물 타입(비활성), 3D 구조물 계산식 -->
+      <div class="group-form inline">
+        <span class="label required">⊙ 구조물 대분류</span>
+        <select
+          class="input select-md"
+          v-model="selectedStructureType"
+          :disabled="true"
+        >
+          <option value="">{{ t("common.select") }}</option>
+          <option
+            v-for="type in structureStore.secondDepth"
+            :key="type.code_id"
+            :value="type.code_key"
+          >
+            {{ type.code_value }}
+          </option>
+        </select>
+      </div>
       <div class="group-form inline">
         <span class="label required"
           >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
@@ -14,11 +31,11 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="machine in machineStore.secondDepth"
-            :key="machine.code_id"
-            :value="machine.code_key"
+            v-for="detail in structureStore.thirdDepth"
+            :key="detail.code_id"
+            :value="detail.code_key"
           >
-            {{ machine.code_value }}
+            {{ detail.code_value }}
           </option>
         </select>
       </div>
@@ -86,7 +103,8 @@
         </div>
       </div>
 
-      <!-- 2행: 3D REVIT모델, 비고 -->
+      <!-- 2행: 3D DTD모델, 모델 썸네일 -->
+      <!-- 3행: 3D REVIT모델, 비고 -->
       <div class="group-form inline">
         <span class="label">⊙ 3D REVIT모델</span>
         <div class="file-input-wrapper">
@@ -149,30 +167,19 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
-import { useMachineStore } from "@/stores/machineStore";
+import { useStructureStore } from "@/stores/structureStore";
 
 // 수정 전용 컴포넌트로 사용 (등록 모드 관련 props 제거)
 
 const { t } = useI18n();
-const machineStore = useMachineStore();
+const structureStore = useStructureStore();
 
-// 단위 선택 상태
-const selectedUnit = ref("");
-
-// 단계별 enable 상태
-const isStep1Enabled = ref(false); // 구조물 형태
-const isStep2Enabled = ref(false); // 구조물명
-const isStep3Enabled = ref(false); // 구조물타입
-// 등록 완료 상태 제거 (수정 전용)
-
-// 선택된 구조물 구분
+// 선택된 구조물 대분류 및 타입 (수정 모드에서는 비활성)
+const selectedStructureType = ref("");
 const selectedMachineName = ref("");
-const selectedThirdDept = ref("");
-const selectedFourthDept = ref("");
-const selectedFifthDept = ref("");
 
 // 비고 입력
 const remarks = ref("");
@@ -249,112 +256,16 @@ const editModeRows = ref([
   },
 ]);
 
-// watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedMachineName, async (newValue, _oldValue) => {
-  // 모든 하위 단계들 초기화
-  selectedThirdDept.value = "";
-  selectedFourthDept.value = "";
-  selectedFifthDept.value = "";
-  isStep1Enabled.value = false;
-  isStep2Enabled.value = false;
-  isStep3Enabled.value = false;
+// 수정 모드에서는 구조물 대분류/타입 변경 불가 (비활성 상태)
 
-  if (newValue) {
-    try {
-      // 3차 깊이별 공통코드 조회 API 호출
-      await machineStore.fetchThirdDepth(newValue, 3);
-
-      // 1단계 완료 - 구조물 형태 활성화
-      isStep1Enabled.value = true;
-    } catch (error) {
-      console.error("3차 깊이별 공통코드 조회 실패:", error);
-      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
-    }
-  }
-});
-
-watch(selectedThirdDept, async (newValue, _oldValue) => {
-  if (isStep1Enabled.value) {
-    // 구조물 형태가 변경되면 하위 단계들 초기화
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 4);
-        if (response?.response && response.response.length > 0) {
-          isStep2Enabled.value = true;
-        } else {
-          isStep2Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("4차 깊이별 공통코드 조회 실패:", error);
-        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep2Enabled.value = false;
-      }
-    }
-  }
-});
-
-watch(selectedFourthDept, async (newValue, _oldValue) => {
-  if (isStep2Enabled.value) {
-    // 구조물명이 변경되면 하위 단계 초기화
-    selectedFifthDept.value = "";
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 5);
-        if (response?.response && response.response.length > 0) {
-          isStep3Enabled.value = true;
-        } else {
-          isStep3Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("5차 깊이별 공통코드 조회 실패:", error);
-        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep3Enabled.value = false;
-      }
-    }
-  }
-});
-
-// 공통 검증 함수: 단위/구조물구분/구조물형태 필수 체크
+// 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
 function validateBasicSelections(): boolean {
-  if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
+  if (!selectedStructureType.value) {
+    alert("구조물 대분류를 선택해주세요.");
     return false;
   }
   if (!selectedMachineName.value) {
-    alert("구조물 구분을 선택해주세요.");
-    return false;
-  }
-  if (!selectedThirdDept.value) {
-    alert("구조물 형태를 선택해주세요.");
-    return false;
-  }
-
-  // 구조물명 선택 validation
-  if (
-    machineStore.fourthDepth &&
-    machineStore.fourthDepth.length > 0 &&
-    !selectedFourthDept.value
-  ) {
-    alert("구조물명을 선택해주세요.");
-    return false;
-  }
-
-  // 구조물타입 선택 validation
-  if (
-    machineStore.fifthDepth &&
-    machineStore.fifthDepth.length > 0 &&
-    !selectedFifthDept.value
-  ) {
-    alert("구조물타입을 선택해주세요.");
+    alert("구조물 타입을 선택해주세요.");
     return false;
   }
 

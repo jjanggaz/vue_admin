@@ -156,10 +156,10 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import StructureRegisterTab from "./components/StructureRegisterTab.vue";
 import StructureUpdateTab from "./components/StructureUpdateTab.vue";
 import { useI18n } from "vue-i18n";
-import { useMachineStore } from "@/stores/machineStore";
+import { useStructureStore } from "@/stores/structureStore";
 
 const { t } = useI18n();
-const structureStore = useMachineStore();
+const structureStore = useStructureStore();
 const registerTabRef = ref<InstanceType<typeof StructureRegisterTab> | null>(
   null
 );
@@ -403,6 +403,9 @@ const loadData = () => {
 // 구조물 대분류 변경 시 하위 구조물 타입 로드
 const handleStructureTypeChange = async () => {
   selectedStructureTypeDetail.value = "";
+  // thirdDepth 초기화
+  structureStore.thirdDepth = [];
+
   if (selectedStructureType.value) {
     await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
   }

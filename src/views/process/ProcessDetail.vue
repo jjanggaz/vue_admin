@@ -443,12 +443,16 @@
           <DataTable
             :columns="pidComponentColumns"
             :data="pidComponentList"
-            :selectable="true"
-            :selected-items="selectedPidComponentItems"
-            :row-key="'component_id'"
-            selection-mode="multiple"
-            @selection-change="handlePidComponentSelectionChange"
+            :selectable="false"
           >
+            <template #cell-select="{ item, index }">
+              <input 
+                type="checkbox" 
+                :value="item"
+                v-model="selectedPidComponentItems"
+                @change="handlePidComponentSelectionChange"
+              />
+            </template>
             <template #cell-no="{ item, index }">
               <span>{{ item.no || index + 1 }}</span>
             </template>
@@ -763,6 +767,7 @@ const mappingPidColumns: TableColumn[] = [
 
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
+  { key: "select", title: "선택", sortable: false, width: "60px" },
   { key: "no", title: "No.", sortable: false, width: "60px" },
   { key: "pid_id", title: "POC IN", sortable: false, width: "120px" },
   { key: "category", title: "구분", sortable: false, width: "100px" },
@@ -1824,8 +1829,9 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
           
           return {
             ...item,
-            id: item.component_id || `loaded_comp_${Date.now()}_${index}`, // component_id를 id로 사용
+            id: item.component_id || `loaded_comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${index}`, // 고유한 id 생성
             no: pidComponentList.value.length + index + 1, // 기존 데이터 개수를 고려한 번호
+            _isLoadedFromServer: true, // 서버에서 로드된 데이터임을 표시
             // 파싱된 hierarchy 데이터 추가
             level1_code_key: hierarchyData.level1_code_key,
             level2_code_key: hierarchyData.level2_code_key,
@@ -2178,9 +2184,8 @@ const isPidRowSaved = (item: any) => {
 };
 
 // P&ID 컴포넌트 선택 변경 핸들러
-const handlePidComponentSelectionChange = (selectedItems: any[]) => {
-  // DataTable에서 전달받은 선택된 항목들을 그대로 사용
-  selectedPidComponentItems.value = selectedItems;
+const handlePidComponentSelectionChange = () => {
+  // v-model로 자동으로 selectedPidComponentItems가 업데이트됨
   console.log('선택된 P&ID 컴포넌트 항목들:', selectedPidComponentItems.value);
   console.log('선택된 항목 수:', selectedPidComponentItems.value.length);
   console.log('선택된 항목들의 ID들:', selectedPidComponentItems.value.map(item => item.id));
@@ -2453,15 +2458,57 @@ const handlePidComponentSave = async () => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     
     // 수정할 항목과 신규 추가할 항목 구분
-    const updateItems = pidComponentList.value.filter(item => item.component_id && !item.component_id.startsWith('temp_comp_')); // 실제 component_id가 있으면 수정
-    const createItems = pidComponentList.value.filter(item => !item.component_id || item.component_id.startsWith('temp_comp_')); // component_id가 없거나 임시 ID면 신규
+    console.log('=== 항목 구분 디버깅 시작 ===');
+    console.log('전체 pidComponentList:', pidComponentList.value);
+    
+    const updateItems = pidComponentList.value.filter(item => {
+      const isLoadedFromServer = item._isLoadedFromServer === true;
+      const hasComponentId = !!item.component_id;
+      const isUuidFormat = item.component_id && uuidRegex.test(item.component_id);
+      const isUpdateItem = isLoadedFromServer && hasComponentId && isUuidFormat;
+      
+      console.log(`항목 ${item.id} 구분 결과:`, {
+        component_id: item.component_id,
+        _isLoadedFromServer: item._isLoadedFromServer,
+        hasComponentId,
+        isUuidFormat,
+        isUpdateItem,
+        전체데이터: item
+      });
+      
+      return isUpdateItem;
+    });
+    
+    const createItems = pidComponentList.value.filter(item => {
+      const isNotLoadedFromServer = item._isLoadedFromServer !== true;
+      const hasNoComponentId = !item.component_id;
+      const isTempId = item.component_id?.startsWith('temp_comp_');
+      const isNotUuidFormat = item.component_id && !uuidRegex.test(item.component_id);
+      const isCreateItem = isNotLoadedFromServer || hasNoComponentId || isTempId || isNotUuidFormat;
+      
+      console.log(`항목 ${item.id} 신규 구분 결과:`, {
+        component_id: item.component_id,
+        _isLoadedFromServer: item._isLoadedFromServer,
+        isNotLoadedFromServer,
+        hasNoComponentId,
+        isTempId,
+        isNotUuidFormat,
+        isCreateItem
+      });
+      
+      return isCreateItem;
+    });
     
     console.log('수정할 항목 수:', updateItems.length);
     console.log('신규 추가할 항목 수:', createItems.length);
+    console.log('수정할 항목들:', updateItems.map(item => ({ id: item.id, component_id: item.component_id })));
+    console.log('신규 추가할 항목들:', createItems.map(item => ({ id: item.id, component_id: item.component_id })));
+    console.log('=== 항목 구분 디버깅 끝 ===');
     
     // 수정할 항목들 처리
     if (updateItems.length > 0) {
       console.log('=== 기존 항목 수정 처리 시작 ===');
+      console.log('수정할 항목들 상세:', updateItems);
       for (const item of updateItems) {
         console.log(`수정할 항목 상세 정보:`, {
           component_id: item.component_id,
@@ -2509,6 +2556,7 @@ const handlePidComponentSave = async () => {
     // 신규 추가할 항목들 처리
     if (createItems.length > 0) {
       console.log('=== 신규 항목 추가 처리 시작 ===');
+      console.log('신규 추가할 항목들 상세:', createItems);
       
       // UUID 형식 검증
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -3687,9 +3735,14 @@ const handlePfdFileChange = (item: any, event: Event) => {
     const itemIndex = processStore.pfdList.findIndex(pfdItem => pfdItem.id === item.id);
     if (itemIndex !== -1) {
       processStore.pfdList[itemIndex].pfdFileName = file.name;
-      (processStore.pfdList[itemIndex] as any).pfdFile = file;
+      (processStore.pfdList[itemIndex] as any)._file = file; // _file 속성으로 저장 (processPfdChanges에서 감지)
       processStore.pfdList[itemIndex].drawing_id = `temp_pfd_drawing_${Date.now()}`;
       console.log('PFD 파일이 processStore.pfdList에 업데이트됨:', file.name);
+      console.log('PFD 파일 객체 저장 확인:', {
+        fileName: file.name,
+        hasFileObject: !!(processStore.pfdList[itemIndex] as any)._file,
+        drawingId: processStore.pfdList[itemIndex].drawing_id
+      });
     }
     
     console.log('PFD 파일 선택 완료:', file.name);
@@ -4681,38 +4734,93 @@ const processPfdChanges = async (processId: string) => {
   console.log('pfdList 길이:', processStore.pfdList?.length || 0);
   
   if (processStore.initialPfdList && processStore.pfdList) {
-    // 삭제된 행들 감지
+    // 삭제된 행들 감지 (더 정확한 비교)
     const deletedRows = processStore.initialPfdList.filter(initialItem => {
-      if (!initialItem.drawing_id) return false;
-      return !processStore.pfdList.some(currentItem => 
-        currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id
-      );
+      // drawing_id가 없는 항목은 삭제 대상이 아님
+      if (!initialItem.drawing_id || initialItem.drawing_id.startsWith('temp_')) return false;
+      
+      // 현재 리스트에서 해당 항목을 찾기 (id와 drawing_id 모두 확인)
+      const foundInCurrent = processStore.pfdList.some(currentItem => {
+        // id가 같은 경우 (같은 행)
+        if (currentItem.id === initialItem.id) return true;
+        // drawing_id가 같은 경우 (같은 파일)
+        if (currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id) return true;
+        return false;
+      });
+      
+      console.log(`삭제 감지 - 초기항목:`, {
+        id: initialItem.id,
+        drawing_id: initialItem.drawing_id,
+        foundInCurrent,
+        willBeDeleted: !foundInCurrent
+      });
+      
+      return !foundInCurrent;
     });
     
-    // 추가된 행들 감지
+    // 추가된 행들 감지 (더 정확한 비교)
     const addedRows = processStore.pfdList.filter(currentItem => {
+      // drawing_id가 없는 항목은 추가 대상이 아님
+      if (!currentItem.drawing_id) return false;
+      
+      // initialPfdList에서 해당 항목을 찾기 (id 우선 확인)
+      const foundInInitial = processStore.initialPfdList.some(initialItem => {
+        // id가 같은 경우 (같은 행) - 이것이 가장 중요
+        if (initialItem.id === currentItem.id) return true;
+        return false;
+      });
+      
+      // 기존 행이면 신규 추가가 아님 (파일 변경이어도 기존 행)
+      if (foundInInitial) {
+        console.log(`기존 행 확인 - 신규 추가 아님:`, {
+          id: currentItem.id,
+          drawing_id: currentItem.drawing_id,
+          isExistingRow: true
+        });
+        return false;
+      }
+      
       // 새로 추가된 행은 id가 'pfd_'로 시작하고 drawing_id가 임시 ID인 경우
       if (currentItem.id.startsWith('pfd_') && currentItem.drawing_id?.startsWith('temp_pfd_drawing_')) {
+        console.log(`신규 추가 감지 - 임시 ID:`, {
+          id: currentItem.id,
+          drawing_id: currentItem.drawing_id,
+          hasFile: !!(currentItem as any)._file,
+          hasSvgFile: !!(currentItem as any).svgFile
+        });
         return true;
       }
-      // 기존 행이지만 drawing_id가 있고 initialPfdList에 없는 경우
-      if (!currentItem.drawing_id) return false;
-      return !processStore.initialPfdList.some(initialItem => 
-        initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
-      );
+      
+      // 다른 경우도 신규 추가로 간주 (실제로는 드물게 발생)
+      console.log(`신규 추가 감지 - 기타 경우:`, {
+        id: currentItem.id,
+        drawing_id: currentItem.drawing_id,
+        foundInInitial,
+        willBeAdded: !foundInInitial,
+        pfdFileName: currentItem.pfdFileName,
+        hasFile: !!(currentItem as any)._file,
+        hasSvgFile: !!(currentItem as any).svgFile
+      });
+      
+      return !foundInInitial;
     });
     
     // 수정된 행들 감지 (Svg 파일 변경 포함)
     const modifiedRows = processStore.pfdList.filter(currentItem => {
-      // drawing_id가 있는 기존 행들 중에서
-      if (!currentItem.drawing_id || currentItem.drawing_id.startsWith('temp_')) return false;
+      // initialPfdList에서 해당 행 찾기 (id로만 확인)
+      const initialItem = processStore.initialPfdList.find(initialItem => {
+        // id가 같은 경우 (같은 행)
+        if (initialItem.id === currentItem.id) return true;
+        return false;
+      });
       
-      // initialPfdList에서 해당 행 찾기
-      const initialItem = processStore.initialPfdList.find(initialItem => 
-        initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
-      );
-      
-      if (!initialItem) return false;
+      if (!initialItem) {
+        console.log(`수정 감지 실패 - 초기 항목을 찾을 수 없음:`, {
+          id: currentItem.id,
+          drawing_id: currentItem.drawing_id
+        });
+        return false;
+      }
       
       // PFD 파일이나 Svg 파일이 변경된 경우 감지
       const currentPfdFile = (currentItem as any)._file;
@@ -4720,23 +4828,64 @@ const processPfdChanges = async (processId: string) => {
       const initialPfdFile = (initialItem as any)?._file;
       const initialSvgFile = (initialItem as any)?.svgFile;
       
+      // 파일명이 변경된 경우 감지
+      const pfdFileNameChanged = currentItem.pfdFileName !== initialItem.pfdFileName;
+      const svgFileNameChanged = (currentItem as any).svgFileName !== (initialItem as any).svgFileName;
+      
+      // 파일 객체가 변경된 경우 감지
       const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
       const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
                             (!currentSvgFile && initialSvgFile);
       
-      return pfdFileChanged || svgFileChanged;
+      const isModified = pfdFileNameChanged || svgFileNameChanged || pfdFileChanged || svgFileChanged;
+      
+      console.log(`수정 감지 - 현재항목:`, {
+        id: currentItem.id,
+        drawing_id: currentItem.drawing_id,
+        initialId: initialItem.id,
+        initialDrawingId: initialItem.drawing_id,
+        pfdFileNameChanged,
+        svgFileNameChanged,
+        pfdFileChanged,
+        svgFileChanged,
+        isModified,
+        currentPfdFileName: currentItem.pfdFileName,
+        initialPfdFileName: initialItem.pfdFileName,
+        currentSvgFileName: (currentItem as any).svgFileName,
+        initialSvgFileName: (initialItem as any).svgFileName,
+        currentPfdFileObject: currentPfdFile?.name,
+        initialPfdFileObject: initialPfdFile?.name,
+        currentSvgFileObject: (currentSvgFile as any)?.name,
+        initialSvgFileObject: (initialSvgFile as any)?.name
+      });
+      
+      return isModified;
+    });
+    
+    // 중복 처리 방지: 수정된 행이 추가된 행에 포함되지 않도록 확인
+    const finalAddedRows = addedRows.filter(addedItem => {
+      const isAlsoModified = modifiedRows.some(modifiedItem => modifiedItem.id === addedItem.id);
+      if (isAlsoModified) {
+        console.log(`중복 처리 방지 - 수정된 행을 추가 행에서 제외:`, {
+          id: addedItem.id,
+          drawing_id: addedItem.drawing_id
+        });
+        return false;
+      }
+      return true;
     });
     
     console.log('PFD 변경사항 확인:', {
       deletedRows: deletedRows.length,
-      addedRows: addedRows.length,
+      addedRows: finalAddedRows.length,
       modifiedRows: modifiedRows.length,
       initialCount: processStore.initialPfdList.length,
-      currentCount: processStore.pfdList.length
+      currentCount: processStore.pfdList.length,
+      duplicatePrevention: addedRows.length - finalAddedRows.length
     });
     
     // 변경사항이 없는 경우
-    if (deletedRows.length === 0 && addedRows.length === 0 && modifiedRows.length === 0) {
+    if (deletedRows.length === 0 && finalAddedRows.length === 0 && modifiedRows.length === 0) {
       console.log('PFD 변경사항이 없습니다.');
       return false;
     }
@@ -4788,16 +4937,24 @@ const processPfdChanges = async (processId: string) => {
     }
     
     // 추가된 행 처리
-    if (addedRows.length > 0) {
+    if (finalAddedRows.length > 0) {
       try {
         console.log('=== PFD 추가 API 호출 시작 ===');
-        for (const pfdItem of addedRows) {
+        for (const pfdItem of finalAddedRows) {
           const file = (pfdItem as any)._file;
           const svgFile = (pfdItem as any).svgFile;
           
           // PFD 파일이나 Svg 파일 중 하나라도 있어야 처리
           if (!file && !svgFile) {
-            console.warn('PFD 파일과 Svg 파일이 모두 없어서 건너뛰기:', pfdItem);
+            console.warn('PFD 파일과 Svg 파일이 모두 없어서 건너뛰기:', {
+              id: pfdItem.id,
+              pfdFileName: pfdItem.pfdFileName,
+              drawing_id: pfdItem.drawing_id,
+              hasFile: !!file,
+              hasSvgFile: !!svgFile,
+              fileObject: file,
+              svgFileObject: svgFile
+            });
             continue;
           }
           
@@ -4847,14 +5004,25 @@ const processPfdChanges = async (processId: string) => {
           // drawing_id 추출 (여러 가능한 경로 확인)
           let drawingId = responseData.response?.drawing_id || 
                          responseData.response?.data?.drawing_id || 
-                         responseData.response?.id;
+                         responseData.response?.id ||
+                         responseData.drawing_id ||
+                         responseData.id;
           
           // symbol_id 추출 (Svg 파일이 있는 경우)
           let symbolId = responseData.response?.symbol_id || 
-                        responseData.response?.data?.symbol_id;
+                        responseData.response?.data?.symbol_id ||
+                        responseData.symbol_id;
           
           console.log('추출된 drawing_id:', drawingId);
           console.log('추출된 symbol_id:', symbolId);
+          console.log('API 응답 전체 구조:', {
+            response: responseData.response,
+            data: responseData.response?.data,
+            directResponse: responseData,
+            allKeys: Object.keys(responseData),
+            responseKeys: Object.keys(responseData.response || {}),
+            dataKeys: Object.keys(responseData.response?.data || {})
+          });
           
           if (drawingId) {
             const updatedPfdList = processStore.pfdList.map(item => {
@@ -4869,13 +5037,45 @@ const processPfdChanges = async (processId: string) => {
               return item;
             });
             processStore.setPfdList(updatedPfdList);
-            console.log('PFD drawing_id 및 symbol_id 업데이트 완료:', { drawingId, symbolId });
+            console.log('✅ PFD drawing_id 및 symbol_id 업데이트 완료:', { 
+              itemId: pfdItem.id,
+              oldDrawingId: pfdItem.drawing_id,
+              newDrawingId: drawingId, 
+              symbolId 
+            });
+            
+            // 업데이트된 drawing_id 유효성 검증
+            const updatedItem = processStore.pfdList.find(item => item.id === pfdItem.id);
+            if (updatedItem && updatedItem.drawing_id === drawingId) {
+              console.log('✅ drawing_id 업데이트 검증 성공');
+            } else {
+              console.error('❌ drawing_id 업데이트 검증 실패:', {
+                expectedDrawingId: drawingId,
+                actualDrawingId: updatedItem?.drawing_id
+              });
+            }
             
             // PFD 저장 후 P&ID 매핑 정보 확인 및 업데이트
             await updatePfdPidMappingInfo(drawingId, pfdItem.id);
             
             // PFD 저장 후 그리드 새로고침은 하지 않음 (기존 상태 유지)
             // await refreshPfdData();
+          } else {
+            console.error('❌ drawing_id 추출 실패 - API 응답에서 drawing_id를 찾을 수 없습니다:', {
+              itemId: pfdItem.id,
+              pfdFileName: pfdItem.pfdFileName,
+              responseData: responseData,
+              availablePaths: [
+                'responseData.response?.drawing_id',
+                'responseData.response?.data?.drawing_id',
+                'responseData.response?.id',
+                'responseData.drawing_id',
+                'responseData.id'
+              ]
+            });
+            
+            // drawing_id가 없어도 파일명은 업데이트된 상태로 유지
+            console.log('⚠️ drawing_id 없이 파일명만 업데이트된 상태로 유지');
           }
         }
         console.log("추가된 PFD 처리 완료");
@@ -4892,10 +5092,23 @@ const processPfdChanges = async (processId: string) => {
         for (const pfdItem of modifiedRows) {
           console.log('수정된 PFD 항목:', pfdItem);
           
-          // Svg 파일이 변경된 경우 처리
+          // 초기 항목 찾기 (id로 찾기)
           const initialItem = processStore.initialPfdList.find(initialItem => 
-            initialItem.drawing_id && initialItem.drawing_id === pfdItem.drawing_id
+            initialItem.id === pfdItem.id
           );
+          
+          if (!initialItem) {
+            console.error('❌ 초기 항목을 찾을 수 없음:', pfdItem.id);
+            continue;
+          }
+          
+          // 실제 UUID 형식의 drawing_id 사용 (초기 값)
+          const actualDrawingId = initialItem.drawing_id;
+          console.log('수정 API 호출용 drawing_id:', {
+            currentDrawingId: pfdItem.drawing_id,
+            actualDrawingId: actualDrawingId,
+            isUuidFormat: actualDrawingId && !actualDrawingId.startsWith('temp_')
+          });
           
           // 변경된 파일 정보 확인
           const currentPfdFile = (pfdItem as any)._file;
@@ -4903,31 +5116,79 @@ const processPfdChanges = async (processId: string) => {
           const initialPfdFile = (initialItem as any)?._file;
           const initialSvgFile = (initialItem as any)?.svgFile;
           
-          // PFD 파일이나 Svg 파일이 변경된 경우에만 처리
+          // 파일 객체 상태 상세 로깅
+          console.log('파일 객체 상태 확인:', {
+            itemId: pfdItem.id,
+            currentPfdFile: currentPfdFile ? { name: currentPfdFile.name, size: currentPfdFile.size } : null,
+            currentSvgFile: currentSvgFile ? { name: (currentSvgFile as any).name, size: (currentSvgFile as any).size } : null,
+            initialPfdFile: initialPfdFile ? { name: initialPfdFile.name, size: initialPfdFile.size } : null,
+            initialSvgFile: initialSvgFile ? { name: (initialSvgFile as any).name, size: (initialSvgFile as any).size } : null
+          });
+          
+          // PFD 파일 변경 감지 (더 정확한 로직)
           const pfdFileChanged = currentPfdFile && (!initialPfdFile || currentPfdFile.name !== initialPfdFile.name);
+          
+          // SVG 파일 변경 감지 (더 정확한 로직)
           const svgFileChanged = (currentSvgFile && (!initialSvgFile || (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
                                 (!currentSvgFile && initialSvgFile);
           
-          if (pfdFileChanged || svgFileChanged) {
+          // 파일명 변경 감지 (추가 확인)
+          const pfdFileNameChanged = pfdItem.pfdFileName !== initialItem.pfdFileName;
+          const svgFileNameChanged = (pfdItem as any).svgFileName !== (initialItem as any).svgFileName;
+          
+          console.log('파일 변경 감지 상세:', {
+            itemId: pfdItem.id,
+            pfdFileChanged,
+            svgFileChanged,
+            pfdFileNameChanged,
+            svgFileNameChanged,
+            currentPfdFileName: pfdItem.pfdFileName,
+            initialPfdFileName: initialItem.pfdFileName,
+            currentSvgFileName: (pfdItem as any).svgFileName,
+            initialSvgFileName: (initialItem as any).svgFileName
+          });
+          
+          // 파일 변경 감지 (파일 객체 변경 또는 파일명 변경)
+          const hasFileChange = pfdFileChanged || svgFileChanged || pfdFileNameChanged || svgFileNameChanged;
+          
+          if (hasFileChange) {
             console.log('파일 변경 감지:', { 
               pfdFileChanged, 
               svgFileChanged, 
+              pfdFileNameChanged,
+              svgFileNameChanged,
               pfdFileName: currentPfdFile?.name,
               svgFileName: (currentSvgFile as any)?.name 
             });
             
             const formData = new FormData();
-            formData.append('process_id', processId);
-            formData.append('drawing_type', 'PFDCARD');
             
-            // PFD 파일이 변경된 경우에만 전달
-            if (pfdFileChanged && currentPfdFile) {
-              console.log('PFD 파일을 siteFile로 업데이트:', currentPfdFile.name);
+            // PFD 파일만 변경된 경우: drawingId와 siteFile만 전달
+            if ((pfdFileChanged || pfdFileNameChanged) && currentPfdFile && !svgFileChanged && !svgFileNameChanged) {
+              console.log('PFD 파일만 변경 - siteFile만 전달:', currentPfdFile.name);
               formData.append('siteFile', currentPfdFile);
             }
-            
-            // Svg 파일이 변경된 경우에만 전달
-            if (svgFileChanged) {
+            // SVG 파일만 변경된 경우: drawingId와 symbolFile만 전달
+            else if ((svgFileChanged || svgFileNameChanged) && !pfdFileChanged && !pfdFileNameChanged) {
+              if (currentSvgFile) {
+                console.log('SVG 파일만 변경 - symbolFile만 전달:', (currentSvgFile as any).name);
+                formData.append('symbolFile', currentSvgFile);
+              } else {
+                console.log('SVG 파일 삭제 - symbolFile 빈 값 전달');
+                formData.append('symbolFile', ''); // 빈 값으로 전송하여 삭제
+              }
+            }
+            // PFD와 SVG 파일 모두 변경된 경우: 기존 방식 유지
+            else if ((pfdFileChanged || pfdFileNameChanged) && (svgFileChanged || svgFileNameChanged)) {
+              console.log('PFD와 SVG 파일 모두 변경 - 전체 매개변수 전달');
+              formData.append('process_id', processId);
+              formData.append('drawing_type', 'PFDCARD');
+              
+              if (currentPfdFile) {
+                console.log('PFD 파일을 siteFile로 업데이트:', currentPfdFile.name);
+                formData.append('siteFile', currentPfdFile);
+              }
+              
               if (currentSvgFile) {
                 console.log('Svg 파일 업데이트:', (currentSvgFile as any).name);
                 formData.append('symbolFile', currentSvgFile);
@@ -4936,8 +5197,45 @@ const processPfdChanges = async (processId: string) => {
                 formData.append('symbolFile', ''); // 빈 값으로 전송하여 삭제
               }
             }
+            // 파일명만 변경된 경우 (파일 객체는 없지만 파일명이 변경됨)
+            else {
+              console.log('파일명만 변경된 경우 - 전체 매개변수 전달');
+              formData.append('process_id', processId);
+              formData.append('drawing_type', 'PFDCARD');
+              
+              // 파일명 변경 정보 전달
+              if (pfdFileNameChanged) {
+                formData.append('pfdFileName', pfdItem.pfdFileName);
+              }
+              if (svgFileNameChanged) {
+                formData.append('svgFileName', (pfdItem as any).svgFileName || '');
+              }
+            }
             
-            const response = await request(`/api/process/drawing/${pfdItem.drawing_id}`, undefined, {
+            // FormData 내용 로그 출력
+            console.log('FormData 매개변수 확인:');
+            for (let [key, value] of (formData as any).entries()) {
+              if (value instanceof File) {
+                console.log(`${key}:`, { name: value.name, size: value.size, type: value.type });
+              } else {
+                console.log(`${key}:`, value);
+              }
+            }
+            
+            // UUID 형식 검증
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!actualDrawingId || actualDrawingId.startsWith('temp_') || !uuidRegex.test(actualDrawingId)) {
+              console.error('❌ 유효하지 않은 drawing_id:', {
+                actualDrawingId,
+                itemId: pfdItem.id,
+                isTempId: actualDrawingId?.startsWith('temp_'),
+                isUuidFormat: actualDrawingId ? uuidRegex.test(actualDrawingId) : false,
+                message: 'UUID 형식이 아니거나 임시 ID입니다.'
+              });
+              continue;
+            }
+            
+            const response = await request(`/api/process/drawing/${actualDrawingId}`, undefined, {
               method: 'PATCH',
               body: formData
             });
@@ -4959,11 +5257,19 @@ const processPfdChanges = async (processId: string) => {
                   return item;
                 });
                 processStore.setPfdList(updatedPfdList);
-                console.log('PFD symbol_id 업데이트 완료:', { drawingId: pfdItem.drawing_id, symbolId });
+                console.log('✅ PFD symbol_id 업데이트 완료:', { 
+                  itemId: pfdItem.id,
+                  drawingId: actualDrawingId, 
+                  symbolId 
+                });
               }
             }
             
-            console.log('PFD 파일 업데이트 완료:', pfdItem.drawing_id);
+            console.log('✅ PFD 파일 업데이트 완료:', {
+              itemId: pfdItem.id,
+              drawingId: actualDrawingId,
+              pfdFileName: pfdItem.pfdFileName
+            });
           } else {
             console.log('파일 변경사항 없음, 건너뛰기:', pfdItem.drawing_id);
           }
@@ -6132,16 +6438,59 @@ const handleUpdate = async () => {
                 const responseData = response;
                 console.log('PFD 도면 생성 API 응답:', responseData);
                 
-                if (responseData.response?.drawing_id) {
+                // drawing_id 추출 (여러 가능한 경로 확인)
+                let drawingId = responseData.response?.drawing_id || 
+                               responseData.response?.data?.drawing_id || 
+                               responseData.response?.id ||
+                               responseData.drawing_id ||
+                               responseData.id;
+                
+                console.log('PFD 모달 업로드 - 추출된 drawing_id:', drawingId);
+                console.log('PFD 모달 업로드 - API 응답 구조:', {
+                  response: responseData.response,
+                  data: responseData.response?.data,
+                  directResponse: responseData
+                });
+                
+                if (drawingId) {
                   const updatedPfdList = processStore.pfdList.map(item => {
                     if (item.id === pfdItem.id) {
-                      return { ...item, drawing_id: responseData.response.drawing_id };
+                      return { 
+                        ...item, 
+                        drawing_id: drawingId,
+                        hasPidMapping: false // 초기값은 false로 설정
+                      };
                     }
                     return item;
                   });
                   processStore.setPfdList(updatedPfdList);
                   
+                  console.log('✅ PFD 모달 업로드 - drawing_id 업데이트 완료:', {
+                    itemId: pfdItem.id,
+                    oldDrawingId: pfdItem.drawing_id,
+                    newDrawingId: drawingId
+                  });
+                  
+                  // 업데이트된 drawing_id 유효성 검증
+                  const updatedItem = processStore.pfdList.find(item => item.id === pfdItem.id);
+                  if (updatedItem && updatedItem.drawing_id === drawingId) {
+                    console.log('✅ PFD 모달 업로드 - drawing_id 업데이트 검증 성공');
+                  } else {
+                    console.error('❌ PFD 모달 업로드 - drawing_id 업데이트 검증 실패:', {
+                      expectedDrawingId: drawingId,
+                      actualDrawingId: updatedItem?.drawing_id
+                    });
+                  }
+                  
                   // PFD 저장 후 그리드 새로고침
+                  await refreshPfdData();
+                } else {
+                  console.error('❌ PFD 모달 업로드 - drawing_id 추출 실패:', {
+                    itemId: pfdItem.id,
+                    responseData: responseData
+                  });
+                  
+                  // drawing_id가 없어도 그리드 새로고침은 수행
                   await refreshPfdData();
                 }
               } catch (apiError: any) {

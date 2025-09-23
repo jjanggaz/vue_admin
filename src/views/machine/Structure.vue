@@ -314,6 +314,7 @@ const closeRegistModal = () => {
 
   // 모달 닫기 시 구조물 타입 초기화
   selectedStructureTypeDetail.value = "";
+  selectedStructureType.value = "";
 };
 
 const handleEdit = () => {

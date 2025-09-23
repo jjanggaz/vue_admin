@@ -143,9 +143,20 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 import { useStructureStore } from "@/stores/structureStore";
+
+// Props 정의
+interface Props {
+  structureType?: string;
+  structureTypeDetail?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  structureType: "",
+  structureTypeDetail: "",
+});
 
 // 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
 
@@ -154,9 +165,24 @@ const structureStore = useStructureStore();
 
 const isRegistered = ref(false); // 등록 완료 상태
 
-// 선택된 구조물 대분류 및 타입
-const selectedStructureType = ref("");
-const selectedMachineName = ref("");
+// 선택된 구조물 대분류 및 타입 (props로 초기화)
+const selectedStructureType = ref(props.structureType);
+const selectedMachineName = ref(props.structureTypeDetail);
+
+// props 변경 시 로컬 상태 동기화
+watch(
+  () => props.structureType,
+  (newValue) => {
+    selectedStructureType.value = newValue;
+  }
+);
+
+watch(
+  () => props.structureTypeDetail,
+  (newValue) => {
+    selectedMachineName.value = newValue;
+  }
+);
 
 // 비고 입력
 const remarks = ref("");

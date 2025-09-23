@@ -123,7 +123,11 @@
         </div>
         <div class="modal-body">
           <template v-if="!isEditMode">
-            <StructureRegisterTab ref="registerTabRef" />
+            <StructureRegisterTab
+              ref="registerTabRef"
+              :structureType="selectedStructureType"
+              :structureTypeDetail="selectedStructureTypeDetail"
+            />
           </template>
           <template v-else>
             <StructureUpdateTab ref="updateTabRef" />
@@ -307,6 +311,9 @@ const openRegistModal = () => {
 const closeRegistModal = () => {
   isRegistModalOpen.value = false;
   isEditMode.value = false;
+
+  // 모달 닫기 시 구조물 타입 초기화
+  selectedStructureTypeDetail.value = "";
 };
 
 const handleEdit = () => {

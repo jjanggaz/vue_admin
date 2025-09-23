@@ -890,7 +890,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
       
       // API 응답에서 파일명을 찾기 위한 모든 가능한 필드 확인
       const possibleFileNameFields = ['file_name', 'drawing_name', 'pfd', 'name', 'filename', 'original_name'];
-      let fileName = '공정카드 파일';
+      let fileName = '';
       
       // current_file.file_name을 우선적으로 확인
       if (item.current_file?.file_name) {
@@ -1053,7 +1053,7 @@ const createFormulaAPI = async (processId: string, formulaName: string, formulaC
       processId,
       formulaName,
       formulaCode,
-      siteFile: siteFile ? siteFile.name : '없음'
+      siteFile: siteFile ? siteFile.name : ''
     });
     
     const formData = new FormData();
@@ -2744,6 +2744,11 @@ const downloadProcessSymbol = async () => {
       }
     }
     
+    // 파일명이 기본값인 경우 실제 파일명으로 변경
+    if (fileName === 'process_symbol.svg') {
+      fileName = 'process_symbol.svg';
+    }
+    
     // 응답을 JSON으로 파싱
     const responseData = await response.json();
     
@@ -2817,9 +2822,9 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
       throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
     
-    // 파일명 추출 (우선순위: Content-Disposition 헤더 > getSvgFileName > 기본값)
+    // 파일명 추출 (우선순위: Content-Disposition 헤더 > getSvgFileName)
     const contentDisposition = response.headers.get('Content-Disposition');
-    let fileName = 'pfd_svg_file.svg'; // 기본값
+    let fileName = '';
     
     // 1. Content-Disposition 헤더에서 파일명 추출 시도
     if (contentDisposition) {
@@ -2830,7 +2835,7 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
     }
     
     // 2. Content-Disposition에서 파일명을 못 찾으면 getSvgFileName 사용
-    if (fileName === 'pfd_svg_file.svg') {
+    if (!fileName) {
       const svgFileName = getSvgFileName(pfdItem);
       if (svgFileName && svgFileName !== t("common.noFile")) {
         fileName = svgFileName;
@@ -3083,7 +3088,7 @@ const downloadPfd = async (drawingId: string) => {
     // download_url이 있으면 실제 파일 다운로드
     if (downloadUrl) {
       // 파일명 추출
-      let fileName = 'pfd_file.pdf';
+      let fileName = '';
       
       console.log('파일명 추출 디버깅:');
       console.log('- fileInfo 존재 여부:', !!fileInfo);
@@ -3122,7 +3127,7 @@ const downloadPfd = async (drawingId: string) => {
       }
       
       // 파일명 추출 (responseData.file_info.file_name 사용)
-      let fileName = 'pfd_file.pdf';
+      let fileName = '';
       if (responseData.file_info && responseData.file_info.file_name) {
         fileName = responseData.file_info.file_name;
       }
@@ -3210,8 +3215,8 @@ const downloadMappingSvg = async (svgDrawingId: string, svgFileName?: string) =>
     
     // download_url이 있으면 실제 파일 다운로드
     if (downloadUrl) {
-      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name > 기본값)
-      let fileName = 'mapping_svg_file.svg';
+      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name)
+      let fileName = '';
       
       console.log('매핑 Svg 파일명 추출 디버깅:');
       console.log('- 파라미터 svgFileName:', svgFileName);
@@ -3314,8 +3319,8 @@ const downloadMappingExcel = async (excelDrawingId: string, excelFileName?: stri
     
     // download_url이 있으면 실제 파일 다운로드
     if (downloadUrl) {
-      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name > 기본값)
-      let fileName = 'mapping_excel_file.xlsx';
+      // 파일명 추출 (우선순위: 파라미터로 받은 파일명 > API 응답의 file_name)
+      let fileName = '';
       
       console.log('매핑 Excel 파일명 추출 디버깅:');
       console.log('- 파라미터 excelFileName:', excelFileName);
@@ -3409,7 +3414,7 @@ const downloadExcel = async (drawingId: string) => {
     // download_url이 있으면 실제 파일 다운로드
     if (downloadUrl) {
       // 파일명 추출
-      let fileName = 'excel_file.xls';
+      let fileName = '';
       
       console.log('Excel 파일명 추출 디버깅:');
       console.log('- fileInfo 존재 여부:', !!fileInfo);
@@ -3461,7 +3466,7 @@ const downloadPidSvg = async (pidItem: any) => {
       return;
     }
 
-    const fileName = pidItem.svg_file_name || pidItem.svgFileName || 'svg_drawing.svg';
+    const fileName = pidItem.svg_file_name || pidItem.svgFileName || '';
     
     console.log('P&ID SVG 다운로드 API 호출:', {
       api: `/api/process/drawing/download/${pidItem.drawing_id}`,
@@ -3616,7 +3621,7 @@ const downloadPid = async (drawingId: string) => {
     // download_url이 있으면 실제 파일 다운로드
     if (downloadUrl) {
       // 파일명 추출
-      let fileName = 'pid_file.dwg';
+      let fileName = '';
       
       console.log('P&ID 파일명 추출 디버깅:');
       console.log('- fileInfo 존재 여부:', !!fileInfo);
@@ -3655,7 +3660,7 @@ const downloadPid = async (drawingId: string) => {
       }
       
       // 파일명 추출 (responseData.file_info.file_name 사용)
-      let fileName = 'pid_file.dwg';
+      let fileName = '';
       if (responseData.file_info && responseData.file_info.file_name) {
         fileName = responseData.file_info.file_name;
       }
@@ -4384,7 +4389,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       process_id: processId,
       drawing_type: 'SVG',
       parent_drawing_id: pidItem.drawing_id,
-      drawing_id: pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_') ? pidItem.svg_drawing_id : '없음',
+      drawing_id: pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_') ? pidItem.svg_drawing_id : '',
       siteFile: svgFile.name,
       fileSize: svgFile.size,
       fileType: svgFile.type,
@@ -4396,7 +4401,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
     console.log('process_id:', processId);
     console.log('drawing_type:', 'SVG');
     console.log('parent_drawing_id:', pidItem.drawing_id);
-    console.log('drawing_id:', pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_') ? pidItem.svg_drawing_id : '없음');
+    console.log('drawing_id:', pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_') ? pidItem.svg_drawing_id : '');
     console.log('siteFile: File(' + svgFile.name + ', ' + svgFile.size + ' bytes, ' + svgFile.type + ')');
     
     // FormData 실제 내용 검증
@@ -4980,8 +4985,8 @@ const processPfdChanges = async (processId: string) => {
           console.log('PFD FormData 내용:');
           console.log('process_id:', processId);
           console.log('drawing_type:', 'PFDCARD');
-          console.log('siteFile:', file ? file.name : '없음');
-          console.log('symbolFile:', svgFile ? (pfdItem as any).svgFileName : '없음');
+          console.log('siteFile:', file ? file.name : '');
+          console.log('symbolFile:', svgFile ? (pfdItem as any).svgFileName : '');
           const response = await request('/api/process/drawing/create', undefined, {
             method: 'POST',
             body: formData
@@ -6717,9 +6722,9 @@ const refreshPfdData = async () => {
         return {
           id: `pfd_${index + 1}`,
           no: index + 1,
-          pfdFileName: item.current_file?.file_name || item.pfdFileName || '공정카드 파일',
+          pfdFileName: item.current_file?.file_name || item.pfdFileName || '',
           registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
-          mappingPidList: '보기',
+          mappingPidList: '',
           remarks: item.remarks || '',
           drawing_id: drawingId,
           hasPidMapping,
@@ -6886,24 +6891,46 @@ const confirmMappingPid = async () => {
           const initialPidFile = (initialItem as any)?.pidFile;
           const pidFileChanged = currentPidFile && (!initialPidFile || currentPidFile.name !== initialPidFile?.name);
           
-          // Excel 파일 변경 감지
+          // Excel 파일 변경 감지 (더 정확한 로직)
           const currentExcelFile = (item as any).excelFile;
           const initialExcelFile = (initialItem as any)?.excelFile;
+          // Excel 파일이 새로 선택되었거나, 기존 파일과 다른 파일로 변경된 경우만 변경으로 감지
           const excelFileChanged = currentExcelFile && (!initialExcelFile || currentExcelFile.name !== initialExcelFile?.name);
+          
+          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+          const currentExcelFileName = item.excelFileName || item.excel_file_name;
+          const initialExcelFileName = initialItem.excelFileName || initialItem.excel_file_name;
+          // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
+          const excelFileNameChanged = (currentExcelFileName || '') !== (initialExcelFileName || '');
           
           // Svg 파일 변경 감지
           const currentSvgFile = (item as any).svgFile;
           const initialSvgFile = (initialItem as any)?.svgFile;
+          // SVG 파일이 새로 선택되었거나, 기존 파일과 다른 파일로 변경된 경우만 변경으로 감지
           const svgFileChanged = (currentSvgFile && (!initialSvgFile || currentSvgFile.name !== initialSvgFile?.name)) ||
                                 (!currentSvgFile && initialSvgFile);
           
-          const hasFileChanges = pidFileChanged || excelFileChanged || svgFileChanged;
+          // Svg 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+          const currentSvgFileName = item.svgFileName || item.svg_file_name;
+          const initialSvgFileName = initialItem.svgFileName || initialItem.svg_file_name;
+          // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
+          const svgFileNameChanged = (currentSvgFileName || '') !== (initialSvgFileName || '');
+          
+          // 실제 파일 변경 여부 확인 (파일 객체나 파일명 중 하나라도 변경된 경우)
+          const actualExcelFileChanged = excelFileChanged || excelFileNameChanged;
+          const actualSvgFileChanged = svgFileChanged || svgFileNameChanged;
+          
+          const hasFileChanges = pidFileChanged || actualExcelFileChanged || actualSvgFileChanged;
           
           console.log(`기존 항목 변경사항 체크 - ${item.pidFileName || 'no name'}:`, { 
             drawing_id: item.drawing_id,
             pidFileChanged,
             excelFileChanged,
+            excelFileNameChanged,
+            actualExcelFileChanged,
             svgFileChanged,
+            svgFileNameChanged,
+            actualSvgFileChanged,
             hasFileChanges
           });
           
@@ -7129,8 +7156,8 @@ const confirmMappingPid = async () => {
             item: item,
             parent_drawing_id: item.parent_drawing_id,
             pidFile: item.pidFile?.name,
-            excelFile: item.excelFile?.name || '없음',
-            svgFile: (item as any).svgFile?.name || '없음',
+            excelFile: item.excelFile?.name || '',
+            svgFile: (item as any).svgFile?.name || '',
             isNewItem: isNewItem
           });
           
@@ -7320,9 +7347,9 @@ const confirmMappingPid = async () => {
           console.log('drawing_type:', 'PNID');
           console.log('parent_drawing_id:', item.parent_drawing_id);
           console.log('remarks:', item.remarks || '');
-          console.log('pid_file (siteFile):', item.pidFile?.name || '없음');
-          console.log('excel_file:', item.excelFile?.name || '없음');
-          console.log('svg_file (symbolFile):', (item as any).svgFile?.name || '없음');
+          console.log('pid_file (siteFile):', item.pidFile?.name || '');
+          console.log('excel_file:', item.excelFile?.name || '');
+          console.log('svg_file (symbolFile):', (item as any).svgFile?.name || '');
           
           let response;
           if (isNewItem) {
@@ -7346,9 +7373,9 @@ const confirmMappingPid = async () => {
             console.log('parent_drawing_id:', item.parent_drawing_id);
             console.log('drawing_id:', item.drawing_id);
             console.log('remarks:', item.remarks || '');
-            console.log('pid_file:', item.pidFile?.name || '없음');
-            console.log('excel_file:', item.excelFile?.name || '없음');
-            console.log('svg_file:', (item as any).svgFile?.name || '없음');
+            console.log('pid_file:', item.pidFile?.name || '');
+            console.log('excel_file:', item.excelFile?.name || '');
+            console.log('svg_file:', (item as any).svgFile?.name || '');
             
             response = await request(`/api/process/drawing/${item.drawing_id}`, undefined, {
               method: 'PATCH',
@@ -8384,41 +8411,6 @@ onMounted(async () => {
         processStore.setInitialFormulaList([]);
       }
       
-      // 컴포넌트 데이터 초기화 (예시 데이터)
-      console.log('컴포넌트 데이터 초기화 시작...');
-      const componentData = [
-        {
-          id: '1',
-          division: '공용구조물',
-          components: '구조물',
-          type: '',
-          inputItem: 'SBR 반응조 구조물'
-        },
-        {
-          id: '2',
-          division: '공용구조물',
-          components: '구조물',
-          type: '',
-          inputItem: ''
-        },
-        {
-          id: '3',
-          division: '공용구조물',
-          components: '구조물',
-          type: '',
-          inputItem: ''
-        },
-        {
-          id: '4',
-          division: '공용기계',
-          components: '송풍기',
-          type: '터보블로워(VVVF)',
-          inputItem: '반응조 송풍기'
-        }
-      ];
-      processStore.setStructList(componentData);
-      console.log('컴포넌트 데이터 초기화 완료:', componentData);
-
       // PFD 도면 검색 API 호출하여 데이터 로드
       try {
         console.log('PFD 도면 검색 API 호출 시작...');
@@ -8437,9 +8429,9 @@ onMounted(async () => {
             return {
               id: `pfd_${index + 1}`,
               no: index + 1,
-              pfdFileName: item.current_file?.file_name || item.pfdFileName || '공정카드 파일',
+              pfdFileName: item.current_file?.file_name || item.pfdFileName || '',
               registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
-              mappingPidList: '보기',
+              mappingPidList: '',
               remarks: item.remarks || '',
               drawing_id: drawingId,
               symbol_id: item.symbol_id || item.symbolId || null,

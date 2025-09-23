@@ -490,7 +490,9 @@
     "statusLabel": "Status",
     "approvalStatusLabel": "Approval Status",
     "items": "items",
-    "deleteConfirm": "Are you sure you want to delete?"
+    "deleteConfirm": "Are you sure you want to delete?",
+    "specifications": "Specifications",
+    "priceInfo": "Price Information"
   },
   "placeholder": {
     "search": "Enter search term",

@@ -616,13 +616,17 @@ interface Props {
   processCode?: string;
   class?: string; // class 속성 추가
   isRegisterMode?: boolean; // 공정 등록 모드 여부
+  initialProcessType?: string | null; // 초기 공정구분 값
+  initialSubCategory?: string | null; // 초기 공정 중분류 값
 }
 
 const props = withDefaults(defineProps<Props>(), {
   processId: '',
   processCode: '',
   class: '',
-  isRegisterMode: false
+  isRegisterMode: false,
+  initialProcessType: null,
+  initialSubCategory: null
 });
 
 // Emits 정의
@@ -7797,13 +7801,18 @@ onMounted(async () => {
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때 초기값 설정
       console.log('공정 등록 모드 - 초기값 설정');
+      console.log('전달받은 조회조건 값:', {
+        initialProcessType: props.initialProcessType,
+        initialSubCategory: props.initialSubCategory
+      });
+      
       selectedUnit.value = 'METRIC';
       
-      // processDetail 초기화
+      // processDetail 초기화 (조회조건 값을 초기값으로 설정)
       processStore.setProcessDetail({
         unit_system_code: 'METRIC',
-        processType: '',
-        subCategory: '',
+        processType: props.initialProcessType || '',
+        subCategory: props.initialSubCategory || '',
         processName: '',
         processSymbol: ''
       });
@@ -7811,6 +7820,26 @@ onMounted(async () => {
       // 공정 등록 모드에서는 중분류와 공정명 옵션 초기화
       processStore.searchSubCategoryOptions = [];
       processStore.searchProcessNameOptions = [];
+      
+      // 초기 공정구분이 있으면 중분류 옵션 로드
+      if (props.initialProcessType) {
+        console.log('초기 공정구분으로 중분류 옵션 로드:', props.initialProcessType);
+        try {
+          await processStore.loadSubCategoryCodesSilent(props.initialProcessType);
+        } catch (error) {
+          console.error('초기 공정구분으로 중분류 옵션 로드 실패:', error);
+        }
+      }
+      
+      // 초기 공정 중분류가 있으면 공정명 옵션 로드
+      if (props.initialSubCategory && props.initialProcessType) {
+        console.log('초기 공정 중분류로 공정명 옵션 로드:', props.initialSubCategory);
+        try {
+          await processStore.loadProcessNameCodesSilent(props.initialSubCategory);
+        } catch (error) {
+          console.error('초기 공정 중분류로 공정명 옵션 로드 실패:', error);
+        }
+      }
       
       // 계산식 그리드 초기화
       processStore.setFormulaList([]);

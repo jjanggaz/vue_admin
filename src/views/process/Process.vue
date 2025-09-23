@@ -367,6 +367,8 @@
             :process-id="String(selectedProcessIdForApi || selectedProcessId)"
             :process-code="String(selectedProcessId)"
             :is-register-mode="isRegisterMode"
+            :initial-process-type="processStore.searchProcessType"
+            :initial-sub-category="processStore.searchSubCategoryInput"
             ref="processDetailRef"
             class="popup-mode"
             @update-success="closeDetailModal"
@@ -564,6 +566,11 @@ const handleRegist = () => {
   selectedProcessId.value = 'new'; // 새 공정임을 나타내는 값
   selectedProcessIdForApi.value = undefined; // API 호출용 ID 초기화
   isDetailModalOpen.value = true;
+  
+  console.log('공정 등록 모드로 열기 - 조회조건 값:', {
+    processType: processStore.searchProcessType,
+    subCategory: processStore.searchSubCategoryInput
+  });
 };
 
  const closeRegistModal = () => {

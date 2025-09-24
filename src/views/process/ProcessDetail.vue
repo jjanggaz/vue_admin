@@ -66,7 +66,7 @@
               style="display: none"
               ref="processSymbolInput"
             />
-            <button type="button" @click="$refs.processSymbolInput.click()" class="file-select-btn">
+            <button type="button" @click="processSymbolInput?.click()" class="file-select-btn">
               {{ t("common.selectFile") }}
             </button>
             <span class="selected-file">{{ getSelectedFilesText('processSymbol') || getProcessSymbolFileName() || t("common.noFile") }}</span>
@@ -148,7 +148,7 @@
                 <span class="selected-file">
                   {{ item.registeredFormula || t("common.noFile") }}
                   <button 
-                    v-if="item.formula_id || item.file_name" 
+                    v-if="item.formula_id" 
                     @click="downloadFormulaFromList(item)" 
                     class="btn btn-sm btn-outline-primary download-btn"
                     title="계산식 다운로드"
@@ -528,7 +528,7 @@
               style="display: none"
               ref="formulaFileInput"
             />
-            <button @click="$refs.formulaFileInput.click()" class="btn btn-primary">
+            <button @click="formulaFileInput?.click()" class="btn btn-primary">
               {{ t("common.selectFiles") }}
             </button>
             <span class="selected-files-info">
@@ -574,7 +574,7 @@
               style="display: none"
               ref="pfdFileInput"
             />
-            <button @click="$refs.pfdFileInput.click()" class="btn btn-primary">
+            <button @click="pfdFileInput?.click()" class="btn btn-primary">
               {{ t("common.selectFiles") }}
             </button>
             <span class="selected-files-info">
@@ -648,6 +648,9 @@ const selectedFormulaItems = ref<any[]>([]);
 const selectedPfdItems = ref<any[]>([]);
 const selectedFormulaFiles = ref<File[]>([]);
 const selectedPfdFiles = ref<File[]>([]);
+const processSymbolInput = ref<HTMLInputElement | null>(null);
+const formulaFileInput = ref<HTMLInputElement | null>(null);
+const pfdFileInput = ref<HTMLInputElement | null>(null);
 
 // P&ID 매핑 관련 상태
 const currentPfdItemForMapping = ref<any>(null);
@@ -4110,13 +4113,19 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
     
     // 백엔드 API 컨트롤러 구조에 맞게 수정
     // excelData Map에 담을 데이터 (Map<String, Object>로 전달)
-    const excelData = {
+    const excelData: any = {
       process_id: processId,
       drawing_type: 'EXCEL',
       parent_drawing_id: pidItem.drawing_id,
       excel_type: 'MAPPING',
       remarks: ''
     };
+    
+    // 기존 Excel 파일이 있는 경우 force_update: true 추가
+    if (pidItem.excel_drawing_id) {
+      excelData.force_update = true;
+      console.log('기존 Excel 파일 재선택 - force_update: true 추가');
+    }
     
     // excelData Map의 각 필드를 FormData에 추가
     Object.keys(excelData).forEach(key => {
@@ -4267,6 +4276,22 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
       
       alert(`Excel 파일 "${excelFile.name}"이 성공적으로 업로드되었습니다.`);
       
+      // 기존 Excel 파일이 재선택된 경우 P&ID 컴포넌트 그리드 갱신
+      if (pidItem.excel_drawing_id) {
+        console.log('🔄 기존 Excel 파일 재선택 - P&ID 컴포넌트 그리드 갱신 시작');
+        try {
+          // 현재 선택된 P&ID 항목이 있는지 확인
+          if (selectedMappingPidItems.value && (selectedMappingPidItems.value as any).id === pidItem.id) {
+            console.log('✅ 현재 선택된 P&ID 항목과 일치 - P&ID 컴포넌트 모달 재호출');
+            await openPidComponentModal(pidItem);
+          } else {
+            console.log('ℹ️ 현재 선택된 P&ID 항목과 다름 - P&ID 컴포넌트 갱신 생략');
+          }
+        } catch (componentError) {
+          console.error('❌ P&ID 컴포넌트 그리드 갱신 실패:', componentError);
+        }
+      }
+      
       // Excel 파일 업로드 성공 후 그리드 새로고침 제거 (그리드 내용 지워짐 방지)
       console.log('=== Excel 파일 업로드 성공 - 그리드 새로고침 건너뛰기 (데이터 유지) ===');
     } else {
@@ -4390,7 +4415,9 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
     // svg_drawing_id가 있으면 drawing_id로 요청에 포함
     if (pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_')) {
       formData.append('drawing_id', pidItem.svg_drawing_id);
+      formData.append('force_update', 'true'); // 기존 SVG 파일 재선택 시 force_update 추가
       console.log('✅ 기존 svg_drawing_id를 drawing_id로 포함:', pidItem.svg_drawing_id);
+      console.log('✅ 기존 SVG 파일 재선택 - force_update: true 추가');
     } else {
       console.log('ℹ️ svg_drawing_id가 없거나 임시 ID - drawing_id 포함 안함:', pidItem.svg_drawing_id);
     }
@@ -4545,6 +4572,22 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       
       console.log('✅ P&ID Svg 도면 업로드 성공:', svgFile.name);
       // alert(`Svg 도면이 성공적으로 업로드되었습니다: ${svgFile.name}`); // 자동 저장 시에는 alert 제거
+      
+      // 기존 SVG 파일이 재선택된 경우 P&ID 컴포넌트 그리드 갱신
+      if (pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith('temp_')) {
+        console.log('🔄 기존 SVG 파일 재선택 - P&ID 컴포넌트 그리드 갱신 시작');
+        try {
+          // 현재 선택된 P&ID 항목이 있는지 확인
+          if (selectedMappingPidItems.value && (selectedMappingPidItems.value as any).id === pidItem.id) {
+            console.log('✅ 현재 선택된 P&ID 항목과 일치 - P&ID 컴포넌트 모달 재호출');
+            await openPidComponentModal(pidItem);
+          } else {
+            console.log('ℹ️ 현재 선택된 P&ID 항목과 다름 - P&ID 컴포넌트 갱신 생략');
+          }
+        } catch (componentError) {
+          console.error('❌ P&ID 컴포넌트 그리드 갱신 실패:', componentError);
+        }
+      }
       
       // SVG 파일 업로드 성공 후 그리드 새로고침 제거 (그리드 내용 지워짐 방지)
       console.log('=== SVG 파일 업로드 성공 - 그리드 새로고침 건너뛰기 (데이터 유지) ===');
@@ -5548,11 +5591,39 @@ const processFormulaChanges = async (processId: string) => {
             const addedRow = addedRows[index];
             const apiResponse = result.value;
             
-            // API 응답에서 file_name 추출
-            const fileName = apiResponse?.response?.file_name || apiResponse?.file_name;
+            // API 응답 구조 디버깅
+            console.log('=== API 응답 구조 분석 ===');
+            console.log('apiResponse:', apiResponse);
+            console.log('apiResponse.response:', apiResponse?.response);
+            console.log('apiResponse.response.data:', apiResponse?.response?.data);
+            console.log('apiResponse.response.data.response:', apiResponse?.response?.data?.response);
+            console.log('apiResponse.response.data.response.data:', apiResponse?.response?.data?.response?.data);
+            console.log('apiResponse.response.data.response.data.formula_id:', apiResponse?.response?.data?.response?.data?.formula_id);
+            console.log('apiResponse.response.data.response.data.files:', apiResponse?.response?.data?.response?.data?.files);
+            console.log('apiResponse.response.data.response.data.files.python:', apiResponse?.response?.data?.response?.data?.files?.python);
+            console.log('=== API 응답 구조 분석 끝 ===');
+            
+            // API 응답에서 file_name과 formula_id 추출
+            const fileName = apiResponse?.response?.file_name || apiResponse?.file_name || apiResponse?.response?.data?.files?.python?.original_filename || apiResponse?.response?.data?.response?.files?.python?.original_filename || apiResponse?.response?.data?.response?.data?.files?.python?.original_filename;
+            const formulaId = apiResponse?.response?.formula_id || apiResponse?.formula_id || apiResponse?.response?.data?.formula_id || apiResponse?.response?.data?.response?.formula_id || apiResponse?.response?.data?.response?.data?.formula_id;
+            
             if (fileName) {
               addedRow.file_name = fileName;
               console.log(`계산식 file_name 업데이트: ${addedRow.registeredFormula} -> ${fileName}`);
+            }
+            
+            if (formulaId) {
+              addedRow.formula_id = formulaId;
+              console.log(`계산식 formula_id 업데이트: ${addedRow.registeredFormula} -> ${formulaId}`);
+            } else {
+              console.log(`계산식 formula_id 추출 실패: ${addedRow.registeredFormula}`);
+              console.log('추출 시도한 경로들:', {
+                'apiResponse?.response?.formula_id': apiResponse?.response?.formula_id,
+                'apiResponse?.formula_id': apiResponse?.formula_id,
+                'apiResponse?.response?.data?.formula_id': apiResponse?.response?.data?.formula_id,
+                'apiResponse?.response?.data?.response?.formula_id': apiResponse?.response?.data?.response?.formula_id,
+                'apiResponse?.response?.data?.response?.data?.formula_id': apiResponse?.response?.data?.response?.data?.formula_id
+              });
             }
             
             successfulFormulas.push(addedRow);
@@ -5572,7 +5643,8 @@ const processFormulaChanges = async (processId: string) => {
             return { 
               ...item, 
               isSaved: true,
-              file_name: successfulFormula.file_name || item.file_name // file_name 업데이트
+              file_name: successfulFormula.file_name || item.file_name, // file_name 업데이트
+              formula_id: successfulFormula.formula_id || item.formula_id // formula_id 업데이트
             };
           }
           return item;
@@ -5580,6 +5652,19 @@ const processFormulaChanges = async (processId: string) => {
         processStore.setFormulaList(updatedFormulaList);
         console.log("계산식 저장 상태 업데이트 완료");
         console.log("업데이트된 계산식 목록:", updatedFormulaList);
+        
+        // formula_id 설정 확인
+        console.log("=== formula_id 설정 확인 ===");
+        updatedFormulaList.forEach((item, index) => {
+          console.log(`계산식 ${index + 1}:`, {
+            id: item.id,
+            registeredFormula: item.registeredFormula,
+            formula_id: item.formula_id,
+            file_name: item.file_name,
+            isSaved: item.isSaved
+          });
+        });
+        console.log("=== formula_id 설정 확인 끝 ===");
         
         // 그리드 상태 확인
         console.log("=== 그리드 상태 확인 ===");

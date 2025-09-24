@@ -364,7 +364,7 @@
           <ProcessDetail
             v-else
             :key="`process-detail-${selectedProcessId}`"
-            :process-id="String(selectedProcessIdForApi || selectedProcessId)"
+            :process-id="String(selectedProcessIdForApi)"
             :process-code="String(selectedProcessId)"
             :is-register-mode="isRegisterMode"
             :initial-process-type="processStore.searchProcessType"
@@ -522,16 +522,6 @@ const attachedFiles = ref<AttachedFiles>({
 
 // 파일 선택 관련 상태
 const selectedFiles = ref<{ [key: string]: File }>({});
-
-// 폼 유효성 검사
-// const isFormValid = computed(() => {
-//   return (
-//     registForm.value.processType !== null &&
-//     registForm.value.processType.trim() !== "" &&
-//     registForm.value.processNm !== null &&
-//     registForm.value.processNm.trim() !== ""
-//   );
-// });
 
 const formatDate = (date: string | null) => {
   if (!date) return "-";
@@ -1008,14 +998,21 @@ const saveProcessRegistration = async () => {
 
 // 상세 보기 이동
 const viewDetail = (item: ProcessItem) => {
-  // process_code와 process_id를 모두 사용하여 상세보기
-  const processCode = item.process_code;
+  // process_id만 사용하여 상세보기
   const processId = item.process_id;
   
-  if (processCode) {
-    selectedProcessId.value = processCode; // process_code를 저장
-    selectedProcessIdForApi.value = processId; // process_id를 API 호출용으로 저장
+  console.log('=== viewDetail 함수 호출 ===');
+  console.log('item:', item);
+  console.log('processId:', processId);
+  
+  if (processId) {
+    selectedProcessId.value = item.process_code; // 화면 표시용 (process_code)
+    selectedProcessIdForApi.value = processId; // API 호출용 (process_id)
+    console.log('selectedProcessId.value (화면표시용):', selectedProcessId.value);
+    console.log('selectedProcessIdForApi.value (API호출용):', selectedProcessIdForApi.value);
     isDetailModalOpen.value = true;
+  } else {
+    console.error('process_id가 없습니다:', item);
   }
 };
 

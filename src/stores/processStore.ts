@@ -603,25 +603,30 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
-  const searchProcessById = async (processCode: string) => {
+  const searchProcessById = async (processId: string) => {
     try {
       setLoading(true);
+      console.log("=== searchProcessById 함수 호출 ===");
+      console.log("전달받은 processId:", processId);
 
-      if (!processCode || processCode === "undefined" || processCode === "null") {
+      if (!processId || processId === "undefined" || processId === "null") {
         return null;
       }
 
-      // processCode가 문자열이 아닌 경우 문자열로 변환
-      const validProcessCode = String(processCode).trim();
+      // processId가 문자열이 아닌 경우 문자열로 변환
+      const validProcessId = String(processId).trim();
       
-      if (!validProcessCode) {
+      if (!validProcessId) {
+        console.log("validProcessId가 유효하지 않음:", validProcessId);
         return null;
       }
 
       const requestData = {
-        search_field: "process_code",
-        search_value: validProcessCode,
+        search_field: "process_id",
+        search_value: validProcessId,
       };
+      
+      console.log("searchProcessById API 요청 데이터:", JSON.stringify(requestData));
 
       const result = await request("/api/process/master/search", undefined, {
         method: "POST",
@@ -676,7 +681,7 @@ export const useProcessStore = defineStore("process", () => {
 
           // 검색된 데이터를 화면 입력 필드에 설정
           setProcessDetail({
-            process_id: processData.process_id || processCode,
+            process_id: processData.process_id || processId,
             processType: processData.level2_code_key || null,
             subCategory: processData.level3_code_key || null,
             processName: processData.process_name || null,

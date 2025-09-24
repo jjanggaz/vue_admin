@@ -804,33 +804,47 @@ const getSvgFileName = (item: any): string => {
     return item.svgFileName;
   }
   
-  // 2. symbol_uri가 있으면 URL에서 파일명 추출
-  if (item.symbol_uri) {
-    try {
-      // URL에서 파일명 추출
-      const url = new URL(item.symbol_uri);
-      const pathname = url.pathname;
-      const fileName = pathname.split('/').pop(); // 마지막 경로 세그먼트를 파일명으로 사용
-      
-      if (fileName && fileName.trim() !== '') {
-        console.log('symbol_uri에서 파일명 추출:', fileName);
-        return fileName;
-      }
-    } catch (error) {
-      console.warn('symbol_uri URL 파싱 실패:', error);
-      
-      // URL 파싱 실패 시 문자열에서 파일명 추출 시도
-      const uri = item.symbol_uri;
-      const lastSlashIndex = uri.lastIndexOf('/');
-      if (lastSlashIndex !== -1) {
-        const fileName = uri.substring(lastSlashIndex + 1);
-        if (fileName && fileName.trim() !== '') {
-          console.log('symbol_uri 문자열에서 파일명 추출:', fileName);
-          return fileName;
+    // 2. symbol_uri가 있으면 경로에서 파일명 추출
+    if (item.symbol_uri) {
+      try {
+        // 절대 URL인지 확인
+        if (item.symbol_uri.startsWith('http://') || item.symbol_uri.startsWith('https://')) {
+          // 절대 URL인 경우
+          const url = new URL(item.symbol_uri);
+          const pathname = url.pathname;
+          const fileName = pathname.split('/').pop(); // 마지막 경로 세그먼트를 파일명으로 사용
+          
+          if (fileName && fileName.trim() !== '') {
+            console.log('symbol_uri 절대 URL에서 파일명 추출:', fileName);
+            return fileName;
+          }
+        } else {
+          // 상대 경로인 경우 직접 파일명 추출
+          const uri = item.symbol_uri;
+          const lastSlashIndex = uri.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            const fileName = uri.substring(lastSlashIndex + 1);
+            if (fileName && fileName.trim() !== '') {
+              console.log('symbol_uri 상대 경로에서 파일명 추출:', fileName);
+              return fileName;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('symbol_uri 파싱 실패:', error);
+        
+        // 파싱 실패 시 문자열에서 파일명 추출 시도
+        const uri = item.symbol_uri;
+        const lastSlashIndex = uri.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+          const fileName = uri.substring(lastSlashIndex + 1);
+          if (fileName && fileName.trim() !== '') {
+            console.log('symbol_uri 문자열에서 파일명 추출:', fileName);
+            return fileName;
+          }
         }
       }
     }
-  }
   
   // 3. symbol_id가 있고 pfdFileName이 있으면 확장자를 .svg로 치환
   if (item.symbol_id && item.pfdFileName) {
@@ -8248,11 +8262,15 @@ onMounted(async () => {
       
       // 공정 타입 옵션들 로드
       await processStore.loadProcessTypeCodes();
-    } else if (props.processCode) {
+    } else if (props.processId) {
              // 공정 상세 정보 로드
-       console.log('공정 상세 정보 로드 시작...');
-       console.log('사용할 processCode:', props.processCode);
-       await processStore.searchProcessById(props.processCode);
+       console.log('=== 공정 상세 정보 로드 시작 ===');
+       console.log('props.processId:', props.processId);
+       console.log('props.processCode:', props.processCode);
+       console.log('props.isRegisterMode:', props.isRegisterMode);
+       console.log('searchProcessById 호출 전 - props.processId:', props.processId);
+       await processStore.searchProcessById(props.processId);
+       console.log('searchProcessById 호출 완료');
        console.log('공정 상세 정보 로드 완료:', processStore.processDetail);
        console.log('공정 타입:', processStore.processDetail.processType);
        console.log('공정 중분류:', processStore.processDetail.subCategory);

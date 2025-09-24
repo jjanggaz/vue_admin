@@ -372,9 +372,12 @@ const loadData = async () => {
   try {
     // API 호출로 구조물 검색 리스트 조회
     await structureStore.fetchSearchList({
-      structure_type: selectedStructureType.value,
-      structure_type_detail: selectedStructureTypeDetail.value,
-      unit: selectedUnit.value,
+      search_field: "",
+      search_value: "",
+      page: currentPage.value,
+      page_size: pageSize.value,
+      equipment_type: selectedStructureType.value,
+      root_equipment_type: selectedStructureTypeDetail.value,
     });
 
     // API 응답 데이터를 structureList에 설정

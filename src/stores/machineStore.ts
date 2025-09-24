@@ -128,7 +128,20 @@ export const useMachineStore = defineStore("machine", () => {
   const error = ref<string | null>(null);
 
   // 기계 검색 결과 데이터
-  const searchResults = ref<any[]>([]);
+  const searchResults = ref<{
+    total: number;
+    total_pages: number;
+    page: number;
+    page_size: number;
+    items: Record<string, unknown>[];
+    search_info?: Record<string, unknown>;
+  } | null>(null);
+
+  // 수정 화면용 별도 depth 변수들
+  const editSecondDepth = ref<Record<string, unknown>[]>([]);
+  const editThirdDepth = ref<Record<string, unknown>[]>([]);
+  const editFourthDepth = ref<Record<string, unknown>[]>([]);
+  const editFifthDepth = ref<Record<string, unknown>[]>([]);
 
   // 액션
   const fetchCommonCodes = async (parentKey: string) => {
@@ -210,7 +223,7 @@ export const useMachineStore = defineStore("machine", () => {
   };
 
   // 기계 검색 리스트 조회 함수
-  const fetchSearchList = async (searchParams: any) => {
+  const fetchSearchList = async (searchParams: Record<string, unknown>) => {
     loading.value = true;
     error.value = null;
 
@@ -238,6 +251,75 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  // 기계 공통 코드 조회 함수 (equipment_type 기반)
+  const fetchMachineCommonCode = async (searchValue: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/common/code/${searchValue}`,
+        undefined,
+        {
+          method: "GET",
+        }
+      );
+
+      // API 응답 구조에 맞게 수정 (사용자 제공 응답 구조: response.data)
+      const responseData = response.response.data;
+
+      console.log("기계 공통 코드 조회 응답 데이터:", responseData);
+
+      if (responseData?.hierarchy) {
+        const hierarchy = responseData.hierarchy;
+
+        // hierarchy 배열을 depth별로 분류하여 저장
+        // level 1: 기계 (EQUIP) - secondDepth
+        // level 2: 기계명 (M_PUMP) - thirdDepth
+        // level 3: 기계종분류 (M_PMP03) - fourthDepth
+        // level 4: 기계유형 (M_PMP0302) - fifthDepth
+
+        // 각 depth에 해당하는 데이터 추출
+        const depth2Data = hierarchy.filter(
+          (item: Record<string, unknown>) => item.level === 2
+        );
+        const depth3Data = hierarchy.filter(
+          (item: Record<string, unknown>) => item.level === 3
+        );
+        const depth4Data = hierarchy.filter(
+          (item: Record<string, unknown>) => item.level === 4
+        );
+        const depth5Data = hierarchy.filter(
+          (item: Record<string, unknown>) => item.level === 5
+        );
+
+        // 수정 화면용 별도 depth 변수에 원본 데이터 저장
+        editSecondDepth.value = depth2Data;
+        editThirdDepth.value = depth3Data;
+        editFourthDepth.value = depth4Data;
+        editFifthDepth.value = depth5Data;
+
+        console.log("기계 공통 코드 hierarchy 데이터 저장 완료:", {
+          editSecondDepth: editSecondDepth.value,
+          editThirdDepth: editThirdDepth.value,
+          editFourthDepth: editFourthDepth.value,
+          editFifthDepth: editFifthDepth.value,
+        });
+      }
+
+      return response;
+    } catch (err) {
+      console.error("기계 공통 코드 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "기계 공통 코드 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -249,9 +331,15 @@ export const useMachineStore = defineStore("machine", () => {
     searchResults,
     loading,
     error,
+    // 수정 화면용 별도 depth 변수들
+    editSecondDepth,
+    editThirdDepth,
+    editFourthDepth,
+    editFifthDepth,
     // 액션
     fetchCommonCodes,
     fetchThirdDepth,
     fetchSearchList,
+    fetchMachineCommonCode,
   };
 });

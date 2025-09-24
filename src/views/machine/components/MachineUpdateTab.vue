@@ -24,13 +24,13 @@
         <select
           class="input select-md"
           v-model="selectedMachineName"
-          :disabled="isRegistered"
+          :disabled="!isStep0Enabled"
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="machine in machineStore.secondDepth"
-            :key="machine.code_id"
-            :value="machine.code_key"
+            v-for="machine in machineStore.editSecondDepth"
+            :key="machine.code_key as string"
+            :value="machine.code_key as string"
           >
             {{ machine.code_value }}
           </option>
@@ -45,9 +45,9 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.thirdDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
+            v-for="dept in machineStore.editThirdDepth"
+            :key="dept.code_key as string"
+            :value="dept.code_key as string"
           >
             {{ dept.code_value }}
           </option>
@@ -62,9 +62,9 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.fourthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
+            v-for="dept in machineStore.editFourthDepth"
+            :key="dept.code_key as string"
+            :value="dept.code_key as string"
           >
             {{ dept.code_value }}
           </option>
@@ -79,9 +79,9 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="dept in machineStore.fifthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
+            v-for="dept in machineStore.editFifthDepth"
+            :key="dept.code_key as string"
+            :value="dept.code_key as string"
           >
             {{ dept.code_value }}
           </option>
@@ -132,6 +132,20 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
+// Props 정의 - 선택된 기계 정보
+interface Props {
+  selectedMachine?: {
+    equipment_type: string;
+    equipment_name: string;
+    equipment_code: string;
+    // 필요한 다른 필드들 추가 가능
+  };
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selectedMachine: undefined,
+});
+
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
@@ -139,6 +153,7 @@ const machineStore = useMachineStore();
 const selectedUnit = ref("");
 
 // 단계별 enable 상태
+const isStep0Enabled = ref(false); // 기계명
 const isStep1Enabled = ref(false); // 기계종분류
 const isStep2Enabled = ref(false); // 기계유형
 const isStep3Enabled = ref(false); // 기계유형분류
@@ -149,6 +164,95 @@ const selectedMachineName = ref("");
 const selectedThirdDept = ref("");
 const selectedFourthDept = ref("");
 const selectedFifthDept = ref("");
+
+// props로 받은 선택된 기계 정보를 store의 hierarchy 데이터로 콤보박스에 설정
+watch(
+  () => props.selectedMachine,
+  (newMachine) => {
+    try {
+      if (newMachine) {
+        // fetchMachineCommonCode 호출 후 store에 저장된 hierarchy 데이터 사용
+        // equipment_type이 value이고 code_value가 text
+
+        // 기계명 (level 2) - store의 editSecondDepth에서 첫 번째 항목의 code_key 사용
+        if (
+          machineStore.editSecondDepth &&
+          machineStore.editSecondDepth.length > 0 &&
+          machineStore.editSecondDepth[0] &&
+          machineStore.editSecondDepth[0].code_key
+        ) {
+          selectedMachineName.value = machineStore.editSecondDepth[0]
+            .code_key as string;
+        } else {
+          selectedMachineName.value = "";
+        }
+
+        // 기계종분류 (level 3) - store의 editThirdDepth에서 첫 번째 항목의 code_key 사용
+        if (
+          machineStore.editThirdDepth &&
+          machineStore.editThirdDepth.length > 0 &&
+          machineStore.editThirdDepth[0] &&
+          machineStore.editThirdDepth[0].code_key
+        ) {
+          selectedThirdDept.value = machineStore.editThirdDepth[0]
+            .code_key as string;
+        } else {
+          selectedThirdDept.value = "";
+        }
+
+        // 기계유형 (level 4) - store의 editFourthDepth에서 첫 번째 항목의 code_key 사용
+        if (
+          machineStore.editFourthDepth &&
+          machineStore.editFourthDepth.length > 0 &&
+          machineStore.editFourthDepth[0] &&
+          machineStore.editFourthDepth[0].code_key
+        ) {
+          selectedFourthDept.value = machineStore.editFourthDepth[0]
+            .code_key as string;
+        } else {
+          selectedFourthDept.value = "";
+        }
+
+        // 기계유형분류 (level 5) - store의 editFifthDepth에서 첫 번째 항목의 code_key 사용
+        if (
+          machineStore.editFifthDepth &&
+          machineStore.editFifthDepth.length > 0 &&
+          machineStore.editFifthDepth[0] &&
+          machineStore.editFifthDepth[0].code_key
+        ) {
+          selectedFifthDept.value = machineStore.editFifthDepth[0]
+            .code_key as string;
+        } else {
+          selectedFifthDept.value = "";
+        }
+
+        console.log("MachineUpdateTab: edit depth 데이터로 콤보박스 설정", {
+          selectedMachine: newMachine,
+          editDepthData: {
+            editSecondDepth: machineStore.editSecondDepth,
+            editThirdDepth: machineStore.editThirdDepth,
+            editFourthDepth: machineStore.editFourthDepth,
+            editFifthDepth: machineStore.editFifthDepth,
+          },
+          selectedValues: {
+            machineName: selectedMachineName.value,
+            thirdDept: selectedThirdDept.value,
+            fourthDept: selectedFourthDept.value,
+            fifthDept: selectedFifthDept.value,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("MachineUpdateTab watch 오류:", error);
+      // 오류 발생 시 기본값 설정
+      selectedMachineName.value = "";
+      selectedThirdDept.value = "";
+      selectedFourthDept.value = "";
+      selectedFifthDept.value = "";
+    }
+  },
+  { immediate: true }
+);
 
 // 엑셀 업로드 입력 ref
 const excelFileInput = ref<HTMLInputElement | null>(null);

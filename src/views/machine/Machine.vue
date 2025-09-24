@@ -87,17 +87,29 @@
           :selection-mode="'single'"
           :show-select-all="false"
           :select-header-text="t('common.selectColumn')"
+          row-key="equipment_id"
+          :stickyHeader="true"
           @selection-change="handleSelectionChange"
+          @row-click="handleRowClick"
         >
           <!-- 순번 슬롯 -->
           <template #cell-no="{ index }">
             {{ (currentPage - 1) * pageSize + index + 1 }}
           </template>
 
-          <!-- 기계타입 슬롯 -->
-          <template #cell-type="{ value }">
-            {{ t("common.machineType." + mapMachineType(value)) }}
+          <!-- 용량 슬롯 -->
+          <template #cell-capacity="{ item }">
+            {{
+              item.search_criteria?.max_capacity_m3_min?.value
+                ? `${
+                    item.search_criteria.max_capacity_m3_min.value as number
+                  } ㎥/min`
+                : "-"
+            }}
           </template>
+
+          <!-- 계산식 슬롯 (미정이므로 '-' 표시) -->
+          <template #cell-formula> - </template>
 
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
@@ -181,8 +193,18 @@
               <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
             </template>
             <template v-else>
-              <MachineUpdateTab v-if="modalActiveTab === 0" />
-              <MachineFormulaUpdateTab v-if="modalActiveTab === 1" />
+              <MachineUpdateTab
+                v-if="modalActiveTab === 0"
+                :selected-machine="
+                  selectedItems.length > 0 ? selectedItems[0] : undefined
+                "
+              />
+              <MachineFormulaUpdateTab
+                v-if="modalActiveTab === 1"
+                :selected-machine="
+                  selectedItems.length > 0 ? selectedItems[0] : undefined
+                "
+              />
             </template>
           </div>
         </div>
@@ -211,46 +233,63 @@ import { useMachineStore } from "@/stores/machineStore";
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
-// 모달 탭 구성 (ProjectDetail 스타일)
-const modalTabs = [
-  { key: "machine", label: "기계 등록" },
-  {
-    key: "formula",
-    label: "기계 계산식 등록",
-  },
-];
+// 모달 탭 구성 (ProjectDetail 스타일) - 등록/수정 모드에 따라 동적 변경
+const modalTabs = computed(() => {
+  if (isEditMode.value) {
+    return [
+      { key: "machine", label: "기계 수정" },
+      {
+        key: "formula",
+        label: "기계 계산식 수정",
+      },
+    ];
+  } else {
+    return [
+      { key: "machine", label: "기계 등록" },
+      {
+        key: "formula",
+        label: "기계 계산식 등록",
+      },
+    ];
+  }
+});
 const modalActiveTab = ref(0);
 
 interface MachineItem {
-  id: string;
-  name: string;
-  code: string;
-  type: string;
-  description: string;
-  createdAt: string;
-  capacity?: string;
-  capacityMax?: string;
-  model?: string;
-  formula?: string;
-  company?: string;
-  dischargePressure?: string;
-  dischargeDiameter?: string;
-  power?: string;
-  controlMethod?: string;
-  ratedVoltage?: string;
-  efficiency?: string;
-  powerFactor?: string;
-  demandFactor?: string;
-  totalWeight?: string;
-  material?: string;
-  // 단가/견적 필드
-  unit_price?: string;
-  price_registered_at?: string;
-  estimate_price?: string;
-  estimated_at?: string;
-  execution_price?: string;
-  proposal_price?: string;
-  note?: string;
+  equipment_id: string;
+  equipment_code: string;
+  equipment_name: string;
+  equipment_type: string;
+  manufacturer: string;
+  model_number: string;
+  // API 응답의 전체 데이터를 포함
+  root_equipment_type?: string;
+  capacity_unit?: string;
+  file_download_url?: string;
+  created_at: string;
+  description?: string;
+  vendor_info?: Record<string, unknown>;
+  specifications?: Record<string, Record<string, unknown>>;
+  search_criteria?: Record<string, Record<string, unknown>>;
+  output_values?: Record<string, Record<string, unknown>>;
+  updated_at: string;
+  model_file_metadata?: Record<string, unknown>;
+  dexpi_interface?: Record<string, unknown>;
+  dexpi_component_id?: string;
+  symbol_id?: string;
+  symbol_metadata?: Record<string, unknown>;
+  pressure_unit?: string;
+  rvt_file_id?: string;
+  is_active: boolean;
+  file_name?: string;
+  created_by: string;
+  hierarchy_info?: Record<string, unknown>;
+  model_file_id?: string;
+  thumbnail_id?: string;
+  power_unit?: string;
+  vendor_id?: string;
+  updated_by: string;
+  manufacturer_en?: string;
 }
 
 interface RegistForm {
@@ -264,21 +303,21 @@ interface RegistForm {
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
-    key: "code",
+    key: "equipment_code",
     title: t("columns.machine.mcId"),
-    width: "150px",
+    width: "200px",
     sortable: false,
   },
   {
-    key: "name",
+    key: "equipment_name",
     title: t("columns.machine.name"),
     width: "150px",
     sortable: false,
   },
   {
-    key: "type",
+    key: "equipment_type",
     title: t("columns.machine.type"),
-    width: "100px",
+    width: "120px",
     sortable: false,
   },
   {
@@ -288,7 +327,7 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "model",
+    key: "model_number",
     title: t("columns.machine.model"),
     width: "120px",
     sortable: false,
@@ -300,9 +339,9 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "company",
+    key: "manufacturer",
     title: t("columns.machine.company"),
-    width: "120px",
+    width: "150px",
     sortable: false,
   },
   {
@@ -319,7 +358,7 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
-const searchQuery = ref("");
+// 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거
 const selectedUnit = ref("");
 const selectedMachineCategory = ref("");
 const isRegistModalOpen = ref(false);
@@ -340,27 +379,29 @@ const specVerticalData = computed(() => {
   if (!detailItemData.value) return [];
   const item = detailItemData.value;
   return [
-    { columnName: t("columns.machine.code"), value: item.code || "-" },
+    { columnName: "기계ID", value: item.equipment_code },
+    { columnName: "기계명", value: item.equipment_name },
+    { columnName: "기계타입", value: item.equipment_type },
     {
-      columnName: t("columns.machine.type"),
-      value: t("common.machineType." + mapMachineType(item.type)) || "-",
+      columnName: "용량",
+      value: item.search_criteria?.max_capacity_m3_min?.value
+        ? `${item.search_criteria.max_capacity_m3_min.value as number} ㎥/min`
+        : "-",
     },
-    { columnName: t("columns.machine.company"), value: item.company || "-" },
-    { columnName: t("columns.machine.model"), value: item.model || "-" },
-    { columnName: t("columns.machine.capacity"), value: item.capacity || "-" },
+    { columnName: "모델명", value: item.model_number },
+    { columnName: "업체명", value: item.manufacturer },
     {
-      columnName: t("columns.machine.capacityMax"),
-      value: item.capacityMax || "-",
+      columnName: "동력",
+      value: item.specifications?.power_kW?.value
+        ? `${item.specifications.power_kW.value as number} kW`
+        : "-",
     },
     {
-      columnName: t("columns.machine.dischargePressure"),
-      value: item.dischargePressure || "-",
+      columnName: "총중량",
+      value: item.specifications?.total_wgt_kg?.value
+        ? `${item.specifications.total_wgt_kg.value as number} kg`
+        : "-",
     },
-    {
-      columnName: t("columns.machine.dischargeDiameter"),
-      value: item.dischargeDiameter || "-",
-    },
-    { columnName: t("columns.machine.power"), value: item.power || "-" },
   ];
 });
 
@@ -370,60 +411,62 @@ const costVerticalData = computed(() => {
   const item = detailItemData.value;
   return [
     {
-      columnName: t("columns.machine.controlMethod"),
-      value: item.controlMethod || "-",
+      columnName: "기동방식",
+      value: (item.specifications?.ctrl_method?.value as string) || "-",
     },
     {
-      columnName: t("columns.machine.ratedVoltage"),
-      value: item.ratedVoltage || "-",
+      columnName: "정격전압",
+      value: item.specifications?.rated_volt_V?.value
+        ? `${item.specifications.rated_volt_V.value as number} V`
+        : "-",
     },
     {
-      columnName: t("columns.machine.efficiency"),
-      value: item.efficiency || "-",
+      columnName: "효율",
+      value: item.specifications?.efficiency_percent?.value
+        ? `${item.specifications.efficiency_percent.value as number} %`
+        : "-",
     },
     {
-      columnName: t("columns.machine.powerFactor"),
-      value: item.powerFactor || "-",
+      columnName: "역률",
+      value: item.specifications?.pwr_factor_percent?.value
+        ? `${item.specifications.pwr_factor_percent.value as number} %`
+        : "-",
     },
     {
-      columnName: t("columns.machine.demandFactor"),
-      value: item.demandFactor || "-",
+      columnName: "수용율",
+      value: item.specifications?.demand_factor_percent?.value
+        ? `${item.specifications.demand_factor_percent.value as number} %`
+        : "-",
     },
-    { columnName: t("columns.machine.formula"), value: item.formula || "-" },
+    { columnName: "계산식", value: "-" },
     {
-      columnName: t("columns.machine.totalWeight"),
-      value: item.totalWeight || "-",
+      columnName: "단가",
+      value: item.output_values?.unit_price_kr?.value
+        ? `${(
+            item.output_values.unit_price_kr.value as number
+          ).toLocaleString()} 원`
+        : "-",
     },
-    { columnName: t("columns.machine.material"), value: item.material || "-" },
-    { columnName: "단가", value: item.unit_price || "-" },
-    { columnName: "견적가", value: item.estimate_price || "-" },
-    { columnName: "실행가", value: item.execution_price || "-" },
-    { columnName: "제안가", value: item.proposal_price || "-" },
+    {
+      columnName: "견적가",
+      value: item.output_values?.invoice_price_kr?.value
+        ? `${(
+            item.output_values.invoice_price_kr.value as number
+          ).toLocaleString()} 원`
+        : "-",
+    },
   ];
 });
 
-const filteredMachineList = computed(() => {
-  if (searchQuery.value) {
-    return machineList.value.filter((machine) =>
-      Object.values(machine).some(
-        (v) =>
-          v &&
-          v.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    );
-  }
-  return machineList.value;
-});
+// 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
 
-const totalCountComputed = computed(() => filteredMachineList.value.length);
+// API 응답에서 페이징 정보를 받아오므로 서버 사이드 페이징 사용
 const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
+  () => machineStore.searchResults?.total_pages || 1
 );
 
 const paginatedMachineList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredMachineList.value.slice(start, end);
+  return machineList.value; // API에서 이미 페이징된 데이터를 받아옴
 });
 
 // (기존 단일 등록 폼 유효성 제거)
@@ -432,15 +475,25 @@ const handleSelectionChange = (selected: MachineItem[]) => {
   selectedItems.value = selected;
 };
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  selectedItems.value = [];
+// 행 클릭 (RoleManagement.vue 패턴 적용)
+const handleRowClick = (row: MachineItem) => {
+  console.log("행 클릭된 데이터:", row); // 디버깅용 로그
+  selectedItems.value = [row];
+  console.log("선택된 아이템:", selectedItems.value); // 디버깅용 로그
 };
 
-const handleSearch = () => {
-  selectedItems.value = [];
-  searchQuery.value = searchQueryInput.value;
+// 페이지 변경 (RoleManagement.vue 패턴 적용)
+const handlePageChange = async (page: number) => {
+  currentPage.value = page;
+  selectedItems.value = []; // 체크된 row 초기화
+  await loadData();
+};
+
+// 검색 처리 (RoleManagement.vue 패턴 적용)
+const handleSearch = async () => {
+  selectedItems.value = []; // 체크된 row 초기화
   currentPage.value = 1;
+  await loadData();
 };
 
 const openRegistModal = () => {
@@ -459,7 +512,7 @@ const closeRegistModal = () => {
   isEditMode.value = false;
 };
 
-const handleEdit = () => {
+const handleEdit = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToEdit"));
     return;
@@ -469,12 +522,24 @@ const handleEdit = () => {
     return;
   }
 
+  try {
+    // 선택된 기계의 equipment_type으로 공통 코드 조회
+    const selectedMachine = selectedItems.value[0];
+    await machineStore.fetchMachineCommonCode(selectedMachine.equipment_type);
+
+    console.log("기계 공통 코드 조회 완료:", selectedMachine.equipment_type);
+  } catch (error) {
+    console.error("기계 공통 코드 조회 실패:", error);
+    alert("기계 공통 코드 조회에 실패했습니다.");
+    return;
+  }
+
   isEditMode.value = true;
   newMachine.value = {
-    name: selectedItems.value[0].name,
-    code: selectedItems.value[0].code,
-    type: selectedItems.value[0].type,
-    description: selectedItems.value[0].description,
+    name: selectedItems.value[0].equipment_name,
+    code: selectedItems.value[0].equipment_code,
+    type: selectedItems.value[0].equipment_type,
+    description: selectedItems.value[0].description || "",
   };
   isRegistModalOpen.value = true;
 };
@@ -491,9 +556,9 @@ const handleDelete = () => {
       t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
-    const selectedIds = selectedItems.value.map((item) => item.id);
+    const selectedIds = selectedItems.value.map((item) => item.equipment_id);
     machineList.value = machineList.value.filter(
-      (item) => !selectedIds.includes(item.id)
+      (item) => !selectedIds.includes(item.equipment_id)
     );
     selectedItems.value = [];
     alert(t("messages.success.deleted"));
@@ -514,17 +579,29 @@ const closeDetailPanel = () => {
 // 편집 로직 제거됨
 
 // 데이터 로드 함수
+// 데이터 로드 (RoleManagement.vue 패턴 적용)
 const loadData = async () => {
   try {
+    // 체크된 row 초기화
+    selectedItems.value = [];
+
     // API 호출로 기계 검색 리스트 조회
     await machineStore.fetchSearchList({
-      machine_category: selectedMachineCategory.value,
+      keyword: searchQueryInput.value,
+      //equipment_type: "",
+      root_equipment_type: selectedMachineCategory.value,
       unit: selectedUnit.value,
-      search_value: searchQueryInput.value,
+      page: currentPage.value,
+      page_size: pageSize.value,
     });
 
     // API 응답 데이터를 machineList에 설정
-    machineList.value = machineStore.searchResults;
+    if (machineStore.searchResults?.items) {
+      machineList.value = machineStore.searchResults
+        .items as unknown as MachineItem[];
+    } else {
+      machineList.value = [];
+    }
   } catch (error) {
     console.error("데이터 로드 실패:", error);
     // 에러 발생 시 빈 배열로 초기화
@@ -532,13 +609,7 @@ const loadData = async () => {
   }
 };
 
-// 기계타입 매핑 (한글 → 영문 키)
-function mapMachineType(val: string) {
-  if (val === "펌프" || val === "pump") return "pump";
-  if (val === "모터" || val === "motor") return "motor";
-  if (val === "컨베이어" || val === "conveyor") return "conveyor";
-  return val;
-}
+// 기계타입 매핑 함수는 더 이상 사용하지 않음
 
 // 기계 대분류 변경 핸들러
 const handleMachineCategoryChange = async () => {

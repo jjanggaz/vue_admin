@@ -108,6 +108,32 @@ export const useStructureStore = defineStore("structure", () => {
   // 구조물 검색 결과 데이터
   const searchResults = ref<Array<Record<string, unknown>>>([]);
 
+  // 등록 화면용 별도 depth 변수들
+  const createSecondDepth = ref<Record<string, unknown>[]>([]);
+  const createThirdDepth = ref<Record<string, unknown>[]>([]);
+  const createFourthDepth = ref<Record<string, unknown>[]>([]);
+  const createFifthDepth = ref<Record<string, unknown>[]>([]);
+
+  // 구조물 등록 API
+  const createStructure = async (formData: FormData) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await request("/api/structure/create", undefined, {
+        method: "POST",
+        body: formData,
+      });
+      return response;
+    } catch (err) {
+      console.error("구조물 등록 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 등록에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   // 액션
   const fetchCommonCodes = async (parentKey: string) => {
     loading.value = true;
@@ -150,6 +176,48 @@ export const useStructureStore = defineStore("structure", () => {
     }
   };
 
+  // 등록 화면용 공통코드 조회 함수 (fetchCommonCodes2)
+  const fetchCommonCodes2 = async (parentKey: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/structure/common/code", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // structure 관련 공통코드 조회를 위한 파라미터
+          parent_key: parentKey,
+        }),
+      });
+
+      if (response?.response) {
+        // 단위 시스템 설정
+        if (response.response.unitSystems) {
+          unitSystems.value = response.response.unitSystems;
+        }
+
+        // 등록 화면용 구조물 타입(2차 깊이별) 설정
+        if (response.response.secondDepth) {
+          createSecondDepth.value = response.response.secondDepth;
+        }
+      }
+
+      return response;
+    } catch (err) {
+      console.error("구조물 등록용 공통코드 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "구조물 등록용 공통코드 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   // 깊이별 공통코드 조회 함수
   const fetchThirdDepth = async (parentValue: string, level: number) => {
     loading.value = true;
@@ -173,6 +241,45 @@ export const useStructureStore = defineStore("structure", () => {
           fourthDepth.value = response.response;
         } else if (level === 5) {
           fifthDepth.value = response.response;
+        }
+      }
+
+      return response;
+    } catch (err) {
+      console.error("구조물 깊이별 공통코드 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "구조물 깊이별 공통코드 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 깊이별 공통코드 조회 함수
+  const fetchThirdDepth2 = async (parentValue: string, level: number) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/structure/depth", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          parent_value: parentValue,
+        }),
+      });
+
+      if (response?.response) {
+        if (level === 3) {
+          createThirdDepth.value = response.response;
+        } else if (level === 4) {
+          createFourthDepth.value = response.response;
+        } else if (level === 5) {
+          createFifthDepth.value = response.response;
         }
       }
 
@@ -228,9 +335,17 @@ export const useStructureStore = defineStore("structure", () => {
     searchResults,
     loading,
     error,
+    // 등록 화면용 별도 depth 변수들
+    createSecondDepth,
+    createThirdDepth,
+    createFourthDepth,
+    createFifthDepth,
     // 액션
     fetchCommonCodes,
+    fetchCommonCodes2,
     fetchThirdDepth,
+    fetchThirdDepth2,
     fetchSearchList,
+    createStructure,
   };
 });

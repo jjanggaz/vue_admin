@@ -123,11 +123,7 @@
         </div>
         <div class="modal-body">
           <template v-if="!isEditMode">
-            <StructureRegisterTab
-              ref="registerTabRef"
-              :structureType="selectedStructureType"
-              :structureTypeDetail="selectedStructureTypeDetail"
-            />
+            <StructureRegisterTab ref="registerTabRef" />
           </template>
           <template v-else>
             <StructureUpdateTab ref="updateTabRef" />
@@ -292,9 +288,10 @@ const handlePageChange = (page: number) => {
   selectedItems.value = [];
 };
 
-const handleSearch = () => {
+const handleSearch = async () => {
   selectedItems.value = [];
   currentPage.value = 1;
+  await loadData();
 };
 
 const openRegistModal = () => {
@@ -311,11 +308,6 @@ const openRegistModal = () => {
 const closeRegistModal = () => {
   isRegistModalOpen.value = false;
   isEditMode.value = false;
-
-  // 모달 닫기 시 구조물 타입 초기화
-  selectedStructureTypeDetail.value = "";
-  selectedStructureType.value = "";
-  structureStore.thirdDepth = [];
 };
 
 const handleEdit = () => {
@@ -378,6 +370,7 @@ const loadData = async () => {
       page_size: pageSize.value,
       equipment_type: selectedStructureType.value,
       root_equipment_type: selectedStructureTypeDetail.value,
+      unit: selectedUnit.value,
     });
 
     // API 응답 데이터를 structureList에 설정

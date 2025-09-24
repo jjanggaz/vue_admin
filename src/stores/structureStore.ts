@@ -105,6 +105,9 @@ export const useStructureStore = defineStore("structure", () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  // 구조물 검색 결과 데이터
+  const searchResults = ref<Array<Record<string, unknown>>>([]);
+
   // 액션
   const fetchCommonCodes = async (parentKey: string) => {
     loading.value = true;
@@ -186,6 +189,35 @@ export const useStructureStore = defineStore("structure", () => {
     }
   };
 
+  // 구조물 검색 리스트 조회 함수
+  const fetchSearchList = async (searchParams: Record<string, unknown>) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/structure/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(searchParams),
+      });
+
+      if (response?.response) {
+        searchResults.value = response.response;
+      }
+
+      return response;
+    } catch (err) {
+      console.error("구조물 검색 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 검색에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     unitSystems,
@@ -193,10 +225,12 @@ export const useStructureStore = defineStore("structure", () => {
     thirdDepth,
     fourthDepth,
     fifthDepth,
+    searchResults,
     loading,
     error,
     // 액션
     fetchCommonCodes,
     fetchThirdDepth,
+    fetchSearchList,
   };
 });

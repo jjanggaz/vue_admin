@@ -61,8 +61,8 @@
       </div>
     </div>
 
-    <!-- 기계 리스트 헤더 -->
-    <div class="machine-list-header">
+    <!-- 구조물 리스트 헤더 -->
+    <div class="structure-list-header">
       <h2>{{ t("common.structureList") }}</h2>
       <div class="action-buttons">
         <button class="btn btn-primary btn-register" @click="openRegistModal">
@@ -84,7 +84,7 @@
     <!-- 데이터 테이블 -->
     <DataTable
       :columns="tableColumns"
-      :data="paginatedMachineList"
+      :data="paginatedStructureList"
       :loading="loading"
       :selectable="true"
       :selected-items="selectedItems"
@@ -171,7 +171,7 @@ const updateTabRef = ref<InstanceType<typeof StructureUpdateTab> | null>(null);
 
 // 모달 컴포넌트는 일반 컴포넌트로 변경됨
 
-interface MachineItem {
+interface StructureItem {
   id: string;
   name: string;
   code: string;
@@ -249,41 +249,41 @@ const tableColumns: TableColumn[] = [
   },
 ];
 
-const machineList = ref<MachineItem[]>([]);
+const structureList = ref<StructureItem[]>([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const selectedItems = ref<MachineItem[]>([]);
+const selectedItems = ref<StructureItem[]>([]);
 const selectedUnit = ref("");
 const selectedStructureType = ref("");
 const selectedStructureTypeDetail = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
-const newMachine = ref<RegistForm>({
+const newStructure = ref<RegistForm>({
   name: "",
   code: "",
   type: "",
   description: "",
 });
 
-const filteredMachineList = computed(() => {
-  return machineList.value;
+const filteredStructureList = computed(() => {
+  return structureList.value;
 });
 
-const totalCountComputed = computed(() => filteredMachineList.value.length);
+const totalCountComputed = computed(() => filteredStructureList.value.length);
 const totalPagesComputed = computed(
   () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
 );
 
-const paginatedMachineList = computed(() => {
+const paginatedStructureList = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
-  return filteredMachineList.value.slice(start, end);
+  return filteredStructureList.value.slice(start, end);
 });
 
 // (기존 단일 등록 폼 유효성 제거)
 
-const handleSelectionChange = (selected: MachineItem[]) => {
+const handleSelectionChange = (selected: StructureItem[]) => {
   selectedItems.value = selected;
 };
 
@@ -299,7 +299,7 @@ const handleSearch = () => {
 
 const openRegistModal = () => {
   isEditMode.value = false;
-  newMachine.value = {
+  newStructure.value = {
     name: "",
     code: "",
     type: "",
@@ -315,6 +315,7 @@ const closeRegistModal = () => {
   // 모달 닫기 시 구조물 타입 초기화
   selectedStructureTypeDetail.value = "";
   selectedStructureType.value = "";
+  structureStore.thirdDepth = [];
 };
 
 const handleEdit = () => {
@@ -328,7 +329,7 @@ const handleEdit = () => {
   }
 
   isEditMode.value = true;
-  newMachine.value = {
+  newStructure.value = {
     name: selectedItems.value[0].name,
     code: selectedItems.value[0].code,
     type: selectedItems.value[0].type,
@@ -348,7 +349,7 @@ const handleDelete = () => {
     )
   ) {
     const selectedIds = selectedItems.value.map((item) => item.id);
-    machineList.value = machineList.value.filter(
+    structureList.value = structureList.value.filter(
       (item) => !selectedIds.includes(item.id)
     );
     selectedItems.value = [];
@@ -366,46 +367,24 @@ const onChildUpdate = () => {
 
 // 편집 로직 제거됨
 
-// 샘플 데이터 로드 함수
-const loadData = () => {
-  machineList.value = Array.from({ length: 15 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `구조물${i + 1}`,
-    code: `ST-${String(i + 1).padStart(3, "0")}`,
-    type: ["콘크리트", "강철", "목재"][i % 3],
-    description: `구조물 ${i + 1}에 대한 설명입니다.`,
-    createdAt: `2023-01-${(i % 28) + 1}`,
-    capacity: "****",
-    capacityMax: "****",
-    model: "*****",
-    formula: "****",
-    company: "****",
-    dischargePressure: "0.6 MPa",
-    dischargeDiameter: "DN100",
-    power: "15 kW",
-    controlMethod: "Inverter",
-    ratedVoltage: "380 V",
-    efficiency: "92 %",
-    powerFactor: "0.95",
-    demandFactor: "0.8",
-    totalWeight: "350 kg",
-    material: "SS400",
-    unit_price: "1,500,000",
-    price_registered_at: "2024-12-01",
-    estimate_price: "1,450,000",
-    estimated_at: "2024-12-15",
-    execution_price: "1,420,000",
-    proposal_price: "1,390,000",
-    note: "-",
-    // 구조물 관련 필드 추가
-    structureType: ["기초", "벽체", "지붕", "기둥", "보"][i % 5],
-    structureForm: ["직사각형", "원형", "타원형", "다각형", "곡선형"][i % 5],
-    structureName: `구조물명${i + 1}`,
-    structureTypeDetail: ["RC", "S", "SRC", "목구조", "조적"][i % 5],
-    model3d: i % 3 === 0 ? "3D모델파일.dwg" : "없음",
-    revitModel: i % 4 === 0 ? "Revit모델.rvt" : "없음",
-    remarks: i % 2 === 0 ? "특이사항 없음" : "검토 필요",
-  }));
+// 데이터 로드 함수
+const loadData = async () => {
+  try {
+    // API 호출로 구조물 검색 리스트 조회
+    await structureStore.fetchSearchList({
+      structure_type: selectedStructureType.value,
+      structure_type_detail: selectedStructureTypeDetail.value,
+      unit: selectedUnit.value,
+    });
+
+    // API 응답 데이터를 structureList에 설정
+    structureList.value =
+      structureStore.searchResults as unknown as StructureItem[];
+  } catch (error) {
+    console.error("데이터 로드 실패:", error);
+    // 에러 발생 시 빈 배열로 초기화
+    structureList.value = [];
+  }
 };
 
 // 구조물 대분류 변경 시 하위 구조물 타입 로드
@@ -470,7 +449,7 @@ onMounted(async () => {
   }
 }
 
-.machine-list-header {
+.structure-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;

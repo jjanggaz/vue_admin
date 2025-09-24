@@ -513,38 +513,23 @@ const closeDetailPanel = () => {
 
 // 편집 로직 제거됨
 
-// 샘플 데이터 로드 함수
-const loadData = () => {
-  machineList.value = Array.from({ length: 15 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `기계${i + 1}`,
-    code: `EQ-${String(i + 1).padStart(3, "0")}`,
-    type: ["펌프", "모터", "컨베이어"][i % 3],
-    description: `기계 ${i + 1}에 대한 설명입니다.`,
-    createdAt: `2023-01-${(i % 28) + 1}`,
-    capacity: "****",
-    capacityMax: "****",
-    model: "*****",
-    formula: "****",
-    company: "****",
-    dischargePressure: "0.6 MPa",
-    dischargeDiameter: "DN100",
-    power: "15 kW",
-    controlMethod: "Inverter",
-    ratedVoltage: "380 V",
-    efficiency: "92 %",
-    powerFactor: "0.95",
-    demandFactor: "0.8",
-    totalWeight: "350 kg",
-    material: "SS400",
-    unit_price: "1,500,000",
-    price_registered_at: "2024-12-01",
-    estimate_price: "1,450,000",
-    estimated_at: "2024-12-15",
-    execution_price: "1,420,000",
-    proposal_price: "1,390,000",
-    note: "-",
-  }));
+// 데이터 로드 함수
+const loadData = async () => {
+  try {
+    // API 호출로 기계 검색 리스트 조회
+    await machineStore.fetchSearchList({
+      machine_category: selectedMachineCategory.value,
+      unit: selectedUnit.value,
+      search_value: searchQueryInput.value,
+    });
+
+    // API 응답 데이터를 machineList에 설정
+    machineList.value = machineStore.searchResults;
+  } catch (error) {
+    console.error("데이터 로드 실패:", error);
+    // 에러 발생 시 빈 배열로 초기화
+    machineList.value = [];
+  }
 };
 
 // 기계타입 매핑 (한글 → 영문 키)

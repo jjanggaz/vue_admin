@@ -127,6 +127,9 @@ export const useMachineStore = defineStore("machine", () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  // 기계 검색 결과 데이터
+  const searchResults = ref<any[]>([]);
+
   // 액션
   const fetchCommonCodes = async (parentKey: string) => {
     loading.value = true;
@@ -206,6 +209,35 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  // 기계 검색 리스트 조회 함수
+  const fetchSearchList = async (searchParams: any) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/machine/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(searchParams),
+      });
+
+      if (response?.response) {
+        searchResults.value = response.response;
+      }
+
+      return response;
+    } catch (err) {
+      console.error("기계 검색 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "기계 검색에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -214,10 +246,12 @@ export const useMachineStore = defineStore("machine", () => {
     thirdDepth,
     fourthDepth,
     fifthDepth,
+    searchResults,
     loading,
     error,
     // 액션
     fetchCommonCodes,
     fetchThirdDepth,
+    fetchSearchList,
   };
 });

@@ -13,11 +13,11 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="type in structureStore.secondDepth"
-            :key="type.code_id"
-            :value="type.code_key"
+            v-for="type in structureStore.createSecondDepth"
+            :key="type.code_id as string"
+            :value="type.code_key as string"
           >
-            {{ type.code_value }}
+            {{ type.code_value as string }}
           </option>
         </select>
       </div>
@@ -32,11 +32,11 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="detail in structureStore.thirdDepth"
-            :key="detail.code_id"
-            :value="detail.code_key"
+            v-for="detail in structureStore.createThirdDepth"
+            :key="detail.code_id as string"
+            :value="detail.code_key as string"
           >
-            {{ detail.code_value }}
+            {{ detail.code_value as string }}
           </option>
         </select>
       </div>
@@ -143,46 +143,20 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
+import { ref, onMounted } from "vue";
 
 import { useStructureStore } from "@/stores/structureStore";
 
-// Props 정의
-interface Props {
-  structureType?: string;
-  structureTypeDetail?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  structureType: "",
-  structureTypeDetail: "",
-});
-
-// 등록 전용 컴포넌트로 사용 (편집 모드 관련 props 제거)
+// 등록 전용 컴포넌트로 사용 (props 바인딩 제거)
 
 const { t } = useI18n();
 const structureStore = useStructureStore();
 
 const isRegistered = ref(false); // 등록 완료 상태
 
-// 선택된 구조물 대분류 및 타입 (props로 초기화)
-const selectedStructureType = ref(props.structureType);
-const selectedMachineName = ref(props.structureTypeDetail);
-
-// props 변경 시 로컬 상태 동기화
-watch(
-  () => props.structureType,
-  (newValue) => {
-    selectedStructureType.value = newValue;
-  }
-);
-
-watch(
-  () => props.structureTypeDetail,
-  (newValue) => {
-    selectedMachineName.value = newValue;
-  }
-);
+// 선택된 구조물 대분류 및 타입
+const selectedStructureType = ref("");
+const selectedMachineName = ref("");
 
 // 비고 입력
 const remarks = ref("");
@@ -190,21 +164,34 @@ const remarks = ref("");
 // 파일 업로드 ref들
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 const formulaFileName = ref<string>("");
+const formulaFile = ref<File | null>(null);
 const dtdFileInput = ref<HTMLInputElement | null>(null);
 const dtdFileName = ref<string>("");
+const dtdFile = ref<File | null>(null);
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailFileName = ref<string>("");
+const thumbnailFile = ref<File | null>(null);
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
+const revitFile = ref<File | null>(null);
 
 // 구조물 대분류 변경 시 하위 구조물 타입 로드
+// 컴포넌트 마운트 시 공통코드 조회
+onMounted(async () => {
+  try {
+    await structureStore.fetchCommonCodes2("STRUCT_WWTP");
+  } catch (error) {
+    console.error("구조물 공통코드 조회 실패:", error);
+  }
+});
+
 const handleStructureTypeChange = async () => {
   selectedMachineName.value = "";
-  // thirdDepth 초기화
-  structureStore.thirdDepth = [];
+  // createThirdDepth 초기화
+  structureStore.createThirdDepth = [];
 
   if (selectedStructureType.value) {
-    await structureStore.fetchThirdDepth(selectedStructureType.value, 3);
+    await structureStore.fetchThirdDepth2(selectedStructureType.value, 3);
   }
 };
 
@@ -234,6 +221,7 @@ function handleFormulaFileChange(e: Event) {
       return;
     }
     formulaFileName.value = file.name;
+    formulaFile.value = file;
   }
 }
 
@@ -246,6 +234,7 @@ function handleDtdFileChange(e: Event) {
       return;
     }
     dtdFileName.value = file.name;
+    dtdFile.value = file;
   }
 }
 
@@ -264,6 +253,7 @@ function handleThumbnailFileChange(e: Event) {
       return;
     }
     thumbnailFileName.value = file.name;
+    thumbnailFile.value = file;
   }
 }
 
@@ -276,11 +266,12 @@ function handleRevitFileChange(e: Event) {
       return;
     }
     revitFileName.value = file.name;
+    revitFile.value = file;
   }
 }
 
 // 등록 함수
-function onRegister() {
+async function onRegister() {
   if (!validateBasicSelections()) return;
 
   // 파일 첨부 validation
@@ -298,8 +289,71 @@ function onRegister() {
   }
   // REVIT 파일은 선택사항
 
-  // TODO: 등록 로직 구현
-  alert("구조물이 등록되었습니다.");
+  try {
+    // FormData 생성
+    const formData = new FormData();
+
+    // 첨부파일들 추가
+    if (formulaFile.value) {
+      formData.append("formula_file", formulaFile.value);
+    }
+    if (dtdFile.value) {
+      formData.append("dtd_model_file", dtdFile.value);
+    }
+    if (thumbnailFile.value) {
+      formData.append("thumbnail_file", thumbnailFile.value);
+    }
+    if (revitFile.value) {
+      formData.append("revit_model_file", revitFile.value);
+    }
+
+    // 구조물 정보를 createParams로 구성
+    const createParams = {
+      structure_type: selectedStructureType.value,
+      structure_type_detail: selectedMachineName.value,
+      remarks: remarks.value,
+    };
+
+    // createParams를 JSON 문자열로 변환하여 추가
+    formData.append("createParams", JSON.stringify(createParams));
+
+    // API 호출
+    const response = await structureStore.createStructure(formData);
+
+    if (response?.success) {
+      alert("구조물이 성공적으로 등록되었습니다.");
+      // 등록 완료 후 폼 초기화
+      resetForm();
+    } else {
+      alert("구조물 등록에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("구조물 등록 실패:", error);
+    alert("구조물 등록 중 오류가 발생했습니다.");
+  }
+}
+
+// 폼 초기화 함수
+function resetForm() {
+  selectedStructureType.value = "";
+  selectedMachineName.value = "";
+  remarks.value = "";
+
+  // 파일 초기화
+  formulaFileName.value = "";
+  formulaFile.value = null;
+  dtdFileName.value = "";
+  dtdFile.value = null;
+  thumbnailFileName.value = "";
+  thumbnailFile.value = null;
+  revitFileName.value = "";
+  revitFile.value = null;
+
+  // 파일 입력 요소 초기화
+  if (formulaFileInput.value) formulaFileInput.value.value = "";
+  if (dtdFileInput.value) dtdFileInput.value.value = "";
+  if (thumbnailFileInput.value) thumbnailFileInput.value.value = "";
+  if (revitFileInput.value) revitFileInput.value.value = "";
 }
 
 // 수정 로직 제거 (StructureUpdateTab에서 처리)

@@ -47,7 +47,7 @@
             <option
               v-for="unit in structureStore.unitSystems"
               :key="unit.unit_system_id"
-              :value="unit.system_code.toLowerCase()"
+              :value="unit.system_code"
             >
               {{ unit.system_name }}
             </option>
@@ -172,7 +172,12 @@
             <StructureRegisterTab ref="registerTabRef" />
           </template>
           <template v-else>
-            <StructureUpdateTab ref="updateTabRef" />
+            <StructureUpdateTab
+              ref="updateTabRef"
+              :selected-item="
+                selectedItems.length > 0 ? selectedItems[0] : undefined
+              "
+            />
           </template>
         </div>
         <div class="modal-footer">
@@ -221,6 +226,7 @@ interface StructureItem {
   formula_file_name: string;
   dtdx_model_file_name: string;
   rvt_model_file_name: string;
+  thumbnail_file_name: string;
   created_at: string;
   description: string;
   // 원본 중첩 객체들 (필요시 사용)
@@ -532,6 +538,7 @@ const loadData = async () => {
         formula_file_name: item.formula?.file_name || "-",
         dtdx_model_file_name: item.dtdx_model?.file_name || "-",
         rvt_model_file_name: item.rvt_model?.file_name || "-",
+        thumbnail_file_name: item.thumbnail?.symbol_name || "-",
         created_at: item.created_at,
         description: item.description || "-",
         // 원본 데이터도 유지 (필요시 사용)

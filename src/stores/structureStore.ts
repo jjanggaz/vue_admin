@@ -108,6 +108,12 @@ export const useStructureStore = defineStore("structure", () => {
   // 구조물 검색 결과 데이터
   const searchResults = ref<Array<Record<string, unknown>>>([]);
 
+  // 공통 코드 조회 결과 데이터
+  const editSecondDepth = ref<Record<string, unknown>[]>([]);
+  const editThirdDepth = ref<Record<string, unknown>[]>([]);
+  const editFourthDepth = ref<Record<string, unknown>[]>([]);
+  const editFifthDepth = ref<Record<string, unknown>[]>([]);
+
   // 등록 화면용 별도 depth 변수들
   const createSecondDepth = ref<Record<string, unknown>[]>([]);
   const createThirdDepth = ref<Record<string, unknown>[]>([]);
@@ -362,6 +368,64 @@ export const useStructureStore = defineStore("structure", () => {
     }
   };
 
+  // 구조물 공통 코드 조회 함수
+  const fetchStructureCommonCode = async (searchValue: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/structure/common/code/${searchValue}`,
+        undefined,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response?.response?.data) {
+        const responseData = response.response.data;
+
+        if (responseData?.hierarchy) {
+          const hierarchy = responseData.hierarchy;
+
+          // hierarchy 배열을 depth별로 분류하여 저장
+          const depth2Data = hierarchy.filter(
+            (item: Record<string, unknown>) => item.level === 2
+          );
+          const depth3Data = hierarchy.filter(
+            (item: Record<string, unknown>) => item.level === 3
+          );
+          const depth4Data = hierarchy.filter(
+            (item: Record<string, unknown>) => item.level === 4
+          );
+          const depth5Data = hierarchy.filter(
+            (item: Record<string, unknown>) => item.level === 5
+          );
+
+          // 수정 화면용 별도 depth 변수에 원본 데이터 저장
+          editSecondDepth.value = depth2Data;
+          editThirdDepth.value = depth3Data;
+          editFourthDepth.value = depth4Data;
+          editFifthDepth.value = depth5Data;
+        }
+      }
+
+      return response;
+    } catch (err) {
+      console.error("구조물 공통 코드 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "구조물 공통 코드 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     unitSystems,
@@ -370,6 +434,10 @@ export const useStructureStore = defineStore("structure", () => {
     fourthDepth,
     fifthDepth,
     searchResults,
+    editSecondDepth,
+    editThirdDepth,
+    editFourthDepth,
+    editFifthDepth,
     loading,
     error,
     // 등록 화면용 별도 depth 변수들
@@ -385,5 +453,6 @@ export const useStructureStore = defineStore("structure", () => {
     fetchSearchList,
     createStructure,
     deleteStructure,
+    fetchStructureCommonCode,
   };
 });

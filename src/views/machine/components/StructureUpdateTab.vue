@@ -12,8 +12,8 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="type in structureStore.secondDepth"
-            :key="type.code_id"
+            v-for="(type, index) in structureStore.editSecondDepth || []"
+            :key="index"
             :value="type.code_key"
           >
             {{ type.code_value }}
@@ -31,8 +31,8 @@
         >
           <option value="">{{ t("common.select") }}</option>
           <option
-            v-for="detail in structureStore.thirdDepth"
-            :key="detail.code_id"
+            v-for="(detail, index) in structureStore.editThirdDepth || []"
+            :key="index"
             :value="detail.code_key"
           >
             {{ detail.code_value }}
@@ -167,12 +167,32 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref } from "vue";
+import { ref, watch, onMounted } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useStructureStore } from "@/stores/structureStore";
 
 // 수정 전용 컴포넌트로 사용 (등록 모드 관련 props 제거)
+
+// Props 정의
+interface Props {
+  selectedItem?: {
+    structure_type?: string;
+    description?: string;
+    formula_file_name?: string;
+    dtdx_model_file_name?: string;
+    rvt_model_file_name?: string;
+    thumbnail_file_name?: string;
+    thumbnail?: {
+      file_name?: string;
+      symbol_name?: string;
+    };
+  };
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selectedItem: () => ({}),
+});
 
 const { t } = useI18n();
 const structureStore = useStructureStore();
@@ -193,6 +213,47 @@ const thumbnailFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
+
+// props에서 받은 데이터로 파일명들 설정
+watch(
+  () => props.selectedItem,
+  (newItem) => {
+    if (newItem) {
+      selectedStructureType.value = newItem.structure_type || "";
+      selectedMachineName.value = newItem.structure_type || "";
+      remarks.value = newItem.description || "";
+      formulaFileName.value = newItem.formula_file_name || "";
+      dtdFileName.value = newItem.dtdx_model_file_name || "";
+      thumbnailFileName.value = newItem.thumbnail_file_name || "";
+      revitFileName.value = newItem.rvt_model_file_name || "";
+    }
+  },
+  { immediate: true }
+);
+
+// 컴포넌트 마운트 시 공통 코드 조회
+onMounted(async () => {
+  try {
+    if (props.selectedItem?.structure_type) {
+      await structureStore.fetchStructureCommonCode(
+        props.selectedItem.structure_type
+      );
+
+      // 공통 코드 결과에서 구조물 대분류 설정
+      if (structureStore.editSecondDepth?.length > 0) {
+        const hierarchyData = structureStore.editSecondDepth[0] as any;
+        selectedStructureType.value = hierarchyData.code_key || "";
+      }
+
+      if (structureStore.editThirdDepth?.length > 0) {
+        const hierarchyData = structureStore.editThirdDepth[0] as any;
+        selectedMachineName.value = hierarchyData.code_key || "";
+      }
+    }
+  } catch (error) {
+    console.error("공통 코드 조회 실패:", error);
+  }
+});
 
 // 등록용 컬럼 제거
 

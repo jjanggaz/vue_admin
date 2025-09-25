@@ -40,6 +40,34 @@
           </option>
         </select>
       </div>
+
+      <div class="group-form inline">
+        <span class="label required long-label"
+          >⊙ 계산식,<br />
+          3D DTD모델,<br />모델 썸네일,<br />
+          REVIT 파일<br />통합 첨부</span
+        >
+        <div class="file-input-wrapper">
+          <input
+            type="text"
+            class="input"
+            :value="allFileName || '선택된 파일 없음'"
+            readonly
+          />
+          <input
+            type="file"
+            ref="allFileInput"
+            accept=".zip"
+            style="display: none"
+            @change="handleAllFileChange"
+          />
+          <button class="btn-file" @click="allFileInput?.click()">
+            파일 선택
+          </button>
+        </div>
+      </div>
+
+      <!--
       <div class="group-form inline">
         <span class="label required">⊙ 3D 구조물 계산식</span>
         <div class="file-input-wrapper">
@@ -60,7 +88,7 @@
             파일 선택
           </button>
         </div>
-      </div>
+      </div>      
       <div class="group-form inline">
         <span class="label required">⊙ 3D 구조물 DTD모델</span>
         <div class="file-input-wrapper">
@@ -104,9 +132,6 @@
           </button>
         </div>
       </div>
-
-      <!-- 2행: 3D DTD모델, 모델 썸네일 -->
-      <!-- 3행: 3D REVIT모델, 비고 -->
       <div class="group-form inline">
         <span class="label">⊙ 3D REVIT모델</span>
         <div class="file-input-wrapper">
@@ -128,6 +153,7 @@
           </button>
         </div>
       </div>
+      -->
       <div class="group-form inline">
         <span class="label">⊙ 비고</span>
         <input
@@ -138,12 +164,36 @@
         />
       </div>
     </div>
+
+    <!-- ZIP 파일 내부 파일 목록 테이블 -->
+    <div
+      v-if="showZipContents && zipFileList.length > 0"
+      class="zip-contents-section"
+    >
+      <h4 class="zip-contents-title">
+        ZIP 파일 내부 파일 목록 ({{ zipFileList.length }}개 파일)
+      </h4>
+      <DataTable
+        :columns="zipTableColumns"
+        :data="zipFileList"
+        :loading="false"
+        :selectable="false"
+        :show-select-all="false"
+        :max-height="'300px'"
+      >
+        <!-- 파일 크기 포맷팅 슬롯 -->
+        <template #cell-size="{ value }">
+          {{ formatFileSize(value) }}
+        </template>
+      </DataTable>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { ref, onMounted } from "vue";
+import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
 import { useStructureStore } from "@/stores/structureStore";
 
@@ -162,6 +212,9 @@ const selectedMachineName = ref("");
 const remarks = ref("");
 
 // 파일 업로드 ref들
+const allFileInput = ref<HTMLInputElement | null>(null);
+const allFileName = ref<string>("");
+const allFile = ref<File | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 const formulaFileName = ref<string>("");
 const formulaFile = ref<File | null>(null);
@@ -174,6 +227,31 @@ const thumbnailFile = ref<File | null>(null);
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 const revitFile = ref<File | null>(null);
+
+// ZIP 파일 내부 파일 목록
+const zipFileList = ref<
+  Array<{ name: string; size: number; type: string; lastModified?: string }>
+>([]);
+const showZipContents = ref(false);
+
+// ZIP 파일 목록 테이블 컬럼
+const zipTableColumns: TableColumn[] = [
+  { key: "name", title: "파일명", width: "40%", sortable: false },
+  { key: "type", title: "파일 타입", width: "20%", sortable: false },
+  { key: "size", title: "파일 크기", width: "20%", sortable: false },
+  { key: "lastModified", title: "수정일", width: "20%", sortable: false },
+];
+
+// 파일 크기 포맷팅 함수
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
 
 // 구조물 대분류 변경 시 하위 구조물 타입 로드
 // 컴포넌트 마운트 시 공통코드 조회
@@ -211,18 +289,176 @@ function validateBasicSelections(): boolean {
 
 // 편집 모드 삭제 로직 제거
 
+// ZIP 파일 내부 파일 목록 추출 함수 (임시 구현)
+async function extractZipContents(file: File) {
+  try {
+    // JSZip 라이브러리 로드 시도
+    let JSZip;
+    try {
+      const jszipModule = await import("jszip");
+      JSZip = jszipModule.default;
+    } catch (importError) {
+      console.warn("JSZip 라이브러리를 로드할 수 없습니다:", importError);
+      // JSZip 없이 기본 정보만 표시
+      const fileInfo = {
+        name: file.name,
+        size: file.size,
+        type: "ZIP Archive",
+        lastModified: new Date(file.lastModified).toLocaleString(),
+      };
+      zipFileList.value = [fileInfo];
+      showZipContents.value = true;
+      return;
+    }
+
+    const zip = new JSZip();
+    const zipData = await zip.loadAsync(file);
+
+    const fileList: Array<{
+      name: string;
+      size: number;
+      type: string;
+      lastModified?: string;
+    }> = [];
+
+    // 허용된 파일 확장자 목록
+    const allowedExtensions = [
+      "py",
+      "dtdx",
+      "rvt",
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "svg",
+    ];
+    const invalidFiles: string[] = [];
+
+    // ZIP 파일 내부의 모든 파일을 순회
+    zipData.forEach((relativePath: string, zipEntry: any) => {
+      if (!zipEntry.dir) {
+        // 디렉토리가 아닌 파일만
+        const fileExtension =
+          relativePath.split(".").pop()?.toLowerCase() || "";
+        let fileType = "Unknown";
+
+        // 파일 확장자에 따른 타입 분류
+        if (["py"].includes(fileExtension)) {
+          fileType = "Python Script";
+        } else if (["dtdx"].includes(fileExtension)) {
+          fileType = "3D Model";
+        } else if (["rvt"].includes(fileExtension)) {
+          fileType = "Revit Model";
+        } else if (
+          ["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension)
+        ) {
+          fileType = "Image";
+        } else if (["txt", "md"].includes(fileExtension)) {
+          fileType = "Text";
+        } else if (["pdf"].includes(fileExtension)) {
+          fileType = "PDF";
+        } else if (["doc", "docx"].includes(fileExtension)) {
+          fileType = "Document";
+        } else if (["zip", "rar", "7z"].includes(fileExtension)) {
+          fileType = "Archive";
+        }
+
+        // 허용되지 않은 파일인지 확인
+        if (fileExtension && !allowedExtensions.includes(fileExtension)) {
+          invalidFiles.push(relativePath);
+        }
+
+        // 파일 크기 가져오기 (여러 방법 시도)
+        let fileSize = 0;
+        if (zipEntry._data?.uncompressedSize) {
+          fileSize = zipEntry._data.uncompressedSize;
+        } else if (zipEntry.uncompressedSize) {
+          fileSize = zipEntry.uncompressedSize;
+        } else if (zipEntry._data?.compressedSize) {
+          fileSize = zipEntry._data.compressedSize;
+        } else if (zipEntry.compressedSize) {
+          fileSize = zipEntry.compressedSize;
+        }
+
+        // 디버깅을 위한 로그
+        console.log(`파일: ${relativePath}`, {
+          uncompressedSize: zipEntry.uncompressedSize,
+          compressedSize: zipEntry.compressedSize,
+          _data: zipEntry._data,
+          finalSize: fileSize,
+        });
+
+        fileList.push({
+          name: relativePath,
+          size: fileSize,
+          type: fileType,
+          lastModified: zipEntry.date
+            ? zipEntry.date.toLocaleString()
+            : "Unknown",
+        });
+      }
+    });
+
+    // 허용되지 않은 파일이 있으면 경고
+    if (invalidFiles.length > 0) {
+      alert(
+        `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
+          "\n"
+        )}\n\n허용된 파일 형식: .py, .dtdx, .rvt, .jpg, .jpeg, .png, .gif, .svg`
+      );
+    }
+
+    zipFileList.value = fileList;
+    showZipContents.value = true;
+  } catch (error) {
+    console.error("ZIP 파일 읽기 실패:", error);
+    alert(
+      "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다."
+    );
+    zipFileList.value = [];
+    showZipContents.value = false;
+  }
+}
+
 // 파일 변경 핸들러들
+async function handleAllFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input?.files && input.files[0];
+  if (file) {
+    if (file.size > 100 * 1024 * 1024) {
+      alert("파일 크기는 100MB를 초과할 수 없습니다.");
+      input.value = ""; // input 초기화
+      return;
+    }
+    allFileName.value = file.name;
+    allFile.value = file;
+
+    // ZIP 파일인 경우 내부 파일 목록 추출
+    if (file.name.toLowerCase().endsWith(".zip")) {
+      await extractZipContents(file);
+    } else {
+      zipFileList.value = [];
+      showZipContents.value = false;
+    }
+  }
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
+}
+
 function handleFormulaFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
     if (file.size > 10 * 1024 * 1024) {
       alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      input.value = ""; // input 초기화
       return;
     }
     formulaFileName.value = file.name;
     formulaFile.value = file;
   }
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
 }
 
 function handleDtdFileChange(e: Event) {
@@ -231,11 +467,14 @@ function handleDtdFileChange(e: Event) {
   if (file) {
     if (file.size > 200 * 1024 * 1024) {
       alert("파일 크기는 200MB를 초과할 수 없습니다.");
+      input.value = ""; // input 초기화
       return;
     }
     dtdFileName.value = file.name;
     dtdFile.value = file;
   }
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
 }
 
 function handleThumbnailFileChange(e: Event) {
@@ -245,16 +484,20 @@ function handleThumbnailFileChange(e: Event) {
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      input.value = ""; // input 초기화
       return;
     }
     const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
     if (!allowed.includes(file.type)) {
       alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      input.value = ""; // input 초기화
       return;
     }
     thumbnailFileName.value = file.name;
     thumbnailFile.value = file;
   }
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
 }
 
 function handleRevitFileChange(e: Event) {
@@ -263,36 +506,47 @@ function handleRevitFileChange(e: Event) {
   if (file) {
     if (file.size > 200 * 1024 * 1024) {
       alert("파일 크기는 200MB를 초과할 수 없습니다.");
+      input.value = ""; // input 초기화
       return;
     }
     revitFileName.value = file.name;
     revitFile.value = file;
   }
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
 }
 
 // 등록 함수
 async function onRegister() {
   if (!validateBasicSelections()) return;
 
+  if (!allFileName.value) {
+    alert(
+      "계산식, 3D DTD모델, 모델 썸네일, REVIT 파일 통합 첨부 파일을 선택해주세요."
+    );
+    return;
+  }
   // 파일 첨부 validation
-  if (!formulaFileName.value) {
-    alert("3D 구조물 계산식 파일을 선택해주세요.");
-    return;
-  }
-  if (!dtdFileName.value) {
-    alert("3D 구조물 DTD모델 파일을 선택해주세요.");
-    return;
-  }
-  if (!thumbnailFileName.value) {
-    alert("모델 썸네일 파일을 선택해주세요.");
-    return;
-  }
+  // if (!formulaFileName.value) {
+  //   alert("3D 구조물 계산식 파일을 선택해주세요.");
+  //   return;
+  // }
+  // if (!dtdFileName.value) {
+  //   alert("3D 구조물 DTD모델 파일을 선택해주세요.");
+  //   return;
+  // }
+  // if (!thumbnailFileName.value) {
+  //   alert("모델 썸네일 파일을 선택해주세요.");
+  //   return;
+  // }
   // REVIT 파일은 선택사항
 
   try {
     // FormData 생성
     const formData = new FormData();
-
+    if (allFile.value) {
+      formData.append("all_file", allFile.value);
+    }
     // 첨부파일들 추가
     if (formulaFile.value) {
       formData.append("formula_file", formulaFile.value);
@@ -340,6 +594,8 @@ function resetForm() {
   remarks.value = "";
 
   // 파일 초기화
+  allFileName.value = "";
+  allFile.value = null;
   formulaFileName.value = "";
   formulaFile.value = null;
   dtdFileName.value = "";
@@ -349,7 +605,12 @@ function resetForm() {
   revitFileName.value = "";
   revitFile.value = null;
 
+  // ZIP 파일 관련 초기화
+  zipFileList.value = [];
+  showZipContents.value = false;
+
   // 파일 입력 요소 초기화
+  if (allFileInput.value) allFileInput.value.value = "";
   if (formulaFileInput.value) formulaFileInput.value.value = "";
   if (dtdFileInput.value) dtdFileInput.value.value = "";
   if (thumbnailFileInput.value) thumbnailFileInput.value.value = "";
@@ -432,9 +693,20 @@ $desktop: 1200px;
     margin-left: 4px;
   }
 
+  &.long-label {
+    line-height: 1.4;
+    white-space: normal;
+    min-width: 120px;
+    text-align: left;
+  }
+
   @media (max-width: $mobile) {
     min-width: auto;
     font-size: 12px;
+
+    &.long-label {
+      min-width: auto;
+    }
   }
 }
 
@@ -717,6 +989,22 @@ $desktop: 1200px;
 
   @media (max-width: $mobile) {
     max-height: 60vh;
+  }
+}
+
+// ZIP 파일 내용 섹션 스타일
+.zip-contents-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+
+  .zip-contents-title {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
   }
 }
 </style>

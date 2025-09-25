@@ -91,11 +91,52 @@
       :selection-mode="'single'"
       :show-select-all="false"
       :select-header-text="t('common.selectColumn')"
+      :row-key="'structure_id'"
       @selection-change="handleSelectionChange"
     >
       <!-- 순번 슬롯 -->
       <template #cell-no="{ index }">
         {{ (currentPage - 1) * pageSize + index + 1 }}
+      </template>
+
+      <!-- 계산식 파일 다운로드 슬롯 -->
+      <template #cell-formula_file_name="{ item }">
+        <span
+          v-if="item.formula?.file_uri && item.formula?.has_file"
+          class="download-link"
+          @click="downloadFile(item.formula.file_uri, item.formula_file_name)"
+        >
+          {{ item.formula_file_name }}
+        </span>
+        <span v-else>{{ item.formula_file_name }}</span>
+      </template>
+
+      <!-- 3D 모델 파일 다운로드 슬롯 -->
+      <template #cell-dtdx_model_file_name="{ item }">
+        <span
+          v-if="item.dtdx_model?.file_uri && item.dtdx_model?.has_file"
+          class="download-link"
+          @click="
+            downloadFile(item.dtdx_model.file_uri, item.dtdx_model_file_name)
+          "
+        >
+          {{ item.dtdx_model_file_name }}
+        </span>
+        <span v-else>{{ item.dtdx_model_file_name }}</span>
+      </template>
+
+      <!-- REVIT 모델 파일 다운로드 슬롯 -->
+      <template #cell-rvt_model_file_name="{ item }">
+        <span
+          v-if="item.rvt_model?.file_uri && item.rvt_model?.has_file"
+          class="download-link"
+          @click="
+            downloadFile(item.rvt_model.file_uri, item.rvt_model_file_name)
+          "
+        >
+          {{ item.rvt_model_file_name }}
+        </span>
+        <span v-else>{{ item.rvt_model_file_name }}</span>
       </template>
     </DataTable>
 
@@ -168,27 +209,32 @@ const updateTabRef = ref<InstanceType<typeof StructureUpdateTab> | null>(null);
 // 모달 컴포넌트는 일반 컴포넌트로 변경됨
 
 interface StructureItem {
-  id: string;
-  name: string;
-  code: string;
-  type: string;
+  structure_id: string;
+  structure_name: string;
+  structure_type: string;
+  unit_system_code: string;
+  formula_file_name: string;
+  dtdx_model_file_name: string;
+  rvt_model_file_name: string;
+  created_at: string;
   description: string;
-  createdAt: string;
-  capacity?: string;
-  capacityMax?: string;
-  model?: string;
-  formula?: string;
-  company?: string;
-  dischargePressure?: string;
-  dischargeDiameter?: string;
-  power?: string;
-  controlMethod?: string;
-  ratedVoltage?: string;
-  efficiency?: string;
-  powerFactor?: string;
-  demandFactor?: string;
-  totalWeight?: string;
-  material?: string;
+  // 원본 중첩 객체들 (필요시 사용)
+  formula?: {
+    file_name: string;
+    formula_name: string;
+    has_file: boolean;
+    file_uri?: string;
+  };
+  dtdx_model?: {
+    file_name: string;
+    has_file: boolean;
+    file_uri?: string;
+  };
+  rvt_model?: {
+    file_name: string;
+    has_file: boolean;
+    file_uri?: string;
+  };
 }
 
 interface RegistForm {
@@ -202,43 +248,43 @@ interface RegistForm {
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
-    key: "structureTypeDetail",
-    title: t("columns.machine.structureTypeDetail"),
+    key: "structure_type",
+    title: t("columns.machine.structureType"),
     width: "140px",
     sortable: false,
   },
   {
-    key: "unit",
+    key: "unit_system_code",
     title: t("common.unit"),
     width: "100px",
     sortable: false,
   },
   {
-    key: "formula",
+    key: "formula_file_name",
     title: t("columns.machine.formula"),
     width: "120px",
     sortable: false,
   },
   {
-    key: "model3d",
+    key: "dtdx_model_file_name",
     title: t("columns.machine.model3d"),
     width: "160px",
     sortable: false,
   },
   {
-    key: "revitModel",
+    key: "rvt_model_file_name",
     title: t("columns.machine.revitModel"),
     width: "140px",
     sortable: false,
   },
   {
-    key: "createdAt",
+    key: "created_at",
     title: t("common.creationDate"),
     width: "120px",
     sortable: false,
   },
   {
-    key: "remarks",
+    key: "description",
     title: t("columns.machine.remarks"),
     width: "140px",
     sortable: false,
@@ -262,19 +308,12 @@ const newStructure = ref<RegistForm>({
   description: "",
 });
 
-const filteredStructureList = computed(() => {
-  return structureList.value;
-});
-
-const totalCountComputed = computed(() => filteredStructureList.value.length);
 const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
+  () => (structureStore.searchResults as any)?.total_pages || 1
 );
 
 const paginatedStructureList = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredStructureList.value.slice(start, end);
+  return structureList.value; // API에서 이미 페이징된 데이터를 받아옴
 });
 
 // (기존 단일 등록 폼 유효성 제거)
@@ -283,13 +322,16 @@ const handleSelectionChange = (selected: StructureItem[]) => {
   selectedItems.value = selected;
 };
 
-const handlePageChange = (page: number) => {
+// 페이지 변경 (Machine.vue 패턴 적용)
+const handlePageChange = async (page: number) => {
   currentPage.value = page;
-  selectedItems.value = [];
+  selectedItems.value = []; // 체크된 row 초기화
+  await loadData();
 };
 
+// 검색 처리 (Machine.vue 패턴 적용)
 const handleSearch = async () => {
-  selectedItems.value = [];
+  selectedItems.value = []; // 체크된 row 초기화
   currentPage.value = 1;
   await loadData();
 };
@@ -322,9 +364,9 @@ const handleEdit = () => {
 
   isEditMode.value = true;
   newStructure.value = {
-    name: selectedItems.value[0].name,
-    code: selectedItems.value[0].code,
-    type: selectedItems.value[0].type,
+    name: selectedItems.value[0].structure_name,
+    code: selectedItems.value[0].structure_type,
+    type: selectedItems.value[0].structure_type,
     description: selectedItems.value[0].description,
   };
   isRegistModalOpen.value = true;
@@ -340,9 +382,9 @@ const handleDelete = () => {
       t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
-    const selectedIds = selectedItems.value.map((item) => item.id);
+    const selectedIds = selectedItems.value.map((item) => item.structure_id);
     structureList.value = structureList.value.filter(
-      (item) => !selectedIds.includes(item.id)
+      (item) => !selectedIds.includes(item.structure_id)
     );
     selectedItems.value = [];
     alert(t("messages.success.deleted"));
@@ -357,25 +399,81 @@ const onChildUpdate = () => {
   updateTabRef.value?.onUpdate?.();
 };
 
+// 파일 다운로드 함수
+const downloadFile = (fileUri: string, fileName: string) => {
+  if (!fileUri) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  // API 서버 URL과 file_uri를 조합하여 다운로드 URL 생성
+  const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/${fileUri}`;
+
+  // 새 창에서 다운로드 실행
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = fileName;
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // 편집 로직 제거됨
 
 // 데이터 로드 함수
 const loadData = async () => {
   try {
+    // 체크된 row 초기화
+    selectedItems.value = [];
+
     // API 호출로 구조물 검색 리스트 조회
     await structureStore.fetchSearchList({
       search_field: "",
       search_value: "",
       page: currentPage.value,
       page_size: pageSize.value,
-      equipment_type: selectedStructureType.value,
-      root_equipment_type: selectedStructureTypeDetail.value,
+      root_equipment_type: selectedStructureType.value,
+      equipment_type: selectedStructureTypeDetail.value,
       unit: selectedUnit.value,
     });
 
     // API 응답 데이터를 structureList에 설정
-    structureList.value =
-      structureStore.searchResults as unknown as StructureItem[];
+    if ((structureStore.searchResults as any)?.items) {
+      const apiData = (structureStore.searchResults as any).items;
+      structureList.value = apiData.map((item: any) => ({
+        structure_id: item.structure_id,
+        structure_name: item.structure_name,
+        structure_type: item.structure_type,
+        unit_system_code: item.unit_system_code,
+        formula_file_name: item.formula?.file_name || "-",
+        dtdx_model_file_name: item.dtdx_model?.file_name || "-",
+        rvt_model_file_name: item.rvt_model?.file_name || "-",
+        created_at: item.created_at,
+        description: item.description || "-",
+        // 원본 데이터도 유지 (필요시 사용)
+        formula: item.formula
+          ? {
+              ...item.formula,
+              file_uri: item.formula.file_uri,
+            }
+          : undefined,
+        dtdx_model: item.dtdx_model
+          ? {
+              ...item.dtdx_model,
+              file_uri: item.dtdx_model.file_uri,
+            }
+          : undefined,
+        rvt_model: item.rvt_model
+          ? {
+              ...item.rvt_model,
+              file_uri: item.rvt_model.file_uri,
+            }
+          : undefined,
+      }));
+    } else {
+      structureList.value = [];
+    }
   } catch (error) {
     console.error("데이터 로드 실패:", error);
     // 에러 발생 시 빈 배열로 초기화
@@ -741,6 +839,19 @@ $tablet: 1024px;
     padding: 0.75rem;
     gap: 0.4rem;
     justify-content: center;
+  }
+}
+
+// 다운로드 링크 스타일
+.download-link {
+  color: $primary-color;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: color.scale($primary-color, $lightness: -20%);
+    text-decoration: none;
   }
 }
 </style>

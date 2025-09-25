@@ -388,8 +388,15 @@ function handleFormulaFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    if (file.size > 50 * 1024 * 1024) {
+      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+      input.value = "";
+      return;
+    }
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".py")) {
+      alert(".py 파일만 업로드할 수 있습니다.");
+      input.value = "";
       return;
     }
     formulaFileName.value = file.name;
@@ -400,8 +407,15 @@ function handleDtdFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    if (file.size > 50 * 1024 * 1024) {
+      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+      input.value = "";
+      return;
+    }
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".dtdx")) {
+      alert(".dtdx 파일만 업로드할 수 있습니다.");
+      input.value = "";
       return;
     }
     dtdFileName.value = file.name;
@@ -412,14 +426,22 @@ function handleThumbnailFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 50 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+      input.value = "";
       return;
     }
     const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
     if (!allowed.includes(file.type)) {
       alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      input.value = "";
+      return;
+    }
+    const lower = file.name.toLowerCase();
+    if (!/\.(png|jpg|jpeg|gif|svg)$/i.test(lower)) {
+      alert("이미지 확장자만 업로드할 수 있습니다. (png, jpg, jpeg, gif, svg)");
+      input.value = "";
       return;
     }
     thumbnailFileName.value = file.name;
@@ -430,8 +452,15 @@ function handleRevitFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    if (file.size > 50 * 1024 * 1024) {
+      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+      input.value = "";
+      return;
+    }
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".rvt")) {
+      alert(".rvt 파일만 업로드할 수 있습니다.");
+      input.value = "";
       return;
     }
     revitFileName.value = file.name;

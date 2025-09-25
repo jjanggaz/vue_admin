@@ -158,6 +158,12 @@
       :select-header-text="t('common.selectColumn')"
       :show-select-all="false"
     >
+      <template #cell-created_at="{ value }">
+        {{ formatDate(value) }}
+      </template>
+      <template #cell-updated_at="{ value }">
+        {{ formatDate(value) }}
+      </template>
     </DataTable>
     <div class="pagination-container">
       <Pagination :current-page="1" :total-pages="1" />
@@ -177,15 +183,26 @@ import { useStructureStore } from "@/stores/structureStore";
 // Props 정의
 interface Props {
   selectedItem?: {
+    structure_id?: string;
     structure_type?: string;
     description?: string;
     formula_file_name?: string;
     dtdx_model_file_name?: string;
     rvt_model_file_name?: string;
     thumbnail_file_name?: string;
+    formula?: {
+      formula_id?: string;
+    };
+    dtdx_model?: {
+      model_file_id?: string;
+    };
+    rvt_model?: {
+      model_file_id?: string;
+    };
     thumbnail?: {
       file_name?: string;
       symbol_name?: string;
+      symbol_id?: string;
     };
   };
 }
@@ -250,72 +267,52 @@ onMounted(async () => {
         selectedMachineName.value = hierarchyData.code_key || "";
       }
     }
+
+    // 구조물 공식 검색
+    if (props.selectedItem?.formula?.formula_id) {
+      await structureStore.fetchStructureFormula(
+        props.selectedItem.formula.formula_id
+      );
+
+      // 검색 결과를 그리드에 매핑
+      if (structureStore.formulaSearchResults?.length > 0) {
+        editModeRows.value = structureStore.formulaSearchResults.map(
+          (item: any, index: number) => ({
+            no: index + 1,
+            formula_name: item.formula_name || "-",
+            formula_version: item.formula_version || "-",
+            created_at: item.created_at || "-",
+            updated_at: item.updated_at || "-",
+            unit_system_code: item.unit_system_code || "-",
+          })
+        );
+      }
+    }
   } catch (error) {
-    console.error("공통 코드 조회 실패:", error);
+    console.error("데이터 조회 실패:", error);
   }
 });
 
 // 등록용 컬럼 제거
 
-// 수정 모드용 컬럼 (첨부 이미지 기준)
+// 수정 모드용 컬럼 (구조물 공식 검색 결과 기준)
 const editModeColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px" },
   {
-    key: "structureTypeDetail",
+    key: "formula_name",
     title: t("columns.machine.structureTypeDetail"),
     width: "140px",
   },
-  { key: "formulaVersion", title: t("common.formulaVersion"), width: "120px" },
-  { key: "creationDate", title: t("common.creationDate"), width: "120px" },
-  { key: "appliedVersion", title: t("common.appliedVersion"), width: "120px" },
-  { key: "unit", title: t("common.unit"), width: "100px" },
-  { key: "remarks", title: t("columns.machine.remarks"), width: "120px" },
+  { key: "formula_version", title: t("common.formulaVersion"), width: "120px" },
+  { key: "unit_system_code", title: t("common.unit"), width: "100px" },
+  { key: "created_at", title: t("common.creationDate"), width: "120px" },
+  { key: "updated_at", title: "수정 일자", width: "120px" },
 ];
 
 // 등록용 데이터 제거
 
-// 수정 모드용 데이터 (첨부 이미지 기준)
-const editModeRows = ref([
-  {
-    id: 1,
-    no: 1,
-    structureType: "기초",
-    structureForm: "직사각형",
-    structureName: "구조물명1",
-    structureTypeDetail: "RC",
-    formulaVersion: "v1.0",
-    creationDate: "2024-01-15",
-    appliedVersion: "v1.0",
-    unit: "m",
-    remarks: "특이사항 없음",
-  },
-  {
-    id: 2,
-    no: 2,
-    structureType: "벽체",
-    structureForm: "원형",
-    structureName: "구조물명2",
-    structureTypeDetail: "S",
-    formulaVersion: "v2.1",
-    creationDate: "2024-01-20",
-    appliedVersion: "v2.0",
-    unit: "m",
-    remarks: "검토 필요",
-  },
-  {
-    id: 3,
-    no: 3,
-    structureType: "기초",
-    structureForm: "원형",
-    structureName: "구조물명3",
-    structureTypeDetail: "RC",
-    formulaVersion: "v1.5",
-    creationDate: "2024-01-25",
-    appliedVersion: "v1.5",
-    unit: "m",
-    remarks: "최신 버전",
-  },
-]);
+// 수정 모드용 데이터 (구조물 공식 검색 결과 기준)
+const editModeRows = ref<Array<Record<string, unknown>>>([]);
 
 // 수정 모드에서는 구조물 대분류/타입 변경 불가 (비활성 상태)
 
@@ -336,7 +333,54 @@ function validateBasicSelections(): boolean {
 
 function onDeleteSelectedEditMode() {
   if (!validateBasicSelections()) return;
-  // TODO: 선택된 항목 삭제 로직 구현
+
+  // 선택된 항목이 있는지 확인
+  if (editModeRows.value.length === 0) {
+    alert("삭제할 항목이 없습니다.");
+    return;
+  }
+
+  // 첫 번째 항목을 선택된 것으로 간주 (단일 선택 모드)
+  const selectedItem = editModeRows.value[0];
+  const formulaName = selectedItem.formula_name as string;
+
+  if (
+    confirm(
+      `공식 "${formulaName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
+    )
+  ) {
+    handleDeleteFormula();
+  }
+}
+
+async function handleDeleteFormula() {
+  try {
+    if (
+      !props.selectedItem?.structure_id ||
+      !props.selectedItem?.formula?.formula_id
+    ) {
+      alert("삭제할 공식 정보가 없습니다.");
+      return;
+    }
+
+    await structureStore.deleteStructureFormula(
+      props.selectedItem.structure_id,
+      props.selectedItem.formula.formula_id
+    );
+
+    // 삭제 성공 후 그리드에서 해당 항목 제거
+    editModeRows.value = editModeRows.value.filter((_, index) => index !== 0);
+
+    alert("공식이 성공적으로 삭제되었습니다.");
+
+    // 그리드가 비어있으면 빈 상태로 표시
+    if (editModeRows.value.length === 0) {
+      editModeRows.value = [];
+    }
+  } catch (error) {
+    console.error("공식 삭제 실패:", error);
+    alert("공식 삭제에 실패했습니다. 다시 시도해주세요.");
+  }
 }
 
 // 파일 변경 핸들러들
@@ -396,8 +440,20 @@ function handleRevitFileChange(e: Event) {
 
 // 등록 함수 제거 (수정 전용)
 
+// 날짜 포맷팅 함수
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+  } catch (error) {
+    console.error("날짜 포맷팅 오류:", error);
+    return dateString;
+  }
+};
+
 // 수정 함수
-function onUpdate() {
+async function onUpdate() {
   if (!validateBasicSelections()) return;
 
   // 파일 첨부 validation
@@ -414,8 +470,53 @@ function onUpdate() {
     return;
   }
 
-  // TODO: 수정 로직 구현
-  alert("구조물이 수정되었습니다.");
+  try {
+    if (!props.selectedItem?.structure_id) {
+      alert("수정할 구조물 정보가 없습니다.");
+      return;
+    }
+
+    // FormData 생성
+    const formData = new FormData();
+
+    // 파일들 추가
+    if (formulaFileInput.value?.files?.[0]) {
+      formData.append("formula_file", formulaFileInput.value.files[0]);
+    }
+    if (dtdFileInput.value?.files?.[0]) {
+      formData.append("dtd_model_file", dtdFileInput.value.files[0]);
+    }
+    if (thumbnailFileInput.value?.files?.[0]) {
+      formData.append("thumbnail_file", thumbnailFileInput.value.files[0]);
+    }
+    if (revitFileInput.value?.files?.[0]) {
+      formData.append("revit_model_file", revitFileInput.value.files[0]);
+    }
+
+    // 나머지 파라미터들 추가
+    const updateParams = {
+      structure_type: selectedStructureType.value,
+      structure_type_detail: selectedMachineName.value,
+      description: remarks.value,
+      formula_id: props.selectedItem?.formula?.formula_id,
+      dtdx_model_file_id: props.selectedItem?.dtdx_model?.model_file_id,
+      rvt_model_file_id: props.selectedItem?.rvt_model?.model_file_id,
+      thumbnail_symbol_id: props.selectedItem?.thumbnail?.symbol_id,
+    };
+
+    // updateParams를 JSON 문자열로 변환하여 추가
+    formData.append("updateParams", JSON.stringify(updateParams));
+
+    await structureStore.updateStructure(
+      props.selectedItem.structure_id,
+      formData
+    );
+
+    alert("구조물이 성공적으로 수정되었습니다.");
+  } catch (error) {
+    console.error("구조물 수정 실패:", error);
+    alert("구조물 수정에 실패했습니다. 다시 시도해주세요.");
+  }
 }
 
 defineExpose({ onUpdate });

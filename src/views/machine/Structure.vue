@@ -367,9 +367,11 @@ const openRegistModal = () => {
   isRegistModalOpen.value = true;
 };
 
-const closeRegistModal = () => {
+const closeRegistModal = async () => {
   isRegistModalOpen.value = false;
   isEditMode.value = false;
+  // 모달 닫을 때 데이터 새로고침
+  await loadData();
 };
 
 const handleEdit = () => {

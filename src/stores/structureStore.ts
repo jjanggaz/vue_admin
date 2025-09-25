@@ -114,6 +114,9 @@ export const useStructureStore = defineStore("structure", () => {
   const editFourthDepth = ref<Record<string, unknown>[]>([]);
   const editFifthDepth = ref<Record<string, unknown>[]>([]);
 
+  // 구조물 공식 검색 결과 데이터
+  const formulaSearchResults = ref<Array<Record<string, unknown>>>([]);
+
   // 등록 화면용 별도 depth 변수들
   const createSecondDepth = ref<Record<string, unknown>[]>([]);
   const createThirdDepth = ref<Record<string, unknown>[]>([]);
@@ -426,6 +429,99 @@ export const useStructureStore = defineStore("structure", () => {
     }
   };
 
+  // 구조물 공식 삭제 함수
+  const deleteStructureFormula = async (
+    structureId: string,
+    formulaId: string
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/structure/delete/formula`,
+        undefined,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            structure_id: structureId,
+            formula_id: formulaId,
+          }),
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("구조물 공식 삭제 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 공식 삭제에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 구조물 수정 함수
+  const updateStructure = async (structureId: string, formData: FormData) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/structure/update/${structureId}`,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("구조물 수정 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 수정에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 구조물 공식 검색 함수
+  const fetchStructureFormula = async (formulaId: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/structure/search/formula/${formulaId}`,
+        undefined,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response?.response?.data?.items) {
+        formulaSearchResults.value = response.response.data.items;
+      }
+
+      return response;
+    } catch (err) {
+      console.error("구조물 공식 검색 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 공식 검색에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     unitSystems,
@@ -438,6 +534,7 @@ export const useStructureStore = defineStore("structure", () => {
     editThirdDepth,
     editFourthDepth,
     editFifthDepth,
+    formulaSearchResults,
     loading,
     error,
     // 등록 화면용 별도 depth 변수들
@@ -454,5 +551,8 @@ export const useStructureStore = defineStore("structure", () => {
     createStructure,
     deleteStructure,
     fetchStructureCommonCode,
+    fetchStructureFormula,
+    deleteStructureFormula,
+    updateStructure,
   };
 });

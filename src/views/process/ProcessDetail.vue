@@ -2787,20 +2787,19 @@ const downloadProcessSymbol = async () => {
       throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
     
-    // 파일명 추출 (Content-Disposition 헤더에서)
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let fileName = 'process_symbol.svg';
+    // 화면에 표시된 파일명 사용
+    let fileName = 'process_symbol.svg'; // 기본값
     
-    if (contentDisposition) {
-      const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-      if (fileNameMatch && fileNameMatch[1]) {
-        fileName = fileNameMatch[1].replace(/['"]/g, '');
+    // 선택된 파일이 있는 경우 (새로 선택한 파일)
+    if (processStore.selectedFiles['processSymbol']) {
+      const selectedFileName = processStore.selectedFiles['processSymbol'].name;
+      fileName = selectedFileName.split('/').pop() || selectedFileName;
+    } else {
+      // 기존 파일명 사용 (화면에 표시된 파일명)
+      const displayedFileName = getProcessSymbolFileName();
+      if (displayedFileName && displayedFileName.trim() !== '') {
+        fileName = displayedFileName;
       }
-    }
-    
-    // 파일명이 기본값인 경우 실제 파일명으로 변경
-    if (fileName === 'process_symbol.svg') {
-      fileName = 'process_symbol.svg';
     }
     
     // 응답을 JSON으로 파싱

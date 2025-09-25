@@ -138,6 +138,11 @@
         </span>
         <span v-else>{{ item.rvt_model_file_name }}</span>
       </template>
+
+      <!-- 생성일자 포맷팅 슬롯 -->
+      <template #cell-created_at="{ value }">
+        {{ formatDate(value) }}
+      </template>
     </DataTable>
 
     <!-- 페이징 -->
@@ -224,16 +229,25 @@ interface StructureItem {
     formula_name: string;
     has_file: boolean;
     file_uri?: string;
+    formula_id?: string;
   };
   dtdx_model?: {
     file_name: string;
     has_file: boolean;
     file_uri?: string;
+    model_file_id?: string;
   };
   rvt_model?: {
     file_name: string;
     has_file: boolean;
     file_uri?: string;
+    model_file_id?: string;
+  };
+  thumbnail?: {
+    file_name: string;
+    has_file: boolean;
+    file_uri?: string;
+    symbol_id?: string;
   };
 }
 
@@ -372,31 +386,87 @@ const handleEdit = () => {
   isRegistModalOpen.value = true;
 };
 
-const handleDelete = () => {
+const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
+
+  const selectedItem = selectedItems.value[0];
+  const structureName = selectedItem.structure_name;
+
   if (
     confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
+      `구조물 "${structureName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
     )
   ) {
-    const selectedIds = selectedItems.value.map((item) => item.structure_id);
-    structureList.value = structureList.value.filter(
-      (item) => !selectedIds.includes(item.structure_id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
+    try {
+      // 삭제할 파일 ID들 수집
+      const deleteParams: {
+        dtdx_model_file_id?: string;
+        formula_id?: string;
+        rvt_model_file_id?: string;
+        thumbnail_symbol_id?: string;
+      } = {};
+
+      // 각 파일의 ID가 있으면 추가
+      if (selectedItem.dtdx_model?.model_file_id) {
+        deleteParams.dtdx_model_file_id = selectedItem.dtdx_model.model_file_id;
+      }
+
+      if (selectedItem.formula?.formula_id) {
+        deleteParams.formula_id = selectedItem.formula.formula_id;
+      }
+
+      if (selectedItem.rvt_model?.model_file_id) {
+        deleteParams.rvt_model_file_id = selectedItem.rvt_model.model_file_id;
+      }
+
+      if (selectedItem.thumbnail?.symbol_id) {
+        deleteParams.thumbnail_symbol_id = selectedItem.thumbnail.symbol_id;
+      }
+
+      // API 호출
+      await structureStore.deleteStructure(
+        selectedItem.structure_id,
+        deleteParams
+      );
+
+      // 성공 시 로컬 데이터에서 제거
+      structureList.value = structureList.value.filter(
+        (item) => item.structure_id !== selectedItem.structure_id
+      );
+      selectedItems.value = [];
+
+      alert("구조물이 성공적으로 삭제되었습니다.");
+
+      // 데이터 새로고침
+      await loadData();
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      alert("구조물 삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   }
 };
 
-const onChildRegister = () => {
-  registerTabRef.value?.onRegister?.();
+const onChildRegister = async () => {
+  try {
+    await registerTabRef.value?.onRegister?.();
+    // 등록 완료 후 데이터 새로고침
+    await loadData();
+  } catch (error) {
+    console.error("등록 중 오류 발생:", error);
+  }
 };
 
-const onChildUpdate = () => {
-  updateTabRef.value?.onUpdate?.();
+const onChildUpdate = async () => {
+  try {
+    await updateTabRef.value?.onUpdate?.();
+    // 수정 완료 후 데이터 새로고침
+    await loadData();
+  } catch (error) {
+    console.error("수정 중 오류 발생:", error);
+  }
 };
 
 // 파일 다운로드 함수
@@ -419,6 +489,19 @@ const downloadFile = (fileUri: string, fileName: string) => {
   document.body.removeChild(link);
 };
 
+// 날짜 포맷팅 함수
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
+
+  try {
+    const date = new Date(dateString);
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+  } catch (error) {
+    console.error("날짜 포맷팅 오류:", error);
+    return dateString; // 원본 문자열 반환
+  }
+};
+
 // 편집 로직 제거됨
 
 // 데이터 로드 함수
@@ -433,8 +516,8 @@ const loadData = async () => {
       search_value: "",
       page: currentPage.value,
       page_size: pageSize.value,
-      root_equipment_type: selectedStructureType.value,
-      equipment_type: selectedStructureTypeDetail.value,
+      root_structure_type: selectedStructureType.value,
+      structure_type: selectedStructureTypeDetail.value,
       unit: selectedUnit.value,
     });
 
@@ -456,18 +539,28 @@ const loadData = async () => {
           ? {
               ...item.formula,
               file_uri: item.formula.file_uri,
+              formula_id: item.formula.formula_id,
             }
           : undefined,
         dtdx_model: item.dtdx_model
           ? {
               ...item.dtdx_model,
               file_uri: item.dtdx_model.file_uri,
+              model_file_id: item.dtdx_model.model_file_id,
             }
           : undefined,
         rvt_model: item.rvt_model
           ? {
               ...item.rvt_model,
               file_uri: item.rvt_model.file_uri,
+              model_file_id: item.rvt_model.model_file_id,
+            }
+          : undefined,
+        thumbnail: item.thumbnail
+          ? {
+              ...item.thumbnail,
+              file_uri: item.thumbnail.symbol_uri,
+              symbol_id: item.thumbnail.symbol_id,
             }
           : undefined,
       }));

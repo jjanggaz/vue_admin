@@ -325,6 +325,43 @@ export const useStructureStore = defineStore("structure", () => {
     }
   };
 
+  // 구조물 삭제 함수
+  const deleteStructure = async (
+    structureId: string,
+    deleteParams: {
+      dtdx_model_file_id?: string;
+      formula_id?: string;
+      rvt_model_file_id?: string;
+      thumbnail_symbol_id?: string;
+    }
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/structure/delete/${structureId}`,
+        undefined,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(deleteParams),
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("구조물 삭제 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "구조물 삭제에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     unitSystems,
@@ -347,5 +384,6 @@ export const useStructureStore = defineStore("structure", () => {
     fetchThirdDepth2,
     fetchSearchList,
     createStructure,
+    deleteStructure,
   };
 });

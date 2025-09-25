@@ -4259,6 +4259,15 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         // Vue 반응성을 위해 배열 재할당
         mappingPidList.value = [...mappingPidList.value];
         
+        // 초기값도 업데이트하여 다음 저장 시 중복 저장 방지
+        const initialItemIndex = initialMappingPidList.value.findIndex(item => item.id === pidItem.id);
+        if (initialItemIndex !== -1) {
+          initialMappingPidList.value[initialItemIndex].excel_drawing_id = response.response?.excel_drawing_id;
+          initialMappingPidList.value[initialItemIndex].excel_file_name = excelFile.name;
+          initialMappingPidList.value[initialItemIndex].excelFileName = excelFile.name;
+          console.log('✅ Excel 업로드 후 초기값 업데이트 완료 - 중복 저장 방지');
+        }
+        
         console.log('✅ Excel 업로드 후 그리드 업데이트 완료');
       } else {
         console.error('❌ Excel 업로드 후 그리드에서 해당 항목을 찾을 수 없습니다:', {
@@ -4274,7 +4283,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         });
       }
       
-      alert(`Excel 파일 "${excelFile.name}"이 성공적으로 업로드되었습니다.`);
+      // Excel 파일 업로드 완료 - 별도 메시지 없음 (저장 버튼 클릭 시 통합 메시지)
       
       // 기존 Excel 파일이 재선택된 경우 P&ID 컴포넌트 그리드 갱신
       if (pidItem.excel_drawing_id) {
@@ -4353,9 +4362,18 @@ const handleExcelFileDeleteForPid = async (pidItem: any) => {
         mappingPidList.value[itemIndex].excel_file_name = '';
         mappingPidList.value[itemIndex].excelFileName = '';
         console.log('Excel 파일 정보 초기화 완료');
+        
+        // 초기값도 업데이트하여 다음 저장 시 중복 저장 방지
+        const initialItemIndex = initialMappingPidList.value.findIndex(item => item.drawing_id === pidItem.drawing_id);
+        if (initialItemIndex !== -1) {
+          initialMappingPidList.value[initialItemIndex].excel_drawing_id = null;
+          initialMappingPidList.value[initialItemIndex].excel_file_name = '';
+          initialMappingPidList.value[initialItemIndex].excelFileName = '';
+          console.log('✅ Excel 삭제 후 초기값 업데이트 완료 - 중복 저장 방지');
+        }
       }
       
-      alert('Excel 파일이 성공적으로 삭제되었습니다.');
+      // Excel 파일 삭제 완료 - 별도 메시지 없음 (저장 버튼 클릭 시 통합 메시지)
       
       // Excel 파일 삭제 성공 후 그리드 새로고침 제거 (그리드 내용 지워짐 방지)
       console.log('=== Excel 파일 삭제 성공 - 그리드 새로고침 건너뛰기 (데이터 유지) ===');
@@ -7116,10 +7134,7 @@ const confirmMappingPid = async () => {
     
     // 삭제만 수행하는 경우 (삭제할 항목이 있고, 저장할 새 데이터가 없는 경우)
     if (deletedRows.length > 0 && validMappings.length === 0) {
-      console.log('P&ID 삭제만 수행됨 - 저장할 새 데이터 없음');
-      console.log('삭제된 항목 수:', deletedRows.length);
-      console.log('저장할 새 데이터 수:', validMappings.length);
-      alert('P&ID 항목이 삭제되었습니다.');
+      alert('P&ID 매핑이 저장되었습니다.');
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
       await refreshPfdData();
       
@@ -7175,9 +7190,7 @@ const confirmMappingPid = async () => {
     
     // 삭제와 저장이 모두 있는 경우
     if (deletedRows.length > 0 && validMappings.length > 0) {
-      console.log('P&ID 삭제와 저장 모두 수행됨');
-      console.log('삭제된 항목 수:', deletedRows.length);
-      console.log('저장할 새 데이터 수:', validMappings.length);
+      // 삭제와 저장이 모두 수행됨 - 메시지는 저장 완료 후에 표시
     }
     
     // 3. 저장이 필요한 경우 (새 데이터가 있는 경우만)
@@ -7306,8 +7319,13 @@ const confirmMappingPid = async () => {
           const initialExcelFile = (initialItem as any)?.excelFile;
           
           const pidFileChanged = currentPidFile && (!initialPidFile || currentPidFile.name !== initialPidFile?.name);
+          // Excel 파일 변경 감지: 새 파일이 선택되었거나, 기존 파일과 다른 파일로 변경된 경우
           const excelFileChanged = currentExcelFile && (!initialExcelFile || currentExcelFile.name !== initialExcelFile?.name);
           const hasMainFileChanges = pidFileChanged || excelFileChanged || isNewItem;
+          
+          // Excel 파일 중복 저장 방지 로직
+          const hasExistingExcelFile = item.excel_drawing_id && (item.excel_file_name || item.excelFileName);
+          const shouldSkipExcelSave = hasExistingExcelFile && !currentExcelFile;
           
           // 파일 변경 상태 로깅
           console.log('=== P&ID 저장 시 파일 변경 상태 확인 ===', {
@@ -7317,11 +7335,17 @@ const confirmMappingPid = async () => {
             excelFileChanged,
             svgFileChanged,
             hasMainFileChanges,
-            isNewItem
+            isNewItem,
+            hasExistingExcelFile: hasExistingExcelFile,
+            shouldSkipExcelSave: shouldSkipExcelSave,
+            excel_drawing_id: item.excel_drawing_id,
+            excel_file_name: item.excel_file_name || item.excelFileName
           });
           
           // Excel 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
-          if (excelFileChanged) {
+          // 이미 저장된 Excel 파일이 있는 경우 중복 저장 방지
+          
+          if (excelFileChanged && !shouldSkipExcelSave) {
             console.log('🔄 Excel 파일 변경 감지 - Excel 전용 API 호출 시작');
             if (currentExcelFile) {
               console.log('📄 Excel 파일 업로드:', (currentExcelFile as any).name);
@@ -7366,6 +7390,12 @@ const confirmMappingPid = async () => {
               console.log('✅ Excel 파일 삭제 완료');
             }
             console.log('✅ Excel 파일 처리 완료');
+          } else if (shouldSkipExcelSave) {
+            console.log('⚠️ 이미 저장된 Excel 파일이 있음 - 중복 저장 방지:', {
+              excel_drawing_id: item.excel_drawing_id,
+              excel_file_name: item.excel_file_name || item.excelFileName,
+              hasNewFile: !!currentExcelFile
+            });
           } else {
             console.log('ℹ️ Excel 파일 변경 없음 - Excel API 호출 건너뛰기');
           }
@@ -7620,18 +7650,8 @@ const confirmMappingPid = async () => {
             }
           });
           
-          // 알림 메시지 생성
-          let alertMessage = '';
-          if (successfulSaves.length > 0 && skippedSaves.length > 0) {
-            alertMessage = `P&ID 매핑 ${successfulSaves.length}개가 저장되고, ${skippedSaves.length}개가 업데이트되었습니다.`;
-          } else if (successfulSaves.length > 0) {
-            alertMessage = `P&ID 매핑 ${successfulSaves.length}개가 성공적으로 저장되었습니다.`;
-          } else if (skippedSaves.length > 0) {
-            alertMessage = `P&ID 매핑 ${skippedSaves.length}개가 성공적으로 업데이트되었습니다.`;
-          }
-          // 디버깅 관련 문구 제거 - 저장 완료 메시지만 표시
-          
-          alert(alertMessage);
+          // 저장 완료 메시지
+          alert('P&ID 매핑이 저장되었습니다.');
           
           // PFD 아이템의 hasPidMapping 상태 업데이트
           if (currentPfdItemForMapping.value) {

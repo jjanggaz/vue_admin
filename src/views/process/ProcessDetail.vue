@@ -467,24 +467,43 @@
               />
             </template>
             <template #cell-category="{ item }">
-              <div class="readonly-select-display">
-                {{ getCategoryLabel(item.category) }}
-              </div>
+              <input 
+                type="text" 
+                :value="item.category" 
+                class="form-control"
+                readonly
+                disabled
+                placeholder="구분"
+              />
             </template>
             <template #cell-middleCategory="{ item }">
-              <div class="readonly-select-display">
-                {{ getMiddleCategoryLabel(item.middleCategory) }}
-              </div>
+              <input 
+                type="text" 
+                :value="item.middleCategory" 
+                class="form-control"
+                readonly
+                disabled
+                placeholder="중분류"
+              />
             </template>
             <template #cell-smallCategory="{ item }">
-              <div class="readonly-select-display">
-                {{ getSmallCategoryLabel(item.smallCategory) }}
-              </div>
+              <input 
+                type="text" 
+                :value="item.smallCategory" 
+                class="form-control"
+                readonly
+                disabled
+                placeholder="소분류"
+              />
             </template>
             <template #cell-equipmentType="{ item }">
-              <div class="readonly-select-display">
-                {{ getEquipmentTypeLabel(item.equipmentType) }}
-              </div>
+              <input 
+                type="text" 
+                :value="item.equipmentType || ''" 
+                class="form-control"
+                readonly
+                disabled
+              />
             </template>
             <template #cell-standard_quantity="{ item }">
               <input 
@@ -771,14 +790,14 @@ const mappingPidColumns: TableColumn[] = [
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false, width: "60px" },
-  { key: "no", title: "No.", sortable: false, width: "60px" },
-  { key: "pid_id", title: "POC IN", sortable: false, width: "120px" },
+  { key: "no", title: "No.", sortable: false, width: "50px" },
+  { key: "pid_id", title: "POC IN", sortable: false, width: "80px" },
   { key: "category", title: "구분", sortable: false, width: "100px" },
   { key: "middleCategory", title: "중분류", sortable: false, width: "120px" },
   { key: "smallCategory", title: "소분류", sortable: false, width: "120px" },
-  { key: "equipmentType", title: "장비유형", sortable: false, width: "150px" },
-  { key: "standard_quantity", title: "수량(상용)", sortable: false, width: "100px" },
-  { key: "spare_quantity", title: "수량(예비)", sortable: false, width: "100px" }
+  { key: "equipmentType", title: "장비유형", sortable: false, width: "250px" },
+  { key: "standard_quantity", title: "수량(상용)", sortable: false, width: "80px" },
+  { key: "spare_quantity", title: "수량(예비)", sortable: false, width: "80px" }
 ];
 
 // 유틸리티 함수들 (사용하지 않음)
@@ -1528,8 +1547,13 @@ const parseComponentHierarchy = (hierarchyString: string) => {
   
   const result = {
     level1_code_key: '',
+    level1_korean_name: '',
     level2_code_key: '',
-    level3_code_key: ''
+    level2_korean_name: '',
+    level3_code_key: '',
+    level3_korean_name: '',
+    level4_code_key: '',
+    level4_korean_name: ''
   };
   
   if (!hierarchyString) {
@@ -1545,21 +1569,28 @@ const parseComponentHierarchy = (hierarchyString: string) => {
     levels.forEach((level, index) => {
       console.log(`레벨 ${index + 1} 처리:`, level);
       
-      // 각 레벨에서 코드키 추출: "(레벨X) CODE_KEY / 설명1 / 설명2" 형태
-      const match = level.match(/\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/.*$/);
-      if (match && match[1]) {
+      // 각 레벨에서 코드키와 한국어 설명 추출: "(레벨X) CODE_KEY / 한국어설명 / 영어설명" 형태
+      const match = level.match(/\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/\s*([^/]+)\s*\/\s*(.+)$/);
+      if (match && match[1] && match[2]) {
         const codeKey = match[1];
-        console.log(`레벨 ${index + 1} 코드키 추출:`, codeKey);
+        const koreanName = match[2].trim();
+        console.log(`레벨 ${index + 1} 추출:`, { codeKey, koreanName });
         
         if (index === 0) {
           result.level1_code_key = codeKey;
+          result.level1_korean_name = koreanName;
         } else if (index === 1) {
           result.level2_code_key = codeKey;
+          result.level2_korean_name = koreanName;
         } else if (index === 2) {
           result.level3_code_key = codeKey;
+          result.level3_korean_name = koreanName;
+        } else if (index === 3) {
+          result.level4_code_key = codeKey;
+          result.level4_korean_name = koreanName;
         }
       } else {
-        console.log(`레벨 ${index + 1} 코드키 추출 실패:`, level);
+        console.log(`레벨 ${index + 1} 파싱 실패:`, level);
       }
     });
     
@@ -1851,13 +1882,18 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
             _isLoadedFromServer: true, // 서버에서 로드된 데이터임을 표시
             // 파싱된 hierarchy 데이터 추가
             level1_code_key: hierarchyData.level1_code_key,
+            level1_korean_name: hierarchyData.level1_korean_name,
             level2_code_key: hierarchyData.level2_code_key,
+            level2_korean_name: hierarchyData.level2_korean_name,
             level3_code_key: hierarchyData.level3_code_key,
-            // P&ID Components 그리드 select 박스용 매핑
-            category: hierarchyData.level1_code_key, // 구분
-            middleCategory: hierarchyData.level2_code_key, // 중분류
-            smallCategory: hierarchyData.level3_code_key, // 소분류
-            equipmentType: item.component_type, // 장비유형
+            level3_korean_name: hierarchyData.level3_korean_name,
+            level4_code_key: hierarchyData.level4_code_key,
+            level4_korean_name: hierarchyData.level4_korean_name,
+            // P&ID Components 그리드 텍스트 박스용 매핑 (한국어 이름 사용)
+            category: hierarchyData.level1_korean_name, // 구분: 기계
+            middleCategory: hierarchyData.level2_korean_name, // 중분류: 펌프
+            smallCategory: hierarchyData.level3_korean_name, // 소분류: 수중모터펌프
+            equipmentType: hierarchyData.level4_korean_name || '', // 장비유형: 수중오수모터펌프(자동착탈식) - 파싱된 값이 없으면 공백
             // POC IN 항목을 input_poc로 매핑
             input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
             // 각 행별 개별 옵션 저장
@@ -2406,22 +2442,23 @@ const updatePidComponentAPI = async (componentId: string, componentData: any) =>
 const validatePidComponentData = () => {
   const errors: string[] = [];
   
-  pidComponentList.value.forEach((item, index) => {
-    const rowNumber = index + 1;
-    
-    if (!item.category) {
-      errors.push(`${rowNumber}행: 구분을 선택해주세요.`);
-    }
-    if (!item.middleCategory) {
-      errors.push(`${rowNumber}행: 중분류를 선택해주세요.`);
-    }
-    if (!item.smallCategory) {
-      errors.push(`${rowNumber}행: 소분류를 선택해주세요.`);
-    }
-    if (!item.equipmentType) {
-      errors.push(`${rowNumber}행: 장비유형을 선택해주세요.`);
-    }
-  });
+  // hierarchy 필드들(구분, 중분류, 소분류, 장비유형) 필수체크 제외
+  // pidComponentList.value.forEach((item, index) => {
+  //   const rowNumber = index + 1;
+  //   
+  //   if (!item.category) {
+  //     errors.push(`${rowNumber}행: 구분을 선택해주세요.`);
+  //   }
+  //   if (!item.middleCategory) {
+  //     errors.push(`${rowNumber}행: 중분류를 선택해주세요.`);
+  //   }
+  //   if (!item.smallCategory) {
+  //     errors.push(`${rowNumber}행: 소분류를 선택해주세요.`);
+  //   }
+  //   if (!item.equipmentType) {
+  //     errors.push(`${rowNumber}행: 장비유형을 선택해주세요.`);
+  //   }
+  // });
   
   return errors;
 };
@@ -2547,7 +2584,7 @@ const handlePidComponentSave = async () => {
           process_id: processId, // ProcessDetail 컴포넌트 마운트 - processId
           mapping_type: "PID_EXCEL", // 고정값
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
-          component_type: item.equipmentType, // 장비유형 select의 code
+          // 기존 항목 수정 시에는 hierarchy 필드들(category, middleCategory, smallCategory, equipmentType) 제외
           input_poc: Number(item.input_poc) || 0, // POC IN 값
           standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
@@ -2559,7 +2596,7 @@ const handlePidComponentSave = async () => {
           process_id: componentData.process_id,
           mapping_type: componentData.mapping_type,
           pid_id: componentData.pid_id,
-          component_type: componentData.component_type,
+          // component_type 제거됨 (기존 항목 수정 시 hierarchy 필드 제외)
           input_poc: componentData.input_poc,
           standard_quantity: componentData.standard_quantity,
           spare_quantity: componentData.spare_quantity,

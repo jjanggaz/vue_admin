@@ -333,6 +333,10 @@ async function extractZipContents(file: File) {
       "svg",
     ];
     const invalidFiles: string[] = [];
+    let hasAllowedFile = false;
+    let hasPy = false;
+    let hasDtdx = false;
+    let hasImage = false;
 
     // ZIP 파일 내부의 모든 파일을 순회
     zipData.forEach((relativePath: string, zipEntry: any) => {
@@ -363,8 +367,14 @@ async function extractZipContents(file: File) {
           fileType = "Archive";
         }
 
-        // 허용되지 않은 파일인지 확인
-        if (fileExtension && !allowedExtensions.includes(fileExtension)) {
+        // 허용/비허용 판정
+        if (fileExtension && allowedExtensions.includes(fileExtension)) {
+          hasAllowedFile = true;
+          if (fileExtension === "py") hasPy = true;
+          if (fileExtension === "dtdx") hasDtdx = true;
+          if (["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension))
+            hasImage = true;
+        } else if (fileExtension) {
           invalidFiles.push(relativePath);
         }
 
@@ -398,6 +408,36 @@ async function extractZipContents(file: File) {
         });
       }
     });
+
+    // 허용된 파일이 하나도 없으면 첨부 불가 처리
+    if (!hasAllowedFile) {
+      alert(
+        "ZIP 파일에 허용된 형식(.py, .dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      allFileName.value = "";
+      allFile.value = undefined as unknown as File;
+      return;
+    }
+
+    // 필수 파일(.py, .dtdx, 이미지)이 모두 포함되어 있는지 검증
+    if (!(hasPy && hasDtdx && hasImage)) {
+      const missing: string[] = [];
+      if (!hasPy) missing.push(".py");
+      if (!hasDtdx) missing.push(".dtdx");
+      if (!hasImage) missing.push("이미지(.jpg/.jpeg/.png/.gif/.svg)");
+      alert(
+        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- .py\n- .dtdx\n- 이미지(.jpg/.jpeg/.png/.gif/.svg)\n\n누락: ${missing.join(
+          ", "
+        )}`
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      allFileName.value = "";
+      allFile.value = undefined as unknown as File;
+      return;
+    }
 
     // 허용되지 않은 파일이 있으면 경고
     if (invalidFiles.length > 0) {

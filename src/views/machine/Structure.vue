@@ -470,8 +470,9 @@ const onChildRegister = async () => {
 const onChildUpdate = async () => {
   try {
     await updateTabRef.value?.onUpdate?.();
-    // 수정 완료 후 데이터 새로고침
+    // 수정 완료 후 데이터 새로고침 및 모달 닫기
     await loadData();
+    await closeRegistModal();
   } catch (error) {
     console.error("수정 중 오류 발생:", error);
   }

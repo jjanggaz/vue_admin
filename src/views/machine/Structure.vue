@@ -11,7 +11,7 @@
             class="form-select"
             @change="handleStructureTypeChange"
           >
-            <option value="">{{ t("common.select") }}</option>
+            <option value="">{{ t("common.all") }}</option>
             <option
               v-for="type in structureStore.secondDepth"
               :key="type.code_id"

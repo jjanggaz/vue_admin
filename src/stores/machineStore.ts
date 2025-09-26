@@ -320,6 +320,62 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  // 상세 깊이 코드 조회 (/api/machine/depth/detail)
+  const fetchDepthDetail = async (codeGroup: string, codeLevel: number = 4) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/machine/depth/detail", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code_group: codeGroup,
+          code_level: codeLevel,
+        }),
+      });
+
+      return response;
+    } catch (err) {
+      console.error("상세 깊이 코드 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "상세 깊이 코드 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 상세 깊이 코드 조회 (searchType)
+  const fetchDepthDetailBySearchType = async (searchKey: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/depth/detail/searchType/${encodeURIComponent(searchKey)}`,
+        undefined,
+        {
+          method: "GET",
+        }
+      );
+      return response;
+    } catch (err) {
+      console.error("상세 깊이 검색 타입 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "상세 깊이 검색 타입 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -341,5 +397,7 @@ export const useMachineStore = defineStore("machine", () => {
     fetchThirdDepth,
     fetchSearchList,
     fetchMachineCommonCode,
+    fetchDepthDetail,
+    fetchDepthDetailBySearchType,
   };
 });

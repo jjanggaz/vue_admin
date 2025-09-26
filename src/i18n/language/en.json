@@ -347,6 +347,7 @@
     "selectAll": "-- All --",
     "select": "-- Select --",
     "selectItem": "Please select an item",
+    "detailSearch": "Detail Search",
     "selectColumn": "Select",
     "selected": "Selected",
     "logout": "Logout",
@@ -525,6 +526,9 @@
     "machineCodeValue": "Enter code value",
     "machineCodeOrder": "Enter order",
     "machineCodeDescription": "Enter description",
+    "inputValueAbove": "Enter value",
+    "material": "Enter material",
+    "other": "Enter other information",
     "costName": "Enter target name",
     "costCost": "Enter target cost",
     "costPeriod": "Enter target period (e.g. 2025.01-2025.12)",
@@ -586,7 +590,18 @@
       "menuType": "Menu Type",
       "menuOrder": "Sort Order",
       "isActive": "Usage Status",
-      "edit": "Edit"
+      "edit": "Edit",
+      "machine": {
+        "no": "No",
+        "mcId": "Machine Code",
+        "name": "Machine Name",
+        "type": "Machine Type",
+        "capacity": "Capacity",
+        "model": "Model",
+        "formula": "Formula",
+        "company": "Manufacturer",
+        "details": "Details"
+      }
     }
   },
   "menuPermissions": {
@@ -831,6 +846,19 @@
     "code": "Code Management",
     "cost": "Cost Management",
     "test": "Test"
+  },
+  "machine": {
+    "machineType": "Machine Type",
+    "machineSubtype": "Machine Subtype",
+    "machineCategory": "Machine Category",
+    "capacity": "Capacity",
+    "power": "Power",
+    "pressure": "Pressure",
+    "head": "Head",
+    "material": "Material",
+    "pipeDiameter": "Pipe Diameter",
+    "diameter": "Diameter",
+    "other": "Other"
   },
   "pageTitles": {
     "dashboard": "Dashboard",

@@ -47,9 +47,226 @@
                 @keyup.enter="handleSearch"
                 class="form-input"
               />
+              <button class="btn-detail-search" @click="toggleDetailSearch">
+                {{ t("common.detailSearch") }}
+              </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 상세검색 패널 -->
+        <div v-if="isDetailSearchOpen" class="detail-search-panel">
+          <div class="detail-search-header">
+            <h3>{{ t("common.detailSearch") }}</h3>
+            <div class="detail-search-row">
+              <div class="detail-search-item">
+                <label>{{ t("machine.machineCategory") }}</label>
+                <select
+                  v-model="detailSearch.headerMachineCategory"
+                  :disabled="
+                    detailSearch.headerMachineCategoryOptions.length === 0
+                  "
+                  @change="handleHeaderMachineCategoryChange"
+                  class="form-select"
+                >
+                  <option value="">{{ t("common.select") }}</option>
+                  <option
+                    v-for="opt in detailSearch.headerMachineCategoryOptions"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.text }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="detail-search-content">
+            <div class="detail-search-columns">
+              <!-- 왼쪽 컬럼 -->
+              <div class="detail-search-column">
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³/min)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityM3Min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (ml/min)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityMlMin"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (l/min)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityLMin"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³/hr)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityM3Hr"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityM3"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (t)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.capacityT"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-power"
+                    >{{ t("machine.power") }} (kw)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.powerKw"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+              </div>
+
+              <!-- 오른쪽 컬럼 -->
+              <div class="detail-search-column">
+                <div class="detail-search-item">
+                  <label class="label-pressure"
+                    >{{ t("machine.pressure") }} (kg/m²)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.pressureKgM2"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-pressure"
+                    >{{ t("machine.pressure") }} (mmAq)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.pressureMmAq"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-pressure"
+                    >{{ t("machine.pressure") }} (k)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.pressureK"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-head">{{ t("machine.head") }} (m)</label>
+                  <input
+                    type="number"
+                    v-model="detailSearch.headM"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-material">{{
+                    t("machine.material")
+                  }}</label>
+                  <input
+                    type="text"
+                    v-model="detailSearch.material"
+                    :placeholder="t('placeholder.material')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-diameter"
+                    >{{ t("machine.pipeDiameter") }} (mm)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.pipeDiameterMm"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-diameter"
+                    >{{ t("machine.diameter") }} (mm)</label
+                  >
+                  <input
+                    type="number"
+                    v-model="detailSearch.diameterMm"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div class="detail-search-item">
+                  <label class="label-other">{{ t("machine.other") }}</label>
+                  <input
+                    type="text"
+                    v-model="detailSearch.other"
+                    :placeholder="t('placeholder.other')"
+                    class="form-input"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -371,6 +588,34 @@ const newMachine = ref<RegistForm>({
 });
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
+
+// 상세검색 관련 변수들
+const isDetailSearchOpen = ref(false);
+const detailSearch = ref({
+  machineType: "",
+  machineSubtype: "",
+  machineCategory: "",
+  headerMachineCategory: "",
+  headerMachineCategoryOptions: [] as Array<{ value: string; text: string }>,
+  capacityM3Min: "",
+  capacityMlMin: "",
+  capacityLMin: "",
+  capacityM3Hr: "",
+  capacityM3: "",
+  capacityT: "",
+  powerKw: "",
+  pressureKgM2: "",
+  pressureMmAq: "",
+  pressureK: "",
+  headM: "",
+  material: "",
+  pipeDiameterMm: "",
+  diameterMm: "",
+  other: "",
+});
+
+// 헤더 전용 변수는 detailSearch로 통합 관리
+
 // 편집 기능 제거로 관련 상태 제거
 const isDetailEditMode = ref(false);
 
@@ -616,6 +861,78 @@ const handleMachineCategoryChange = async () => {
   if (selectedMachineCategory.value) {
     await machineStore.fetchThirdDepth(selectedMachineCategory.value, 3);
   }
+
+  // 상세검색의 machineType 초기화
+  detailSearch.value.machineType = "";
+  detailSearch.value.machineSubtype = "";
+  detailSearch.value.machineCategory = "";
+  // 헤더 기계유형 초기화 먼저
+  detailSearch.value.headerMachineCategory = "";
+  detailSearch.value.headerMachineCategoryOptions = [];
+  machineStore.fourthDepth.splice(0);
+  machineStore.fifthDepth.splice(0);
+  // 헤더 기계유형 옵션 로딩 (code_level=4)
+  try {
+    if (selectedMachineCategory.value) {
+      const selected = machineStore.secondDepth.find(
+        (row: any) => row.code_key === selectedMachineCategory.value
+      );
+      if (selected?.code_group) {
+        const res = await machineStore.fetchDepthDetail(selected.code_group, 4);
+        const codes = (res as any)?.response?.data?.codes ?? [];
+        if (Array.isArray(codes)) {
+          const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
+            const ak = (a?.code_key ?? "") as string;
+            const bk = (b?.code_key ?? "") as string;
+            return ak.localeCompare(bk);
+          });
+          detailSearch.value.headerMachineCategoryOptions = sorted.map(
+            (it: any) => ({
+              value: it.code_key,
+              text: it.code_value,
+            })
+          );
+        } else {
+          detailSearch.value.headerMachineCategoryOptions = [];
+        }
+      } else {
+        detailSearch.value.headerMachineCategoryOptions = [];
+      }
+    } else {
+      detailSearch.value.headerMachineCategoryOptions = [];
+    }
+  } catch (e) {
+    console.error(e);
+    detailSearch.value.headerMachineCategoryOptions = [];
+  }
+};
+
+// 상세검색 관련 함수들
+const toggleDetailSearch = async () => {
+  if (!selectedMachineCategory.value) {
+    alert(t("common.selectCategory"));
+    return;
+  }
+  isDetailSearchOpen.value = !isDetailSearchOpen.value;
+};
+
+const closeDetailSearch = () => {
+  isDetailSearchOpen.value = false;
+};
+
+// 상세검색 select 옵션 관련 로직 제거됨
+
+// 헤더 기계유형 변경 시 상세 검색 타입 조회 호출
+const handleHeaderMachineCategoryChange = async () => {
+  const searchKey = detailSearch.value.headerMachineCategory;
+  if (!searchKey) return;
+  try {
+    const res = await machineStore.fetchDepthDetailBySearchType(searchKey);
+    // 후속 동작은 다음 단계 요구사항에 맞춰 연결 예정
+    console.log("searchType 응답:", (res as any)?.response ?? res);
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 onMounted(async () => {
@@ -764,6 +1081,261 @@ onMounted(async () => {
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
+}
+
+// 상세검색 패널 스타일
+.detail-search-panel {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .detail-search-header {
+    position: relative;
+    padding: 1rem;
+    background: $background-light;
+    border-bottom: 1px solid $border-color;
+    border-radius: 8px 8px 0 0;
+
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $text-color;
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: $text-light;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        color: $text-color;
+      }
+    }
+
+    .detail-search-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .detail-search-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-right: 1rem;
+
+      &:last-child {
+        margin-right: 0;
+      }
+
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $text-color;
+        margin-bottom: 0;
+        min-width: 120px;
+        flex-shrink: 0;
+
+        &.label-machine-type {
+          background: #f0f8ff;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          border-left: 3px solid #4a90e2;
+        }
+
+        &.label-machine-subtype {
+          background: #f0fff0;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          border-left: 3px solid #32cd32;
+        }
+
+        &.label-machine-category {
+          background: #fff0f5;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          border-left: 3px solid #ff69b4;
+        }
+      }
+
+      .form-select {
+        flex: 1;
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        font-size: 0.875rem;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        &:disabled {
+          background-color: #f5f5f5;
+          color: #999;
+          cursor: not-allowed;
+          border-color: #ddd;
+        }
+      }
+    }
+  }
+
+  .detail-search-content {
+    padding: 1.5rem;
+  }
+
+  .detail-search-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .detail-search-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .detail-search-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $text-color;
+      margin-bottom: 0;
+      min-width: 120px;
+      flex-shrink: 0;
+
+      &.label-machine-type {
+        background: #f0f8ff;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #4a90e2;
+      }
+
+      &.label-machine-subtype {
+        background: #f0fff0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #32cd32;
+      }
+
+      &.label-machine-category {
+        background: #fff0f5;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #ff69b4;
+      }
+
+      &.label-capacity {
+        background: #fff5f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #ff8c42;
+      }
+
+      &.label-power {
+        background: #f5f0ff;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #8c42ff;
+      }
+
+      &.label-pressure {
+        background: #f0fff5;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #42ff8c;
+      }
+
+      &.label-head {
+        background: #fff0f5;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #ff428c;
+      }
+
+      &.label-material {
+        background: #f0f5ff;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #428cff;
+      }
+
+      &.label-diameter {
+        background: #fffcf0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #ffdc42;
+      }
+
+      &.label-other {
+        background: #f8f8f8;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border-left: 3px solid #888;
+      }
+    }
+
+    .form-input,
+    .form-select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      flex: 1;
+      min-width: 0;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+        border-color: #ddd;
+      }
+    }
+  }
+}
+
+.btn-detail-search {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+
+  &:hover {
+    background-color: color.scale(#6c757d, $lightness: -10%);
+  }
 }
 
 .filter-group {

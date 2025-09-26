@@ -333,6 +333,7 @@
     "machineManagement": "Machine Management"
   },
   "common": {
+    "all": "All",
     "no": "No",
     "search": "Search",
     "delete": "Delete",

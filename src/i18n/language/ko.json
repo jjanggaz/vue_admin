@@ -333,6 +333,7 @@
     "machineManagement": "공종별 관리"
   },
   "common": {
+    "all": "전체",
     "no": "순번",
     "search": "검색",
     "delete": "삭제",

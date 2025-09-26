@@ -116,9 +116,9 @@
 
     
     <DataTable
-      v-if="isComponentMounted && processStore.paginatedProcessList && processStore.paginatedProcessList.length >= 0"
+      v-if="isComponentMounted && processStore.processList && processStore.processList.length >= 0"
       :columns="tableColumns"
-      :data="processStore.paginatedProcessList"
+      :data="processStore.processList"
       :loading="processStore.loading"
       :selectable="true"
       :selected-items="processStore.selectedItems"
@@ -145,7 +145,7 @@
     <div class="pagination-container">
       <Pagination
         :current-page="processStore.currentPage"
-        :total-pages="processStore.totalPagesComputed"
+        :total-pages="processStore.totalPages"
         @page-change="handlePageChange"
       />
     </div>
@@ -1047,8 +1047,20 @@ const closeDetailModal = async () => {
 // const handleDetailUpdate = async () => { ... };
 
 
-const handlePageChange = (page: number) => {
+const handlePageChange = async (page: number) => {
+  console.log("=== 페이지 변경 ===");
+  console.log("이전 페이지:", processStore.currentPage);
+  console.log("새 페이지:", page);
+  
   processStore.setCurrentPage(page);
+  
+  console.log("페이지 설정 후:", processStore.currentPage);
+  console.log("API 호출 시작...");
+  
+  // 페이지 변경 시 새로운 API 호출로 서버에서 해당 페이지 데이터 가져오기
+  await processStore.searchProcesses();
+  
+  console.log("=== 페이지 변경 완료 ===");
 };
 
 const handleSortChange = (sortInfo: {
@@ -1218,6 +1230,15 @@ const handleSearch = async () => {
       console.log("processStore에서 사용 가능한 함수들:", Object.keys(processStore));
       return;
     }
+    
+    // 검색 시 페이지를 1로 초기화
+    console.log("=== 검색 시작 ===");
+    console.log("검색 전 페이지:", processStore.currentPage);
+    
+    processStore.setCurrentPage(1);
+    
+    console.log("검색 후 페이지:", processStore.currentPage);
+    console.log("페이지 크기:", processStore.pageSize);
     
     console.log("=== searchProcesses 호출 시작 ===");
     await processStore.searchProcesses();

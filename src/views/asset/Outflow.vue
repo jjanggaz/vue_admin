@@ -99,6 +99,29 @@
                   <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
+
+              <div class="action-bar">
+                <div class="title">
+                  <h4>{{ t("outflow.formulaList") }}</h4>
+                </div>
+                <div class="btns">
+                  <button class="btn btn-add" @click="deleteMetricFormula">
+                    {{ t("outflow.delete") }}
+                  </button>
+                </div>
+              </div>
+
+              <DataTable
+                :columns="gridColumns2"
+                :data="currentGridData2"
+                maxHeight="300px"
+                :stickyHeader="true"
+                :selectable="true"
+                selectionMode="single"
+                :showSelectAll="false"
+                :selectedItems="selectedMetricFormula"
+                @selection-change="onMetricFormulaSelectionChange"
+              />
             </div>
           </div>
 
@@ -147,6 +170,29 @@
                   <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
+
+              <div class="action-bar">
+                <div class="title">
+                  <h4>{{ t("outflow.formulaList") }}</h4>
+                </div>
+                <div class="btns">
+                  <button class="btn btn-add" @click="deleteImperialFormula">
+                    {{ t("outflow.delete") }}
+                  </button>
+                </div>
+              </div>
+
+              <DataTable
+                :columns="gridColumns2"
+                :data="currentImperialGridData2"
+                maxHeight="300px"
+                :stickyHeader="true"
+                :selectable="true"
+                selectionMode="single"
+                :showSelectAll="false"
+                :selectedItems="selectedImperialFormula"
+                @selection-change="onImperialFormulaSelectionChange"
+              />
             </div>
           </div>
         </div>
@@ -199,7 +245,6 @@
               <input
                 type="text"
                 v-model="uploadForm.title"
-                :placeholder="t('placeholder.outflowRemarks')"
                 class="form-input"
               />
             </dd>
@@ -259,12 +304,34 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="metricFileUpload">
+                    <input
+                      type="text"
+                      :value="metricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleMetricFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  metricFileData.length > 0
-                    ? metricFileData
-                    : currentMetricGridData
+                  metricFileData.length > 0 ? metricFileData : currentGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -282,7 +349,7 @@
                   >
                     <option value="">{{ t("common.select") }}</option>
                     <option
-                      v-for="param in getAvailableParameters(true, true)"
+                      v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
@@ -304,12 +371,36 @@
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="imperialFileUpload">
+                    <input
+                      type="text"
+                      :value="imperialFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleImperialFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
+
               <DataTable
                 :columns="gridColumns"
                 :data="
                   imperialFileData.length > 0
                     ? imperialFileData
-                    : currentImperialGridData
+                    : currentGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -327,7 +418,7 @@
                   >
                     <option value="">{{ t("common.select") }}</option>
                     <option
-                      v-for="param in getAvailableParameters(true, true)"
+                      v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
@@ -416,7 +507,6 @@
               <input
                 type="text"
                 v-model="uploadForm.title"
-                :placeholder="t('placeholder.outflowRemarks')"
                 class="form-input"
               />
             </dd>
@@ -475,30 +565,35 @@
               <div class="section-header">
                 <h3>Metric</h3>
               </div>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-reset" @click="resetModalMetricRows">
-                    {{ t("common.reset") }}
-                  </button>
-                  <button
-                    class="btn btn-add"
-                    @click="addModalMetricRow"
-                    :disabled="
-                      metricFileData.length >=
-                      outflowStore.waterQualityParameters.length
-                    "
-                  >
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="updateMetricFileUpload">
+                    <input
+                      type="text"
+                      :value="updateMetricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleUpdateMetricFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
 
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  metricFileData.length > 0
-                    ? metricFileData
+                  updateMetricFileData.length > 0
+                    ? updateMetricFileData
                     : currentMetricGridData
                 "
                 maxHeight="300px"
@@ -511,13 +606,18 @@
                     v-if="item.parameter_name === ''"
                     v-model="item.parameter_code"
                     @change="
-                      onParameterSelect(item.parameter_code, index, true, true)
+                      onUpdateParameterSelect(
+                        item.parameter_code,
+                        index,
+                        true,
+                        true
+                      )
                     "
                     class="form-input"
                   >
                     <option value="">{{ t("common.select") }}</option>
                     <option
-                      v-for="param in getAvailableParameters(true, true)"
+                      v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
@@ -539,30 +639,35 @@
               <div class="section-header">
                 <h3>Imperial</h3>
               </div>
-
-              <div class="action-bar">
-                <div class="btns">
-                  <button class="btn btn-reset" @click="resetModalImperialRows">
-                    {{ t("common.reset") }}
-                  </button>
-                  <button
-                    class="btn btn-add"
-                    @click="addModalImperialRow"
-                    :disabled="
-                      imperialFileData.length >=
-                      outflowStore.waterQualityParameters.length
-                    "
-                  >
-                    {{ t("outflow.addItem") }}
-                  </button>
-                </div>
-              </div>
+              <dl class="column-regist">
+                <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
+                <dd>
+                  <div class="file-upload-row" id="updateImperialFileUpload">
+                    <input
+                      type="text"
+                      :value="updateImperialFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
+                    <label class="file-select-btn">
+                      {{ t("common.selectFile") }}
+                      <input
+                        type="file"
+                        @change="handleUpdateImperialFileUpload"
+                        accept=".py"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                </dd>
+              </dl>
 
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  imperialFileData.length > 0
-                    ? imperialFileData
+                  updateImperialFileData.length > 0
+                    ? updateImperialFileData
                     : currentImperialGridData
                 "
                 maxHeight="300px"
@@ -575,13 +680,18 @@
                     v-if="item.parameter_name === ''"
                     v-model="item.parameter_code"
                     @change="
-                      onParameterSelect(item.parameter_code, index, false, true)
+                      onUpdateParameterSelect(
+                        item.parameter_code,
+                        index,
+                        false,
+                        true
+                      )
                     "
                     class="form-input"
                   >
                     <option value="">{{ t("common.select") }}</option>
                     <option
-                      v-for="param in getAvailableParameters(false, true)"
+                      v-for="param in outflowStore.waterQualityParameters"
                       :key="param.parameter_id"
                       :value="param.parameter_code"
                     >
@@ -758,6 +868,15 @@ interface TabInfo {
   symbol_color?: string; // 심볼 색상 추가
 }
 
+interface GridRow2 {
+  id: number; // 순번
+  formula_id: string; // 삭제 시 사용할 formula_id
+  formula: string; // formula_name 표시
+  uploadDate: string; // created_at을 YYYY-MM-DD 형태로 변환
+  created_at: string; // 원본 created_at (비교용)
+  isLatest: boolean; // 가장 최근 업로드된 항목인지 여부
+}
+
 interface UploadForm {
   title: string;
   category: string;
@@ -780,8 +899,120 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
 const resizeObserver = ref<ResizeObserver | null>(null);
+const selectedMetricFormulaId = ref<string | null>(null);
+const selectedImperialFormulaId = ref<string | null>(null);
 const handleResize = () => {
   nextTick(() => updateScrollButtons());
+};
+
+// Metric 계산식 선택 변경 핸들러
+const onMetricFormulaSelectionChange = (selectedItems: GridRow2[]) => {
+  if (selectedItems.length > 0) {
+    selectedMetricFormulaId.value = selectedItems[0].formula_id;
+  } else {
+    selectedMetricFormulaId.value = null;
+  }
+};
+
+// Imperial 계산식 선택 변경 핸들러
+const onImperialFormulaSelectionChange = (selectedItems: GridRow2[]) => {
+  if (selectedItems.length > 0) {
+    selectedImperialFormulaId.value = selectedItems[0].formula_id;
+  } else {
+    selectedImperialFormulaId.value = null;
+  }
+};
+
+// Metric 계산식 삭제 함수
+const deleteMetricFormula = async () => {
+  if (!selectedMetricFormulaId.value) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  // 선택된 항목이 최신 항목인지 확인
+  const selectedItem = currentGridData2.value.find(
+    (item) => item.formula_id === selectedMetricFormulaId.value
+  );
+  if (selectedItem?.isLatest) {
+    alert(t("messages.warning.cannotDeleteLatestFormula"));
+    return;
+  }
+
+  if (confirm(t("messages.confirm.deleteMetricFormula"))) {
+    try {
+      await outflowStore.deleteFormula(selectedMetricFormulaId.value);
+
+      // 삭제 성공 시 현재 탭의 데이터 다시 로드
+      const currentTab = tabs.value[activeTab.value];
+      if (currentTab && currentTab.flow_type_code && currentTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          currentTab.flow_type_code,
+          currentTab.flow_type_id
+        );
+      }
+
+      // 선택 초기화
+      selectedMetricFormulaId.value = null;
+
+      alert(t("messages.success.metricFormulaDeleteSuccess"));
+    } catch (error) {
+      console.error("Metric 계산식 삭제 실패:", error);
+      const errorMessage = translateMessage(
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
+        "messages.error.formulaDeleteFailed"
+      );
+      alert(errorMessage);
+    }
+  }
+};
+
+// Imperial 계산식 삭제 함수
+const deleteImperialFormula = async () => {
+  if (!selectedImperialFormulaId.value) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  // 선택된 항목이 최신 항목인지 확인
+  const selectedItem = currentImperialGridData2.value.find(
+    (item) => item.formula_id === selectedImperialFormulaId.value
+  );
+  if (selectedItem?.isLatest) {
+    alert(t("messages.warning.cannotDeleteLatestFormula"));
+    return;
+  }
+
+  if (confirm(t("messages.confirm.deleteImperialFormula"))) {
+    try {
+      await outflowStore.deleteFormula(selectedImperialFormulaId.value);
+
+      // 삭제 성공 시 현재 탭의 데이터 다시 로드
+      const currentTab = tabs.value[activeTab.value];
+      if (currentTab && currentTab.flow_type_code && currentTab.flow_type_id) {
+        await loadWaterFlowTypeParameters(
+          currentTab.flow_type_code,
+          currentTab.flow_type_id
+        );
+      }
+
+      // 선택 초기화
+      selectedImperialFormulaId.value = null;
+
+      alert(t("messages.success.imperialFormulaDeleteSuccess"));
+    } catch (error) {
+      console.error("Imperial 계산식 삭제 실패:", error);
+      const errorMessage = translateMessage(
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
+        "messages.error.formulaDeleteFailed"
+      );
+      alert(errorMessage);
+    }
+  }
 };
 
 // 유출종류별 파라미터 데이터 로드
@@ -858,6 +1089,67 @@ const loadWaterFlowTypeParameters = async (
       // Metric과 Imperial 데이터를 각각 저장
       metricTabGridData.value[activeTab.value] = metricParams;
       imperialTabGridData.value[activeTab.value] = imperialParams;
+
+      // Metric 계산식 데이터 처리
+      if (
+        outflowStore.waterFlowTypeParameters.metric_formulas?.data?.formulas &&
+        Array.isArray(
+          outflowStore.waterFlowTypeParameters.metric_formulas.data.formulas
+        )
+      ) {
+        const formulas =
+          outflowStore.waterFlowTypeParameters.metric_formulas.data.formulas;
+
+        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
+        const sortedFormulas = [...formulas].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const latestCreatedAt = sortedFormulas[0]?.created_at;
+
+        const metricFormulas: GridRow2[] = formulas.map((formula, index) => ({
+          id: index + 1, // 순번
+          formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
+          formula: formula.formula_name,
+          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          created_at: formula.created_at, // 원본 created_at
+          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
+        }));
+        tabGridData2.value[activeTab.value] = metricFormulas;
+      } else {
+        tabGridData2.value[activeTab.value] = [];
+      }
+
+      // Imperial 계산식 데이터 처리
+      if (
+        outflowStore.waterFlowTypeParameters.imperial_formulas?.data
+          ?.formulas &&
+        Array.isArray(
+          outflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas
+        )
+      ) {
+        const formulas =
+          outflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas;
+
+        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
+        const sortedFormulas = [...formulas].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const latestCreatedAt = sortedFormulas[0]?.created_at;
+
+        const imperialFormulas: GridRow2[] = formulas.map((formula, index) => ({
+          id: index + 1, // 순번
+          formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
+          formula: formula.formula_name,
+          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          created_at: formula.created_at, // 원본 created_at
+          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
+        }));
+        imperialTabGridData2.value[activeTab.value] = imperialFormulas;
+      } else {
+        imperialTabGridData2.value[activeTab.value] = [];
+      }
     } else {
       // 파라미터가 없으면 빈 배열
       metricTabGridData.value[activeTab.value] = [];
@@ -930,6 +1222,16 @@ const metricFileData = ref<GridRow[]>([]);
 const imperialFileData = ref<GridRow[]>([]);
 const metricFileName = ref<string>("");
 const imperialFileName = ref<string>("");
+const metricFile = ref<File | null>(null);
+const imperialFile = ref<File | null>(null);
+
+// 수정 모달용 별도 데이터
+const updateMetricFileData = ref<GridRow[]>([]);
+const updateImperialFileData = ref<GridRow[]>([]);
+const updateMetricFileName = ref<string>("");
+const updateImperialFileName = ref<string>("");
+const updateMetricFile = ref<File | null>(null);
+const updateImperialFile = ref<File | null>(null);
 
 const gridColumns: TableColumn[] = [
   { key: "id", title: t("columns.outflow.no"), width: "80px" },
@@ -939,6 +1241,12 @@ const gridColumns: TableColumn[] = [
   { key: "is_active", title: t("columns.outflow.active") },
   { key: "is_required", title: t("columns.outflow.isRequired") },
   { key: "remarks", title: t("columns.outflow.remarks") },
+];
+
+const gridColumns2: TableColumn[] = [
+  { key: "id", title: t("columns.outflow.no"), width: "80px" },
+  { key: "formula", title: t("columns.outflow.formula") },
+  { key: "uploadDate", title: t("columns.outflow.uploadDate") },
 ];
 
 const handleFileUpload = (event: Event) => {
@@ -984,6 +1292,318 @@ const handleFileUpload = (event: Event) => {
   }
 };
 
+// Metric 파일 업로드 핸들러
+const handleMetricFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+
+    // .py 파일인지 확인
+    if (!file.name.endsWith(".py")) {
+      alert(t("messages.warning.pythonFileOnly"));
+      return;
+    }
+
+    metricFileName.value = file.name;
+    metricFile.value = file; // 파일 저장
+
+    try {
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "METRIC");
+
+      // API 호출하여 계산식 추출
+      const response = await outflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = outflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              effluent: paramData.value || 0,
+              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        metricFileData.value = extractedData;
+        console.log("Metric 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        metricFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
+    } catch (error) {
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      metricFileData.value = [];
+      alert(t("messages.warning.fileReadError"));
+    }
+  }
+};
+
+// 수정 모달용 Metric 파일 업로드 핸들러
+const handleUpdateMetricFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+
+    // .py 파일인지 확인
+    if (!file.name.endsWith(".py")) {
+      alert(t("messages.warning.pythonFileOnly"));
+      return;
+    }
+
+    updateMetricFileName.value = file.name;
+    updateMetricFile.value = file; // 파일 저장
+
+    try {
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "METRIC");
+
+      // API 호출하여 계산식 추출
+      const response = await outflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = outflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              effluent: paramData.value || 0,
+              unit: paramData.unit || "mg/L",
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        updateMetricFileData.value = extractedData;
+        console.log("수정 모달 Metric 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        updateMetricFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
+    } catch (error) {
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      updateMetricFileData.value = [];
+      alert(t("messages.warning.fileReadError"));
+    }
+  }
+};
+
+// Imperial 파일 업로드 핸들러
+const handleImperialFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+
+    // .py 파일인지 확인
+    if (!file.name.endsWith(".py")) {
+      alert(t("messages.warning.pythonFileOnly"));
+      return;
+    }
+
+    imperialFileName.value = file.name;
+    imperialFile.value = file; // 파일 저장
+
+    try {
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "IMPERIAL");
+
+      // API 호출하여 계산식 추출
+      const response = await outflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = outflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              effluent: paramData.value || 0,
+              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        imperialFileData.value = extractedData;
+        console.log("Imperial 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        imperialFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
+    } catch (error) {
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      imperialFileData.value = [];
+      alert(t("messages.warning.fileReadError"));
+    }
+  }
+};
+
+// 수정 모달용 Imperial 파일 업로드 핸들러
+const handleUpdateImperialFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+
+    // .py 파일인지 확인
+    if (!file.name.endsWith(".py")) {
+      alert(t("messages.warning.pythonFileOnly"));
+      return;
+    }
+
+    updateImperialFileName.value = file.name;
+    updateImperialFile.value = file; // 파일 저장
+
+    try {
+      // FormData 생성하여 API 호출
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("unit_system", "IMPERIAL");
+
+      // API 호출하여 계산식 추출
+      const response = await outflowStore.extractFormula(formData);
+
+      console.log("API 응답:", response);
+
+      if (
+        response &&
+        response.response &&
+        response.response.data &&
+        response.response.data.input_parameters
+      ) {
+        const inputParameters = response.response.data.input_parameters;
+        const extractedData: GridRow[] = [];
+        let idCounter = 1;
+
+        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
+        Object.keys(inputParameters).forEach((parameterCode) => {
+          // waterQualityParameters에서 해당 parameter_code를 찾기
+          const matchingParameter = outflowStore.waterQualityParameters.find(
+            (param) =>
+              param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
+          );
+
+          if (matchingParameter) {
+            const paramData = inputParameters[parameterCode];
+            const gridRow: GridRow = {
+              id: idCounter++,
+              mapping_id: "",
+              parameter_id: matchingParameter.parameter_id || "",
+              parameter_name: matchingParameter.parameter_name,
+              parameter_code: matchingParameter.parameter_code,
+              effluent: paramData.value || 0,
+              unit: paramData.unit || "mg/L",
+              is_active: true,
+              is_required: false,
+              remarks: paramData.description || "",
+            };
+            extractedData.push(gridRow);
+          }
+        });
+
+        updateImperialFileData.value = extractedData;
+        console.log("수정 모달 Imperial 계산식 추출 완료:", extractedData);
+      } else {
+        // API 응답이 없으면 빈 배열로 설정
+        updateImperialFileData.value = [];
+        console.log("API 응답이 없어서 빈 배열로 설정");
+      }
+    } catch (error) {
+      console.error("계산식 추출 에러:", error);
+      // API 실패 시 빈 배열로 설정
+      updateImperialFileData.value = [];
+      alert(t("messages.warning.fileReadError"));
+    }
+  }
+};
+
 // 색상 업데이트 함수
 const updateColor = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -1015,164 +1635,17 @@ const metricTabGridData = ref<{ [key: number]: GridRow[] }>({});
 // Imperial용 데이터
 const imperialTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
+// Imperial 계산식용 데이터
+const imperialTabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
+
+const tabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
+
 // 각 탭별 데이터 복사본을 Metric/Imperial용으로 초기화
 Object.keys(tabGridData.value).forEach((key) => {
   const tabKey = parseInt(key);
   metricTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
   imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
-
-// 모달용 Metric 데이터 추가 함수
-const addModalMetricRow = () => {
-  const currentData =
-    metricFileData.value.length > 0
-      ? metricFileData.value
-      : currentMetricGridData.value;
-
-  // waterQualityParameters 개수만큼만 추가 가능
-  if (currentData.length >= outflowStore.waterQualityParameters.length) {
-    alert(t("messages.warning.maxParametersReached"));
-    return;
-  }
-
-  const newId =
-    currentData.length > 0
-      ? Math.max(...currentData.map((item) => item.id)) + 1
-      : 1;
-
-  const newRow: GridRow = {
-    id: newId,
-    mapping_id: "", // 빈 값으로 시작
-    parameter_id: "", // 빈 값으로 시작
-    parameter_name: "", // 빈 값으로 시작, 선택 시 채워짐
-    parameter_code: "", // 빈 값으로 시작
-    effluent: 0,
-    unit: "",
-    is_active: true,
-    is_required: false,
-    remarks: "",
-  };
-
-  if (metricFileData.value.length > 0) {
-    metricFileData.value = [...metricFileData.value, newRow];
-  } else {
-    metricFileData.value = [...currentMetricGridData.value, newRow];
-  }
-
-  // 새로 추가된 행이 보이도록 스크롤 조정
-  nextTick(() => {
-    const modalMetricTable = document.querySelector(
-      ".modal-tab-content-metric .data-table-container.with-scroll"
-    );
-    if (modalMetricTable) {
-      modalMetricTable.scrollTop = modalMetricTable.scrollHeight;
-    } else {
-      // fallback: 일반적인 스크롤 컨테이너 찾기
-      const scrollContainer = document.querySelector(
-        ".modal-tab-content-metric .data-table-container"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  });
-};
-
-// 모달용 Imperial 데이터 추가 함수
-const addModalImperialRow = () => {
-  const currentData =
-    imperialFileData.value.length > 0
-      ? imperialFileData.value
-      : currentImperialGridData.value;
-
-  // waterQualityParameters 개수만큼만 추가 가능
-  if (currentData.length >= outflowStore.waterQualityParameters.length) {
-    alert(t("messages.warning.maxParametersReached"));
-    return;
-  }
-
-  const newId =
-    currentData.length > 0
-      ? Math.max(...currentData.map((item) => item.id)) + 1
-      : 1;
-
-  const newRow: GridRow = {
-    id: newId,
-    mapping_id: "", // 빈 값으로 시작
-    parameter_id: "", // 빈 값으로 시작
-    parameter_name: "", // 빈 값으로 시작, 선택 시 채워짐
-    parameter_code: "", // 빈 값으로 시작
-    effluent: 0,
-    unit: "",
-    is_active: true,
-    is_required: false,
-    remarks: "",
-  };
-
-  if (imperialFileData.value.length > 0) {
-    imperialFileData.value = [...imperialFileData.value, newRow];
-  } else {
-    imperialFileData.value = [...currentImperialGridData.value, newRow];
-  }
-
-  // 새로 추가된 행이 보이도록 스크롤 조정
-  nextTick(() => {
-    const modalImperialTable = document.querySelector(
-      ".modal-tab-content-imperial .data-table-container.with-scroll"
-    );
-    if (modalImperialTable) {
-      modalImperialTable.scrollTop = modalImperialTable.scrollHeight;
-    } else {
-      // fallback: 일반적인 스크롤 컨테이너 찾기
-      const scrollContainer = document.querySelector(
-        ".modal-tab-content-imperial .data-table-container"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  });
-};
-
-// 모달용 Metric 데이터 초기화 함수
-const resetModalMetricRows = () => {
-  // 현재 탭의 원본 데이터로 초기화
-  if (metricTabGridData.value[activeTab.value]) {
-    metricFileData.value = [...metricTabGridData.value[activeTab.value]];
-  } else {
-    metricFileData.value = [];
-  }
-};
-
-// 모달용 Imperial 데이터 초기화 함수
-const resetModalImperialRows = () => {
-  // 현재 탭의 원본 데이터로 초기화
-  if (imperialTabGridData.value[activeTab.value]) {
-    imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
-  } else {
-    imperialFileData.value = [];
-  }
-};
-
-// 사용 가능한 파라미터 목록을 반환하는 함수 (이미 선택된 것 제외)
-const getAvailableParameters = (isMetric: boolean, isModal: boolean) => {
-  const allParameters = outflowStore.waterQualityParameters;
-
-  if (!isModal) {
-    // 메인 화면에서는 모든 파라미터 표시
-    return allParameters;
-  }
-
-  // 모달에서는 현재 선택된 파라미터들을 제외
-  const currentData = isMetric ? metricFileData.value : imperialFileData.value;
-  const selectedCodes = currentData
-    .filter((item) => item.parameter_code && item.parameter_code !== "")
-    .map((item) => item.parameter_code);
-
-  return allParameters.filter(
-    (param) => !selectedCodes.includes(param.parameter_code)
-  );
-};
 
 // 수질 파라미터 선택 시 처리 함수
 const onParameterSelect = (
@@ -1222,74 +1695,79 @@ const currentImperialGridData = computed(() => {
   return imperialTabGridData.value[activeTab.value] || [];
 });
 
+// 기본 탭 데이터 (Inflow.vue와 동일하게)
+const currentGridData = computed(() => {
+  return tabGridData.value[activeTab.value] || [];
+});
+
+const currentGridData2 = computed(() => {
+  return tabGridData2.value[activeTab.value] || [];
+});
+
+// Imperial 계산식 데이터
+const currentImperialGridData2 = computed(() => {
+  return imperialTabGridData2.value[activeTab.value] || [];
+});
+
+// 선택된 Metric 계산식
+const selectedMetricFormula = computed(() => {
+  if (!selectedMetricFormulaId.value) return [];
+  const formula = currentGridData2.value.find(
+    (item) => item.formula_id === selectedMetricFormulaId.value
+  );
+  return formula ? [formula] : [];
+});
+
+// 선택된 Imperial 계산식
+const selectedImperialFormula = computed(() => {
+  if (!selectedImperialFormulaId.value) return [];
+  const formula = currentImperialGridData2.value.find(
+    (item) => item.formula_id === selectedImperialFormulaId.value
+  );
+  return formula ? [formula] : [];
+});
+
+// 수정 모달용 파라미터 선택 핸들러
+const onUpdateParameterSelect = (
+  parameterCode: string,
+  rowIndex: number,
+  isMetric: boolean = true,
+  isModal: boolean = false
+) => {
+  const selectedParameter = outflowStore.waterQualityParameters.find(
+    (param) => param.parameter_code === parameterCode
+  );
+
+  console.log("선택된 파라미터:", selectedParameter);
+  console.log("전체 수질 파라미터 목록:", outflowStore.waterQualityParameters);
+
+  if (selectedParameter) {
+    // 선택된 행 업데이트
+    const targetData = isModal
+      ? isMetric
+        ? updateMetricFileData.value
+        : updateImperialFileData.value
+      : isMetric
+      ? metricTabGridData.value[activeTab.value]
+      : imperialTabGridData.value[activeTab.value];
+
+    if (targetData && targetData[rowIndex]) {
+      targetData[rowIndex].parameter_id = selectedParameter.parameter_id || "";
+      targetData[rowIndex].parameter_name = selectedParameter.parameter_name;
+      targetData[rowIndex].parameter_code = selectedParameter.parameter_code; // parameter_code 저장
+      targetData[rowIndex].unit = selectedParameter.default_unit;
+      // effluent 값은 기본값이 있으면 설정, 없으면 0
+      targetData[rowIndex].effluent = 0;
+      targetData[rowIndex].remarks = selectedParameter.description || "";
+    }
+  }
+};
+
 // 모달 관련 함수
-const openModal = async () => {
+const openModal = () => {
   isModalOpen.value = true;
   newTabName.value = "";
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
-
-  // 모달 오픈 시 수질 파라미터 데이터를 가져와서 DataTable에 표시
-  try {
-    // 수질 파라미터 목록 조회
-    await outflowStore.fetchWaterQualityParameters("EFFLUENT");
-
-    if (
-      outflowStore.waterQualityParameters &&
-      outflowStore.waterQualityParameters.length > 0
-    ) {
-      console.log(
-        "수질 파라미터 로드 완료:",
-        outflowStore.waterQualityParameters
-      );
-
-      // Metric용 데이터 생성
-      const metricData: GridRow[] = [];
-      const imperialData: GridRow[] = [];
-
-      outflowStore.waterQualityParameters.forEach((param, index) => {
-        // Metric 데이터
-        const metricRow: GridRow = {
-          id: index + 1,
-          mapping_id: "", // 새로 생성되는 데이터이므로 빈 값
-          parameter_id: param.parameter_id || "", // parameter_id 추가
-          parameter_name: param.parameter_name,
-          parameter_code: param.parameter_code,
-          effluent: 0, // 기본값
-          unit: param.default_unit || "mg/L",
-          is_active: true,
-          is_required: false,
-          remarks: param.description || "",
-        };
-        metricData.push(metricRow);
-
-        // Imperial 데이터 (동일한 구조로 생성)
-        const imperialRow: GridRow = {
-          id: index + 1,
-          mapping_id: "", // 새로 생성되는 데이터이므로 빈 값
-          parameter_id: param.parameter_id || "", // parameter_id 추가
-          parameter_name: param.parameter_name,
-          parameter_code: param.parameter_code,
-          effluent: 0, // 기본값
-          unit: param.default_unit || "mg/L", // 실제로는 Imperial 단위로 변환해야 함
-          is_active: true,
-          is_required: false,
-          remarks: param.description || "",
-        };
-        imperialData.push(imperialRow);
-      });
-
-      // 모달용 파일 데이터에 설정 (기존 파일 데이터가 없으면)
-      if (metricFileData.value.length === 0) {
-        metricFileData.value = metricData;
-      }
-
-      if (imperialFileData.value.length === 0) {
-        imperialFileData.value = imperialData;
-      }
-    }
-  } catch (error) {
-    console.error("모달 오픈 시 수질 파라미터 로드 실패:", error);
-  }
 };
 
 const closeModal = () => {
@@ -1307,6 +1785,8 @@ const closeModal = () => {
   imperialFileData.value = [];
   metricFileName.value = "";
   imperialFileName.value = "";
+  metricFile.value = null;
+  imperialFile.value = null;
 };
 
 const openCodeManagementModal = () => {
@@ -1352,9 +1832,9 @@ const openUpdateModal = async () => {
       ) {
         // uploaded_at 기준으로 정렬하여 가장 최신 파일 찾기
         const latestFile = fileInfoResponse.response.uploaded_files.sort(
-          (a: any, b: any) =>
-            new Date(b.uploaded_at).getTime() -
-            new Date(a.uploaded_at).getTime()
+          (a: Record<string, unknown>, b: Record<string, unknown>) =>
+            new Date(String(b.uploaded_at)).getTime() -
+            new Date(String(a.uploaded_at)).getTime()
         )[0];
 
         // 파일명을 input에 표시하기 위해 별도 상태 추가
@@ -1385,10 +1865,12 @@ const openUpdateModal = async () => {
 
   // 현재 탭의 Metric과 Imperial 데이터를 수정 폼에 복사
   if (metricTabGridData.value[activeTab.value]) {
-    metricFileData.value = [...metricTabGridData.value[activeTab.value]];
+    updateMetricFileData.value = [...metricTabGridData.value[activeTab.value]];
   }
   if (imperialTabGridData.value[activeTab.value]) {
-    imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
+    updateImperialFileData.value = [
+      ...imperialTabGridData.value[activeTab.value],
+    ];
   }
 
   // 모달 열기
@@ -1412,13 +1894,16 @@ const closeUpdateModal = () => {
   newOutflowTypeName.value = "";
   newOutflowTypeNameEn.value = "";
   uploadForm.value.title = "";
+  uploadForm.value.file = null; // 파일 첨부 초기화
   uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
-  metricFileData.value = [];
-  imperialFileData.value = [];
-  metricFileName.value = "";
-  imperialFileName.value = "";
+  updateMetricFileData.value = [];
+  updateImperialFileData.value = [];
+  updateMetricFileName.value = "";
+  updateImperialFileName.value = "";
+  updateMetricFile.value = null;
+  updateImperialFile.value = null;
 };
 
 const updateTab = async () => {
@@ -1438,8 +1923,8 @@ const updateTab = async () => {
 
     // Metric 파라미터 데이터 준비 (선택된 파라미터만)
     const metricParameters =
-      metricFileData.value.length > 0
-        ? metricFileData.value
+      updateMetricFileData.value.length > 0
+        ? updateMetricFileData.value
             .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
             .map((item) => ({
               flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
@@ -1456,8 +1941,8 @@ const updateTab = async () => {
 
     // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
     const imperialParameters =
-      imperialFileData.value.length > 0
-        ? imperialFileData.value
+      updateImperialFileData.value.length > 0
+        ? updateImperialFileData.value
             .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
             .map((item) => ({
               flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
@@ -1488,6 +1973,8 @@ const updateTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
+      metricFile: updateMetricFile.value || undefined, // Metric 계산식 파일
+      imperialFile: updateImperialFile.value || undefined, // Imperial 계산식 파일
     };
 
     // 수정 API 호출
@@ -1610,10 +2097,13 @@ const createNewTab = async () => {
         description: uploadForm.value.title || undefined,
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
+        is_required: true,
         metric_parameters: metricParameters,
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
+      metricFile: metricFile.value || undefined, // Metric 계산식 파일
+      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일
     };
 
     const response = await outflowStore.createWaterFlowType(requestData);
@@ -1628,6 +2118,8 @@ const createNewTab = async () => {
     imperialFileData.value = [];
     metricFileName.value = "";
     imperialFileName.value = "";
+    metricFile.value = null;
+    imperialFile.value = null;
 
     closeModal();
 
@@ -1687,8 +2179,11 @@ const onTabClick = async (index: number) => {
   if (!imperialTabGridData.value[index]) {
     imperialTabGridData.value[index] = [];
   }
+  if (!imperialTabGridData2.value[index]) {
+    imperialTabGridData2.value[index] = [];
+  }
 
-  // 선택된 탭의 유입종류 코드로 파라미터 조회
+  // 선택된 탭의 유출종류 코드로 파라미터 조회
   const selectedTab = tabs.value[index];
   if (selectedTab && selectedTab.flow_type_code && selectedTab.flow_type_id) {
     await loadWaterFlowTypeParameters(
@@ -1724,6 +2219,25 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 @use "sass:color";
+
+/* 수정 모달 크기 제한 */
+.update-modal-content {
+  max-width: 1700px !important;
+  max-height: 900px !important;
+  overflow-y: auto;
+}
+
+.update-modal-body {
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.symbol-image-preview svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
 
 .outflow {
   padding: $spacing-xl;
@@ -1762,7 +2276,7 @@ onBeforeUnmount(() => {
       flex: 1;
       background: white;
       border-radius: $border-radius-md;
-      padding: $spacing-lg;
+      padding: $spacing-sm;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
       overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
@@ -1772,7 +2286,6 @@ onBeforeUnmount(() => {
       @media (max-width: 1024px) {
         min-width: 100%;
         max-width: 100%;
-        padding: $spacing-md;
       }
 
       .section-header {
@@ -1802,9 +2315,8 @@ onBeforeUnmount(() => {
       .action-bar {
         min-width: 0; // 컨텐츠 영역이 축소될 수 있도록 허용
 
-        .action-bar,
-        .actioin-bar {
-          margin: $spacing-lg 0;
+        .action-bar {
+          margin: $spacing-sm 0;
         }
       }
     }
@@ -1890,8 +2402,8 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid $border-color;
-  padding-bottom: $spacing-md;
-  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-sm;
+  margin-bottom: $spacing-sm;
 
   h3 {
     margin: 0;

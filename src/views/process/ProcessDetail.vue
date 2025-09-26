@@ -159,8 +159,52 @@
               </div>
             </div>
           </template>
+          <template #cell-component="{ item, index }">
+            <button 
+              class="file-select-btn"
+              @click="toggleComponentsGrid(item, index)"
+              :title="'컴포넌트 목록 보기'"
+            >
+              컴포넌트
+            </button>
+          </template>
         </DataTable>
         
+        <!-- Components 목록 섹션 -->
+        <div v-if="showComponentsGrid" class="components-section">
+          <div class="tab-header">
+            <div class="grid-title">
+              <h4>Components 목록</h4>
+            </div>
+            <div class="tab-actions">
+              <button @click="closeComponentsGrid" class="btn btn-secondary">
+                닫기
+              </button>
+            </div>
+          </div>
+          
+          <DataTable
+            :columns="componentsColumns"
+            :data="componentsList"
+            :selectable="false"
+          >
+            <template #cell-category="{ item }">
+              <span>{{ item.category }}</span>
+            </template>
+            <template #cell-component="{ item }">
+              <span>{{ item.component }}</span>
+            </template>
+            <template #cell-type="{ item }">
+              <span>{{ item.type }}</span>
+            </template>
+            <template #cell-codeKey="{ item }">
+              <span>{{ item.codeKey }}</span>
+            </template>
+            <template #cell-item="{ item }">
+              <span>{{ item.item }}</span>
+            </template>
+          </DataTable>
+        </div>
 
         <!-- 공정카드 섹션 -->
         <div class="pfd-section">
@@ -718,7 +762,10 @@ const showPidListInMain = ref(false);
 // 공정카드 섹션 표시 상태
 const showPfdSection = ref(false);
 
-// 컴포넌트 섹션 표시 상태
+// Components 그리드 표시 상태
+const showComponentsGrid = ref(false);
+const componentsList = ref<any[]>([]);
+const currentFormulaItem = ref<any>(null);
 
 // P&ID 컴포넌트 섹션 표시 여부
 const showPidComponentSection = ref(false);
@@ -751,6 +798,7 @@ const formulaColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "registeredFormula", title: "등록 계산식", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: false },
+  { key: "component", title: "컴포넌트", sortable: false },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true }
 ];
 
@@ -766,12 +814,12 @@ const pfdColumns: TableColumn[] = [
   { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true }
 ];
 
-const componentColumns: TableColumn[] = [
-  { key: "id", title: "ID", sortable: true },
-  { key: "name", title: "컴포넌트명", sortable: true },
-  { key: "type", title: "타입", sortable: true },
-  { key: "description", title: "설명", sortable: true },
-  { key: "status", title: "상태", sortable: true }
+const componentsColumns: TableColumn[] = [
+  { key: "category", title: "분류", sortable: false },
+  { key: "component", title: "Components", sortable: false },
+  { key: "type", title: "유형", sortable: false },
+  { key: "codeKey", title: "코드 키", sortable: false },
+  { key: "item", title: "ITEM", sortable: false }
 ];
 
 
@@ -1341,6 +1389,127 @@ const openPfdModal = () => {
 const closePfdModal = () => {
   showPfdModal.value = false;
   selectedPfdFiles.value = [];
+};
+
+// Components 그리드 관련 함수들
+const toggleComponentsGrid = (formulaItem: any, index: number) => {
+  console.log('컴포넌트 버튼 클릭:', formulaItem, index);
+  
+  // 해당 행 선택
+  selectedFormulaItems.value = formulaItem;
+  
+  if (showComponentsGrid.value && currentFormulaItem.value?.id === formulaItem.id) {
+    // 같은 계산식의 컴포넌트 그리드가 이미 열려있으면 닫기
+    closeComponentsGrid();
+  } else {
+    // 새로운 계산식의 컴포넌트 그리드 열기
+    currentFormulaItem.value = formulaItem;
+    loadComponentsData(formulaItem);
+    showComponentsGrid.value = true;
+  }
+};
+
+const closeComponentsGrid = () => {
+  showComponentsGrid.value = false;
+  currentFormulaItem.value = null;
+  componentsList.value = [];
+};
+
+const loadComponentsData = (_formulaItem: any) => {
+  // 실제 API 호출 대신 샘플 데이터 사용
+  // TODO: 실제 API 호출로 교체
+  componentsList.value = [
+    {
+      id: 1,
+      category: "구조물",
+      component: "콘크리트",
+      type: "생물반응조",
+      codeKey: "",
+      item: "생물반응조"
+    },
+    {
+      id: 2,
+      category: "기계",
+      component: "탱크",
+      type: "STS제 각형탱크",
+      codeKey: "M_TNK02",
+      item: ""
+    },
+    {
+      id: 3,
+      category: "기계",
+      component: "탱크",
+      type: "STS제 원형탱크",
+      codeKey: "M_TNK03",
+      item: ""
+    },
+    {
+      id: 4,
+      category: "기계",
+      component: "교반기",
+      type: "프로펠러형",
+      codeKey: "M_AGT0602",
+      item: "생물반응조 교반기"
+    },
+    {
+      id: 5,
+      category: "기계",
+      component: "전동식밸브",
+      type: "전동식 버터플라이밸브",
+      codeKey: "M_VAV0202",
+      item: "수중횡축 프로펠러형(인양장치, 모니터링유니트 포함)"
+    },
+    {
+      id: 6,
+      category: "기계",
+      component: "펌프",
+      type: "무폐쇄형 펌프",
+      codeKey: "M_PMP0601",
+      item: "전동식(2상식)"
+    },
+    {
+      id: 7,
+      category: "기계",
+      component: "펌프",
+      type: "수중모터펌프",
+      codeKey: "M_PMP0302",
+      item: "스프르트펌프"
+    },
+    {
+      id: 8,
+      category: "기계",
+      component: "수중포기기",
+      type: "수중포기기(인양장치 제외)",
+      codeKey: "M_AQR05",
+      item: "수중오수모터펌프(자동착탈식)"
+    },
+    {
+      id: 9,
+      category: "기계",
+      component: "상등수 배출장치",
+      type: "무동력 부력식",
+      codeKey: "M_FDC01",
+      item: ""
+    },
+    {
+      id: 10,
+      category: "기계",
+      component: "송풍기",
+      type: "로터리 블로워",
+      codeKey: "M_AEB0401",
+      item: "루츠 블로워"
+    },
+    {
+      id: 11,
+      category: "기계",
+      component: "제어반",
+      type: "옥내자리형 (생물반응조 계측기 포함)",
+      codeKey: "M_CTR03",
+      item: ""
+    }
+  ];
+  
+  console.log('컴포넌트 데이터 로드 완료:', componentsList.value);
 };
 
 // 파일 선택 핸들러들
@@ -8931,6 +9100,12 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
   margin-top: 20px;
   padding-top: 10px;
   border-top: 2px solid #e9ecef;
+}
+
+.components-section {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e9ecef;
 }
 
 .pid-section {

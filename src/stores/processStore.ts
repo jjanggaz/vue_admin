@@ -421,6 +421,9 @@ export const useProcessStore = defineStore("process", () => {
         unit_system_code: searchUnit.value,
         level2_code_key: searchProcessType.value,
         level3_code_key: searchSubCategoryInput.value,
+        order_by: "process_code",
+        page: currentPage.value,
+        page_size: pageSize.value,
       };
 
       console.log("=== 조회조건 분석 ===");
@@ -433,6 +436,11 @@ export const useProcessStore = defineStore("process", () => {
       console.log("=== API 호출 시작 ===");
       console.log("API URL:", "/api/process/master/search");
       console.log("Request Body:", JSON.stringify(requestData));
+      console.log("페이지 정보:", {
+        currentPage: currentPage.value,
+        pageSize: pageSize.value,
+        totalPages: totalPages.value
+      });
       
       let result;
       try {
@@ -460,25 +468,36 @@ export const useProcessStore = defineStore("process", () => {
       console.log("result.response:", result?.response);
       console.log("result.response 타입:", typeof result?.response);
       console.log("result.response 배열 여부:", Array.isArray(result?.response));
+      
+      // pagination 정보 로깅
+      if (result?.response && typeof result.response === "object") {
+        const responseData = result.response as any;
+        console.log("=== Pagination 정보 ===");
+        console.log("total:", responseData.total);
+        console.log("page:", responseData.page);
+        console.log("total_pages:", responseData.total_pages);
+        console.log("page_size:", responseData.page_size);
+        console.log("items length:", responseData.items?.length);
+      }
 
       // API 응답 구조 검증 및 안전한 처리
       if (result && result.success !== false) {
         let processDataArray = [];
 
         // 서버 응답 구조에 따른 처리
-        if (result.items && Array.isArray(result.items)) {
+        if ((result as any).items && Array.isArray((result as any).items)) {
           // 서버에서 직접 items 배열로 응답하는 경우
-          processDataArray = result.items;
+          processDataArray = (result as any).items;
         } else if (Array.isArray(result.response)) {
           // 직접 배열로 응답이 온 경우
           processDataArray = result.response;
         } else if (
           result.response &&
-          result.response.items &&
-          Array.isArray(result.response.items)
+          (result.response as any).items &&
+          Array.isArray((result.response as any).items)
         ) {
           // response.items 배열로 응답이 온 경우
-          processDataArray = result.response.items;
+          processDataArray = (result.response as any).items;
         } else if (result.response && typeof result.response === "object") {
           // 단일 객체로 응답이 온 경우 배열로 변환
           processDataArray = [result.response];
@@ -524,9 +543,32 @@ export const useProcessStore = defineStore("process", () => {
             };
           });
 
-          totalCount.value = processList.value.length;
-          totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-          currentPage.value = 1;
+          // 서버에서 받은 pagination 정보 사용 (result.response에서 추출)
+          if (result.response && typeof result.response === "object") {
+            const responseData = result.response as any;
+            if (responseData.total !== undefined) {
+              totalCount.value = responseData.total;
+            } else {
+              totalCount.value = processList.value.length;
+            }
+            
+            if (responseData.total_pages !== undefined) {
+              totalPages.value = responseData.total_pages;
+            } else {
+              totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+            }
+            
+            if (responseData.page !== undefined) {
+              currentPage.value = responseData.page;
+            } else {
+              currentPage.value = 1;
+            }
+          } else {
+            // fallback: 기존 로직
+            totalCount.value = processList.value.length;
+            totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+            currentPage.value = 1;
+          }
 
           // 검색 후 체크박스(선택된 항목들) 초기화
           selectedItems.value = [];
@@ -534,18 +576,34 @@ export const useProcessStore = defineStore("process", () => {
         } else {
           // 검색 결과가 없는 경우
           processList.value = [];
-          totalCount.value = 0;
-          totalPages.value = 1;
-          currentPage.value = 1;
+          // 서버에서 받은 pagination 정보 사용 (result.response에서 추출)
+          if (result.response && typeof result.response === "object") {
+            const responseData = result.response as any;
+            totalCount.value = responseData.total || 0;
+            totalPages.value = responseData.total_pages || 1;
+            currentPage.value = responseData.page || 1;
+          } else {
+            totalCount.value = 0;
+            totalPages.value = 1;
+            currentPage.value = 1;
+          }
           // 체크박스(선택된 항목들) 초기화
           selectedItems.value = [];
         }
       } else {
         // API 호출 실패 또는 success: false인 경우
         processList.value = [];
-        totalCount.value = 0;
-        totalPages.value = 1;
-        currentPage.value = 1;
+        // 서버에서 받은 pagination 정보 사용 (result.response에서 추출)
+        if (result && result.response && typeof result.response === "object") {
+          const responseData = result.response as any;
+          totalCount.value = responseData.total || 0;
+          totalPages.value = responseData.total_pages || 1;
+          currentPage.value = responseData.page || 1;
+        } else {
+          totalCount.value = 0;
+          totalPages.value = 1;
+          currentPage.value = 1;
+        }
         // 체크박스(선택된 항목들) 초기화
         selectedItems.value = [];
 

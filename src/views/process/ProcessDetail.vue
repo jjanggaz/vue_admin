@@ -799,7 +799,8 @@ const formulaColumns: TableColumn[] = [
   { key: "registeredFormula", title: "등록 계산식", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: false },
   { key: "component", title: "컴포넌트", sortable: false },
-  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true }
+  { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
+  { key: "process_dependencies", title: "Process Dependencies", sortable: false, hidden: true }
 ];
 
 
@@ -1415,101 +1416,187 @@ const closeComponentsGrid = () => {
   componentsList.value = [];
 };
 
-const loadComponentsData = (_formulaItem: any) => {
-  // 실제 API 호출 대신 샘플 데이터 사용
-  // TODO: 실제 API 호출로 교체
-  componentsList.value = [
-    {
-      id: 1,
-      category: "구조물",
-      component: "콘크리트",
-      type: "생물반응조",
-      codeKey: "",
-      item: "생물반응조"
-    },
-    {
-      id: 2,
-      category: "기계",
-      component: "탱크",
-      type: "STS제 각형탱크",
-      codeKey: "M_TNK02",
-      item: ""
-    },
-    {
-      id: 3,
-      category: "기계",
-      component: "탱크",
-      type: "STS제 원형탱크",
-      codeKey: "M_TNK03",
-      item: ""
-    },
-    {
-      id: 4,
-      category: "기계",
-      component: "교반기",
-      type: "프로펠러형",
-      codeKey: "M_AGT0602",
-      item: "생물반응조 교반기"
-    },
-    {
-      id: 5,
-      category: "기계",
-      component: "전동식밸브",
-      type: "전동식 버터플라이밸브",
-      codeKey: "M_VAV0202",
-      item: "수중횡축 프로펠러형(인양장치, 모니터링유니트 포함)"
-    },
-    {
-      id: 6,
-      category: "기계",
-      component: "펌프",
-      type: "무폐쇄형 펌프",
-      codeKey: "M_PMP0601",
-      item: "전동식(2상식)"
-    },
-    {
-      id: 7,
-      category: "기계",
-      component: "펌프",
-      type: "수중모터펌프",
-      codeKey: "M_PMP0302",
-      item: "스프르트펌프"
-    },
-    {
-      id: 8,
-      category: "기계",
-      component: "수중포기기",
-      type: "수중포기기(인양장치 제외)",
-      codeKey: "M_AQR05",
-      item: "수중오수모터펌프(자동착탈식)"
-    },
-    {
-      id: 9,
-      category: "기계",
-      component: "상등수 배출장치",
-      type: "무동력 부력식",
-      codeKey: "M_FDC01",
-      item: ""
-    },
-    {
-      id: 10,
-      category: "기계",
-      component: "송풍기",
-      type: "로터리 블로워",
-      codeKey: "M_AEB0401",
-      item: "루츠 블로워"
-    },
-    {
-      id: 11,
-      category: "기계",
-      component: "제어반",
-      type: "옥내자리형 (생물반응조 계측기 포함)",
-      codeKey: "M_CTR03",
-      item: ""
-    }
-  ];
+const loadComponentsData = (formulaItem: any) => {
+  console.log('loadComponentsData 호출됨:', formulaItem);
   
-  console.log('컴포넌트 데이터 로드 완료:', componentsList.value);
+  // process_dependencies 데이터 파싱
+  const parsedComponents: any[] = [];
+  
+  if (formulaItem && formulaItem.process_dependencies) {
+    console.log('process_dependencies 데이터:', formulaItem.process_dependencies);
+    
+    // process_dependencies가 직접 배열인 경우 파싱
+    if (Array.isArray(formulaItem.process_dependencies)) {
+      const items = formulaItem.process_dependencies;
+      console.log('process_dependencies 배열 데이터:', items);
+      
+      items.forEach((item: any, index: number) => {
+        const parsedItem = {
+          id: `component_${index}`,
+          category: item.level1_value || '', // 분류: level1_value
+          component: item.level2_value || '', // Components: level2_value
+          type: item.level3_value || '', // 유형: level3_value
+          codeKey: item.code || '', // 코드 키: code
+          item: item.value || item.value_en || '' // ITEM: value 또는 value_en
+        };
+        parsedComponents.push(parsedItem);
+      });
+    }
+    // process_dependencies의 items 배열 파싱 (하위 호환성)
+    else if (formulaItem.process_dependencies.items && Array.isArray(formulaItem.process_dependencies.items)) {
+      const items = formulaItem.process_dependencies.items;
+      console.log('process_dependencies items 데이터:', items);
+      
+      items.forEach((item: any, index: number) => {
+        const parsedItem = {
+          id: `component_${index}`,
+          category: item.level1_value || '', // 분류: level1_value
+          component: item.level2_value || '', // Components: level2_value
+          type: item.level3_value || '', // 유형: level3_value
+          codeKey: item.code || '', // 코드 키: code
+          item: item.value || item.value_en || '' // ITEM: value 또는 value_en
+        };
+        parsedComponents.push(parsedItem);
+      });
+    }
+    
+    // 기존 equipments_set 파싱 (하위 호환성을 위해 유지)
+    if (formulaItem.process_dependencies.equipments_set) {
+      const equipments = formulaItem.process_dependencies.equipments_set;
+      console.log('equipments_set 데이터:', equipments);
+      
+      equipments.forEach((equipment: any, index: number) => {
+        if (equipment.equip_item) {
+          const parsedEquipment = {
+            id: `equipment_${index}`,
+            category: equipment.equip_item.code_hierarchy?.level1?.value || '', // 분류: level1_value
+            component: equipment.equip_item.code_hierarchy?.level2?.value || '', // Components: level2_value
+            type: equipment.equip_item.code_hierarchy?.level3?.value || '', // 유형: level3_value
+            codeKey: equipment.equip_item.code || '', // 코드 키: code
+            item: equipment.equip_item.value || '' // ITEM: value
+          };
+          parsedComponents.push(parsedEquipment);
+        }
+      });
+    }
+    
+    // 기존 structures_set 파싱 (하위 호환성을 위해 유지)
+    if (formulaItem.process_dependencies.structures_set) {
+      const structures = formulaItem.process_dependencies.structures_set;
+      console.log('structures_set 데이터:', structures);
+      
+      structures.forEach((structure: any, index: number) => {
+        if (structure.structure_item) {
+          const parsedStructure = {
+            id: `structure_${index}`,
+            category: structure.structure_item.code_hierarchy?.level1?.value || '', // 분류: level1_value
+            component: structure.structure_item.code_hierarchy?.level2?.value || '', // Components: level2_value
+            type: structure.structure_item.code_hierarchy?.level3?.value || '', // 유형: level3_value
+            codeKey: structure.structure_item.code || '', // 코드 키: code
+            item: structure.structure_item.value || '' // ITEM: value
+          };
+          parsedComponents.push(parsedStructure);
+        }
+      });
+    }
+  }
+  
+  console.log('파싱된 컴포넌트 목록:', parsedComponents);
+  componentsList.value = parsedComponents;
+  
+  // 데이터가 없을 경우 샘플 데이터 사용
+  if (parsedComponents.length === 0) {
+    componentsList.value = [
+      {
+        id: 1,
+        category: "구조물",
+        component: "콘크리트",
+        type: "생물반응조",
+        codeKey: "",
+        item: "생물반응조"
+      },
+      {
+        id: 2,
+        category: "기계",
+        component: "탱크",
+        type: "STS제 각형탱크",
+        codeKey: "M_TNK02",
+        item: ""
+      },
+      {
+        id: 3,
+        category: "기계",
+        component: "탱크",
+        type: "STS제 원형탱크",
+        codeKey: "M_TNK03",
+        item: ""
+      },
+      {
+        id: 4,
+        category: "기계",
+        component: "교반기",
+        type: "프로펠러형",
+        codeKey: "M_AGT0602",
+        item: "생물반응조 교반기"
+      },
+      {
+        id: 5,
+        category: "기계",
+        component: "전동식밸브",
+        type: "전동식 버터플라이밸브",
+        codeKey: "M_VAV0202",
+        item: "수중횡축 프로펠러형(인양장치, 모니터링유니트 포함)"
+      },
+      {
+        id: 6,
+        category: "기계",
+        component: "펌프",
+        type: "무폐쇄형 펌프",
+        codeKey: "M_PMP0601",
+        item: "전동식(2상식)"
+      },
+      {
+        id: 7,
+        category: "기계",
+        component: "펌프",
+        type: "수중모터펌프",
+        codeKey: "M_PMP0302",
+        item: "스프르트펌프"
+      },
+      {
+        id: 8,
+        category: "기계",
+        component: "수중포기기",
+        type: "수중포기기(인양장치 제외)",
+        codeKey: "M_AQR05",
+        item: "수중오수모터펌프(자동착탈식)"
+      },
+      {
+        id: 9,
+        category: "기계",
+        component: "상등수 배출장치",
+        type: "무동력 부력식",
+        codeKey: "M_FDC01",
+        item: ""
+      },
+      {
+        id: 10,
+        category: "기계",
+        component: "송풍기",
+        type: "로터리 블로워",
+        codeKey: "M_AEB0401",
+        item: "루츠 블로워"
+      },
+      {
+        id: 11,
+        category: "기계",
+        component: "제어반",
+        type: "옥내자리형 (생물반응조 계측기 포함)",
+        codeKey: "M_CTR03",
+        item: ""
+      }
+    ];
+  }
 };
 
 // 파일 선택 핸들러들
@@ -7087,6 +7174,7 @@ const refreshFormulaData = async () => {
           formula_name: item.formula_name || 'NONE',
           formula_description: item.formula_description || '',
           file_name: item.file_name || null,
+          process_dependencies: item.process_dependencies || null, // process_dependencies 추가
           _originalData: item // 원본 데이터 보존
         };
       });
@@ -8674,6 +8762,7 @@ onMounted(async () => {
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
               file_name: item.file_name || null, // file_name 추가
+              process_dependencies: item.process_dependencies || null, // process_dependencies 추가
               _file: undefined,
               isSaved: true, // 기존 데이터는 저장된 상태
               _originalData: item // 원본 데이터 보존
@@ -8707,6 +8796,8 @@ onMounted(async () => {
               infoOverview: item.formula_scope || item.scope || '',
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
+              file_name: item.file_name || null, // file_name 추가
+              process_dependencies: item.process_dependencies || null, // process_dependencies 추가
               _file: undefined,
               isSaved: true, // 기존 데이터는 저장된 상태
               _originalData: item // 원본 데이터 보존
@@ -8909,6 +9000,8 @@ watch(() => props.processCode, async (newProcessCode, oldProcessCode) => {
               infoOverview: item.formula_scope || item.scope || '',
               remarks: item.output_type || item.type || '',
               formula_id: item.formula_id || item.id || null,
+              file_name: item.file_name || null, // file_name 추가
+              process_dependencies: item.process_dependencies || null, // process_dependencies 추가
               _file: undefined,
               isSaved: true, // 기존 데이터는 저장된 상태
               _originalData: item // 원본 데이터 보존

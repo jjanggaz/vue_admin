@@ -858,6 +858,12 @@
     "material": "재질",
     "pipeDiameter": "배관직경",
     "diameter": "직경",
+    "dia_mm": "외경(mm)",
+    "height_mm": "높이(mm)",
+    "width_mm": "폭(mm)",
+    "diffuse_area_m2": "산기면적(m²)",
+    "diameter_mm": "관경(mm)",
+    "dia_phi_mm": "직경(mm)",
     "other": "기타"
   },
   "pageTitles": {

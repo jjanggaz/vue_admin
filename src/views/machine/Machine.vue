@@ -106,85 +106,205 @@
             <div class="detail-search-columns">
               <!-- 왼쪽 컬럼 -->
               <div class="detail-search-column">
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="max_capacity_m3_min_item"
+                  style="display: none"
+                >
                   <label class="label-capacity"
                     >{{ t("machine.capacity") }} (m³/min)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.capacityM3Min"
+                    id="max_capacity_m3_min"
+                    v-model="detailSearch.max_capacity_m3_min"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="max_capacity_ml_min_item"
+                  style="display: none"
+                >
                   <label class="label-capacity"
                     >{{ t("machine.capacity") }} (ml/min)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.capacityMlMin"
+                    id="max_capacity_ml_min"
+                    v-model="detailSearch.max_capacity_ml_min"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (l/min)</label
-                  >
-                  <input
-                    type="number"
-                    v-model="detailSearch.capacityLMin"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="max_capacity_m3_hr_item"
+                  style="display: none"
+                >
                   <label class="label-capacity"
                     >{{ t("machine.capacity") }} (m³/hr)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.capacityM3Hr"
+                    id="max_capacity_m3_hr"
+                    v-model="detailSearch.max_capacity_m3_hr"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="o2_transfer_rate_kgO2_hr_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (kg/hr)</label
+                  >
+                  <input
+                    type="number"
+                    id="o2_transfer_rate_kgO2_hr"
+                    v-model="detailSearch.o2_transfer_rate_kgO2_hr"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_m3_hr_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³/hr)</label
+                  >
+                  <input
+                    type="number"
+                    id="capacity_m3_hr"
+                    v-model="detailSearch.capacity_m3_hr"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_tonne_item"
+                  style="display: none"
+                >
                   <label class="label-capacity"
                     >{{ t("machine.capacity") }} (m³)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.capacityM3"
+                    id="capacity_tonne"
+                    v-model="detailSearch.capacity_tonne"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="capacity_m3_min_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³/min)</label
+                  >
+                  <input
+                    type="number"
+                    id="capacity_m3_min"
+                    v-model="detailSearch.capacity_m3_min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_m3_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³)</label
+                  >
+                  <input
+                    type="number"
+                    id="capacity_m3"
+                    v-model="detailSearch.capacity_m3"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_t_item"
+                  style="display: none"
+                >
                   <label class="label-capacity"
                     >{{ t("machine.capacity") }} (t)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.capacityT"
+                    id="capacity_t"
+                    v-model="detailSearch.capacity_t"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="capacity_kg_hr_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (kg/hr)</label
+                  >
+                  <input
+                    type="number"
+                    id="capacity_kg_hr"
+                    v-model="detailSearch.capacity_kg_hr"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="power_kW1_item"
+                  style="display: none"
+                >
                   <label class="label-power"
                     >{{ t("machine.power") }} (kw)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.powerKw"
+                    id="power_kW1"
+                    v-model="detailSearch.powerKw1"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="power_kW2_item"
+                  style="display: none"
+                >
+                  <label class="label-power"
+                    >{{ t("machine.power") }} (kw)</label
+                  >
+                  <input
+                    type="number"
+                    id="power_kW2"
+                    v-model="detailSearch.powerKw2"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
@@ -193,94 +313,181 @@
 
               <!-- 오른쪽 컬럼 -->
               <div class="detail-search-column">
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="pressure_kgf_cm2_item"
+                  style="display: none"
+                >
                   <label class="label-pressure"
-                    >{{ t("machine.pressure") }} (kg/m²)</label
+                    >{{ t("machine.pressure") }} (kg/cm²)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.pressureKgM2"
+                    id="pressure_kgf_cm2"
+                    v-model="detailSearch.pressure_kgf_cm2"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="discharge_pressure_mmAq_item"
+                  style="display: none"
+                >
                   <label class="label-pressure"
                     >{{ t("machine.pressure") }} (mmAq)</label
                   >
                   <input
                     type="number"
-                    v-model="detailSearch.pressureMmAq"
+                    id="discharge_pressure_mmAq"
+                    v-model="detailSearch.discharge_pressure_mmAq"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
-                  <label class="label-pressure"
-                    >{{ t("machine.pressure") }} (k)</label
-                  >
-                  <input
-                    type="number"
-                    v-model="detailSearch.pressureK"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div class="detail-search-item">
+                <div
+                  class="detail-search-item"
+                  id="max_pump_head_m_item"
+                  style="display: none"
+                >
                   <label class="label-head">{{ t("machine.head") }} (m)</label>
                   <input
                     type="number"
-                    v-model="detailSearch.headM"
+                    id="max_pump_head_m"
+                    v-model="detailSearch.max_pump_head_m"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
-                  <label class="label-material">{{
-                    t("machine.material")
+                <div
+                  class="detail-search-item"
+                  id="max_head_m_item"
+                  style="display: none"
+                >
+                  <label class="label-head">{{ t("machine.head") }} (m)</label>
+                  <input
+                    type="number"
+                    id="max_head_m"
+                    v-model="detailSearch.max_head_m"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="max_press_kg_cm2_item"
+                  style="display: none"
+                >
+                  <label class="label-pressure"
+                    >{{ t("machine.pressure") }} (kg/cm²)</label
+                  >
+                  <input
+                    type="number"
+                    id="max_press_kg_cm2"
+                    v-model="detailSearch.max_press_kg_cm2"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="diameter_mm_item"
+                  style="display: none"
+                >
+                  <label class="label-diameter">{{
+                    t("machine.diameter_mm")
                   }}</label>
                   <input
-                    type="text"
-                    v-model="detailSearch.material"
-                    :placeholder="t('placeholder.material')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div class="detail-search-item">
-                  <label class="label-diameter"
-                    >{{ t("machine.pipeDiameter") }} (mm)</label
-                  >
-                  <input
                     type="number"
-                    v-model="detailSearch.pipeDiameterMm"
+                    id="diameter_mm"
+                    v-model="detailSearch.diameter_mm"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
-                  <label class="label-diameter"
-                    >{{ t("machine.diameter") }} (mm)</label
-                  >
+                <div
+                  class="detail-search-item"
+                  id="dia_phi_mm_item"
+                  style="display: none"
+                >
+                  <label class="label-diameter">{{
+                    t("machine.dia_phi_mm")
+                  }}</label>
                   <input
                     type="number"
-                    v-model="detailSearch.diameterMm"
+                    id="dia_phi_mm"
+                    v-model="detailSearch.dia_phi_mm"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
 
-                <div class="detail-search-item">
-                  <label class="label-other">{{ t("machine.other") }}</label>
+                <div
+                  class="detail-search-item"
+                  id="dia_mm_item"
+                  style="display: none"
+                >
+                  <label class="label-other">{{ t("machine.dia_mm") }}</label>
                   <input
-                    type="text"
-                    v-model="detailSearch.other"
-                    :placeholder="t('placeholder.other')"
+                    type="number"
+                    id="dia_mm"
+                    v-model="detailSearch.dia_mm"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="height_mm_item"
+                  style="display: none"
+                >
+                  <label class="label-other">{{
+                    t("machine.height_mm")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="height_mm"
+                    v-model="detailSearch.height_mm"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="width_mm_item"
+                  style="display: none"
+                >
+                  <label class="label-other">{{ t("machine.width_mm") }}</label>
+                  <input
+                    type="number"
+                    id="width_mm"
+                    v-model="detailSearch.width_mm"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="diffuse_area_m2_item"
+                  style="display: none"
+                >
+                  <label class="label-other">{{
+                    t("machine.diffuse_area_m2")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="diffuse_area_m2"
+                    v-model="detailSearch.diffuse_area_m2"
+                    :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
                 </div>
@@ -617,21 +824,31 @@ const detailSearch = ref({
   headerMachineSubCategory: "",
   headerMachineCategoryOptions: [] as Array<{ value: string; text: string }>,
   machineCategoryOptions: [] as Array<{ value: string; text: string }>,
-  capacityM3Min: "",
-  capacityMlMin: "",
-  capacityLMin: "",
-  capacityM3Hr: "",
-  capacityM3: "",
-  capacityT: "",
-  powerKw: "",
-  pressureKgM2: "",
-  pressureMmAq: "",
-  pressureK: "",
-  headM: "",
-  material: "",
-  pipeDiameterMm: "",
-  diameterMm: "",
-  other: "",
+  max_capacity_m3_min: "",
+  max_capacity_ml_min: "",
+  max_capacity_m3_hr: "",
+  o2_transfer_rate_kgO2_hr: "",
+  capacity_m3_hr: "",
+  capacity_tonne: "",
+  capacity_m3_min: "",
+  capacity_m3: "",
+  capacity_t: "",
+  capacity_kg_hr: "",
+  powerKw1: "",
+  powerKw2: "",
+
+  pressure_kgf_cm2: "",
+  discharge_pressure_mmAq: "",
+  max_pump_head_m: "",
+  max_head_m: "",
+  max_press_kg_cm2: "",
+
+  dia_mm: "",
+  height_mm: "",
+  width_mm: "",
+  diffuse_area_m2: "",
+  diameter_mm: "",
+  dia_phi_mm: "",
 });
 
 // 헤더 전용 변수는 detailSearch로 통합 관리
@@ -891,6 +1108,8 @@ const handleMachineCategoryChange = async () => {
   detailSearch.value.headerMachineCategory = "";
   detailSearch.value.headerMachineCategoryOptions = [];
   detailSearch.value.machineCategoryOptions = [];
+  // 커스텀 필드 모두 숨김
+  hideAllCustomFields();
   // 헤더 기계중분류 옵션 로딩 (code_level=3)
   try {
     if (selectedMachineCategory.value) {
@@ -936,20 +1155,115 @@ const toggleDetailSearch = async () => {
   isDetailSearchOpen.value = !isDetailSearchOpen.value;
 };
 
-const closeDetailSearch = () => {
-  isDetailSearchOpen.value = false;
+// 필드 show/hide 처리 함수
+const hideAllCustomFields = () => {
+  const fields = [
+    "dia_mm_item",
+    "height_mm_item",
+    "width_mm_item",
+    "diffuse_area_m2_item",
+    "power_kW1_item",
+    "power_kW2_item",
+    "diameter_mm_item",
+    "dia_phi_mm_item",
+    "pressure_kgf_cm2_item",
+    "discharge_pressure_mmAq_item",
+    "max_pump_head_m_item",
+    "max_head_m_item",
+    "max_capacity_m3_min_item",
+    "max_capacity_ml_min_item",
+    "max_capacity_m3_hr_item",
+    "max_press_kg_cm2_item",
+    "o2_transfer_rate_kgO2_hr_item",
+    "capacity_m3_hr_item",
+    "capacity_tonne_item",
+    "capacity_m3_min_item",
+    "capacity_m3_item",
+    "capacity_t_item",
+    "capacity_kg_hr_item",
+  ];
+  fields.forEach((fieldId) => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.style.display = "none";
+    }
+  });
 };
 
-// 상세검색 select 옵션 관련 로직 제거됨
+const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
+  const fieldMapping: { [key: string]: string } = {
+    dia_mm: "dia_mm_item",
+    height_mm: "height_mm_item",
+    width_mm: "width_mm_item",
+    diffuse_area_m2: "diffuse_area_m2_item",
+    diameter_mm: "diameter_mm_item",
+    dia_phi_mm: "dia_phi_mm_item",
+    power_kW: "power_kW1_item",
+    pressure_kgf_cm2: "pressure_kgf_cm2_item",
+    discharge_pressure_mmAq: "discharge_pressure_mmAq_item",
+    max_capacity_m3_min: "max_capacity_m3_min_item",
+    max_capacity_ml_min: "max_capacity_ml_min_item",
+    max_capacity_m3_hr: "max_capacity_m3_hr_item",
+    o2_transfer_rate_kgO2_hr: "o2_transfer_rate_kgO2_hr_item",
+    capacity_m3_hr: "capacity_m3_hr_item",
+    capacity_tonne: "capacity_tonne_item",
+    capacity_m3_min: "capacity_m3_min_item",
+    capacity_m3: "capacity_m3_item",
+    capacity_t: "capacity_t_item",
+    capacity_kg_hr: "capacity_kg_hr_item",
+  };
+
+  availableCriteria.forEach((criteria) => {
+    const elementId = fieldMapping[criteria];
+    if (elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+  });
+};
+
+const showFieldsBySpecifications = (specifications: string[]) => {
+  const fieldMapping: { [key: string]: string } = {
+    power_kW: "power_kW2_item",
+    max_pump_head_m: "max_pump_head_m_item",
+    max_head_m: "max_head_m_item",
+    max_press_kg_cm2: "max_press_kg_cm2_item",
+  };
+
+  specifications.forEach((spec) => {
+    const elementId = fieldMapping[spec];
+    if (elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+  });
+};
 
 // 헤더 기계유형 변경 시 상세 검색 타입 조회 호출
 const handleHeaderMachineCategoryChange = async () => {
   const searchKey = detailSearch.value.headerMachineCategory;
   if (!searchKey) return;
+
+  // 모든 커스텀 필드 hide
+  hideAllCustomFields();
+
   try {
     const res = await machineStore.fetchDepthDetailBySearchType(searchKey);
-    // 후속 동작은 다음 단계 요구사항에 맞춰 연결 예정
-    console.log("searchType 응답:", (res as any)?.response ?? res);
+    const availableFields = (res as any)?.response?.data?.available_fields;
+
+    if (availableFields?.search_criteria) {
+      showFieldsByAvailableCriteria(availableFields.search_criteria);
+    }
+
+    if (availableFields?.specifications) {
+      showFieldsBySpecifications(availableFields.specifications);
+    }
+
+    console.log("res 응답:", availableFields);
   } catch (e) {
     console.error(e);
   }
@@ -962,6 +1276,9 @@ const handleHeaderMachineSubCategoryChange = async () => {
   // 기계중분류가 변경되면 기계유형 초기화
   detailSearch.value.headerMachineCategory = "";
   detailSearch.value.machineCategoryOptions = [];
+
+  // 모든 커스텀 필드 hide
+  hideAllCustomFields();
 
   if (!searchKey) return;
   try {
@@ -978,7 +1295,22 @@ const handleHeaderMachineSubCategoryChange = async () => {
         text: it.code_value,
       }));
     } else {
-      detailSearch.value.machineCategoryOptions = [];
+      // fetchThirdDepth 결과가 빈값이면 fetchDepthDetailBySearchType 호출
+      const searchRes = await machineStore.fetchDepthDetailBySearchType(
+        searchKey
+      );
+      const availableFields = (searchRes as any)?.response?.data
+        ?.available_fields;
+
+      if (availableFields?.search_criteria) {
+        showFieldsByAvailableCriteria(availableFields.search_criteria);
+      }
+
+      if (availableFields?.specifications) {
+        showFieldsBySpecifications(availableFields.specifications);
+      }
+
+      console.log("searchType 응답:", availableFields);
     }
   } catch (e) {
     console.error(e);

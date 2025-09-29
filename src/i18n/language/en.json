@@ -859,6 +859,12 @@
     "material": "Material",
     "pipeDiameter": "Pipe Diameter",
     "diameter": "Diameter",
+    "dia_mm": "Outer Diameter(mm)",
+    "height_mm": "Height(mm)",
+    "width_mm": "Width(mm)",
+    "diffuse_area_m2": "Diffuse Area(m²)",
+    "diameter_mm": "Diameter(mm)",
+    "dia_phi_mm": "Phi Diameter(mm)",
     "other": "Other"
   },
   "pageTitles": {

@@ -324,6 +324,18 @@ interface UserForm {
 const tableColumns: TableColumn[] = [
   { key: "user_id", title: "ID", width: "0px", sortable: false, hidden: true },
   {
+    key: "row_number",
+    title: t("common.no"),
+    width: "80px",
+    sortable: false,
+    formatter: (value, item) => {
+      const index = paginatedUserList.value.findIndex(
+        (user) => user.user_id === item.user_id
+      );
+      return (userStore.page - 1) * userStore.page_size + index + 1;
+    },
+  },
+  {
     key: "username",
     title: t("columns.user.id"),
     width: "120px",

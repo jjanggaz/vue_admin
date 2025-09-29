@@ -850,6 +850,7 @@
     "machineType": "기계종류",
     "machineSubtype": "기계세분류",
     "machineCategory": "기계유형",
+    "machineSubCategory": "기계중분류",
     "capacity": "용량",
     "power": "동력",
     "pressure": "압력",

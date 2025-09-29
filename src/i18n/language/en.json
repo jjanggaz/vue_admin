@@ -851,6 +851,7 @@
     "machineType": "Machine Type",
     "machineSubtype": "Machine Subtype",
     "machineCategory": "Machine Category",
+    "machineSubCategory": "Machine Sub Category",
     "capacity": "Capacity",
     "power": "Power",
     "pressure": "Pressure",

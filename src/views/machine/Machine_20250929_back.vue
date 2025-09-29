@@ -63,36 +63,18 @@
             <h3>{{ t("common.detailSearch") }}</h3>
             <div class="detail-search-row">
               <div class="detail-search-item">
-                <label>{{ t("machine.machineSubCategory") }}</label>
+                <label>{{ t("machine.machineCategory") }}</label>
                 <select
-                  v-model="detailSearch.headerMachineSubCategory"
+                  v-model="detailSearch.headerMachineCategory"
                   :disabled="
                     detailSearch.headerMachineCategoryOptions.length === 0
                   "
+                  @change="handleHeaderMachineCategoryChange"
                   class="form-select"
-                  @change="handleHeaderMachineSubCategoryChange"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
                     v-for="opt in detailSearch.headerMachineCategoryOptions"
-                    :key="opt.value"
-                    :value="opt.value"
-                  >
-                    {{ opt.text }}
-                  </option>
-                </select>
-              </div>
-              <div class="detail-search-item">
-                <label>{{ t("machine.machineCategory") }}</label>
-                <select
-                  v-model="detailSearch.headerMachineCategory"
-                  :disabled="detailSearch.machineCategoryOptions.length === 0"
-                  class="form-select"
-                  @change="handleHeaderMachineCategoryChange"
-                >
-                  <option value="">{{ t("common.select") }}</option>
-                  <option
-                    v-for="opt in detailSearch.machineCategoryOptions"
                     :key="opt.value"
                     :value="opt.value"
                   >
@@ -614,9 +596,7 @@ const detailSearch = ref({
   machineSubtype: "",
   machineCategory: "",
   headerMachineCategory: "",
-  headerMachineSubCategory: "",
   headerMachineCategoryOptions: [] as Array<{ value: string; text: string }>,
-  machineCategoryOptions: [] as Array<{ value: string; text: string }>,
   capacityM3Min: "",
   capacityMlMin: "",
   capacityLMin: "",
@@ -886,19 +866,19 @@ const handleMachineCategoryChange = async () => {
   detailSearch.value.machineType = "";
   detailSearch.value.machineSubtype = "";
   detailSearch.value.machineCategory = "";
-  // 헤더 기계중분류 초기화 먼저
-  detailSearch.value.headerMachineSubCategory = "";
+  // 헤더 기계유형 초기화 먼저
   detailSearch.value.headerMachineCategory = "";
   detailSearch.value.headerMachineCategoryOptions = [];
-  detailSearch.value.machineCategoryOptions = [];
-  // 헤더 기계중분류 옵션 로딩 (code_level=3)
+  machineStore.fourthDepth.splice(0);
+  machineStore.fifthDepth.splice(0);
+  // 헤더 기계유형 옵션 로딩 (code_level=4)
   try {
     if (selectedMachineCategory.value) {
       const selected = machineStore.secondDepth.find(
         (row: any) => row.code_key === selectedMachineCategory.value
       );
       if (selected?.code_group) {
-        const res = await machineStore.fetchDepthDetail(selected.code_group, 3);
+        const res = await machineStore.fetchDepthDetail(selected.code_group, 4);
         const codes = (res as any)?.response?.data?.codes ?? [];
         if (Array.isArray(codes)) {
           const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
@@ -952,37 +932,6 @@ const handleHeaderMachineCategoryChange = async () => {
     console.log("searchType 응답:", (res as any)?.response ?? res);
   } catch (e) {
     console.error(e);
-  }
-};
-
-// 헤더 기계중분류 변경 시 세 번째 깊이 조회 호출
-const handleHeaderMachineSubCategoryChange = async () => {
-  const searchKey = detailSearch.value.headerMachineSubCategory;
-
-  // 기계중분류가 변경되면 기계유형 초기화
-  detailSearch.value.headerMachineCategory = "";
-  detailSearch.value.machineCategoryOptions = [];
-
-  if (!searchKey) return;
-  try {
-    const res = await machineStore.fetchThirdDepth(searchKey, 4);
-    const codes = (res as any)?.response ?? [];
-    if (Array.isArray(codes) && codes.length > 0) {
-      const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
-        const ak = (a?.code_key ?? "") as string;
-        const bk = (b?.code_key ?? "") as string;
-        return ak.localeCompare(bk);
-      });
-      detailSearch.value.machineCategoryOptions = sorted.map((it: any) => ({
-        value: it.code_key,
-        text: it.code_value,
-      }));
-    } else {
-      detailSearch.value.machineCategoryOptions = [];
-    }
-  } catch (e) {
-    console.error(e);
-    detailSearch.value.machineCategoryOptions = [];
   }
 };
 

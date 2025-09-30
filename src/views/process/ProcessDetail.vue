@@ -19,10 +19,10 @@
           <select 
             :value="processStore.processDetail.processType || ''" 
             @change="handleProcessTypeChange"
-            :key="`processType-${processStore.processTypeOptions.length}`"
+            :key="`processType-${filteredProcessTypeOptions.length}`"
           >
             <option value="">{{ t("common.select") }}</option>
-            <option v-for="option in processStore.processTypeOptions" :key="option.value" :value="option.value">
+            <option v-for="option in filteredProcessTypeOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
@@ -705,6 +705,11 @@ const emit = defineEmits<{
 const route = useRoute();
 const { t } = useI18n();
 const processStore = useProcessStore();
+
+// 공정 등록/수정 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
+const filteredProcessTypeOptions = computed(() => {
+  return processStore.processTypeOptions.filter(option => option.value !== 'INP_OUTP');
+});
 
 // Reactive references
 const selectedFormulaItems = ref<any[]>([]);

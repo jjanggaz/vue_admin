@@ -813,7 +813,8 @@ export const useProcessStore = defineStore("process", () => {
           }));
 
           processTypeOptions.value = options;
-          searchProcessTypeOptions.value = options;
+          // 공정 관리 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
+          searchProcessTypeOptions.value = options.filter((option: ProcessCodeOption) => option.value !== 'INP_OUTP');
         }
       } else {
         throw new Error(`공정 코드 검색 실패: ${result.message}`);

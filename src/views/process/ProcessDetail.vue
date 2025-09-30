@@ -8145,6 +8145,15 @@ const loadMappingPidList = async (pfdItem: any) => {
         
         console.log('P&ID 아이템 생성 완료:', pidItems.length, '개');
       
+        // P&ID 그리드 재조회 시 P&ID Components 그리드 내용 초기화
+        console.log('P&ID 그리드 재조회 - P&ID Components 그리드 초기화');
+        pidComponentList.value = [];
+        selectedPidComponentItems.value = [];
+        showPidComponentSection.value = false;
+        selectedPidForComponent.value = null;
+        pidComponentDrawingId.value = '';
+        deletedPidComponentIds.value = [];
+        
         // pidItems가 생성되었으므로 바로 사용
         mappingPidList.value = pidItems;
         // 초기값 저장 (깊은 복사)
@@ -8166,6 +8175,15 @@ const loadMappingPidList = async (pfdItem: any) => {
       console.log('P&ID 초기값 저장 완료:', initialMappingPidList.value.length, '개');
       } else {
         // child_drawings가 없는 경우 빈 배열로 설정
+        // P&ID 그리드 재조회 시 P&ID Components 그리드 내용 초기화
+        console.log('P&ID 그리드 재조회 (데이터 없음) - P&ID Components 그리드 초기화');
+        pidComponentList.value = [];
+        selectedPidComponentItems.value = [];
+        showPidComponentSection.value = false;
+        selectedPidForComponent.value = null;
+        pidComponentDrawingId.value = '';
+        deletedPidComponentIds.value = [];
+        
         mappingPidList.value = [];
         initialMappingPidList.value = [];
         console.log('P&ID 매핑 목록 로드 완료 (데이터 없음):', mappingPidList.value);
@@ -8173,6 +8191,15 @@ const loadMappingPidList = async (pfdItem: any) => {
       }
     } else {
       // 기존 데이터가 없는 경우 빈 배열로 설정
+      // P&ID 그리드 재조회 시 P&ID Components 그리드 내용 초기화
+      console.log('P&ID 그리드 재조회 (전체 데이터 없음) - P&ID Components 그리드 초기화');
+      pidComponentList.value = [];
+      selectedPidComponentItems.value = [];
+      showPidComponentSection.value = false;
+      selectedPidForComponent.value = null;
+      pidComponentDrawingId.value = '';
+      deletedPidComponentIds.value = [];
+      
       mappingPidList.value = [];
       initialMappingPidList.value = [];
       console.log('P&ID 매핑 목록 로드 완료 (데이터 없음):', mappingPidList.value);

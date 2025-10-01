@@ -197,7 +197,7 @@
                   style="display: none"
                 >
                   <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³)</label
+                    >{{ t("machine.capacity") }} (t)</label
                   >
                   <input
                     type="number"
@@ -208,7 +208,7 @@
                   />
                 </div>
 
-                <div
+                <!-- <div
                   class="detail-search-item"
                   id="capacity_m3_min_item"
                   style="display: none"
@@ -223,7 +223,7 @@
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
-                </div>
+                </div> -->
 
                 <div
                   class="detail-search-item"
@@ -288,6 +288,23 @@
                     type="number"
                     id="capacity_l_min"
                     v-model="detailSearch.capacity_l_min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="agitated_volume_m3_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (m³)</label
+                  >
+                  <input
+                    type="number"
+                    id="agitated_volume_m3"
+                    v-model="detailSearch.agitated_volume_m3"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
@@ -847,11 +864,12 @@ const detailSearch = ref({
   o2_transfer_rate_kgO2_hr: "",
   capacity_m3_hr: "",
   capacity_tonne: "",
-  capacity_m3_min: "",
+  //capacity_m3_min: "",
   capacity_m3: "",
   capacity_t: "",
   capacity_kg_hr: "",
   capacity_l_min: "",
+  agitated_volume_m3: "",
   powerKw1: "",
   powerKw2: "",
 
@@ -1082,18 +1100,39 @@ const closeDetailPanel = () => {
 // 데이터 로드 (RoleManagement.vue 패턴 적용)
 const loadData = async () => {
   try {
+    // 상세검색이 열려있고 기계유형 옵션이 있는데 선택하지 않은 경우
+    if (
+      isDetailSearchOpen.value &&
+      detailSearch.value.machineCategoryOptions.length > 0 &&
+      !detailSearch.value.headerMachineCategory
+    ) {
+      alert("기계유형을 선택해주세요.");
+      return;
+    }
+
     // 체크된 row 초기화
     selectedItems.value = [];
 
     // 기본 검색 파라미터
     const searchParams: any = {
       keyword: searchQueryInput.value,
-      //equipment_type: "",
       root_equipment_type: selectedMachineCategory.value,
       unit: selectedUnit.value,
       page: currentPage.value,
       page_size: pageSize.value,
     };
+
+    // equipment_type 설정 (기계유형 우선, 없으면 기계중분류)
+    if (isDetailSearchOpen.value) {
+      if (detailSearch.value.headerMachineCategory) {
+        // 기계유형이 선택된 경우
+        searchParams.equipment_type = detailSearch.value.headerMachineCategory;
+      } else if (detailSearch.value.headerMachineSubCategory) {
+        // 기계유형은 없고 기계중분류만 선택된 경우
+        searchParams.equipment_type =
+          detailSearch.value.headerMachineSubCategory;
+      }
+    }
 
     // 상세검색이 열려있는 경우 상세검색 파라미터 추가
     if (isDetailSearchOpen.value) {
@@ -1115,6 +1154,7 @@ const loadData = async () => {
         "capacity_t",
         "capacity_kg_hr",
         "capacity_l_min",
+        "agitated_volume_m3",
         "pressure_kgf_cm2",
         "discharge_pressure_mmAq",
         "dia_mm",
@@ -1298,6 +1338,7 @@ const hideAllCustomFields = () => {
     "capacity_t_item",
     "capacity_kg_hr_item",
     "capacity_l_min_item",
+    "agitated_volume_m3_item",
   ];
 
   // 각 필드 숨기기
@@ -1315,11 +1356,12 @@ const hideAllCustomFields = () => {
   detailSearch.value.o2_transfer_rate_kgO2_hr = "";
   detailSearch.value.capacity_m3_hr = "";
   detailSearch.value.capacity_tonne = "";
-  detailSearch.value.capacity_m3_min = "";
+  //detailSearch.value.capacity_m3_min = "";
   detailSearch.value.capacity_m3 = "";
   detailSearch.value.capacity_t = "";
   detailSearch.value.capacity_kg_hr = "";
   detailSearch.value.capacity_l_min = "";
+  detailSearch.value.agitated_volume_m3 = "";
   detailSearch.value.powerKw1 = "";
   detailSearch.value.powerKw2 = "";
   detailSearch.value.pressure_kgf_cm2 = "";
@@ -1352,11 +1394,12 @@ const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
     o2_transfer_rate_kgO2_hr: "o2_transfer_rate_kgO2_hr_item",
     capacity_m3_hr: "capacity_m3_hr_item",
     capacity_tonne: "capacity_tonne_item",
-    capacity_m3_min: "capacity_m3_min_item",
+    //capacity_m3_min: "capacity_m3_min_item",
     capacity_m3: "capacity_m3_item",
     capacity_t: "capacity_t_item",
     capacity_kg_hr: "capacity_kg_hr_item",
     capacity_l_min: "capacity_l_min_item",
+    agitated_volume_m3: "agitated_volume_m3_item",
   };
 
   availableCriteria.forEach((criteria) => {

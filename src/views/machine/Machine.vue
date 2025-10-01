@@ -278,6 +278,23 @@
 
                 <div
                   class="detail-search-item"
+                  id="capacity_l_min_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity"
+                    >{{ t("machine.capacity") }} (l/min)</label
+                  >
+                  <input
+                    type="number"
+                    id="capacity_l_min"
+                    v-model="detailSearch.capacity_l_min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
                   id="power_kW1_item"
                   style="display: none"
                 >
@@ -834,6 +851,7 @@ const detailSearch = ref({
   capacity_m3: "",
   capacity_t: "",
   capacity_kg_hr: "",
+  capacity_l_min: "",
   powerKw1: "",
   powerKw2: "",
 
@@ -1067,15 +1085,109 @@ const loadData = async () => {
     // 체크된 row 초기화
     selectedItems.value = [];
 
-    // API 호출로 기계 검색 리스트 조회
-    await machineStore.fetchSearchList({
+    // 기본 검색 파라미터
+    const searchParams: any = {
       keyword: searchQueryInput.value,
       //equipment_type: "",
       root_equipment_type: selectedMachineCategory.value,
       unit: selectedUnit.value,
       page: currentPage.value,
       page_size: pageSize.value,
-    });
+    };
+
+    // 상세검색이 열려있는 경우 상세검색 파라미터 추가
+    if (isDetailSearchOpen.value) {
+      const searchCriteria: any = {};
+      const specifications: any = {};
+
+      console.log("상세검색 데이터:", detailSearch.value);
+
+      // search_criteria에 해당하는 필드들 처리
+      const searchCriteriaFields = [
+        "max_capacity_m3_min",
+        "max_capacity_ml_min",
+        "max_capacity_m3_hr",
+        "o2_transfer_rate_kgO2_hr",
+        "capacity_m3_hr",
+        "capacity_tonne",
+        "capacity_m3_min",
+        "capacity_m3",
+        "capacity_t",
+        "capacity_kg_hr",
+        "capacity_l_min",
+        "pressure_kgf_cm2",
+        "discharge_pressure_mmAq",
+        "dia_mm",
+        "height_mm",
+        "width_mm",
+        "diffuse_area_m2",
+        "diameter_mm",
+        "dia_phi_mm",
+      ];
+
+      // specifications에 해당하는 필드들 처리
+      const specificationsFields = [
+        "max_pump_head_m",
+        "max_head_m",
+        "max_press_kg_cm2",
+      ];
+
+      // search_criteria 필드들 체크
+      searchCriteriaFields.forEach((field) => {
+        const value =
+          detailSearch.value[field as keyof typeof detailSearch.value];
+        if (value && value !== "") {
+          console.log(`search_criteria 필드 추가: ${field} = ${value}`);
+          searchCriteria[field] = { $lte: Number(value) };
+        }
+      });
+
+      // powerKw1은 search_criteria의 power_kW로 매핑
+      if (detailSearch.value.powerKw1 && detailSearch.value.powerKw1 !== "") {
+        console.log(
+          `search_criteria 필드 추가: power_kW = ${detailSearch.value.powerKw1}`
+        );
+        searchCriteria["power_kW"] = {
+          $lte: Number(detailSearch.value.powerKw1),
+        };
+      }
+
+      // specifications 필드들 체크
+      specificationsFields.forEach((field) => {
+        const value =
+          detailSearch.value[field as keyof typeof detailSearch.value];
+        if (value && value !== "") {
+          console.log(`specifications 필드 추가: ${field} = ${value}`);
+          specifications[field] = { $lte: Number(value) };
+        }
+      });
+
+      // powerKw2는 specifications의 power_kW로 매핑
+      if (detailSearch.value.powerKw2 && detailSearch.value.powerKw2 !== "") {
+        console.log(
+          `specifications 필드 추가: power_kW = ${detailSearch.value.powerKw2}`
+        );
+        specifications["power_kW"] = {
+          $lte: Number(detailSearch.value.powerKw2),
+        };
+      }
+
+      console.log("생성된 searchCriteria:", searchCriteria);
+      console.log("생성된 specifications:", specifications);
+
+      // 파라미터가 있는 경우에만 추가
+      if (Object.keys(searchCriteria).length > 0) {
+        searchParams.search_criteria = searchCriteria;
+      }
+      if (Object.keys(specifications).length > 0) {
+        searchParams.specifications = specifications;
+      }
+    }
+
+    console.log("검색 파라미터:", searchParams);
+
+    // API 호출로 기계 검색 리스트 조회
+    await machineStore.fetchSearchList(searchParams);
 
     // API 응답 데이터를 machineList에 설정
     if (machineStore.searchResults?.items) {
@@ -1185,13 +1297,42 @@ const hideAllCustomFields = () => {
     "capacity_m3_item",
     "capacity_t_item",
     "capacity_kg_hr_item",
+    "capacity_l_min_item",
   ];
+
+  // 각 필드 숨기기
   fields.forEach((fieldId) => {
     const element = document.getElementById(fieldId);
     if (element) {
       element.style.display = "none";
     }
   });
+
+  // 모든 입력값 초기화
+  detailSearch.value.max_capacity_m3_min = "";
+  detailSearch.value.max_capacity_ml_min = "";
+  detailSearch.value.max_capacity_m3_hr = "";
+  detailSearch.value.o2_transfer_rate_kgO2_hr = "";
+  detailSearch.value.capacity_m3_hr = "";
+  detailSearch.value.capacity_tonne = "";
+  detailSearch.value.capacity_m3_min = "";
+  detailSearch.value.capacity_m3 = "";
+  detailSearch.value.capacity_t = "";
+  detailSearch.value.capacity_kg_hr = "";
+  detailSearch.value.capacity_l_min = "";
+  detailSearch.value.powerKw1 = "";
+  detailSearch.value.powerKw2 = "";
+  detailSearch.value.pressure_kgf_cm2 = "";
+  detailSearch.value.discharge_pressure_mmAq = "";
+  detailSearch.value.max_pump_head_m = "";
+  detailSearch.value.max_head_m = "";
+  detailSearch.value.max_press_kg_cm2 = "";
+  detailSearch.value.diameter_mm = "";
+  detailSearch.value.dia_phi_mm = "";
+  detailSearch.value.dia_mm = "";
+  detailSearch.value.height_mm = "";
+  detailSearch.value.width_mm = "";
+  detailSearch.value.diffuse_area_m2 = "";
 };
 
 const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
@@ -1215,6 +1356,7 @@ const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
     capacity_m3: "capacity_m3_item",
     capacity_t: "capacity_t_item",
     capacity_kg_hr: "capacity_kg_hr_item",
+    capacity_l_min: "capacity_l_min_item",
   };
 
   availableCriteria.forEach((criteria) => {

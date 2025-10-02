@@ -312,7 +312,10 @@ export const useCodeStore = () => {
 
   // 로컬 데이터에서 코드 제거
   const removeLocalCode = (codeId: string): void => {
-    codeList.value = codeList.value.filter((code) => code.code_id !== codeId);
+    const idx = codeList.value.findIndex((code) => code.code_id === codeId);
+    if (idx !== -1) {
+      codeList.value.splice(idx, 1);
+    }
   };
 
   return {

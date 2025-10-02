@@ -1076,9 +1076,8 @@ const handleDelete = async () => {
     try {
       const code_id = selectedItems.value[0].code_id;
 
-      // const response = await codeStore.deleteCode(code_id);
-      // console.log("삭제 응답:", response);
-      console.log("삭제에 대한 API는 적용 안 함");
+      const response = await codeStore.deleteCode(code_id);
+      console.log("삭제 응답:", response);
 
       // 성공 시 로컬 데이터에서 제거
       codeStore.removeLocalCode(code_id);

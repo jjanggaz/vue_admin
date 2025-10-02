@@ -1438,10 +1438,10 @@ const handleMachineCategoryChange = async () => {
 
 // 상세검색 관련 함수들
 const toggleDetailSearch = async () => {
-  if (!selectedMachineCategory.value) {
-    alert(t("common.selectCategory"));
-    return;
-  }
+  // if (!selectedMachineCategory.value) {
+  //   alert(t("common.selectCategory"));
+  //   return;
+  // }
   // 상세검색 오픈 시 헤더 선택값 초기화 및 기계유형 옵션 비우기
   detailSearch.value.headerMachineSubCategory = "";
   detailSearch.value.headerMachineCategory = "";

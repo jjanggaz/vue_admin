@@ -31,7 +31,7 @@
                 <option
                   v-for="unit in machineStore.unitSystems"
                   :key="unit.unit_system_id"
-                  :value="unit.system_code.toLowerCase()"
+                  :value="unit.system_code"
                 >
                   {{ unit.system_name }}
                 </option>
@@ -108,50 +108,16 @@
               <div class="detail-search-column">
                 <div
                   class="detail-search-item"
-                  id="max_capacity_m3_min_item"
+                  id="max_capacity_item"
                   style="display: none"
                 >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³/min)</label
-                  >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
                   <input
                     type="number"
-                    id="max_capacity_m3_min"
-                    v-model="detailSearch.max_capacity_m3_min"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="max_capacity_ml_min_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (ml/min)</label
-                  >
-                  <input
-                    type="number"
-                    id="max_capacity_ml_min"
-                    v-model="detailSearch.max_capacity_ml_min"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="max_capacity_m3_hr_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³/hr)</label
-                  >
-                  <input
-                    type="number"
-                    id="max_capacity_m3_hr"
-                    v-model="detailSearch.max_capacity_m3_hr"
+                    id="max_capacity"
+                    v-model="detailSearch.max_capacity"
                     :placeholder="t('placeholder.inputValueAbove')"
                     class="form-input"
                   />
@@ -162,9 +128,9 @@
                   id="o2_transfer_rate_kgO2_hr_item"
                   style="display: none"
                 >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (kg/hr)</label
-                  >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
                   <input
                     type="number"
                     id="o2_transfer_rate_kgO2_hr"
@@ -176,131 +142,12 @@
 
                 <div
                   class="detail-search-item"
-                  id="capacity_m3_hr_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³/hr)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_m3_hr"
-                    v-model="detailSearch.capacity_m3_hr"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="capacity_tonne_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (t)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_tonne"
-                    v-model="detailSearch.capacity_tonne"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <!-- <div
-                  class="detail-search-item"
-                  id="capacity_m3_min_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³/min)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_m3_min"
-                    v-model="detailSearch.capacity_m3_min"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div> -->
-
-                <div
-                  class="detail-search-item"
-                  id="capacity_m3_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_m3"
-                    v-model="detailSearch.capacity_m3"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="capacity_t_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (t)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_t"
-                    v-model="detailSearch.capacity_t"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="capacity_kg_hr_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (kg/hr)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_kg_hr"
-                    v-model="detailSearch.capacity_kg_hr"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
-                  id="capacity_l_min_item"
-                  style="display: none"
-                >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (l/min)</label
-                  >
-                  <input
-                    type="number"
-                    id="capacity_l_min"
-                    v-model="detailSearch.capacity_l_min"
-                    :placeholder="t('placeholder.inputValueAbove')"
-                    class="form-input"
-                  />
-                </div>
-
-                <div
-                  class="detail-search-item"
                   id="agitated_volume_m3_item"
                   style="display: none"
                 >
-                  <label class="label-capacity"
-                    >{{ t("machine.capacity") }} (m³)</label
-                  >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
                   <input
                     type="number"
                     id="agitated_volume_m3"
@@ -315,9 +162,7 @@
                   id="power_kW1_item"
                   style="display: none"
                 >
-                  <label class="label-power"
-                    >{{ t("machine.power") }} (kw)</label
-                  >
+                  <label class="label-power">{{ t("machine.power") }}</label>
                   <input
                     type="number"
                     id="power_kW1"
@@ -332,9 +177,7 @@
                   id="power_kW2_item"
                   style="display: none"
                 >
-                  <label class="label-power"
-                    >{{ t("machine.power") }} (kw)</label
-                  >
+                  <label class="label-power">{{ t("machine.power") }}</label>
                   <input
                     type="number"
                     id="power_kW2"
@@ -352,9 +195,9 @@
                   id="pressure_kgf_cm2_item"
                   style="display: none"
                 >
-                  <label class="label-pressure"
-                    >{{ t("machine.pressure") }} (kg/cm²)</label
-                  >
+                  <label class="label-pressure">{{
+                    t("machine.pressure")
+                  }}</label>
                   <input
                     type="number"
                     id="pressure_kgf_cm2"
@@ -369,9 +212,9 @@
                   id="discharge_pressure_mmAq_item"
                   style="display: none"
                 >
-                  <label class="label-pressure"
-                    >{{ t("machine.pressure") }} (mmAq)</label
-                  >
+                  <label class="label-pressure">{{
+                    t("machine.pressure")
+                  }}</label>
                   <input
                     type="number"
                     id="discharge_pressure_mmAq"
@@ -386,7 +229,7 @@
                   id="max_pump_head_m_item"
                   style="display: none"
                 >
-                  <label class="label-head">{{ t("machine.head") }} (m)</label>
+                  <label class="label-head">{{ t("machine.head") }}</label>
                   <input
                     type="number"
                     id="max_pump_head_m"
@@ -401,7 +244,7 @@
                   id="max_head_m_item"
                   style="display: none"
                 >
-                  <label class="label-head">{{ t("machine.head") }} (m)</label>
+                  <label class="label-head">{{ t("machine.head") }}</label>
                   <input
                     type="number"
                     id="max_head_m"
@@ -416,9 +259,9 @@
                   id="max_press_kg_cm2_item"
                   style="display: none"
                 >
-                  <label class="label-pressure"
-                    >{{ t("machine.pressure") }} (kg/cm²)</label
-                  >
+                  <label class="label-pressure">{{
+                    t("machine.pressure")
+                  }}</label>
                   <input
                     type="number"
                     id="max_press_kg_cm2"
@@ -540,9 +383,6 @@
             >
               {{ t("common.register") }}
             </button>
-            <button class="btn btn-primary btn-edit" @click="handleEdit">
-              {{ t("common.edit") }}
-            </button>
             <button
               class="btn btn-primary btn-delete"
               @click="handleDelete"
@@ -576,10 +416,8 @@
           <!-- 용량 슬롯 -->
           <template #cell-capacity="{ item }">
             {{
-              item.search_criteria?.max_capacity_m3_min?.value
-                ? `${
-                    item.search_criteria.max_capacity_m3_min.value as number
-                  } ㎥/min`
+              item.search_criteria?.max_capacity?.value
+                ? `${item.search_criteria.max_capacity.value as number}`
                 : "-"
             }}
           </template>
@@ -609,30 +447,73 @@
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
           <h3>{{ t("common.detailInfo") }}</h3>
-          <button
-            class="btn-close"
-            @click="closeDetailPanel"
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <div class="header-buttons">
+            <button
+              v-if="!isDetailEditMode"
+              class="btn-edit"
+              @click="toggleEditMode"
+            >
+              {{ t("common.edit") }}
+            </button>
+            <button
+              v-if="isDetailEditMode"
+              class="btn-save"
+              @click="saveDetailChanges"
+            >
+              {{ t("common.save") }}
+            </button>
+            <button
+              class="btn-close"
+              @click="closeDetailPanel"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div class="detail-panel-body">
+          <!-- 모델 썸네일 이미지 영역 -->
+          <div class="model-thumbnail-section">
+            <div class="thumbnail-placeholder">
+              <span class="thumbnail-text">모델 썸네일 없음</span>
+            </div>
+          </div>
+
           <div class="detail-tables-container">
             <!-- 상세정보 보기 모드: 세로형 테이블 2개 구성 -->
             <!-- 사양 정보 -->
             <div class="detail-section">
-              <h4 class="section-title">{{ t("common.specifications") }}</h4>
-              <VerticalDataTable :data="specVerticalData" :loading="false" />
-            </div>
+              <VerticalDataTable
+                :data="specVerticalData"
+                :loading="false"
+                :editMode="isDetailEditMode"
+                @field-change="handleFieldChange"
+                @file-attach="handleFileAttach"
+                @file-remove="handleFileRemove"
+              />
 
-            <!-- 간격 -->
-            <div style="height: 24px" />
-
-            <!-- 단가/견적 정보 -->
-            <div class="detail-section">
-              <h4 class="section-title">{{ t("common.priceInfo") }}</h4>
-              <VerticalDataTable :data="costVerticalData" :loading="false" />
+              <!-- 숨겨진 파일 input들 -->
+              <input
+                type="file"
+                ref="file3d"
+                @change="handleFileSelect('3d', $event)"
+                style="display: none"
+                accept=".dtdx"
+              />
+              <input
+                type="file"
+                ref="fileRevit"
+                @change="handleFileSelect('revit', $event)"
+                style="display: none"
+                accept=".rvt"
+              />
+              <input
+                type="file"
+                ref="fileSymbol"
+                @change="handleFileSelect('symbol', $event)"
+                style="display: none"
+                accept=".svg"
+              />
             </div>
           </div>
         </div>
@@ -858,17 +739,13 @@ const detailSearch = ref({
   headerMachineSubCategory: "",
   headerMachineCategoryOptions: [] as Array<{ value: string; text: string }>,
   machineCategoryOptions: [] as Array<{ value: string; text: string }>,
-  max_capacity_m3_min: "",
-  max_capacity_ml_min: "",
-  max_capacity_m3_hr: "",
+  // API에서 받은 필드 메타데이터 저장
+  fieldsMetadata: {
+    search_criteria: [] as any[],
+    specifications: [] as any[],
+  },
+  max_capacity: "",
   o2_transfer_rate_kgO2_hr: "",
-  capacity_m3_hr: "",
-  capacity_tonne: "",
-  //capacity_m3_min: "",
-  capacity_m3: "",
-  capacity_t: "",
-  capacity_kg_hr: "",
-  capacity_l_min: "",
   agitated_volume_m3: "",
   powerKw1: "",
   powerKw2: "",
@@ -892,86 +769,120 @@ const detailSearch = ref({
 // 편집 기능 제거로 관련 상태 제거
 const isDetailEditMode = ref(false);
 
+// 편집 모드 데이터
+const editData = ref({
+  equipmentType: "",
+  manufacturer: "",
+  modelNumber: "",
+  model3dFile: "",
+  revitFile: "",
+  symbolFile: "",
+});
+
+// 콤보박스 옵션들 (임시 데이터)
+const equipmentTypes = ref([
+  { value: "pump", label: "펌프" },
+  { value: "motor", label: "모터" },
+  { value: "valve", label: "밸브" },
+  { value: "tank", label: "탱크" },
+]);
+
+const manufacturers = ref([
+  { value: "samsung", label: "삼성" },
+  { value: "lg", label: "LG" },
+  { value: "hyundai", label: "현대" },
+  { value: "doosan", label: "두산" },
+]);
+
+const models = ref([
+  { value: "model1", label: "모델1" },
+  { value: "model2", label: "모델2" },
+  { value: "model3", label: "모델3" },
+  { value: "model4", label: "모델4" },
+]);
+
 // VerticalDataTable용 사양 데이터
 const specVerticalData = computed(() => {
   if (!detailItemData.value) return [];
   const item = detailItemData.value;
   return [
-    { columnName: "기계ID", value: item.equipment_code },
-    { columnName: "기계명", value: item.equipment_name },
-    { columnName: "기계타입", value: item.equipment_type },
+    { columnName: "기계유형", value: item.equipment_type || "-" },
+    { columnName: "기계코드", value: item.equipment_code || "-" },
+    { columnName: "장비코드", value: item.equipment_code || "-" },
     {
-      columnName: "용량",
-      value: item.search_criteria?.max_capacity_m3_min?.value
-        ? `${item.search_criteria.max_capacity_m3_min.value as number} ㎥/min`
+      columnName: "장비유형",
+      value: item.equipment_type || "-",
+      editable: true,
+      fieldType: "select",
+      options: equipmentTypes.value,
+    },
+    {
+      columnName: "제조사",
+      value: item.manufacturer || "-",
+      editable: true,
+      fieldType: "select",
+      options: manufacturers.value,
+    },
+    {
+      columnName: "모델명",
+      value: item.model_number || "-",
+      editable: true,
+      fieldType: "select",
+      options: models.value,
+    },
+    {
+      columnName: "최소용량",
+      value: item.search_criteria?.max_capacity?.value
+        ? `${item.search_criteria.max_capacity.value as number}`
         : "-",
     },
-    { columnName: "모델명", value: item.model_number },
-    { columnName: "업체명", value: item.manufacturer },
+    {
+      columnName: "최대양정",
+      value: item.specifications?.max_head_m?.value
+        ? `${item.specifications.max_head_m.value as number} m`
+        : "-",
+    },
+    {
+      columnName: "토출관경",
+      value: item.specifications?.discharge_diameter?.value
+        ? `${item.specifications.discharge_diameter.value as number} mm`
+        : "-",
+    },
     {
       columnName: "동력",
-      value: item.specifications?.power_kW?.value
-        ? `${item.specifications.power_kW.value as number} kW`
+      value: item.specifications?.power?.value
+        ? `${item.specifications.power.value as number} kW`
         : "-",
     },
-    {
-      columnName: "총중량",
-      value: item.specifications?.total_wgt_kg?.value
-        ? `${item.specifications.total_wgt_kg.value as number} kg`
-        : "-",
-    },
-  ];
-});
-
-// VerticalDataTable용 단가/견적 데이터
-const costVerticalData = computed(() => {
-  if (!detailItemData.value) return [];
-  const item = detailItemData.value;
-  return [
     {
       columnName: "기동방식",
       value: (item.specifications?.ctrl_method?.value as string) || "-",
     },
     {
-      columnName: "정격전압",
-      value: item.specifications?.rated_volt_V?.value
-        ? `${item.specifications.rated_volt_V.value as number} V`
-        : "-",
+      columnName: "적격전압",
+      value: (item.specifications?.voltage?.value as string) || "-",
     },
     {
       columnName: "효율",
-      value: item.specifications?.efficiency_percent?.value
-        ? `${item.specifications.efficiency_percent.value as number} %`
-        : "-",
+      value: (item.specifications?.efficiency?.value as string) || "-",
     },
     {
-      columnName: "역률",
-      value: item.specifications?.pwr_factor_percent?.value
-        ? `${item.specifications.pwr_factor_percent.value as number} %`
-        : "-",
+      columnName: "3D",
+      value: (item as any).model_3d_url || "",
+      editable: true,
+      fieldType: "file",
     },
     {
-      columnName: "수용율",
-      value: item.specifications?.demand_factor_percent?.value
-        ? `${item.specifications.demand_factor_percent.value as number} %`
-        : "-",
-    },
-    { columnName: "계산식", value: "-" },
-    {
-      columnName: "단가",
-      value: item.output_values?.unit_price_kr?.value
-        ? `${(
-            item.output_values.unit_price_kr.value as number
-          ).toLocaleString()} 원`
-        : "-",
+      columnName: "Revit",
+      value: (item as any).revit_file_url || "",
+      editable: true,
+      fieldType: "file",
     },
     {
-      columnName: "견적가",
-      value: item.output_values?.invoice_price_kr?.value
-        ? `${(
-            item.output_values.invoice_price_kr.value as number
-          ).toLocaleString()} 원`
-        : "-",
+      columnName: "심볼",
+      value: (item as any).symbol_url || "",
+      editable: true,
+      fieldType: "file",
     },
   ];
 });
@@ -1030,38 +941,6 @@ const closeRegistModal = () => {
   isEditMode.value = false;
 };
 
-const handleEdit = async () => {
-  if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToEdit"));
-    return;
-  }
-  if (selectedItems.value.length > 1) {
-    alert(t("messages.warning.pleaseSelectOneItemToEdit"));
-    return;
-  }
-
-  try {
-    // 선택된 기계의 equipment_type으로 공통 코드 조회
-    const selectedMachine = selectedItems.value[0];
-    await machineStore.fetchMachineCommonCode(selectedMachine.equipment_type);
-
-    console.log("기계 공통 코드 조회 완료:", selectedMachine.equipment_type);
-  } catch (error) {
-    console.error("기계 공통 코드 조회 실패:", error);
-    alert("기계 공통 코드 조회에 실패했습니다.");
-    return;
-  }
-
-  isEditMode.value = true;
-  newMachine.value = {
-    name: selectedItems.value[0].equipment_name,
-    code: selectedItems.value[0].equipment_code,
-    type: selectedItems.value[0].equipment_type,
-    description: selectedItems.value[0].description || "",
-  };
-  isRegistModalOpen.value = true;
-};
-
 // (기존 단일 등록/수정 저장 핸들러 제거)
 
 const handleDelete = () => {
@@ -1094,7 +973,173 @@ const closeDetailPanel = () => {
   isDetailEditMode.value = false;
 };
 
-// 편집 로직 제거됨
+const toggleEditMode = () => {
+  isDetailEditMode.value = !isDetailEditMode.value;
+};
+
+const saveDetailChanges = async () => {
+  if (!detailItemData.value) return;
+
+  try {
+    // 여기에 저장 로직을 추가할 수 있습니다
+    // 예: API 호출로 데이터 업데이트
+    console.log("저장할 데이터:", detailItemData.value);
+    console.log("편집된 데이터:", editData.value);
+
+    // 저장 성공 후 편집 모드 종료
+    isDetailEditMode.value = false;
+    alert(t("messages.success.saved"));
+  } catch (error) {
+    console.error("저장 중 오류 발생:", error);
+    alert(t("messages.error.saveFailed"));
+  }
+};
+
+// 파일 첨부 관련 함수들
+
+const handleFileSelect = (type: string, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (file) {
+    // 파일 확장자 validation
+    const allowedExtensions = {
+      "3d": [".dtdx"],
+      revit: [".rvt"],
+      symbol: [".svg"],
+    };
+
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+    const allowedExts =
+      allowedExtensions[type as keyof typeof allowedExtensions];
+
+    if (!allowedExts.includes(fileExtension)) {
+      alert(
+        `허용되지 않는 파일 형식입니다.\n허용된 확장자: ${allowedExts.join(
+          ", "
+        )}`
+      );
+      // 파일 input 초기화
+      target.value = "";
+      return;
+    }
+
+    switch (type) {
+      case "3d":
+        editData.value.model3dFile = file.name;
+        // 그리드 데이터도 업데이트
+        if (detailItemData.value) {
+          (detailItemData.value as any).model_3d_url = file.name;
+        }
+        break;
+      case "revit":
+        editData.value.revitFile = file.name;
+        // 그리드 데이터도 업데이트
+        if (detailItemData.value) {
+          (detailItemData.value as any).revit_file_url = file.name;
+        }
+        break;
+      case "symbol":
+        editData.value.symbolFile = file.name;
+        // 그리드 데이터도 업데이트
+        if (detailItemData.value) {
+          (detailItemData.value as any).symbol_url = file.name;
+        }
+        break;
+    }
+    console.log(`${type} 파일 선택됨:`, file.name);
+  }
+};
+
+// 그리드에서 필드 변경 처리
+const handleFieldChange = (fieldName: string, value: string) => {
+  console.log(`필드 변경: ${fieldName} = ${value}`);
+
+  // editData에 반영
+  switch (fieldName) {
+    case "장비유형":
+      editData.value.equipmentType = value;
+      break;
+    case "제조사":
+      editData.value.manufacturer = value;
+      break;
+    case "모델명":
+      editData.value.modelNumber = value;
+      break;
+  }
+};
+
+// 파일 input refs
+const file3d = ref<HTMLInputElement>();
+const fileRevit = ref<HTMLInputElement>();
+const fileSymbol = ref<HTMLInputElement>();
+
+// 그리드에서 파일 첨부 처리
+const handleFileAttach = (fieldName: string) => {
+  console.log(`파일 첨부 요청: ${fieldName}`);
+
+  switch (fieldName) {
+    case "3D":
+      if (file3d.value) {
+        file3d.value.click();
+      }
+      break;
+    case "Revit":
+      if (fileRevit.value) {
+        fileRevit.value.click();
+      }
+      break;
+    case "심볼":
+      if (fileSymbol.value) {
+        fileSymbol.value.click();
+      }
+      break;
+    default:
+      console.error(`지원하지 않는 필드명: ${fieldName}`);
+  }
+};
+
+// 그리드에서 파일 첨부 취소 처리
+const handleFileRemove = (fieldName: string) => {
+  console.log(`파일 첨부 취소 요청: ${fieldName}`);
+
+  switch (fieldName) {
+    case "3D":
+      editData.value.model3dFile = "";
+      if (detailItemData.value) {
+        (detailItemData.value as any).model_3d_url = "";
+      }
+      // 파일 input 초기화
+      if (file3d.value) {
+        file3d.value.value = "";
+      }
+      break;
+    case "Revit":
+      editData.value.revitFile = "";
+      if (detailItemData.value) {
+        (detailItemData.value as any).revit_file_url = "";
+      }
+      // 파일 input 초기화
+      if (fileRevit.value) {
+        fileRevit.value.value = "";
+      }
+      break;
+    case "심볼":
+      editData.value.symbolFile = "";
+      if (detailItemData.value) {
+        (detailItemData.value as any).symbol_url = "";
+      }
+      // 파일 input 초기화
+      if (fileSymbol.value) {
+        fileSymbol.value.value = "";
+      }
+      break;
+    default:
+      console.error(`지원하지 않는 필드명: ${fieldName}`);
+  }
+};
 
 // 데이터 로드 함수
 // 데이터 로드 (RoleManagement.vue 패턴 적용)
@@ -1143,17 +1188,8 @@ const loadData = async () => {
 
       // search_criteria에 해당하는 필드들 처리
       const searchCriteriaFields = [
-        "max_capacity_m3_min",
-        "max_capacity_ml_min",
-        "max_capacity_m3_hr",
+        "max_capacity",
         "o2_transfer_rate_kgO2_hr",
-        "capacity_m3_hr",
-        "capacity_tonne",
-        "capacity_m3_min",
-        "capacity_m3",
-        "capacity_t",
-        "capacity_kg_hr",
-        "capacity_l_min",
         "agitated_volume_m3",
         "pressure_kgf_cm2",
         "discharge_pressure_mmAq",
@@ -1172,13 +1208,80 @@ const loadData = async () => {
         "max_press_kg_cm2",
       ];
 
+      // API에서 받은 unit_code를 사용하여 동적으로 단위 코드 설정
+      const getUnitCodeForField = (
+        fieldName: string,
+        isSpecification: boolean = false
+      ): string => {
+        const metadata = isSpecification
+          ? detailSearch.value.fieldsMetadata.specifications
+          : detailSearch.value.fieldsMetadata.search_criteria;
+
+        // max_capacity 필드의 경우 max_capacity나 capacity가 포함된 필드들 중에서 첫 번째로 찾은 unit_code 반환
+        if (fieldName === "max_capacity") {
+          const maxCapacityField = metadata.find(
+            (item: any) =>
+              item.field_name.includes("max_capacity") ||
+              item.field_name.includes("capacity")
+          );
+          return maxCapacityField?.unit_code || "";
+        }
+
+        const fieldMetadata = metadata.find(
+          (item: any) => item.field_name === fieldName
+        );
+        return fieldMetadata?.unit_code || "";
+      };
+
       // search_criteria 필드들 체크
       searchCriteriaFields.forEach((field) => {
         const value =
           detailSearch.value[field as keyof typeof detailSearch.value];
         if (value && value !== "") {
           console.log(`search_criteria 필드 추가: ${field} = ${value}`);
-          searchCriteria[field] = { $lte: Number(value) };
+
+          const unitCode = getUnitCodeForField(field, false);
+
+          // 단위가 붙은 필드명을 기본 필드명으로 변환
+          let apiFieldName = field;
+          if (field.includes("_m3_min")) {
+            apiFieldName = field.replace("_m3_min", "");
+          } else if (field.includes("_ml_min")) {
+            apiFieldName = field.replace("_ml_min", "");
+          } else if (field.includes("_m3_hr")) {
+            apiFieldName = field.replace("_m3_hr", "");
+          } else if (field.includes("_kgO2_hr")) {
+            apiFieldName = field.replace("_kgO2_hr", "");
+          } else if (field.includes("_tonne")) {
+            apiFieldName = field.replace("_tonne", "");
+          } else if (field.includes("_m3")) {
+            apiFieldName = field.replace("_m3", "");
+          } else if (field.includes("_t")) {
+            apiFieldName = field.replace("_t", "");
+          } else if (field.includes("_kg_hr")) {
+            apiFieldName = field.replace("_kg_hr", "");
+          } else if (field.includes("_l_min")) {
+            apiFieldName = field.replace("_l_min", "");
+          } else if (field.includes("_kgf_cm2")) {
+            apiFieldName = field.replace("_kgf_cm2", "");
+          } else if (field.includes("_mmAq")) {
+            apiFieldName = field.replace("_mmAq", "");
+          } else if (field.includes("_mm")) {
+            apiFieldName = field.replace("_mm", "");
+          } else if (field.includes("_m2")) {
+            apiFieldName = field.replace("_m2", "");
+          }
+
+          if (unitCode) {
+            searchCriteria[apiFieldName] = {
+              $gte: Number(value),
+              unit_code: unitCode,
+            };
+          } else {
+            searchCriteria[apiFieldName] = {
+              $gte: Number(value),
+            };
+          }
         }
       });
 
@@ -1187,9 +1290,17 @@ const loadData = async () => {
         console.log(
           `search_criteria 필드 추가: power_kW = ${detailSearch.value.powerKw1}`
         );
-        searchCriteria["power_kW"] = {
-          $lte: Number(detailSearch.value.powerKw1),
-        };
+        const unitCode = getUnitCodeForField("power_kW", false);
+        if (unitCode) {
+          searchCriteria["power"] = {
+            $gte: Number(detailSearch.value.powerKw1),
+            unit_code: unitCode,
+          };
+        } else {
+          searchCriteria["power_kW"] = {
+            $gte: Number(detailSearch.value.powerKw1),
+          };
+        }
       }
 
       // specifications 필드들 체크
@@ -1198,7 +1309,26 @@ const loadData = async () => {
           detailSearch.value[field as keyof typeof detailSearch.value];
         if (value && value !== "") {
           console.log(`specifications 필드 추가: ${field} = ${value}`);
-          specifications[field] = { $lte: Number(value) };
+          const unitCode = getUnitCodeForField(field, true);
+
+          // 단위가 붙은 필드명을 기본 필드명으로 변환
+          let apiFieldName = field;
+          if (field.includes("_m")) {
+            apiFieldName = field.replace("_m", "");
+          } else if (field.includes("_kg_cm2")) {
+            apiFieldName = field.replace("_kg_cm2", "");
+          }
+
+          if (unitCode) {
+            specifications[apiFieldName] = {
+              $gte: Number(value),
+              unit_code: unitCode,
+            };
+          } else {
+            specifications[apiFieldName] = {
+              $gte: Number(value),
+            };
+          }
         }
       });
 
@@ -1207,9 +1337,17 @@ const loadData = async () => {
         console.log(
           `specifications 필드 추가: power_kW = ${detailSearch.value.powerKw2}`
         );
-        specifications["power_kW"] = {
-          $lte: Number(detailSearch.value.powerKw2),
-        };
+        const unitCode = getUnitCodeForField("power_kW", true);
+        if (unitCode) {
+          specifications["power"] = {
+            $gte: Number(detailSearch.value.powerKw2),
+            unit_code: unitCode,
+          };
+        } else {
+          specifications["power_kW"] = {
+            $gte: Number(detailSearch.value.powerKw2),
+          };
+        }
       }
 
       console.log("생성된 searchCriteria:", searchCriteria);
@@ -1326,18 +1464,9 @@ const hideAllCustomFields = () => {
     "discharge_pressure_mmAq_item",
     "max_pump_head_m_item",
     "max_head_m_item",
-    "max_capacity_m3_min_item",
-    "max_capacity_ml_min_item",
-    "max_capacity_m3_hr_item",
+    "max_capacity_item",
     "max_press_kg_cm2_item",
     "o2_transfer_rate_kgO2_hr_item",
-    "capacity_m3_hr_item",
-    "capacity_tonne_item",
-    "capacity_m3_min_item",
-    "capacity_m3_item",
-    "capacity_t_item",
-    "capacity_kg_hr_item",
-    "capacity_l_min_item",
     "agitated_volume_m3_item",
   ];
 
@@ -1350,17 +1479,8 @@ const hideAllCustomFields = () => {
   });
 
   // 모든 입력값 초기화
-  detailSearch.value.max_capacity_m3_min = "";
-  detailSearch.value.max_capacity_ml_min = "";
-  detailSearch.value.max_capacity_m3_hr = "";
+  detailSearch.value.max_capacity = "";
   detailSearch.value.o2_transfer_rate_kgO2_hr = "";
-  detailSearch.value.capacity_m3_hr = "";
-  detailSearch.value.capacity_tonne = "";
-  //detailSearch.value.capacity_m3_min = "";
-  detailSearch.value.capacity_m3 = "";
-  detailSearch.value.capacity_t = "";
-  detailSearch.value.capacity_kg_hr = "";
-  detailSearch.value.capacity_l_min = "";
   detailSearch.value.agitated_volume_m3 = "";
   detailSearch.value.powerKw1 = "";
   detailSearch.value.powerKw2 = "";
@@ -1377,7 +1497,7 @@ const hideAllCustomFields = () => {
   detailSearch.value.diffuse_area_m2 = "";
 };
 
-const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
+const showFieldsByAvailableCriteria = (availableCriteria: any[]) => {
   const fieldMapping: { [key: string]: string } = {
     dia_mm: "dia_mm_item",
     height_mm: "height_mm_item",
@@ -1388,32 +1508,44 @@ const showFieldsByAvailableCriteria = (availableCriteria: string[]) => {
     power_kW: "power_kW1_item",
     pressure_kgf_cm2: "pressure_kgf_cm2_item",
     discharge_pressure_mmAq: "discharge_pressure_mmAq_item",
-    max_capacity_m3_min: "max_capacity_m3_min_item",
-    max_capacity_ml_min: "max_capacity_ml_min_item",
-    max_capacity_m3_hr: "max_capacity_m3_hr_item",
+    max_capacity_m3_min: "max_capacity_item",
+    max_capacity_ml_min: "max_capacity_item",
+    max_capacity_m3_hr: "max_capacity_item",
     o2_transfer_rate_kgO2_hr: "o2_transfer_rate_kgO2_hr_item",
-    capacity_m3_hr: "capacity_m3_hr_item",
-    capacity_tonne: "capacity_tonne_item",
-    //capacity_m3_min: "capacity_m3_min_item",
-    capacity_m3: "capacity_m3_item",
-    capacity_t: "capacity_t_item",
-    capacity_kg_hr: "capacity_kg_hr_item",
-    capacity_l_min: "capacity_l_min_item",
+    capacity_m3_hr: "max_capacity_item",
+    capacity_tonne: "max_capacity_item",
+    capacity_m3_min: "max_capacity_item",
+    capacity_m3: "max_capacity_item",
+    capacity_t: "max_capacity_item",
+    capacity_kg_hr: "max_capacity_item",
+    capacity_l_min: "max_capacity_item",
     agitated_volume_m3: "agitated_volume_m3_item",
   };
 
   availableCriteria.forEach((criteria) => {
-    const elementId = fieldMapping[criteria];
-    if (elementId) {
-      const element = document.getElementById(elementId);
+    // 새로운 구조: criteria는 { field_name, unit_code } 형태의 객체
+    const fieldName =
+      typeof criteria === "string" ? criteria : criteria.field_name;
+
+    // max_capacity나 capacity가 포함된 필드들은 모두 max_capacity_item으로 표시
+    if (fieldName.includes("max_capacity") || fieldName.includes("capacity")) {
+      const element = document.getElementById("max_capacity_item");
       if (element) {
         element.style.display = "flex";
+      }
+    } else {
+      const elementId = fieldMapping[fieldName];
+      if (elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.style.display = "flex";
+        }
       }
     }
   });
 };
 
-const showFieldsBySpecifications = (specifications: string[]) => {
+const showFieldsBySpecifications = (specifications: any[]) => {
   const fieldMapping: { [key: string]: string } = {
     power_kW: "power_kW2_item",
     max_pump_head_m: "max_pump_head_m_item",
@@ -1422,7 +1554,9 @@ const showFieldsBySpecifications = (specifications: string[]) => {
   };
 
   specifications.forEach((spec) => {
-    const elementId = fieldMapping[spec];
+    // 새로운 구조: spec은 { field_name, unit_code } 형태의 객체
+    const fieldName = typeof spec === "string" ? spec : spec.field_name;
+    const elementId = fieldMapping[fieldName];
     if (elementId) {
       const element = document.getElementById(elementId);
       if (element) {
@@ -1442,17 +1576,25 @@ const handleHeaderMachineCategoryChange = async () => {
 
   try {
     const res = await machineStore.fetchDepthDetailBySearchType(searchKey);
-    const availableFields = (res as any)?.response?.data?.available_fields;
+    const fieldsMetadata = (res as any)?.response?.data?.fields_metadata;
 
-    if (availableFields?.search_criteria) {
-      showFieldsByAvailableCriteria(availableFields.search_criteria);
+    // fieldsMetadata 저장
+    if (fieldsMetadata) {
+      detailSearch.value.fieldsMetadata = {
+        search_criteria: fieldsMetadata.search_criteria || [],
+        specifications: fieldsMetadata.specifications || [],
+      };
     }
 
-    if (availableFields?.specifications) {
-      showFieldsBySpecifications(availableFields.specifications);
+    if (fieldsMetadata?.search_criteria) {
+      showFieldsByAvailableCriteria(fieldsMetadata.search_criteria);
     }
 
-    console.log("res 응답:", availableFields);
+    if (fieldsMetadata?.specifications) {
+      showFieldsBySpecifications(fieldsMetadata.specifications);
+    }
+
+    console.log("res 응답:", fieldsMetadata);
   } catch (e) {
     console.error(e);
   }
@@ -1488,18 +1630,26 @@ const handleHeaderMachineSubCategoryChange = async () => {
       const searchRes = await machineStore.fetchDepthDetailBySearchType(
         searchKey
       );
-      const availableFields = (searchRes as any)?.response?.data
-        ?.available_fields;
+      const fieldsMetadata = (searchRes as any)?.response?.data
+        ?.fields_metadata;
 
-      if (availableFields?.search_criteria) {
-        showFieldsByAvailableCriteria(availableFields.search_criteria);
+      // fieldsMetadata 저장
+      if (fieldsMetadata) {
+        detailSearch.value.fieldsMetadata = {
+          search_criteria: fieldsMetadata.search_criteria || [],
+          specifications: fieldsMetadata.specifications || [],
+        };
       }
 
-      if (availableFields?.specifications) {
-        showFieldsBySpecifications(availableFields.specifications);
+      if (fieldsMetadata?.search_criteria) {
+        showFieldsByAvailableCriteria(fieldsMetadata.search_criteria);
       }
 
-      console.log("searchType 응답:", availableFields);
+      if (fieldsMetadata?.specifications) {
+        showFieldsBySpecifications(fieldsMetadata.specifications);
+      }
+
+      console.log("searchType 응답:", fieldsMetadata);
     }
   } catch (e) {
     console.error(e);
@@ -1567,6 +1717,39 @@ onMounted(async () => {
       color: $text-color;
       font-size: 1.25rem;
     }
+
+    .header-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .btn-edit,
+      .btn-save {
+        padding: 0.5rem 1rem;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        background: $background-light;
+        color: $text-color;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+
+      .btn-save {
+        background: $success-color;
+        color: white;
+        border-color: $success-color;
+      }
+
+      .btn-close {
+        padding: 0.5rem;
+        border: none;
+        background: transparent;
+        color: $text-color;
+        cursor: pointer;
+        font-size: 1.25rem;
+        border-radius: 4px;
+      }
+    }
   }
 
   .detail-panel-body {
@@ -1575,6 +1758,120 @@ onMounted(async () => {
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+
+    .model-thumbnail-section {
+      width: 100%;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+
+      .thumbnail-placeholder {
+        width: 200px;
+        height: 150px;
+        border: 2px dashed $border-color;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: $background-light;
+
+        .thumbnail-text {
+          color: $text-light;
+          font-size: 0.875rem;
+          text-align: center;
+        }
+      }
+    }
+
+    .edit-fields-section {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      background: $background-light;
+
+      .edit-section-title {
+        margin: 0 0 1rem 0;
+        color: $text-color;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .edit-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      .edit-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .edit-label {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: $text-color;
+        }
+
+        .edit-select {
+          padding: 0.5rem;
+          border: 1px solid $border-color;
+          border-radius: 4px;
+          background: white;
+          color: $text-color;
+          font-size: 0.875rem;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+          }
+        }
+
+        .file-input-group {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+
+          .edit-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            background: white;
+            color: $text-color;
+            font-size: 0.875rem;
+
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+            }
+          }
+
+          .btn-attach {
+            padding: 0.5rem 1rem;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            background: $background-light;
+            color: $text-color;
+            cursor: pointer;
+            font-size: 0.875rem;
+            white-space: nowrap;
+
+            &:hover {
+              background: $primary-color;
+              color: white;
+              border-color: $primary-color;
+            }
+          }
+        }
+      }
+    }
   }
 
   .btn-close {

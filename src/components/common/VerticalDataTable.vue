@@ -27,7 +27,78 @@
             @click="handleRowClick(item, index)"
           >
             <td class="column-name">{{ item.columnName }}</td>
-            <td class="column-value">{{ item.value }}</td>
+            <td class="column-value">
+              <!-- 편집 모드이고 편집 가능한 필드인 경우 -->
+              <template v-if="editMode && item.editable">
+                <!-- 콤보박스 필드 -->
+                <select
+                  v-if="item.fieldType === 'select'"
+                  :value="item.value"
+                  @change="
+                    emit(
+                      'field-change',
+                      item.columnName,
+                      ($event.target as HTMLSelectElement).value
+                    )
+                  "
+                  class="edit-field-select"
+                >
+                  <option value="">선택하세요</option>
+                  <option
+                    v-for="option in item.options"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+
+                <!-- 파일 첨부 필드 -->
+                <div
+                  v-else-if="item.fieldType === 'file'"
+                  class="file-input-group"
+                >
+                  <input
+                    type="text"
+                    :value="item.value"
+                    class="edit-field-input"
+                    :placeholder="item.value ? '' : '파일을 선택하세요'"
+                    readonly
+                  />
+                  <button
+                    type="button"
+                    class="btn-attach-small"
+                    @click="
+                      item.value
+                        ? emit('file-remove', item.columnName)
+                        : emit('file-attach', item.columnName)
+                    "
+                  >
+                    {{ item.value ? "첨부취소" : "첨부" }}
+                  </button>
+                </div>
+
+                <!-- 기본 텍스트 필드 -->
+                <input
+                  v-else
+                  type="text"
+                  :value="item.value"
+                  @input="
+                    emit(
+                      'field-change',
+                      item.columnName,
+                      ($event.target as HTMLInputElement).value
+                    )
+                  "
+                  class="edit-field-input"
+                />
+              </template>
+
+              <!-- 일반 모드 -->
+              <template v-else>
+                {{ item.value }}
+              </template>
+            </td>
           </tr>
         </template>
       </tbody>
@@ -37,11 +108,18 @@
 
 <script setup lang="ts">
 interface Props {
-  data: Array<{ columnName: string; value: string }>;
+  data: Array<{
+    columnName: string;
+    value: string;
+    editable?: boolean;
+    fieldType?: string;
+    options?: Array<{ value: string; label: string }>;
+  }>;
   loading?: boolean;
   rowKey?: string;
   selectable?: boolean;
   selectedItems?: any[];
+  editMode?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,11 +127,15 @@ const props = withDefaults(defineProps<Props>(), {
   rowKey: "id",
   selectable: false,
   selectedItems: () => [],
+  editMode: false,
 });
 
 const emit = defineEmits<{
   "row-click": [item: any, index: number];
   "selection-change": [selectedItems: any[]];
+  "field-change": [fieldName: string, value: string];
+  "file-attach": [fieldName: string];
+  "file-remove": [fieldName: string];
 }>();
 
 const isSelected = (item: any): boolean => {
@@ -116,6 +198,49 @@ const getRowKey = (item: any, index: number) => {
       .column-value {
         width: 60%;
         word-break: break-all;
+
+        .edit-field-select,
+        .edit-field-input {
+          width: 100%;
+          padding: 0.25rem 0.5rem;
+          border: 1px solid $border-color;
+          border-radius: 4px;
+          background: white;
+          color: $text-color;
+          font-size: $font-size-sm;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+          }
+        }
+
+        .file-input-group {
+          display: flex;
+          gap: 0.25rem;
+          align-items: center;
+
+          .edit-field-input {
+            flex: 1;
+          }
+
+          .btn-attach-small {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid $border-color;
+            border-radius: 4px;
+            background: $background-light;
+            color: $text-color;
+            cursor: pointer;
+            font-size: 0.75rem;
+            white-space: nowrap;
+
+            &:hover {
+              background: $primary-color;
+              color: white;
+              border-color: $primary-color;
+            }
+          }
+        }
       }
     }
 

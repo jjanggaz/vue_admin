@@ -125,6 +125,91 @@
 
                 <div
                   class="detail-search-item"
+                  id="capacity_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="capacity_tonne"
+                    v-model="detailSearch.capacity_tonne"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_m3_min_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="capacity_m3_min"
+                    v-model="detailSearch.capacity_m3_min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_t_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="capacity_t"
+                    v-model="detailSearch.capacity_t"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_l_min_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="capacity_l_min"
+                    v-model="detailSearch.capacity_l_min"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
+                  id="capacity_m3_hr_item"
+                  style="display: none"
+                >
+                  <label class="label-capacity">{{
+                    t("machine.capacity")
+                  }}</label>
+                  <input
+                    type="number"
+                    id="capacity_m3_hr"
+                    v-model="detailSearch.capacity_m3_hr"
+                    :placeholder="t('placeholder.inputValueAbove')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div
+                  class="detail-search-item"
                   id="o2_transfer_rate_kgO2_hr_item"
                   style="display: none"
                 >
@@ -745,6 +830,11 @@ const detailSearch = ref({
     specifications: [] as any[],
   },
   max_capacity: "",
+  capacity_tonne: "",
+  capacity_m3_min: "",
+  capacity_t: "",
+  capacity_l_min: "",
+  capacity_m3_hr: "",
   o2_transfer_rate_kgO2_hr: "",
   agitated_volume_m3: "",
   powerKw1: "",
@@ -1189,6 +1279,11 @@ const loadData = async () => {
       // search_criteria에 해당하는 필드들 처리
       const searchCriteriaFields = [
         "max_capacity",
+        "capacity_tonne",
+        "capacity_m3_min",
+        "capacity_t",
+        "capacity_l_min",
+        "capacity_m3_hr",
         "o2_transfer_rate_kgO2_hr",
         "agitated_volume_m3",
         "pressure_kgf_cm2",
@@ -1216,16 +1311,6 @@ const loadData = async () => {
         const metadata = isSpecification
           ? detailSearch.value.fieldsMetadata.specifications
           : detailSearch.value.fieldsMetadata.search_criteria;
-
-        // max_capacity 필드의 경우 max_capacity나 capacity가 포함된 필드들 중에서 첫 번째로 찾은 unit_code 반환
-        if (fieldName === "max_capacity") {
-          const maxCapacityField = metadata.find(
-            (item: any) =>
-              item.field_name.includes("max_capacity") ||
-              item.field_name.includes("capacity")
-          );
-          return maxCapacityField?.unit_code || "";
-        }
 
         const fieldMetadata = metadata.find(
           (item: any) => item.field_name === fieldName
@@ -1270,6 +1355,10 @@ const loadData = async () => {
             apiFieldName = field.replace("_mm", "");
           } else if (field.includes("_m2")) {
             apiFieldName = field.replace("_m2", "");
+          } else if (field.includes("_kg_cm2")) {
+            apiFieldName = field.replace("_kg_cm2", "");
+          } else if (field.includes("_m")) {
+            apiFieldName = field.replace("_m", "");
           }
 
           if (unitCode) {
@@ -1465,6 +1554,11 @@ const hideAllCustomFields = () => {
     "max_pump_head_m_item",
     "max_head_m_item",
     "max_capacity_item",
+    "capacity_item",
+    "capacity_m3_min_item",
+    "capacity_t_item",
+    "capacity_l_min_item",
+    "capacity_m3_hr_item",
     "max_press_kg_cm2_item",
     "o2_transfer_rate_kgO2_hr_item",
     "agitated_volume_m3_item",
@@ -1480,6 +1574,11 @@ const hideAllCustomFields = () => {
 
   // 모든 입력값 초기화
   detailSearch.value.max_capacity = "";
+  detailSearch.value.capacity_tonne = "";
+  detailSearch.value.capacity_m3_min = "";
+  detailSearch.value.capacity_t = "";
+  detailSearch.value.capacity_l_min = "";
+  detailSearch.value.capacity_m3_hr = "";
   detailSearch.value.o2_transfer_rate_kgO2_hr = "";
   detailSearch.value.agitated_volume_m3 = "";
   detailSearch.value.powerKw1 = "";
@@ -1498,6 +1597,8 @@ const hideAllCustomFields = () => {
 };
 
 const showFieldsByAvailableCriteria = (availableCriteria: any[]) => {
+  console.log("showFieldsByAvailableCriteria 호출됨:", availableCriteria);
+
   const fieldMapping: { [key: string]: string } = {
     dia_mm: "dia_mm_item",
     height_mm: "height_mm_item",
@@ -1513,7 +1614,7 @@ const showFieldsByAvailableCriteria = (availableCriteria: any[]) => {
     max_capacity_m3_hr: "max_capacity_item",
     o2_transfer_rate_kgO2_hr: "o2_transfer_rate_kgO2_hr_item",
     capacity_m3_hr: "max_capacity_item",
-    capacity_tonne: "max_capacity_item",
+    capacity_tonne: "capacity_item",
     capacity_m3_min: "max_capacity_item",
     capacity_m3: "max_capacity_item",
     capacity_t: "max_capacity_item",
@@ -1527,9 +1628,44 @@ const showFieldsByAvailableCriteria = (availableCriteria: any[]) => {
     const fieldName =
       typeof criteria === "string" ? criteria : criteria.field_name;
 
-    // max_capacity나 capacity가 포함된 필드들은 모두 max_capacity_item으로 표시
-    if (fieldName.includes("max_capacity") || fieldName.includes("capacity")) {
+    // max_capacity 필드들은 max_capacity_item으로 표시
+    if (fieldName.includes("max_capacity")) {
       const element = document.getElementById("max_capacity_item");
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+    // capacity 필드들은 capacity_item으로 표시 (capacity_tonne 포함)
+    else if (fieldName.includes("capacity_tonne")) {
+      const element = document.getElementById("capacity_item");
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+    // capacity_m3_min은 별도의 capacity_m3_min_item으로 표시
+    else if (fieldName.includes("capacity_m3_min")) {
+      const element = document.getElementById("capacity_m3_min_item");
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+    // capacity_t는 별도의 capacity_t_item으로 표시
+    else if (fieldName.includes("capacity_t")) {
+      const element = document.getElementById("capacity_t_item");
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+    // capacity_l_min은 별도의 capacity_l_min_item으로 표시
+    else if (fieldName.includes("capacity_l_min")) {
+      const element = document.getElementById("capacity_l_min_item");
+      if (element) {
+        element.style.display = "flex";
+      }
+    }
+    // capacity_m3_hr은 별도의 capacity_m3_hr_item으로 표시
+    else if (fieldName.includes("capacity_m3_hr")) {
+      const element = document.getElementById("capacity_m3_hr_item");
       if (element) {
         element.style.display = "flex";
       }
@@ -1584,6 +1720,13 @@ const handleHeaderMachineCategoryChange = async () => {
         search_criteria: fieldsMetadata.search_criteria || [],
         specifications: fieldsMetadata.specifications || [],
       };
+
+      // 디버깅을 위한 로그
+      console.log(
+        "API 응답 - search_criteria:",
+        fieldsMetadata.search_criteria
+      );
+      console.log("API 응답 - specifications:", fieldsMetadata.specifications);
     }
 
     if (fieldsMetadata?.search_criteria) {

@@ -1250,9 +1250,9 @@ const loadData = async () => {
 
     // 기본 검색 파라미터
     const searchParams: any = {
-      keyword: searchQueryInput.value,
+      search_value: searchQueryInput.value,
       root_equipment_type: selectedMachineCategory.value,
-      unit: selectedUnit.value,
+      unit_system_code: selectedUnit.value,
       page: currentPage.value,
       page_size: pageSize.value,
     };

@@ -499,7 +499,7 @@
   "placeholder": {
     "search": "Enter search term",
     "searchQuery": "Enter search term",
-    "machineSearch": "Machine name, ID search",
+    "machineSearch": "Keyword search (code/model/manufacturer/type)",
     "structureSearch": "Search by structure type, structure name",
     "selectItem": "Please select an item",
     "loginUsername": "Username",

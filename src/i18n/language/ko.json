@@ -627,7 +627,7 @@
   "placeholder": {
     "search": "검색어를 입력하세요",
     "searchQuery": "검색어를 입력하세요",
-    "machineSearch": "기계명, ID 검색",
+    "machineSearch": "키워드 검색(코드/모델/업체/유형)",
     "structureSearch": "구조물유형, 구조물명 검색",
     "selectItem": "항목을 선택해주세요",
     "selectFile": "파일을 선택해주세요",

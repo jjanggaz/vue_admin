@@ -27,6 +27,8 @@
             v-model="loginForm.username"
             type="text"
             :placeholder="t('placeholder.loginUsername')"
+            @invalid="handleInvalid($event, 'username')"
+            @input="($event.target as HTMLInputElement).setCustomValidity('')"
             required
           />
         </div>
@@ -37,6 +39,8 @@
             v-model="loginForm.password"
             type="password"
             :placeholder="t('placeholder.loginPassword')"
+            @invalid="handleInvalid($event, 'password')"
+            @input="($event.target as HTMLInputElement).setCustomValidity('')"
             required
           />
         </div>
@@ -93,6 +97,20 @@ onMounted(() => {
 const changeLang = () => {
   locale.value = selectedLang.value;
   localStorage.setItem("wai_lang", selectedLang.value);
+};
+
+const handleInvalid = (event: Event, fieldType: string) => {
+  const input = event.target as HTMLInputElement;
+
+  if (input.validity.valueMissing) {
+    if (fieldType === "username") {
+      input.setCustomValidity(t("validation.usernameRequired"));
+    } else if (fieldType === "password") {
+      input.setCustomValidity(t("validation.passwordRequired"));
+    }
+  } else {
+    input.setCustomValidity("");
+  }
 };
 
 const handleLogin = async () => {

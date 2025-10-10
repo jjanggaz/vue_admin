@@ -1173,6 +1173,8 @@
     "maxLength": "{field} must be no more than {max} characters long.",
     "email": "Please enter a valid email address.",
     "numeric": "{field} must contain only numbers.",
-    "alphanumeric": "{field} must contain only letters and numbers."
+    "alphanumeric": "{field} must contain only letters and numbers.",
+    "usernameRequired": "Please enter your username.",
+    "passwordRequired": "Please enter your password."
   }
 }

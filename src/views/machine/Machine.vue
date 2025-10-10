@@ -430,17 +430,16 @@
             {{ (currentPage - 1) * pageSize + index + 1 }}
           </template>
 
-          <!-- 용량 슬롯 -->
-          <template #cell-capacity="{ item }">
+          <!-- 단가 슬롯 -->
+          <template #cell-unit_price="{ item }">
             {{
-              item.search_criteria?.max_capacity?.value
-                ? `${item.search_criteria.max_capacity.value as number}`
+              item.output_values?.unit_price_kr?.value
+                ? `${item.output_values.unit_price_kr.value.toLocaleString()} ${
+                    item.output_values.unit_price_kr.unit_symbol || ""
+                  }`
                 : "-"
             }}
           </template>
-
-          <!-- 계산식 슬롯 (미정이므로 '-' 표시) -->
-          <template #cell-formula> - </template>
 
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
@@ -634,6 +633,7 @@ interface MachineItem {
   equipment_code: string;
   equipment_name: string;
   equipment_type: string;
+  equipment_type_name?: string;
   manufacturer: string;
   model_number: string;
   // API 응답의 전체 데이터를 포함
@@ -683,21 +683,15 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "equipment_name",
-    title: t("columns.machine.name"),
+    key: "equipment_type_name",
+    title: t("columns.machine.type"),
     width: "150px",
     sortable: false,
   },
   {
-    key: "equipment_type",
-    title: t("columns.machine.type"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    key: "capacity",
-    title: t("columns.machine.capacity"),
-    width: "100px",
+    key: "manufacturer",
+    title: t("columns.machine.company"),
+    width: "150px",
     sortable: false,
   },
   {
@@ -707,15 +701,9 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "formula",
-    title: t("columns.machine.formula"),
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "manufacturer",
-    title: t("columns.machine.company"),
-    width: "150px",
+    key: "unit_price",
+    title: t("columns.machine.unitPrice"),
+    width: "120px",
     sortable: false,
   },
   {
@@ -824,12 +812,12 @@ const specVerticalData = computed(() => {
   if (!detailItemData.value) return [];
   const item = detailItemData.value;
   return [
-    { columnName: "기계유형", value: item.equipment_type || "-" },
+    { columnName: "기계유형", value: item.equipment_type_name || "-" },
     { columnName: "기계코드", value: item.equipment_code || "-" },
     { columnName: "장비코드", value: item.equipment_code || "-" },
     {
       columnName: "장비유형",
-      value: item.equipment_type || "-",
+      value: item.equipment_type_name || "-",
       editable: true,
       fieldType: "select",
       options: equipmentTypes.value,

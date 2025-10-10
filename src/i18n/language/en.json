@@ -228,6 +228,7 @@
       "capacityMax": "Capacity [max]",
       "model": "Model",
       "formula": "Formula",
+      "unitPrice": "Unit Price",
       "details": "Details",
       "dischargePressure": "Discharge Pressure",
       "dischargeDiameter": "Discharge Diameter",

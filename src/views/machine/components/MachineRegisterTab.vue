@@ -212,7 +212,7 @@ async function extractZipContents(file: File) {
       "jpeg",
       "png",
       "gif",
-      "svg",
+      //"svg",
     ];
     const invalidFiles: string[] = [];
     let hasAllowedFile = false;
@@ -232,18 +232,20 @@ async function extractZipContents(file: File) {
           fileType = "3D Model";
         } else if (["rvt"].includes(fileExtension)) {
           fileType = "Revit Model";
-        } else if (
-          ["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension)
-        ) {
-          fileType = "Image";
+        } else if (["svg"].includes(fileExtension)) {
+          fileType = "Symbol";
+        } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
+          fileType = "Thumbnail Image";
         }
 
         // 허용/비허용 판정
         if (fileExtension && allowedExtensions.includes(fileExtension)) {
           hasAllowedFile = true;
           if (fileExtension === "dtdx") hasDtdx = true;
-          if (["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension))
+          // 썸네일 이미지는 필수 (svg 제외)
+          if (["jpg", "jpeg", "png", "gif"].includes(fileExtension))
             hasImage = true;
+          // svg는 심볼 파일로 허용되지만 필수는 아님
         } else if (fileExtension) {
           invalidFiles.push(relativePath);
         }
@@ -274,7 +276,7 @@ async function extractZipContents(file: File) {
     // 허용된 파일이 하나도 없으면 첨부 불가 처리
     if (!hasAllowedFile) {
       alert(
-        "ZIP 파일에 허용된 형식(.dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
+        "ZIP 파일에 허용된 형식(.dtdx, .rvt, .svg, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
       );
       zipFileList.value = [];
       showZipContents.value = false;
@@ -282,13 +284,13 @@ async function extractZipContents(file: File) {
       return;
     }
 
-    // 필수 파일(.dtdx, 이미지)이 모두 포함되어 있는지 검증
+    // 필수 파일(.dtdx, 썸네일 이미지)이 모두 포함되어 있는지 검증
     if (!(hasDtdx && hasImage)) {
       const missing: string[] = [];
-      if (!hasDtdx) missing.push(".dtdx");
-      if (!hasImage) missing.push("이미지(.jpg/.jpeg/.png/.gif/.svg)");
+      if (!hasDtdx) missing.push("3D모델(.dtdx)");
+      if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
       alert(
-        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- .dtdx\n- 이미지(.jpg/.jpeg/.png/.gif/.svg)\n\n누락: ${missing.join(
+        `ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- 심볼(.svg)\n- Revit모델(.rvt)\n\n누락: ${missing.join(
           ", "
         )}`
       );
@@ -303,7 +305,7 @@ async function extractZipContents(file: File) {
       alert(
         `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
           "\n"
-        )}\n\n허용된 파일 형식: .dtdx, .rvt, .jpg, .jpeg, .png, .gif, .svg`
+        )}\n\n허용된 파일 형식:\n- 필수: .dtdx, .jpg, .jpeg, .png, .gif\n- 선택: .svg, .rvt`
       );
     }
 

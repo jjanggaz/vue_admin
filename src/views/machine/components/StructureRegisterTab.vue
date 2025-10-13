@@ -347,21 +347,13 @@ async function extractZipContents(file: File) {
 
         // 파일 확장자에 따른 타입 분류
         if (["py"].includes(fileExtension)) {
-          fileType = "Python Script";
+          fileType = "Formula";
         } else if (["dtdx"].includes(fileExtension)) {
           fileType = "3D Model";
         } else if (["rvt"].includes(fileExtension)) {
           fileType = "Revit Model";
         } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
-          fileType = "Image";
-        } else if (["txt", "md"].includes(fileExtension)) {
-          fileType = "Text";
-        } else if (["pdf"].includes(fileExtension)) {
-          fileType = "PDF";
-        } else if (["doc", "docx"].includes(fileExtension)) {
-          fileType = "Document";
-        } else if (["zip", "rar", "7z"].includes(fileExtension)) {
-          fileType = "Archive";
+          fileType = "Thumbnail Image";
         }
 
         // 허용/비허용 판정
@@ -418,14 +410,14 @@ async function extractZipContents(file: File) {
       return;
     }
 
-    // 필수 파일(.py, .dtdx, 이미지)이 모두 포함되어 있는지 검증
+    // 필수 파일(.py, .dtdx, 썸네일 이미지)이 모두 포함되어 있는지 검증
     if (!(hasPy && hasDtdx && hasImage)) {
       const missing: string[] = [];
       if (!hasPy) missing.push("계산식(.py)");
-      if (!hasDtdx) missing.push("DTD모델(.dtdx)");
-      if (!hasImage) missing.push("썸네일일(.jpg/.jpeg/.png/.gif)");
+      if (!hasDtdx) missing.push("3D모델(.dtdx)");
+      if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
       alert(
-        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- 계산식(.py)\n- DTD모델(.dtdx)\n- 썸네일(.jpg/.jpeg/.png/.gif)\n\n누락: ${missing.join(
+        `ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 계산식(.py)\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- Revit모델(.rvt)\n\n누락: ${missing.join(
           ", "
         )}`
       );
@@ -441,7 +433,7 @@ async function extractZipContents(file: File) {
       alert(
         `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
           "\n"
-        )}\n\n허용된 파일 형식: .py, .dtdx, .rvt, .jpg, .jpeg, .png, .gif`
+        )}\n\n허용된 파일 형식:\n- 필수: .py, .dtdx, .jpg, .jpeg, .png, .gif\n- 선택: .rvt`
       );
     }
 

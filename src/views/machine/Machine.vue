@@ -496,7 +496,6 @@
           </div>
 
           <div class="detail-tables-container">
-            <!-- 상세정보 보기 모드: 세로형 테이블 2개 구성 -->
             <!-- 사양 정보 -->
             <div class="detail-section">
               <VerticalDataTable
@@ -603,7 +602,7 @@ import MachineFormulaUpdateTab from "./components/MachineFormulaUpdateTab.vue";
 import { useI18n } from "vue-i18n";
 import { useMachineStore } from "@/stores/machineStore";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const machineStore = useMachineStore();
 
 // 모달 탭 구성 (ProjectDetail 스타일) - 등록/수정 모드에 따라 동적 변경
@@ -786,13 +785,6 @@ const editData = ref({
 });
 
 // 콤보박스 옵션들 (임시 데이터)
-const equipmentTypes = ref([
-  { value: "pump", label: "펌프" },
-  { value: "motor", label: "모터" },
-  { value: "valve", label: "밸브" },
-  { value: "tank", label: "탱크" },
-]);
-
 const manufacturers = ref([
   { value: "samsung", label: "삼성" },
   { value: "lg", label: "LG" },
@@ -807,90 +799,125 @@ const models = ref([
   { value: "model4", label: "모델4" },
 ]);
 
-// VerticalDataTable용 사양 데이터
+// VerticalDataTable용 사양 데이터 - 동적 생성
 const specVerticalData = computed(() => {
   if (!detailItemData.value) return [];
   const item = detailItemData.value;
-  return [
-    { columnName: "기계유형", value: item.equipment_type_name || "-" },
-    { columnName: "기계코드", value: item.equipment_code || "-" },
-    { columnName: "장비코드", value: item.equipment_code || "-" },
-    {
-      columnName: "장비유형",
-      value: item.equipment_type_name || "-",
-      editable: true,
-      fieldType: "select",
-      options: equipmentTypes.value,
-    },
-    {
-      columnName: "제조사",
-      value: item.manufacturer || "-",
-      editable: true,
-      fieldType: "select",
-      options: manufacturers.value,
-    },
-    {
-      columnName: "모델명",
-      value: item.model_number || "-",
-      editable: true,
-      fieldType: "select",
-      options: models.value,
-    },
-    {
-      columnName: "최소용량",
-      value: item.search_criteria?.max_capacity?.value
-        ? `${item.search_criteria.max_capacity.value as number}`
-        : "-",
-    },
-    {
-      columnName: "최대양정",
-      value: item.specifications?.max_head_m?.value
-        ? `${item.specifications.max_head_m.value as number} m`
-        : "-",
-    },
-    {
-      columnName: "토출관경",
-      value: item.specifications?.discharge_diameter?.value
-        ? `${item.specifications.discharge_diameter.value as number} mm`
-        : "-",
-    },
-    {
-      columnName: "동력",
-      value: item.specifications?.power?.value
-        ? `${item.specifications.power.value as number} kW`
-        : "-",
-    },
-    {
-      columnName: "기동방식",
-      value: (item.specifications?.ctrl_method?.value as string) || "-",
-    },
-    {
-      columnName: "적격전압",
-      value: (item.specifications?.voltage?.value as string) || "-",
-    },
-    {
-      columnName: "효율",
-      value: (item.specifications?.efficiency?.value as string) || "-",
-    },
-    {
-      columnName: "3D",
-      value: (item as any).model_3d_url || "",
-      editable: true,
-      fieldType: "file",
-    },
-    {
-      columnName: "Revit",
-      value: (item as any).revit_file_url || "",
-      editable: true,
-      fieldType: "file",
-    },
-    {
-      columnName: "심볼",
-      value: (item as any).symbol_url || "",
-      editable: true,
-      fieldType: "file",
-    },
-  ];
+  const data: any[] = [];
+  const isEnglish = locale.value === "en";
+
+  // 1. 고정 필드
+  data.push({
+    columnName: t("columns.machine.type"),
+    value: item.equipment_type_name || "-",
+  });
+  data.push({
+    columnName: t("columns.machine.code"),
+    value: item.equipment_code || "-",
+  });
+  data.push({
+    columnName: t("columns.machine.company"),
+    value: item.manufacturer || "-",
+    editable: true,
+    fieldType: "select",
+    options: manufacturers.value,
+  });
+  data.push({
+    columnName: t("columns.machine.model"),
+    value: item.model_number || "-",
+    editable: true,
+    fieldType: "select",
+    options: models.value,
+  });
+
+  // 2. output_values 동적 추가
+  if (item.output_values) {
+    Object.values(item.output_values).forEach((field: any) => {
+      if (field.value !== null && field.value !== undefined) {
+        const displayValue = field.unit_code
+          ? `${
+              typeof field.value === "number"
+                ? field.value.toLocaleString()
+                : field.value
+            } ${field.unit_code}`
+          : typeof field.value === "number"
+          ? field.value.toLocaleString()
+          : field.value;
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: displayValue,
+        });
+      }
+    });
+  }
+
+  // 3. search_criteria 동적 추가
+  if (item.search_criteria) {
+    Object.values(item.search_criteria).forEach((field: any) => {
+      if (field.value !== null && field.value !== undefined) {
+        const displayValue = field.unit_symbol
+          ? `${
+              typeof field.value === "number"
+                ? field.value.toLocaleString()
+                : field.value
+            } ${field.unit_symbol}`
+          : typeof field.value === "number"
+          ? field.value.toLocaleString()
+          : field.value;
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: displayValue,
+        });
+      }
+    });
+  }
+
+  // 4. specifications 동적 추가
+  if (item.specifications) {
+    Object.values(item.specifications).forEach((field: any) => {
+      if (field.value !== null && field.value !== undefined) {
+        const displayValue = field.unit_symbol
+          ? `${
+              typeof field.value === "number"
+                ? field.value.toLocaleString()
+                : field.value
+            } ${field.unit_symbol}`
+          : typeof field.value === "number"
+          ? field.value.toLocaleString()
+          : field.value;
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: displayValue,
+        });
+      }
+    });
+  }
+
+  // 5. 파일 필드 (3D, Revit, 심볼, 계산식)
+  data.push({
+    columnName: "3D",
+    value: (item as any).model_3d_url || "-",
+    editable: true,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: "Revit",
+    value: (item as any).revit_file_url || "-",
+    editable: true,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: t("columns.machine.symbol"),
+    value: (item as any).symbol_url || "-",
+    editable: true,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: t("columns.machine.formula"),
+    value: (item as any).formula_url || "-",
+  });
+
+  return data;
 });
 
 // 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
@@ -1065,9 +1092,6 @@ const handleFieldChange = (fieldName: string, value: string) => {
 
   // editData에 반영
   switch (fieldName) {
-    case "장비유형":
-      editData.value.equipmentType = value;
-      break;
     case "제조사":
       editData.value.manufacturer = value;
       break;

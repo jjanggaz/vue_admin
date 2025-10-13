@@ -230,6 +230,7 @@
       "formula": "계산식",
       "unitPrice": "단가",
       "details": "상세정보",
+      "symbol": "심볼",
       "dischargePressure": "토출압력",
       "dischargeDiameter": "토출관경",
       "power": "동력",

@@ -230,6 +230,7 @@
       "formula": "Formula",
       "unitPrice": "Unit Price",
       "details": "Details",
+      "symbol": "Symbol",
       "dischargePressure": "Discharge Pressure",
       "dischargeDiameter": "Discharge Diameter",
       "power": "Power",

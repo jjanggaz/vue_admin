@@ -123,7 +123,7 @@
           <input
             type="file"
             ref="thumbnailFileInput"
-            accept=".png,.jpg,.jpeg,.gif,.svg"
+            accept=".png,.jpg,.jpeg,.gif"
             style="display: none"
             @change="handleThumbnailFileChange"
           />
@@ -330,7 +330,6 @@ async function extractZipContents(file: File) {
       "jpeg",
       "png",
       "gif",
-      "svg",
     ];
     const invalidFiles: string[] = [];
     let hasAllowedFile = false;
@@ -353,9 +352,7 @@ async function extractZipContents(file: File) {
           fileType = "3D Model";
         } else if (["rvt"].includes(fileExtension)) {
           fileType = "Revit Model";
-        } else if (
-          ["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension)
-        ) {
+        } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
           fileType = "Image";
         } else if (["txt", "md"].includes(fileExtension)) {
           fileType = "Text";
@@ -372,7 +369,7 @@ async function extractZipContents(file: File) {
           hasAllowedFile = true;
           if (fileExtension === "py") hasPy = true;
           if (fileExtension === "dtdx") hasDtdx = true;
-          if (["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension))
+          if (["jpg", "jpeg", "png", "gif"].includes(fileExtension))
             hasImage = true;
         } else if (fileExtension) {
           invalidFiles.push(relativePath);
@@ -424,11 +421,11 @@ async function extractZipContents(file: File) {
     // 필수 파일(.py, .dtdx, 이미지)이 모두 포함되어 있는지 검증
     if (!(hasPy && hasDtdx && hasImage)) {
       const missing: string[] = [];
-      if (!hasPy) missing.push(".py");
-      if (!hasDtdx) missing.push(".dtdx");
-      if (!hasImage) missing.push("이미지(.jpg/.jpeg/.png/.gif/.svg)");
+      if (!hasPy) missing.push("계산식(.py)");
+      if (!hasDtdx) missing.push("DTD모델(.dtdx)");
+      if (!hasImage) missing.push("썸네일일(.jpg/.jpeg/.png/.gif)");
       alert(
-        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- .py\n- .dtdx\n- 이미지(.jpg/.jpeg/.png/.gif/.svg)\n\n누락: ${missing.join(
+        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- 계산식(.py)\n- DTD모델(.dtdx)\n- 썸네일(.jpg/.jpeg/.png/.gif)\n\n누락: ${missing.join(
           ", "
         )}`
       );
@@ -444,7 +441,7 @@ async function extractZipContents(file: File) {
       alert(
         `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
           "\n"
-        )}\n\n허용된 파일 형식: .py, .dtdx, .rvt, .jpg, .jpeg, .png, .gif, .svg`
+        )}\n\n허용된 파일 형식: .py, .dtdx, .rvt, .jpg, .jpeg, .png, .gif`
       );
     }
 
@@ -527,9 +524,9 @@ function handleThumbnailFileChange(e: Event) {
       input.value = ""; // input 초기화
       return;
     }
-    const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
+    const allowed = ["image/png", "image/jpeg", "image/gif"];
     if (!allowed.includes(file.type)) {
-      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif)");
       input.value = ""; // input 초기화
       return;
     }

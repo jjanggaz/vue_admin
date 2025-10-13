@@ -535,11 +535,11 @@
       </div>
     </div>
 
-    <!-- 등록/수정 모달: 내부 탭 구성 -->
+    <!-- 등록 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container" style="max-width: 1600px; width: 98%">
         <div class="modal-header">
-          <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="btn-close"
             @click="closeRegistModal"
@@ -560,24 +560,8 @@
             </div>
           </div>
           <div class="tab-content">
-            <template v-if="!isEditMode">
-              <MachineRegisterTab v-if="modalActiveTab === 0" />
-              <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
-            </template>
-            <template v-else>
-              <MachineUpdateTab
-                v-if="modalActiveTab === 0"
-                :selected-machine="
-                  selectedItems.length > 0 ? selectedItems[0] : undefined
-                "
-              />
-              <MachineFormulaUpdateTab
-                v-if="modalActiveTab === 1"
-                :selected-machine="
-                  selectedItems.length > 0 ? selectedItems[0] : undefined
-                "
-              />
-            </template>
+            <MachineRegisterTab v-if="modalActiveTab === 0" />
+            <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
           </div>
         </div>
         <div class="modal-footer">
@@ -597,34 +581,20 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import MachineRegisterTab from "./components/MachineRegisterTab.vue";
 import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
-import MachineUpdateTab from "./components/MachineUpdateTab.vue";
-import MachineFormulaUpdateTab from "./components/MachineFormulaUpdateTab.vue";
 import { useI18n } from "vue-i18n";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t, locale } = useI18n();
 const machineStore = useMachineStore();
 
-// 모달 탭 구성 (ProjectDetail 스타일) - 등록/수정 모드에 따라 동적 변경
-const modalTabs = computed(() => {
-  if (isEditMode.value) {
-    return [
-      { key: "machine", label: "기계 수정" },
-      {
-        key: "formula",
-        label: "기계 계산식 수정",
-      },
-    ];
-  } else {
-    return [
-      { key: "machine", label: "기계 등록" },
-      {
-        key: "formula",
-        label: "기계 계산식 등록",
-      },
-    ];
-  }
-});
+// 모달 탭 구성 - 등록 모드만 사용
+const modalTabs = [
+  { key: "machine", label: "기계 등록" },
+  {
+    key: "formula",
+    label: "기계 계산식 등록",
+  },
+];
 const modalActiveTab = ref(0);
 
 interface MachineItem {
@@ -665,20 +635,13 @@ interface MachineItem {
   manufacturer_en?: string;
 }
 
-interface RegistForm {
-  name: string;
-  code: string;
-  type: string;
-  description: string;
-}
-
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
   {
     key: "equipment_code",
     title: t("columns.machine.mcId"),
-    width: "200px",
+    width: "150px",
     sortable: false,
   },
   {
@@ -723,13 +686,6 @@ const searchQueryInput = ref("");
 const selectedUnit = ref("");
 const selectedMachineCategory = ref("");
 const isRegistModalOpen = ref(false);
-const isEditMode = ref(false);
-const newMachine = ref<RegistForm>({
-  name: "",
-  code: "",
-  type: "",
-  description: "",
-});
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 
@@ -959,22 +915,14 @@ const handleSearch = async () => {
 };
 
 const openRegistModal = () => {
-  isEditMode.value = false;
-  newMachine.value = {
-    name: "",
-    code: "",
-    type: "",
-    description: "",
-  };
   isRegistModalOpen.value = true;
 };
 
 const closeRegistModal = () => {
   isRegistModalOpen.value = false;
-  isEditMode.value = false;
 };
 
-// (기존 단일 등록/수정 저장 핸들러 제거)
+// 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
 
 const handleDelete = () => {
   if (selectedItems.value.length === 0) {

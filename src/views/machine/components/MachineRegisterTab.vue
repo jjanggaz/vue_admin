@@ -3,23 +3,6 @@
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.unit") }}</span>
-        <select
-          class="input select-sm"
-          v-model="selectedUnit"
-          :disabled="isRegistered"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="unit in machineStore.unitSystems"
-            :key="unit.unit_system_id"
-            :value="unit.system_code.toLowerCase()"
-          >
-            {{ unit.system_name }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
         <span class="label required">⊙ 기계명</span>
         <select
           class="input select-md"
@@ -37,55 +20,46 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 기계종분류</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep1Enabled"
-          v-model="selectedThirdDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.thirdDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
+        <span class="label required">⊙ Excel 업로드</span>
+        <div class="file-upload-group">
+          <input
+            type="text"
+            class="input file-name-input"
+            :value="excelFileName"
+            readonly
+            placeholder="파일을 선택하세요"
+          />
+          <input
+            type="file"
+            ref="excelFileInput"
+            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            style="display: none"
+            @change="handleExcelFileChange"
+          />
+          <button
+            type="button"
+            class="btn-file"
+            @click="excelFileInput?.click()"
           >
-            {{ dept.code_value }}
-          </option>
-        </select>
+            파일 선택
+          </button>
+        </div>
       </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 기계유형</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep2Enabled"
-          v-model="selectedFourthDept"
+      <div class="group-form inline right-align">
+        <button
+          type="button"
+          class="btn-outline"
+          @click.prevent="onDownloadExcelTemplate"
         >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fourthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 기계유형분류</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep3Enabled"
-          v-model="selectedFifthDept"
+          Excel 양식 다운로드
+        </button>
+        <button
+          type="button"
+          class="btn-register"
+          @click="handleMachineRegister"
         >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fifthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
+          기계 등록
+        </button>
       </div>
     </div>
 
@@ -93,62 +67,78 @@
     <div class="section-header">
       <div class="section-title">⊙ {{ t("common.machineList") }}</div>
       <div class="section-actions">
-        <button class="btn-outline" @click.prevent="onDownloadExcelTemplate">
-          excel 양식 다운로드
-        </button>
-        <button class="btn-outline" @click.prevent="onUploadExcel">
-          excel 업로드
-        </button>
-        <button class="btn-outline" @click.prevent="onBulkUploadModels">
-          모델 대량 업로드
-        </button>
-        <input
-          type="file"
-          ref="excelFileInput"
-          accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-          style="display: none"
-          @change="handleExcelFileChange"
-        />
-        <input
-          type="file"
-          ref="bulkFileInput"
-          accept=".zip,.7z,application/zip,application/x-zip-compressed,application/x-7z-compressed"
-          style="display: none"
-          @change="handleBulkFileChange"
-        />
+        <div class="file-upload-group">
+          <input
+            type="text"
+            class="input file-name-input"
+            :value="bulkFileName"
+            readonly
+            placeholder="파일을 선택하세요"
+          />
+          <input
+            type="file"
+            ref="bulkFileInput"
+            accept=".zip"
+            style="display: none"
+            @change="handleBulkFileChange"
+          />
+          <button
+            type="button"
+            class="btn-file"
+            @click="bulkFileInput?.click()"
+          >
+            모델 대량 업로드
+          </button>
+          <button
+            type="button"
+            class="btn-register"
+            @click="handleModelRegister"
+          >
+            모델 등록
+          </button>
+        </div>
       </div>
     </div>
-    <DataTable :columns="columns" :data="rows" :selectable="false"> </DataTable>
-    <div class="pagination-container">
-      <Pagination :current-page="1" :total-pages="1" />
+
+    <!-- ZIP 파일 내부 파일 목록 테이블 -->
+    <div
+      v-if="showZipContents && zipFileList.length > 0"
+      class="zip-contents-section"
+    >
+      <h4 class="zip-contents-title">
+        ZIP 파일 내부 파일 목록 ({{ zipFileList.length }}개 파일)
+      </h4>
+      <DataTable
+        :columns="zipTableColumns"
+        :data="zipFileList"
+        :loading="false"
+        :selectable="false"
+        :show-select-all="false"
+        :max-height="'300px'"
+      >
+        <!-- 파일 크기 포맷팅 슬롯 -->
+        <template #cell-size="{ value }">
+          {{ formatFileSize(value) }}
+        </template>
+      </DataTable>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
-// 단위 선택 상태
-const selectedUnit = ref("");
-
-// 단계별 enable 상태
-const isStep1Enabled = ref(false); // 기계종분류
-const isStep2Enabled = ref(false); // 기계유형
-const isStep3Enabled = ref(false); // 기계유형분류
-const isRegistered = ref(false); // 등록 완료 상태
+// 등록 완료 상태
+const isRegistered = ref(false);
 
 // 선택된 기계명
 const selectedMachineName = ref("");
-const selectedThirdDept = ref("");
-const selectedFourthDept = ref("");
-const selectedFifthDept = ref("");
 
 // 엑셀 업로드 입력 ref
 const excelFileInput = ref<HTMLInputElement | null>(null);
@@ -157,142 +147,182 @@ const excelFileName = ref<string>("");
 const bulkFileInput = ref<HTMLInputElement | null>(null);
 const bulkFileName = ref<string>("");
 
-const columns: TableColumn[] = [
-  { key: "no", title: "순번", width: "80px" },
-  { key: "model", title: "기계 모델명", width: "220px" },
-  { key: "d3", title: "3D 모델 (DTDX)", width: "220px" },
-  { key: "revit", title: "REVIT 모델", width: "220px" },
-  { key: "d2", title: "2D 심볼", width: "220px" },
-  { key: "etc", title: "…", width: "120px" },
+// ZIP 파일 내부 파일 목록
+const zipFileList = ref<
+  Array<{ name: string; size: number; type: string; lastModified?: string }>
+>([]);
+const showZipContents = ref(false);
+
+// ZIP 파일 목록 테이블 컬럼
+const zipTableColumns: TableColumn[] = [
+  { key: "name", title: "파일명", width: "40%", sortable: false },
+  { key: "type", title: "파일 타입", width: "20%", sortable: false },
+  { key: "size", title: "파일 크기", width: "20%", sortable: false },
+  { key: "lastModified", title: "수정일", width: "20%", sortable: false },
 ];
 
-const rows = ref([
-  {
-    id: 1,
-    no: 1,
-    model: "송풍기 A",
-    d3: "model_a.dtdx",
-    revit: "model_a.rvt",
-    d2: "symbol_a.svg",
-    etc: "비고1",
-  },
-  {
-    id: 2,
-    no: 2,
-    model: "송풍기 B",
-    d3: "model_b.dtdx",
-    revit: "model_b.rvt",
-    d2: "symbol_b.svg",
-    etc: "비고2",
-  },
-]);
+// 파일 크기 포맷팅 함수
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
 
-// watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedMachineName, async (newValue, _oldValue) => {
-  // 모든 하위 단계들 초기화
-  selectedThirdDept.value = "";
-  selectedFourthDept.value = "";
-  selectedFifthDept.value = "";
-  isStep1Enabled.value = false;
-  isStep2Enabled.value = false;
-  isStep3Enabled.value = false;
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  if (newValue) {
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// ZIP 파일 내부 파일 목록 추출 함수
+async function extractZipContents(file: File) {
+  try {
+    // JSZip 라이브러리 로드 시도
+    let JSZip;
     try {
-      // 3차 깊이별 공통코드 조회 API 호출
-      await machineStore.fetchThirdDepth(newValue, 3);
-
-      // 1단계 완료 - 기계종분류 활성화
-      isStep1Enabled.value = true;
-    } catch (error) {
-      console.error("3차 깊이별 공통코드 조회 실패:", error);
-      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
+      const jszipModule = await import("jszip");
+      JSZip = jszipModule.default;
+    } catch (importError) {
+      console.warn("JSZip 라이브러리를 로드할 수 없습니다:", importError);
+      // JSZip 없이 기본 정보만 표시
+      const fileInfo = {
+        name: file.name,
+        size: file.size,
+        type: "ZIP Archive",
+        lastModified: new Date(file.lastModified).toLocaleString(),
+      };
+      zipFileList.value = [fileInfo];
+      showZipContents.value = true;
+      return;
     }
-  }
-});
 
-watch(selectedThirdDept, async (newValue, _oldValue) => {
-  if (isStep1Enabled.value) {
-    // 기계종분류가 변경되면 하위 단계들 초기화
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
+    const zip = new JSZip();
+    const zipData = await zip.loadAsync(file);
 
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 4);
-        if (response?.response && response.response.length > 0) {
-          isStep2Enabled.value = true;
-        } else {
-          isStep2Enabled.value = false;
+    const fileList: Array<{
+      name: string;
+      size: number;
+      type: string;
+      lastModified?: string;
+    }> = [];
+
+    // 허용된 파일 확장자 목록
+    const allowedExtensions = [
+      "dtdx",
+      "rvt",
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "svg",
+    ];
+    const invalidFiles: string[] = [];
+    let hasAllowedFile = false;
+    let hasDtdx = false;
+    let hasImage = false;
+
+    // ZIP 파일 내부의 모든 파일을 순회
+    zipData.forEach((relativePath: string, zipEntry: any) => {
+      if (!zipEntry.dir) {
+        // 디렉토리가 아닌 파일만
+        const fileExtension =
+          relativePath.split(".").pop()?.toLowerCase() || "";
+        let fileType = "Unknown";
+
+        // 파일 확장자에 따른 타입 분류
+        if (["dtdx"].includes(fileExtension)) {
+          fileType = "3D Model";
+        } else if (["rvt"].includes(fileExtension)) {
+          fileType = "Revit Model";
+        } else if (
+          ["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension)
+        ) {
+          fileType = "Image";
         }
-      } catch (error) {
-        console.error("4차 깊이별 공통코드 조회 실패:", error);
-        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep2Enabled.value = false;
-      }
-    }
-  }
-});
 
-watch(selectedFourthDept, async (newValue, _oldValue) => {
-  if (isStep2Enabled.value) {
-    // 기계유형이 변경되면 하위 단계 초기화
-    selectedFifthDept.value = "";
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 5);
-        if (response?.response && response.response.length > 0) {
-          isStep3Enabled.value = true;
-        } else {
-          isStep3Enabled.value = false;
+        // 허용/비허용 판정
+        if (fileExtension && allowedExtensions.includes(fileExtension)) {
+          hasAllowedFile = true;
+          if (fileExtension === "dtdx") hasDtdx = true;
+          if (["jpg", "jpeg", "png", "gif", "svg"].includes(fileExtension))
+            hasImage = true;
+        } else if (fileExtension) {
+          invalidFiles.push(relativePath);
         }
-      } catch (error) {
-        console.error("5차 깊이별 공통코드 조회 실패:", error);
-        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep3Enabled.value = false;
-      }
-    }
-  }
-});
 
-// 공통 검증 함수: 단위/기계명/기계종분류 필수 체크
+        // 파일 크기 가져오기
+        let fileSize = 0;
+        if (zipEntry._data?.uncompressedSize) {
+          fileSize = zipEntry._data.uncompressedSize;
+        } else if (zipEntry.uncompressedSize) {
+          fileSize = zipEntry.uncompressedSize;
+        } else if (zipEntry._data?.compressedSize) {
+          fileSize = zipEntry._data.compressedSize;
+        } else if (zipEntry.compressedSize) {
+          fileSize = zipEntry.compressedSize;
+        }
+
+        fileList.push({
+          name: relativePath,
+          size: fileSize,
+          type: fileType,
+          lastModified: zipEntry.date
+            ? zipEntry.date.toLocaleString()
+            : "Unknown",
+        });
+      }
+    });
+
+    // 허용된 파일이 하나도 없으면 첨부 불가 처리
+    if (!hasAllowedFile) {
+      alert(
+        "ZIP 파일에 허용된 형식(.dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      bulkFileName.value = "";
+      return;
+    }
+
+    // 필수 파일(.dtdx, 이미지)이 모두 포함되어 있는지 검증
+    if (!(hasDtdx && hasImage)) {
+      const missing: string[] = [];
+      if (!hasDtdx) missing.push(".dtdx");
+      if (!hasImage) missing.push("이미지(.jpg/.jpeg/.png/.gif/.svg)");
+      alert(
+        `ZIP 파일에 필수 파일이 빠졌습니다. 다음 형식이 모두 포함되어야 합니다:\n- .dtdx\n- 이미지(.jpg/.jpeg/.png/.gif/.svg)\n\n누락: ${missing.join(
+          ", "
+        )}`
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      bulkFileName.value = "";
+      return;
+    }
+
+    // 허용되지 않은 파일이 있으면 경고
+    if (invalidFiles.length > 0) {
+      alert(
+        `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
+          "\n"
+        )}\n\n허용된 파일 형식: .dtdx, .rvt, .jpg, .jpeg, .png, .gif, .svg`
+      );
+    }
+
+    zipFileList.value = fileList;
+    showZipContents.value = true;
+  } catch (error) {
+    console.error("ZIP 파일 읽기 실패:", error);
+    alert(
+      "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다."
+    );
+    zipFileList.value = [];
+    showZipContents.value = false;
+  }
+}
+
+// 공통 검증 함수: 기계명 필수 체크
 function validateBasicSelections(): boolean {
-  if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
-    return false;
-  }
   if (!selectedMachineName.value) {
     alert("기계명을 선택해주세요.");
-    return false;
-  }
-  if (!selectedThirdDept.value) {
-    alert("기계종분류를 선택해주세요.");
-    return false;
-  }
-
-  // 기계유형 선택 validation
-  if (
-    machineStore.fourthDepth &&
-    machineStore.fourthDepth.length > 0 &&
-    !selectedFourthDept.value
-  ) {
-    alert("기계유형을 선택해주세요.");
-    return false;
-  }
-
-  // 기계유형분류 선택 validation
-  if (
-    machineStore.fifthDepth &&
-    machineStore.fifthDepth.length > 0 &&
-    !selectedFifthDept.value
-  ) {
-    alert("기계유형분류를 선택해주세요.");
     return false;
   }
 
@@ -305,18 +335,6 @@ function onDownloadExcelTemplate() {
   // TODO: 템플릿 다운로드 로직 연결
 }
 
-function onUploadExcel() {
-  if (!validateBasicSelections()) return;
-  // 파일 선택 트리거
-  excelFileInput.value?.click();
-}
-
-function onBulkUploadModels() {
-  if (!validateBasicSelections()) return;
-  // 파일 선택 트리거
-  bulkFileInput.value?.click();
-}
-
 // 엑셀 파일 변경 핸들러
 function handleExcelFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
@@ -327,11 +345,17 @@ function handleExcelFileChange(e: Event) {
     return;
   }
 
+  // 기본 선택 검증
+  if (!validateBasicSelections()) {
+    input.value = "";
+    return;
+  }
+
   // 확장자 검증
   const allowed = [".xlsx", ".xls"];
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
   if (!allowed.includes(ext)) {
-    alert("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.");
+    alert(`엑셀 파일(${allowed.join(", ")})만 업로드 가능합니다.`);
     input.value = "";
     excelFileName.value = "";
     return;
@@ -340,7 +364,7 @@ function handleExcelFileChange(e: Event) {
   // 크기 검증 (예: 10MB)
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
-    alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    alert(`파일 크기는 ${maxSize / 1024 / 1024}MB를 초과할 수 없습니다.`);
     input.value = "";
     excelFileName.value = "";
     return;
@@ -352,37 +376,84 @@ function handleExcelFileChange(e: Event) {
 }
 
 // 대량 업로드 파일 변경 핸들러
-function handleBulkFileChange(e: Event) {
+async function handleBulkFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
 
   if (!file) {
     bulkFileName.value = "";
+    zipFileList.value = [];
+    showZipContents.value = false;
+    return;
+  }
+
+  // 기본 선택 검증
+  if (!validateBasicSelections()) {
+    input.value = "";
     return;
   }
 
   // 확장자 검증
-  const allowed = [".zip", ".7z"];
+  const allowed = [".zip"];
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
   if (!allowed.includes(ext)) {
-    alert("압축 파일(.zip, .7z)만 업로드 가능합니다.");
+    alert(`압축 파일(${allowed.join(", ")})만 업로드 가능합니다.`);
     input.value = "";
     bulkFileName.value = "";
+    zipFileList.value = [];
+    showZipContents.value = false;
     return;
   }
 
   // 크기 검증 (예: 200MB)
   const maxSize = 200 * 1024 * 1024;
   if (file.size > maxSize) {
-    alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    alert(`파일 크기는 ${maxSize / 1024 / 1024}MB를 초과할 수 없습니다.`);
     input.value = "";
     bulkFileName.value = "";
+    zipFileList.value = [];
+    showZipContents.value = false;
     return;
   }
 
   bulkFileName.value = file.name;
 
-  // TODO: 전송 로직 연결 (예: FormData로 업로드)
+  // ZIP 파일인 경우 내부 파일 목록 추출
+  if (file.name.toLowerCase().endsWith(".zip")) {
+    await extractZipContents(file);
+  } else {
+    zipFileList.value = [];
+    showZipContents.value = false;
+  }
+
+  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
+  input.value = "";
+}
+
+// 기계 등록 핸들러
+function handleMachineRegister() {
+  if (!validateBasicSelections()) return;
+
+  if (!excelFileName.value) {
+    alert("Excel 파일을 선택해주세요.");
+    return;
+  }
+
+  // TODO: 기계 등록 로직 연결
+  console.log("기계 등록:", excelFileName.value);
+}
+
+// 모델 등록 핸들러
+function handleModelRegister() {
+  if (!validateBasicSelections()) return;
+
+  if (!bulkFileName.value) {
+    alert("모델 파일을 선택해주세요.");
+    return;
+  }
+
+  // TODO: 모델 등록 로직 연결
+  console.log("모델 등록:", bulkFileName.value);
 }
 </script>
 
@@ -443,6 +514,10 @@ $desktop: 1200px;
       align-items: stretch;
       gap: 8px;
     }
+  }
+
+  &.right-align {
+    justify-content: flex-end;
   }
 }
 
@@ -521,7 +596,19 @@ $desktop: 1200px;
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 13px;
+  color: #344054;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #98a2b3;
+  }
+
+  &:active {
+    background: #f2f4f7;
+  }
 
   @media (max-width: $mobile) {
     padding: 4px 8px;
@@ -702,5 +789,21 @@ $desktop: 1200px;
   @media (max-width: $mobile) {
     max-height: 60vh;
   }
+}
+
+// ZIP 파일 내부 목록 섹션
+.zip-contents-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.zip-contents-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
 }
 </style>

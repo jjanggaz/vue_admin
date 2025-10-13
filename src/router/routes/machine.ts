@@ -7,6 +7,7 @@ const Electrical = () => import("@/views/machine/Electrical.vue");
 const Measurement = () => import("@/views/machine/Measurement.vue");
 const MachineCodeManagement = () =>
   import("@/views/machine/MachineCodeManagement.vue");
+const Vendors = () => import("@/views/machine/Vendors.vue");
 
 export const machineRoute = {
   path: "/machine",
@@ -85,6 +86,18 @@ export const machineRoute = {
         breadcrumbKeys: [
           "pageTitles.machineManagement",
           "tabs.machine.machineCodeManagement",
+        ],
+      },
+    },
+    {
+      path: "vendors",
+      name: "Vendors",
+      component: Vendors,
+      meta: {
+        titleKey: "tabs.machine.vendors",
+        breadcrumbKeys: [
+          "pageTitles.machineManagement",
+          "tabs.machine.vendors",
         ],
       },
     },

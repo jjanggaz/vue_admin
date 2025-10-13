@@ -248,6 +248,32 @@
       "totalWeight": "Total Weight",
       "material": "Material"
     },
+    "vendors": {
+      "id": "ID",
+      "vendorId": "Vendor ID",
+      "vendorName": "Vendor Name",
+      "vendorNameEn": "Vendor Name (EN)",
+      "vendorType": "Vendor Type",
+      "location": "Location",
+      "address": "Address",
+      "country": "Country",
+      "countryCodeTel": "Tel. Country Code",
+      "contactTel": "Telephone Number",
+      "contactFax": "Fax Number",
+      "contactEmail": "Contact Email",
+      "mainDesignType": "Main Design Type",
+      "manufacturerCategory": "Manufacturer Category",
+      "mainProducts": "Main Products",
+      "homepage": "Homepage",
+      "brn": "Business Registration Number",
+      "dunsn": "DUNS Number",
+      "certification": "Certification",
+      "note": "Note",
+      "isPreferred": "Preferred Vendor",
+      "preferredLevel": "Preferred Level",
+      "isActive": "Status",
+      "createdAt": "Created At"
+    },
     "machineCode": {
       "id": "ID",
       "group": "Code Group",
@@ -913,7 +939,8 @@
     "user": {
       "account": "Account Management",
       "role": "Role Management",
-      "menu": "Menu Management"
+      "menu": "Menu Management",
+      "vendors": "vendors"
     }
   },
   "messages": {

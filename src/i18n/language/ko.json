@@ -248,6 +248,32 @@
       "totalWeight": "(총)중량",
       "material": "재질"
     },
+    "vendors": {
+      "id": "순번",
+      "vendorId": "공급업체 식별 코드",
+      "vendorName": "공급업체명",
+      "vendorNameEn": "공급업체명 영문",
+      "vendorType": "업체 유형",
+      "location": "소재지",
+      "address": "주소",
+      "country": "소재국가",
+      "countryCodeTel": "Tel. Country Code",
+      "contactTel": "Telephone Number",
+      "contactFax": "Fax Number",
+      "contactEmail": "Contact Email",
+      "mainDesignType": "주 설계적용 유형",
+      "manufacturerCategory": "제조업체 분류",
+      "mainProducts": "주 거래 제품",
+      "homepage": "홈페이지",
+      "brn": "사업자번호",
+      "dunsn": "DUNS Number",
+      "certification": "보유인증",
+      "note": "비고",
+      "isPreferred": "선호업체여부",
+      "preferredLevel": "선호도 레벨",
+      "isActive": "사용여부",
+      "createdAt": "생성일"
+    },
     "machineCode": {
       "id": "순번",
       "group": "코드그룹",
@@ -907,7 +933,8 @@
       "electrical": "전기 자재",
       "measurement": "계측기",
       "machineCodeManagement": "코드관리",
-      "cost": "단가 관리"
+      "cost": "단가 관리",
+      "vendors": "공급업체"
     },
     "user": {
       "account": "계정관리",

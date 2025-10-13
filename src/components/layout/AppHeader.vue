@@ -139,6 +139,11 @@ const sectionTabs = {
       label: t("tabs.machine.machineCodeManagement"),
       to: "/machine/codeMng",
     },
+    {
+      name: "Vendors",
+      label: t("tabs.machine.vendors"),
+      to: "/machine/vendors",
+    },
   ],
   user: [
     {

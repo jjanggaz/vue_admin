@@ -88,6 +88,11 @@ const codeBasedMenus = {
     icon: "/images/icons/WEB09.svg",
     titleKey: "sidebar.user",
   },
+  WEB10: {
+    path: "/vendors",
+    icon: "/images/icons/WEB09.svg",
+    titleKey: "sidebar.vendors",
+  },
 };
 
 // 현재 사용자 코드에 따른 메뉴 계산

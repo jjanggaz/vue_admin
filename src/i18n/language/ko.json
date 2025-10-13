@@ -723,7 +723,8 @@
     "enterDescription": "권한 설명을 입력하세요",
     "enterMenuName": "메뉴명을 입력하세요",
     "enterMenuOrder": "정렬순서를 입력하세요",
-    "selectGroupName": "그룹명 선택"
+    "selectGroupName": "그룹명 선택",
+    "vendorsSearch": "키워드 검색"
   },
   "datatable": {
     "loading": "데이터를 불러오는 중...",
@@ -870,6 +871,7 @@
     "model": "3D모델 관리",
     "machine": "공종별 관리",
     "user": "사용자 관리",
+    "vendors": "공급업체 관리",
     "code": "코드 관리",
     "cost": "단가 관리",
     "test": "테스트"
@@ -902,6 +904,7 @@
     "modelManagement": "3D 모델 관리",
     "machineManagement": "공종별 관리",
     "userManagement": "사용자 관리",
+    "vendorsManagement": "공급업체 관리",
     "codeManagement": "코드 관리",
     "cost": "단가 관리",
     "test": "테스트",

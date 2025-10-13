@@ -597,7 +597,8 @@
     "enterDescription": "Enter role description",
     "enterMenuName": "Enter menu name",
     "enterMenuOrder": "Enter sort order",
-    "selectGroupName": "Select Group Name"
+    "selectGroupName": "Select Group Name",
+    "vendorsSearch": "Keyword search"
   },
 
   "menuManagement": {
@@ -871,6 +872,7 @@
     "model": "3D Model Management",
     "machine": "Machine Management",
     "user": "User Management",
+    "vendors": "Vendors Management",
     "code": "Code Management",
     "cost": "Cost Management",
     "test": "Test"
@@ -903,6 +905,7 @@
     "modelManagement": "3D Model Management",
     "machineManagement": "Machine Management",
     "userManagement": "User Management",
+    "vendorsManagement": "Vendors Management",
     "codeManagement": "Code Management",
     "cost": "Cost Management",
     "test": "Test",

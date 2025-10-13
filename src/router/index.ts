@@ -21,6 +21,7 @@ import { processRoute } from "./routes/process";
 import { modelRoute } from "./routes/model";
 import { machineRoute } from "./routes/machine";
 import { userRoute } from "./routes/user";
+import { vendorsRoute } from "./routes/vendors";
 import { codeRoute } from "./routes/code";
 import { testRoute } from "./routes/test";
 import { costRoute } from "./routes/cost";
@@ -71,6 +72,7 @@ const codeBasedRoutes = {
   WEB07: costRoute,
   WEB08: modelRoute,
   WEB09: userRoute,
+  WEB10: vendorsRoute,
 };
 
 const router = createRouter({

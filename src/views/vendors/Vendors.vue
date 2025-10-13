@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('placeholder.userCorpName')"
+              :placeholder="t('placeholder.vendorsSearch')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -50,6 +50,21 @@
       <!-- 순번 슬롯 -->
       <template #cell-id="{ index }">
         {{ (currentPage - 1) * pageSize + index + 1 }}
+      </template>
+
+      <!-- 업체명 슬롯 (vendor_name / vendor_name_en) -->
+      <template #cell-vendorName="{ item }">
+        {{ item.vendorName }}{{ item.vendorNameEn ? ' / ' + item.vendorNameEn : '' }}
+      </template>
+
+      <!-- 연락처 슬롯 (country_code_tel + contact_tel) -->
+      <template #cell-contactTel="{ item }">
+        {{ item.countryCodeTel ? item.countryCodeTel + '-' : '' }}{{ item.contactTel || '' }}
+      </template>
+
+      <!-- 선호여부 슬롯 -->
+      <template #cell-isPreferred="{ value }">
+        {{ value ? '활성' : '비활성' }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -357,36 +372,56 @@ const tableColumns: TableColumn[] = [
     title: t("columns.vendors.vendorId"),
     width: "120px",
     sortable: true,
+    hidden: true,  // Hidden 처리
   },
   {
     key: "vendorName",
-    title: t("columns.vendors.vendorName"),
-    width: "150px",
-    sortable: true,
-  },
-  {
-    key: "vendorNameEn",
-    title: t("columns.vendors.vendorNameEn"),
-    width: "150px",
-    sortable: true,
-  },
-  {
-    key: "address",
-    title: t("columns.vendors.address"),
+    title: "업체명",
     width: "200px",
     sortable: true,
   },
   {
-    key: "mainDesignType",
-    title: t("columns.vendors.mainDesignType"),
+    key: "location",
+    title: "지역",
+    width: "120px",
+    sortable: true,
+  },
+  {
+    key: "contactTel",
+    title: "연락처",
     width: "150px",
     sortable: true,
   },
   {
+    key: "mainDesignType",
+    title: "설계적용",
+    width: "120px",
+    sortable: true,
+  },
+  {
     key: "mainProducts",
-    title: t("columns.vendors.mainProducts"),
+    title: "주요제품",
     width: "150px",
     sortable: true,
+  },
+  {
+    key: "homepage",
+    title: "홈페이지",
+    width: "180px",
+    sortable: true,
+  },
+  {
+    key: "isPreferred",
+    title: "선호여부",
+    width: "100px",
+    sortable: true,
+  },
+  {
+    key: "createdAt",
+    title: "생성일",
+    width: "120px",
+    sortable: true,
+    dateFormat: "YYYY-MM-DD",
   },
   { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
 ];
@@ -459,6 +494,7 @@ const handlePageChange = async (page: number) => {
 
 const handleSearch = async () => {
   selectedItems.value = [];
+  console.log("handleSearch 호출 - 검색어:", searchQueryInput.value);
   try {
     await vendorsStore.executeSearch(searchQueryInput.value);
   } catch (error) {

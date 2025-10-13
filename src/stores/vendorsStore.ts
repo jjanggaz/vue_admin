@@ -82,8 +82,7 @@ export interface VendorUpdateRequest {
 }
 
 export interface VendorQueryParams {
-  search_field?: string;
-  search_value?: string;
+  keyword?: string;
   page?: number;
   page_size?: number;
   order_by?: string;
@@ -112,8 +111,7 @@ export const useVendorsStore = defineStore("vendors", () => {
     try {
       const requestBody: Record<string, unknown> = {};
       
-      if (params?.search_field) requestBody.search_field = params.search_field;
-      if (params?.search_value) requestBody.search_value = params.search_value;
+      if (params?.keyword !== undefined) requestBody.keyword = params.keyword;
       if (params?.page) requestBody.page = params.page;
       if (params?.page_size) requestBody.page_size = params.page_size;
       if (params?.order_by) requestBody.order_by = params.order_by;
@@ -165,16 +163,16 @@ export const useVendorsStore = defineStore("vendors", () => {
           updatedAt: item.updated_at || item.updatedAt,
         }));
         
-        // API 응답의 페이징 정보 저장
+        // API 응답의 페이징 정보 저장 (pageSize는 클라이언트에서 고정)
         totalCount.value = response.response.total || 0;
         currentPage.value = response.response.page || 1;
-        pageSize.value = response.response.page_size || 10;
+        // pageSize.value = response.response.page_size || 10; // 서버 응답 무시 (항상 10 유지)
         totalPages.value = response.response.total_pages || 1;
         
-        console.log("페이징 정보 저장:", {
+        console.log("페이징 정보 저장 (fetchVendorList):", {
           total: totalCount.value,
           page: currentPage.value,
-          pageSize: pageSize.value,
+          pageSize: pageSize.value,  // 항상 10
           totalPages: totalPages.value,
           vendorListLength: vendorList.value.length
         });
@@ -439,16 +437,18 @@ export const useVendorsStore = defineStore("vendors", () => {
     error.value = null;
 
     try {
+      console.log("loadVendorData 시작 - searchQuery.value:", searchQuery.value);
+      console.log("loadVendorData 시작 - pageSize.value:", pageSize.value, "(항상 10이어야 함)");
+      
       const requestBody: Record<string, unknown> = {
-        search_field: "vendor_name",
-        search_value: searchQuery.value || "",
+        keyword: searchQuery.value || "",
         page: currentPage.value,
         page_size: pageSize.value,
         order_by: "vendor_id",
         order_direction: "asc",
       };
 
-      console.log("loadVendorData 호출 - 요청 파라미터:", requestBody);
+      console.log("loadVendorData 호출 - 요청 파라미터 (keyword 포함):", requestBody);
 
       const response = await request("/api/vendor/search", undefined, {
         method: "POST",
@@ -494,16 +494,16 @@ export const useVendorsStore = defineStore("vendors", () => {
           updatedAt: item.updated_at || item.updatedAt,
         }));
         
-        // API 응답의 페이징 정보 저장
+        // API 응답의 페이징 정보 저장 (pageSize는 클라이언트에서 고정)
         totalCount.value = response.response.total || 0;
         currentPage.value = response.response.page || 1;
-        pageSize.value = response.response.page_size || 10;
+        // pageSize.value = response.response.page_size || 10; // 서버 응답 무시 (항상 10 유지)
         totalPages.value = response.response.total_pages || 1;
         
-        console.log("페이징 정보 저장:", {
+        console.log("페이징 정보 저장 (loadVendorData):", {
           total: totalCount.value,
           page: currentPage.value,
-          pageSize: pageSize.value,
+          pageSize: pageSize.value,  // 항상 10
           totalPages: totalPages.value,
           vendorListLength: vendorList.value.length
         });
@@ -522,8 +522,10 @@ export const useVendorsStore = defineStore("vendors", () => {
 
   // 검색 실행
   const executeSearch = async (searchValue: string) => {
+    console.log("executeSearch 호출 - searchValue:", searchValue);
     searchQuery.value = searchValue;
     currentPage.value = 1; // 검색 시 첫 페이지로
+    console.log("executeSearch - searchQuery 저장 완료:", searchQuery.value);
     await loadVendorData();
   };
 

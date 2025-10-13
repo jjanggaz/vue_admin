@@ -2,9 +2,10 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
-      <!-- 1행: 구조물 대분류(비활성), 구조물 타입(비활성), 3D 구조물 계산식 -->
       <div class="group-form inline">
-        <span class="label required">⊙ 구조물 대분류</span>
+        <span class="label required"
+          >⊙ {{ t("common.structureMajorCategory") }}</span
+        >
         <select
           class="input select-md"
           v-model="selectedStructureType"
@@ -40,12 +41,12 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 3D 구조물 계산식</span>
+        <span class="label required">⊙ {{ t("common.formulaFile") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
             class="input"
-            :value="formulaFileName || '선택된 파일 없음'"
+            :value="formulaFileName || t('common.noFile')"
             readonly
           />
           <input
@@ -56,17 +57,17 @@
             @change="handleFormulaFileChange"
           />
           <button class="btn-file" @click="formulaFileInput?.click()">
-            파일 선택
+            {{ t("common.fileSelect") }}
           </button>
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 3D 구조물 DTD모델</span>
+        <span class="label required">⊙ {{ t("common.dtdModel") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
             class="input"
-            :value="dtdFileName || '선택된 파일 없음'"
+            :value="dtdFileName || t('common.noFile')"
             readonly
           />
           <input
@@ -77,17 +78,17 @@
             @change="handleDtdFileChange"
           />
           <button class="btn-file" @click="dtdFileInput?.click()">
-            파일 선택
+            {{ t("common.fileSelect") }}
           </button>
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 모델 썸네일</span>
+        <span class="label required">⊙ {{ t("common.modelThumbnail") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
             class="input"
-            :value="thumbnailFileName || '선택된 파일 없음'"
+            :value="thumbnailFileName || t('common.noFile')"
             readonly
           />
           <input
@@ -98,20 +99,18 @@
             @change="handleThumbnailFileChange"
           />
           <button class="btn-file" @click="thumbnailFileInput?.click()">
-            파일 선택
+            {{ t("common.fileSelect") }}
           </button>
         </div>
       </div>
 
-      <!-- 2행: 3D DTD모델, 모델 썸네일 -->
-      <!-- 3행: 3D REVIT모델, 비고 -->
       <div class="group-form inline">
-        <span class="label">⊙ 3D REVIT모델</span>
+        <span class="label">⊙ {{ t("common.revitModel3D") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
             class="input"
-            :value="revitFileName || '선택된 파일 없음'"
+            :value="revitFileName || t('common.noFile')"
             readonly
           />
           <input
@@ -122,17 +121,17 @@
             @change="handleRevitFileChange"
           />
           <button class="btn-file" @click="revitFileInput?.click()">
-            파일 선택
+            {{ t("common.fileSelect") }}
           </button>
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 비고</span>
+        <span class="label">⊙ {{ t("common.remarks") }}</span>
         <input
           type="text"
           class="input"
           v-model="remarks"
-          placeholder="비고를 입력하세요"
+          :placeholder="t('placeholder.recommendedProcessRemarks')"
         />
       </div>
     </div>
@@ -146,7 +145,7 @@
           class="btn-outline btn-delete"
           @click.prevent="onDeleteSelectedEditMode"
         >
-          삭제
+          {{ t("common.delete") }}
         </button>
       </div>
     </div>
@@ -319,11 +318,11 @@ const editModeRows = ref<Array<Record<string, unknown>>>([]);
 // 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
 function validateBasicSelections(): boolean {
   if (!selectedStructureType.value) {
-    alert("구조물 대분류를 선택해주세요.");
+    alert(t("messages.warning.selectStructureType"));
     return false;
   }
   if (!selectedMachineName.value) {
-    alert("구조물 타입을 선택해주세요.");
+    alert(t("messages.warning.selectStructureMachineName"));
     return false;
   }
 
@@ -336,7 +335,7 @@ function onDeleteSelectedEditMode() {
 
   // 선택된 항목이 있는지 확인
   if (editModeRows.value.length === 0) {
-    alert("삭제할 항목이 없습니다.");
+    alert(t("messages.warning.noItemToDelete"));
     return;
   }
 
@@ -344,11 +343,7 @@ function onDeleteSelectedEditMode() {
   const selectedItem = editModeRows.value[0];
   const formulaName = selectedItem.formula_name as string;
 
-  if (
-    confirm(
-      `공식 "${formulaName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
-    )
-  ) {
+  if (confirm(t("messages.confirm.deleteFormula", { name: formulaName }))) {
     handleDeleteFormula();
   }
 }
@@ -359,7 +354,7 @@ async function handleDeleteFormula() {
       !props.selectedItem?.structure_id ||
       !props.selectedItem?.formula?.formula_id
     ) {
-      alert("삭제할 공식 정보가 없습니다.");
+      alert(t("messages.warning.noFormulaToDelete"));
       return;
     }
 
@@ -371,7 +366,7 @@ async function handleDeleteFormula() {
     // 삭제 성공 후 그리드에서 해당 항목 제거
     editModeRows.value = editModeRows.value.filter((_, index) => index !== 0);
 
-    alert("공식이 성공적으로 삭제되었습니다.");
+    alert(t("messages.warning.formulaDeleteSuccess"));
 
     // 그리드가 비어있으면 빈 상태로 표시
     if (editModeRows.value.length === 0) {
@@ -379,7 +374,7 @@ async function handleDeleteFormula() {
     }
   } catch (error) {
     console.error("공식 삭제 실패:", error);
-    alert("공식 삭제에 실패했습니다. 다시 시도해주세요.");
+    alert(t("messages.warning.formulaDeleteFail"));
   }
 }
 
@@ -388,14 +383,15 @@ function handleFormulaFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 50 * 1024 * 1024) {
-      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+    const maxSize = 50;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
       return;
     }
     const lower = file.name.toLowerCase();
     if (!lower.endsWith(".py")) {
-      alert(".py 파일만 업로드할 수 있습니다.");
+      alert(t("messages.warning.pyFileOnly"));
       input.value = "";
       return;
     }
@@ -407,14 +403,15 @@ function handleDtdFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 50 * 1024 * 1024) {
-      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+    const maxSize = 50;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
       return;
     }
     const lower = file.name.toLowerCase();
     if (!lower.endsWith(".dtdx")) {
-      alert(".dtdx 파일만 업로드할 수 있습니다.");
+      alert(t("messages.warning.dtdxFileOnly"));
       input.value = "";
       return;
     }
@@ -426,21 +423,21 @@ function handleThumbnailFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 50 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+    const maxSize = 50;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
       return;
     }
     const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
     if (!allowed.includes(file.type)) {
-      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif, svg)");
+      alert(t("messages.warning.imageFileOnly"));
       input.value = "";
       return;
     }
     const lower = file.name.toLowerCase();
     if (!/\.(png|jpg|jpeg|gif|svg)$/i.test(lower)) {
-      alert("이미지 확장자만 업로드할 수 있습니다. (png, jpg, jpeg, gif, svg)");
+      alert(t("messages.warning.imageExtensionOnly"));
       input.value = "";
       return;
     }
@@ -452,14 +449,15 @@ function handleRevitFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 50 * 1024 * 1024) {
-      alert("파일 크기는 50MB를 초과할 수 없습니다.");
+    const maxSize = 50;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
       return;
     }
     const lower = file.name.toLowerCase();
     if (!lower.endsWith(".rvt")) {
-      alert(".rvt 파일만 업로드할 수 있습니다.");
+      alert(t("messages.warning.rvtFileOnly"));
       input.value = "";
       return;
     }
@@ -487,21 +485,21 @@ async function onUpdate() {
 
   // 파일 첨부 validation
   if (!formulaFileName.value) {
-    alert("3D 구조물 계산식 파일을 선택해주세요.");
+    alert(t("messages.warning.selectFormulaFile"));
     return;
   }
   if (!dtdFileName.value) {
-    alert("3D 구조물 DTD모델 파일을 선택해주세요.");
+    alert(t("messages.warning.selectDtdFile"));
     return;
   }
   if (!thumbnailFileName.value) {
-    alert("모델 썸네일 파일을 선택해주세요.");
+    alert(t("messages.warning.selectThumbnailFile"));
     return;
   }
 
   try {
     if (!props.selectedItem?.structure_id) {
-      alert("수정할 구조물 정보가 없습니다.");
+      alert(t("messages.warning.noStructureInfo"));
       return;
     }
 
@@ -541,10 +539,10 @@ async function onUpdate() {
       formData
     );
 
-    alert("구조물이 성공적으로 수정되었습니다.");
+    alert(t("messages.warning.structureUpdateSuccess"));
   } catch (error) {
     console.error("구조물 수정 실패:", error);
-    alert("구조물 수정에 실패했습니다. 다시 시도해주세요.");
+    alert(t("messages.warning.structureUpdateFail"));
   }
 }
 

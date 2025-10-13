@@ -142,7 +142,7 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
       }
     } catch (error) {
       console.error("3차 깊이별 공통코드 조회 실패:", error);
-      alert("3차 깊이별 공통코드 조회에 실패했습니다.");
+      alert(t("messages.warning.thirdDepthCodeLoadFail"));
       isStep1Enabled.value = false;
     }
   }
@@ -161,7 +161,7 @@ function handleFormulaFileChange(e: Event) {
       .substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("계산식 파일은 .py 확장자만 허용됩니다.");
+      alert(t("messages.warning.pyFileExtensionOnly"));
       input.value = ""; // 파일 선택 초기화
       formulaFileName.value = "";
       formulaFile.value = null;
@@ -171,7 +171,7 @@ function handleFormulaFileChange(e: Event) {
     // 파일 크기 validation (예: 10MB 제한)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+      alert(t("messages.warning.fileSizeLimit10MB"));
       input.value = ""; // 파일 선택 초기화
       formulaFileName.value = "";
       formulaFile.value = null;
@@ -190,17 +190,17 @@ function handleFormulaFileChange(e: Event) {
 async function handleRegister() {
   // 필수 항목 validation
   if (!selectedMachineName.value) {
-    alert("기계명을 선택해주세요.");
+    alert(t("messages.warning.selectMachineName"));
     return;
   }
 
   if (!selectedThirdDept.value) {
-    alert("기계중분류를 선택해주세요.");
+    alert(t("messages.warning.selectStructureType"));
     return;
   }
 
   if (!formulaFile.value) {
-    alert("계산식 파일을 첨부해주세요.");
+    alert(t("messages.warning.selectFormulaFileAttach"));
     return;
   }
 
@@ -212,7 +212,7 @@ async function handleRegister() {
       file: formulaFile.value,
     });
 
-    alert("계산식이 성공적으로 등록되었습니다.");
+    alert(t("messages.success.formulaCreateSuccess"));
 
     // 등록 후 초기화
     formulaFileName.value = "";
@@ -222,7 +222,7 @@ async function handleRegister() {
     }
   } catch (error) {
     console.error("등록 실패:", error);
-    alert("등록에 실패했습니다.");
+    alert(t("messages.error.registrationFailed"));
   }
 }
 </script>

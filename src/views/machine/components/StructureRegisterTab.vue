@@ -2,9 +2,10 @@
   <div class="machine-register-tab">
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
-      <!-- 1행: 구조물 대분류, 구조물 타입, 3D 구조물 계산식 -->
       <div class="group-form inline">
-        <span class="label required">⊙ 구조물 대분류</span>
+        <span class="label required"
+          >⊙ {{ t("common.structureMajorCategory") }}</span
+        >
         <select
           class="input select-md"
           v-model="selectedStructureType"
@@ -42,16 +43,15 @@
       </div>
 
       <div class="group-form inline">
-        <span class="label required long-label"
-          >⊙ 계산식,<br />
-          3D DTD모델,<br />모델 썸네일,<br />
-          REVIT 파일<br />통합 첨부</span
-        >
+        <span
+          class="label required long-label"
+          v-html="'⊙ ' + t('common.integratedFile').replace(/,/g, ',<br />')"
+        ></span>
         <div class="file-input-wrapper">
           <input
             type="text"
             class="input"
-            :value="allFileName || '선택된 파일 없음'"
+            :value="allFileName || t('common.noFile')"
             readonly
           />
           <input
@@ -62,7 +62,7 @@
             @change="handleAllFileChange"
           />
           <button class="btn-file" @click="allFileInput?.click()">
-            파일 선택
+            {{ t("common.fileSelect") }}
           </button>
         </div>
       </div>
@@ -155,12 +155,12 @@
       </div>
       -->
       <div class="group-form inline">
-        <span class="label">⊙ 비고</span>
+        <span class="label">⊙ {{ t("common.remarks") }}</span>
         <input
           type="text"
           class="input"
           v-model="remarks"
-          placeholder="비고를 입력하세요"
+          :placeholder="t('placeholder.recommendedProcessRemarks')"
         />
       </div>
     </div>
@@ -171,7 +171,9 @@
       class="zip-contents-section"
     >
       <h4 class="zip-contents-title">
-        ZIP 파일 내부 파일 목록 ({{ zipFileList.length }}개 파일)
+        {{ t("common.zipFileList") }} ({{
+          t("common.filesCount", { count: zipFileList.length })
+        }})
       </h4>
       <DataTable
         :columns="zipTableColumns"
@@ -236,10 +238,15 @@ const showZipContents = ref(false);
 
 // ZIP 파일 목록 테이블 컬럼
 const zipTableColumns: TableColumn[] = [
-  { key: "name", title: "파일명", width: "40%", sortable: false },
-  { key: "type", title: "파일 타입", width: "20%", sortable: false },
-  { key: "size", title: "파일 크기", width: "20%", sortable: false },
-  { key: "lastModified", title: "수정일", width: "20%", sortable: false },
+  { key: "name", title: t("common.fileName"), width: "40%", sortable: false },
+  { key: "type", title: t("common.fileType"), width: "20%", sortable: false },
+  { key: "size", title: t("common.fileSize"), width: "20%", sortable: false },
+  {
+    key: "lastModified",
+    title: t("common.lastModified"),
+    width: "20%",
+    sortable: false,
+  },
 ];
 
 // 파일 크기 포맷팅 함수
@@ -276,11 +283,11 @@ const handleStructureTypeChange = async () => {
 // 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
 function validateBasicSelections(): boolean {
   if (!selectedStructureType.value) {
-    alert("구조물 대분류를 선택해주세요.");
+    alert(t("messages.warning.selectStructureType"));
     return false;
   }
   if (!selectedMachineName.value) {
-    alert("구조물 타입을 선택해주세요.");
+    alert(t("messages.warning.selectStructureMachineName"));
     return false;
   }
 
@@ -454,8 +461,9 @@ async function handleAllFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 100 * 1024 * 1024) {
-      alert("파일 크기는 100MB를 초과할 수 없습니다.");
+    const maxSize = 100;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
@@ -478,8 +486,9 @@ function handleFormulaFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    const maxSize = 10;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
@@ -494,8 +503,9 @@ function handleDtdFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    const maxSize = 200;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
@@ -510,9 +520,9 @@ function handleThumbnailFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    const maxSize = 10;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
@@ -533,8 +543,9 @@ function handleRevitFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    if (file.size > 200 * 1024 * 1024) {
-      alert("파일 크기는 200MB를 초과할 수 없습니다.");
+    const maxSize = 200;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
@@ -550,9 +561,7 @@ async function onRegister() {
   if (!validateBasicSelections()) return;
 
   if (!allFileName.value) {
-    alert(
-      "계산식, 3D DTD모델, 모델 썸네일, REVIT 파일 통합 첨부 파일을 선택해주세요."
-    );
+    alert(t("messages.warning.selectAllFile"));
     return;
   }
   // 파일 첨부 validation

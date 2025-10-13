@@ -65,7 +65,7 @@
 
     <!-- 리스트 테이블 -->
     <div class="section-header">
-      <div class="section-title">⊙ {{ t("common.machineList") }}</div>
+      <div class="section-title">⊙ 기계리스트 업로드</div>
       <div class="section-actions">
         <div class="file-upload-group">
           <input
@@ -106,7 +106,9 @@
       class="zip-contents-section"
     >
       <h4 class="zip-contents-title">
-        ZIP 파일 내부 파일 목록 ({{ zipFileList.length }}개 파일)
+        {{ t("common.zipFileList") }} ({{
+          t("common.filesCount", { count: zipFileList.length })
+        }})
       </h4>
       <DataTable
         :columns="zipTableColumns"
@@ -155,10 +157,15 @@ const showZipContents = ref(false);
 
 // ZIP 파일 목록 테이블 컬럼
 const zipTableColumns: TableColumn[] = [
-  { key: "name", title: "파일명", width: "40%", sortable: false },
-  { key: "type", title: "파일 타입", width: "20%", sortable: false },
-  { key: "size", title: "파일 크기", width: "20%", sortable: false },
-  { key: "lastModified", title: "수정일", width: "20%", sortable: false },
+  { key: "name", title: t("common.fileName"), width: "40%", sortable: false },
+  { key: "type", title: t("common.fileType"), width: "20%", sortable: false },
+  { key: "size", title: t("common.fileSize"), width: "20%", sortable: false },
+  {
+    key: "lastModified",
+    title: t("common.lastModified"),
+    width: "20%",
+    sortable: false,
+  },
 ];
 
 // 파일 크기 포맷팅 함수
@@ -275,9 +282,7 @@ async function extractZipContents(file: File) {
 
     // 허용된 파일이 하나도 없으면 첨부 불가 처리
     if (!hasAllowedFile) {
-      alert(
-        "ZIP 파일에 허용된 형식(.dtdx, .rvt, .svg, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
-      );
+      alert(t("messages.warning.noAllowedFileInZip"));
       zipFileList.value = [];
       showZipContents.value = false;
       bulkFileName.value = "";
@@ -290,9 +295,9 @@ async function extractZipContents(file: File) {
       if (!hasDtdx) missing.push("3D모델(.dtdx)");
       if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
       alert(
-        `ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- 심볼(.svg)\n- Revit모델(.rvt)\n\n누락: ${missing.join(
-          ", "
-        )}`
+        t("messages.warning.zipMissingRequiredFiles", {
+          missing: missing.join(", "),
+        })
       );
       zipFileList.value = [];
       showZipContents.value = false;
@@ -303,9 +308,9 @@ async function extractZipContents(file: File) {
     // 허용되지 않은 파일이 있으면 경고
     if (invalidFiles.length > 0) {
       alert(
-        `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
-          "\n"
-        )}\n\n허용된 파일 형식:\n- 필수: .dtdx, .jpg, .jpeg, .png, .gif\n- 선택: .svg, .rvt`
+        t("messages.warning.zipInvalidFiles", {
+          files: invalidFiles.join("\n"),
+        })
       );
     }
 
@@ -313,9 +318,7 @@ async function extractZipContents(file: File) {
     showZipContents.value = true;
   } catch (error) {
     console.error("ZIP 파일 읽기 실패:", error);
-    alert(
-      "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다."
-    );
+    alert(t("messages.warning.zipReadFail"));
     zipFileList.value = [];
     showZipContents.value = false;
   }
@@ -324,7 +327,7 @@ async function extractZipContents(file: File) {
 // 공통 검증 함수: 기계명 필수 체크
 function validateBasicSelections(): boolean {
   if (!selectedMachineName.value) {
-    alert("기계명을 선택해주세요.");
+    alert(t("messages.warning.selectMachineName"));
     return false;
   }
 
@@ -357,7 +360,9 @@ function handleExcelFileChange(e: Event) {
   const allowed = [".xlsx", ".xls"];
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
   if (!allowed.includes(ext)) {
-    alert(`엑셀 파일(${allowed.join(", ")})만 업로드 가능합니다.`);
+    alert(
+      t("messages.warning.excelFileOnly", { extensions: allowed.join(", ") })
+    );
     input.value = "";
     excelFileName.value = "";
     return;
@@ -366,7 +371,9 @@ function handleExcelFileChange(e: Event) {
   // 크기 검증 (예: 10MB)
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
-    alert(`파일 크기는 ${maxSize / 1024 / 1024}MB를 초과할 수 없습니다.`);
+    alert(
+      t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })
+    );
     input.value = "";
     excelFileName.value = "";
     return;
@@ -399,7 +406,9 @@ async function handleBulkFileChange(e: Event) {
   const allowed = [".zip"];
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
   if (!allowed.includes(ext)) {
-    alert(`압축 파일(${allowed.join(", ")})만 업로드 가능합니다.`);
+    alert(
+      t("messages.warning.zipFileOnly", { extensions: allowed.join(", ") })
+    );
     input.value = "";
     bulkFileName.value = "";
     zipFileList.value = [];
@@ -410,7 +419,9 @@ async function handleBulkFileChange(e: Event) {
   // 크기 검증 (예: 200MB)
   const maxSize = 200 * 1024 * 1024;
   if (file.size > maxSize) {
-    alert(`파일 크기는 ${maxSize / 1024 / 1024}MB를 초과할 수 없습니다.`);
+    alert(
+      t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })
+    );
     input.value = "";
     bulkFileName.value = "";
     zipFileList.value = [];
@@ -437,7 +448,7 @@ function handleMachineRegister() {
   if (!validateBasicSelections()) return;
 
   if (!excelFileName.value) {
-    alert("Excel 파일을 선택해주세요.");
+    alert(t("messages.warning.selectExcelFile"));
     return;
   }
 
@@ -450,7 +461,7 @@ function handleModelRegister() {
   if (!validateBasicSelections()) return;
 
   if (!bulkFileName.value) {
-    alert("모델 파일을 선택해주세요.");
+    alert(t("messages.warning.selectModelFile"));
     return;
   }
 

@@ -1129,7 +1129,7 @@ const loadData = async () => {
       detailSearch.value.machineCategoryOptions.length > 0 &&
       !detailSearch.value.headerMachineCategory
     ) {
-      alert("기계유형을 선택해주세요.");
+      alert(t("messages.warning.selectMachineType"));
       return;
     }
 

@@ -4,7 +4,9 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
-          <label for="structureType">구조물 대분류</label>
+          <label for="structureType">{{
+            t("common.structureMajorCategory")
+          }}</label>
           <select
             id="structureType"
             v-model="selectedStructureType"
@@ -403,11 +405,7 @@ const handleDelete = async () => {
   const selectedItem = selectedItems.value[0];
   const structureName = selectedItem.structure_name;
 
-  if (
-    confirm(
-      `구조물 "${structureName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
-    )
-  ) {
+  if (confirm(t("messages.confirm.deleteStructure", { name: structureName }))) {
     try {
       // 삭제할 파일 ID들 수집
       const deleteParams: {
@@ -446,13 +444,13 @@ const handleDelete = async () => {
       );
       selectedItems.value = [];
 
-      alert("구조물이 성공적으로 삭제되었습니다.");
+      alert(t("messages.success.structureDeleteSuccess"));
 
       // 데이터 새로고침
       await loadData();
     } catch (error) {
       console.error("삭제 실패:", error);
-      alert("구조물 삭제에 실패했습니다. 다시 시도해주세요.");
+      alert(t("messages.error.structureDeleteFail"));
     }
   }
 };

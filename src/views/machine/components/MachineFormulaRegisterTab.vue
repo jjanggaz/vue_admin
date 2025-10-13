@@ -1,20 +1,7 @@
 <template>
   <div class="machine-formula-register-tab">
-    <!-- 상단 필터: MachineRegisterTab와 동일한 스타일/구성 -->
+    <!-- 상단 필터 -->
     <div class="filter-bar">
-      <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.unit") }}</span>
-        <select class="input select-sm" v-model="selectedUnit">
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="unit in machineStore.unitSystems"
-            :key="unit.unit_system_id"
-            :value="unit.system_code.toLowerCase()"
-          >
-            {{ unit.system_name }}
-          </option>
-        </select>
-      </div>
       <div class="group-form inline">
         <span class="label required">⊙ 기계명</span>
         <select class="input select-md" v-model="selectedMachineName">
@@ -29,7 +16,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 기계종분류</span>
+        <span class="label required">⊙ 기계중분류</span>
         <select
           class="input select-sm"
           :disabled="!isStep1Enabled"
@@ -38,40 +25,6 @@
           <option value="">{{ t("common.select") }}</option>
           <option
             v-for="dept in machineStore.thirdDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 기계유형</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep2Enabled"
-          v-model="selectedFourthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fourthDepth"
-            :key="dept.code_id"
-            :value="dept.code_key"
-          >
-            {{ dept.code_value }}
-          </option>
-        </select>
-      </div>
-      <div class="group-form inline">
-        <span class="label">⊙ 기계유형분류</span>
-        <select
-          class="input select-sm"
-          :disabled="!isStep3Enabled"
-          v-model="selectedFifthDept"
-        >
-          <option value="">{{ t("common.select") }}</option>
-          <option
-            v-for="dept in machineStore.fifthDepth"
             :key="dept.code_id"
             :value="dept.code_key"
           >
@@ -99,7 +52,7 @@
           <button
             type="button"
             class="btn-file"
-            @click="$refs.formulaFileInput.click()"
+            @click="formulaFileInput?.click()"
           >
             파일 선택
           </button>
@@ -112,7 +65,7 @@
 
     <!-- 계산식 리스트 -->
     <div class="section-header">
-      <div class="section-title">계산식 리스트</div>
+      <div class="section-title">⊙ 기계 계산식 버전관리</div>
       <div class="section-actions">
         <button class="btn-danger">{{ t("common.delete") }}</button>
       </div>
@@ -136,7 +89,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { ref, watch, computed } from "vue";
+import { ref, watch } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
@@ -144,45 +97,22 @@ import { useMachineStore } from "@/stores/machineStore";
 const { t } = useI18n();
 const machineStore = useMachineStore();
 
-// 단위 선택 상태
-const selectedUnit = ref("");
+// 선택 상태
 const selectedMachineName = ref("");
-
-// 기계 분류 선택 상태
 const selectedThirdDept = ref("");
-const selectedFourthDept = ref("");
-const selectedFifthDept = ref("");
 
 // 단계별 enable 상태
-const isStep1Enabled = ref(false); // 기계종분류
-const isStep2Enabled = ref(false); // 기계유형
-const isStep3Enabled = ref(false); // 기계유형분류
+const isStep1Enabled = ref(false); // 기계중분류
 
 const listColumns: TableColumn[] = [
-  { key: "no", title: "No.", width: "80px" },
-  { key: "name", title: "기계명", width: "180px" },
-  { key: "type", title: "기계유형", width: "160px" },
-  { key: "file", title: "계산식 (업로드 파일)", width: "280px" },
-  { key: "remark", title: "비고", width: "160px" },
+  { key: "no", title: "순번", width: "80px", sortable: false },
+  { key: "type", title: "기계 타입", width: "150px", sortable: false },
+  { key: "version", title: "계산식 버전", width: "150px", sortable: false },
+  { key: "unit", title: "단위", width: "100px", sortable: false },
+  { key: "createdAt", title: "생성일자", width: "150px", sortable: false },
+  { key: "updatedAt", title: "수정일자", width: "150px", sortable: false },
 ];
-const listRows = [
-  {
-    id: 1,
-    no: 1,
-    name: "송풍기",
-    type: "터보블로워",
-    file: "upload.py",
-    remark: "****",
-  },
-  {
-    id: 2,
-    no: 2,
-    name: "송풍기2",
-    type: "터보블로워",
-    file: "-",
-    remark: "****",
-  },
-];
+const listRows = ref<any[]>([]);
 
 // 선택 상태를 DataTable과 동기화 (Machine.vue의 사용 패턴 참고)
 const selectedItems = ref<any[]>([]);
@@ -195,15 +125,11 @@ const formulaFileName = ref("");
 const formulaFile = ref<File | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 
-// 기계명 선택 시 바로 3차 깊이별 조회
+// 기계명 선택 시 3차 깊이별 조회
 watch(selectedMachineName, async (newValue, _oldValue) => {
-  // 먼저 항상 하위 단계들 초기화 및 비활성화
+  // 하위 단계 초기화
   selectedThirdDept.value = "";
-  selectedFourthDept.value = "";
-  selectedFifthDept.value = "";
   isStep1Enabled.value = false;
-  isStep2Enabled.value = false;
-  isStep3Enabled.value = false;
 
   // 값이 있을 때만 3차 코드 조회 후 1단계 활성화
   if (newValue) {
@@ -218,57 +144,6 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
       console.error("3차 깊이별 공통코드 조회 실패:", error);
       alert("3차 깊이별 공통코드 조회에 실패했습니다.");
       isStep1Enabled.value = false;
-    }
-  }
-});
-
-// watch를 사용해서 값 변경 시 다음 단계들 초기화 및 API 호출
-watch(selectedThirdDept, async (newValue, _oldValue) => {
-  if (isStep1Enabled.value) {
-    // 기계종분류가 변경되면 하위 단계들 초기화
-    selectedFourthDept.value = "";
-    selectedFifthDept.value = "";
-    isStep2Enabled.value = false;
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 4);
-        if (response?.response && response.response.length > 0) {
-          isStep2Enabled.value = true;
-        } else {
-          isStep2Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("4차 깊이별 공통코드 조회 실패:", error);
-        alert("4차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep2Enabled.value = false;
-      }
-    }
-  }
-});
-
-watch(selectedFourthDept, async (newValue, _oldValue) => {
-  if (isStep2Enabled.value) {
-    // 기계유형이 변경되면 하위 단계 초기화
-    selectedFifthDept.value = "";
-    isStep3Enabled.value = false;
-
-    // 값이 있을 때만 API 호출
-    if (newValue) {
-      try {
-        const response = await machineStore.fetchThirdDepth(newValue, 5);
-        if (response?.response && response.response.length > 0) {
-          isStep3Enabled.value = true;
-        } else {
-          isStep3Enabled.value = false;
-        }
-      } catch (error) {
-        console.error("5차 깊이별 공통코드 조회 실패:", error);
-        alert("5차 깊이별 공통코드 조회에 실패했습니다.");
-        isStep3Enabled.value = false;
-      }
     }
   }
 });
@@ -314,18 +189,13 @@ function handleFormulaFileChange(e: Event) {
 // 등록 함수
 async function handleRegister() {
   // 필수 항목 validation
-  if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
-    return;
-  }
-
   if (!selectedMachineName.value) {
     alert("기계명을 선택해주세요.");
     return;
   }
 
   if (!selectedThirdDept.value) {
-    alert("기계종분류를 선택해주세요.");
+    alert("기계중분류를 선택해주세요.");
     return;
   }
 
@@ -334,34 +204,11 @@ async function handleRegister() {
     return;
   }
 
-  // 기계유형 선택 validation
-  if (
-    machineStore.fourthDepth &&
-    machineStore.fourthDepth.length > 0 &&
-    !selectedFourthDept.value
-  ) {
-    alert("기계유형을 선택해주세요.");
-    return;
-  }
-
-  // 기계유형분류 선택 validation
-  if (
-    machineStore.fifthDepth &&
-    machineStore.fifthDepth.length > 0 &&
-    !selectedFifthDept.value
-  ) {
-    alert("기계유형분류를 선택해주세요.");
-    return;
-  }
-
   try {
     // 여기에 실제 등록 API 호출 로직 추가
     console.log("등록 데이터:", {
-      unit: selectedUnit.value,
       machineName: selectedMachineName.value,
       thirdDept: selectedThirdDept.value,
-      fourthDept: selectedFourthDept.value,
-      fifthDept: selectedFifthDept.value,
       file: formulaFile.value,
     });
 

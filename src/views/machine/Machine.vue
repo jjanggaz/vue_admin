@@ -852,25 +852,25 @@ const specVerticalData = computed(() => {
   // 5. 파일 필드 (3D, Revit, 심볼, 계산식)
   data.push({
     columnName: "3D",
-    value: (item as any).model_3d_url || "-",
+    value: (item as any).model_3d_url || "",
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: "Revit",
-    value: (item as any).revit_file_url || "-",
+    value: (item as any).revit_file_url || "",
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("columns.machine.symbol"),
-    value: (item as any).symbol_url || "-",
+    value: (item as any).symbol_url || "",
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("columns.machine.formula"),
-    value: (item as any).formula_url || "-",
+    value: (item as any).formula_url || "",
   });
 
   return data;

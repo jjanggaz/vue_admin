@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              :placeholder="t('placeholder.searchQuery')"
+              :placeholder="t('placeholder.userCorpName')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -41,6 +41,9 @@
       :data="vendorList"
       :loading="loading"
       :selectable="true"
+      :selection-mode="'multiple'"
+      :show-select-all="true"
+      row-key="vendorId"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
     >
@@ -60,7 +63,7 @@
     <div class="pagination-container">
       <Pagination
         :current-page="currentPage"
-        :total-pages="totalPagesComputed"
+        :total-pages="totalPages"
         @page-change="handlePageChange"
       />
     </div>
@@ -80,198 +83,179 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt class="essential">{{ t("vendors.vendorId") }}</dt>
+            <dt class="essential">{{ t("columns.vendors.vendorId") }}</dt>
             <dd>
               <input
                 v-model="newVendor.vendorId"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.vendorId')"
                 :disabled="isEditMode"
               />
             </dd>
             
-            <dt class="essential">{{ t("vendors.vendorName") }}</dt>
+            <dt class="essential">{{ t("columns.vendors.vendorName") }}</dt>
             <dd>
               <input
                 v-model="newVendor.vendorName"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.vendorName')"
               />
             </dd>
             
-            <dt>{{ t("vendors.vendorNameEn") }}</dt>
+            <dt class="essential">{{ t("columns.vendors.vendorNameEn") }}</dt>
             <dd>
               <input
                 v-model="newVendor.vendorNameEn"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.vendorNameEn')"
               />
             </dd>
             
-            <dt>{{ t("vendors.vendorType") }}</dt>
+            <dt>{{ t("columns.vendors.vendorType") }}</dt>
             <dd>
-              <select v-model="newVendor.vendorType" class="form-input">
-                <option value="">{{ t("common.select") }}</option>
-                <option value="manufacturer">{{ t("common.vendorType.manufacturer") }}</option>
-                <option value="distributor">{{ t("common.vendorType.distributor") }}</option>
-                <option value="constructor">{{ t("common.vendorType.constructor") }}</option>
-              </select>
+              <input
+                v-model="newVendor.vendorType"
+                type="text"
+                class="form-input"
+              />
             </dd>
             
-            <dt>{{ t("vendors.location") }}</dt>
+            <dt>{{ t("columns.vendors.location") }}</dt>
             <dd>
               <input
                 v-model="newVendor.location"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.location')"
               />
             </dd>
             
-            <dt>{{ t("vendors.address") }}</dt>
+            <dt>{{ t("columns.vendors.address") }}</dt>
             <dd>
               <input
                 v-model="newVendor.address"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.address')"
               />
             </dd>
             
-            <dt>{{ t("vendors.country") }}</dt>
+            <dt>{{ t("columns.vendors.country") }}</dt>
             <dd>
               <input
                 v-model="newVendor.country"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.country')"
               />
             </dd>
             
-            <dt>{{ t("vendors.countryCodeTel") }}</dt>
+            <dt>{{ t("columns.vendors.countryCodeTel") }}</dt>
             <dd>
               <input
                 v-model="newVendor.countryCodeTel"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.countryCodeTel')"
               />
             </dd>
             
-            <dt>{{ t("vendors.contactTel") }}</dt>
+            <dt>{{ t("columns.vendors.contactTel") }}</dt>
             <dd>
               <input
                 v-model="newVendor.contactTel"
                 type="tel"
                 class="form-input"
-                :placeholder="t('placeholder.contactTel')"
               />
             </dd>
             
-            <dt>{{ t("vendors.contactFax") }}</dt>
+            <dt>{{ t("columns.vendors.contactFax") }}</dt>
             <dd>
               <input
                 v-model="newVendor.contactFax"
                 type="tel"
                 class="form-input"
-                :placeholder="t('placeholder.contactFax')"
               />
             </dd>
             
-            <dt>{{ t("vendors.contactEmail") }}</dt>
+            <dt>{{ t("columns.vendors.contactEmail") }}</dt>
             <dd>
               <input
                 v-model="newVendor.contactEmail"
                 type="email"
                 class="form-input"
-                :placeholder="t('placeholder.contactEmail')"
               />
             </dd>
             
-            <dt>{{ t("vendors.mainDesignType") }}</dt>
+            <dt>{{ t("columns.vendors.mainDesignType") }}</dt>
             <dd>
               <input
                 v-model="newVendor.mainDesignType"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.mainDesignType')"
               />
             </dd>
             
-            <dt>{{ t("vendors.manufacturerCategory") }}</dt>
+            <dt>{{ t("columns.vendors.manufacturerCategory") }}</dt>
             <dd>
               <input
                 v-model="newVendor.manufacturerCategory"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.manufacturerCategory')"
               />
             </dd>
             
-            <dt>{{ t("vendors.mainProducts") }}</dt>
+            <dt>{{ t("columns.vendors.mainProducts") }}</dt>
             <dd>
               <input
                 v-model="newVendor.mainProducts"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.mainProducts')"
               />
             </dd>
             
-            <dt>{{ t("vendors.homepage") }}</dt>
+            <dt>{{ t("columns.vendors.homepage") }}</dt>
             <dd>
               <input
                 v-model="newVendor.homepage"
                 type="url"
                 class="form-input"
-                :placeholder="t('placeholder.homepage')"
               />
             </dd>
             
-            <dt>{{ t("vendors.brn") }}</dt>
+            <dt>{{ t("columns.vendors.brn") }}</dt>
             <dd>
               <input
                 v-model="newVendor.brn"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.brn')"
               />
             </dd>
             
-            <dt>{{ t("vendors.dunsn") }}</dt>
+            <dt>{{ t("columns.vendors.dunsn") }}</dt>
             <dd>
               <input
                 v-model="newVendor.dunsn"
                 type="text"
                 class="form-input"
-                :placeholder="t('placeholder.dunsn')"
               />
             </dd>
             
-            <dt>{{ t("vendors.certification") }}</dt>
+            <dt>{{ t("columns.vendors.certification") }}</dt>
             <dd>
               <textarea
                 v-model="newVendor.certification"
                 class="form-input"
-                :placeholder="t('placeholder.certification')"
                 rows="2"
               ></textarea>
             </dd>
             
-            <dt>{{ t("vendors.note") }}</dt>
+            <dt>{{ t("columns.vendors.note") }}</dt>
             <dd>
               <textarea
                 v-model="newVendor.note"
                 class="form-input"
-                :placeholder="t('placeholder.note')"
                 rows="3"
               ></textarea>
             </dd>
             
-            <dt>{{ t("vendors.isPreferred") }}</dt>
+            <dt>{{ t("columns.vendors.isPreferred") }}</dt>
             <dd>
               <select v-model="newVendor.isPreferred" class="form-input">
                 <option :value="true">{{ t("common.status.active") }}</option>
@@ -279,18 +263,17 @@
               </select>
             </dd>
             
-            <dt>{{ t("vendors.preferredLevel") }}</dt>
+            <dt>{{ t("columns.vendors.preferredLevel") }}</dt>
             <dd>
               <input
                 v-model.number="newVendor.preferredLevel"
                 type="number"
                 class="form-input"
-                :placeholder="t('placeholder.preferredLevel')"
                 min="0"
               />
             </dd>
             
-            <dt>{{ t("common.statusLabel") }}</dt>
+            <dt class="essential">{{ t("common.statusLabel") }}</dt>
             <dd>
               <select v-model="newVendor.isActive" class="form-input">
                 <option :value="true">
@@ -322,6 +305,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
@@ -393,12 +377,6 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "country",
-    title: t("columns.vendors.country"),
-    width: "100px",
-    sortable: true,
-  },
-  {
     key: "mainDesignType",
     title: t("columns.vendors.mainDesignType"),
     width: "150px",
@@ -413,14 +391,12 @@ const tableColumns: TableColumn[] = [
   { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
 ];
 
-// Store에서 상태 가져오기
-const { vendorList, loading } = vendorsStore;
+// Store에서 상태 가져오기 (storeToRefs를 사용하여 reactivity 유지)
+const { vendorList, loading, totalPages, currentPage, pageSize } = storeToRefs(vendorsStore);
 
-const currentPage = ref(1);
-const pageSize = ref(10);
+// 컴포넌트 로컬 상태 (UI 전용)
 const selectedItems = ref<VendorItem[]>([]);
 const searchQueryInput = ref("");
-const searchQuery = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const editingVendorId = ref<string | null>(null);
@@ -431,8 +407,8 @@ const newVendor = ref<RegistForm>({
   vendorType: "",
   location: "",
   address: "",
-  country: "",
-  countryCodeTel: "",
+  country: "KR",
+  countryCodeTel: "+82",
   contactTel: "",
   contactFax: "",
   contactEmail: "",
@@ -449,20 +425,10 @@ const newVendor = ref<RegistForm>({
   isActive: true,
 });
 
-// 서버 사이드 페이징 사용 (API 응답의 total_pages 사용)
-const totalPagesComputed = computed(() => vendorsStore.totalPages || 1);
-
-// 데이터 로드 함수
+// 데이터 로드 함수 (store의 loadVendorData 사용)
 const loadData = async () => {
   try {
-    await vendorsStore.fetchVendorList({
-      search_field: "vendor_name",
-      search_value: searchQuery.value || "",
-      page: currentPage.value,
-      page_size: pageSize.value,
-      order_by: "vendor_id",
-      order_direction: "asc",
-    });
+    await vendorsStore.loadVendorData();
   } catch (error) {
     console.error("데이터 로드 실패:", error);
     alert(t("messages.error.loadFailed"));
@@ -470,7 +436,11 @@ const loadData = async () => {
 };
 
 const isFormValid = computed(() => {
-  return newVendor.value.vendorId.trim() !== "" && newVendor.value.vendorName.trim() !== "";
+  return (
+    newVendor.value.vendorId.trim() !== "" &&
+    newVendor.value.vendorName.trim() !== "" &&
+    newVendor.value.vendorNameEn.trim() !== ""
+  );
 });
 
 const handleSelectionChange = (selected: VendorItem[]) => {
@@ -478,16 +448,23 @@ const handleSelectionChange = (selected: VendorItem[]) => {
 };
 
 const handlePageChange = async (page: number) => {
-  currentPage.value = page;
   selectedItems.value = [];
-  await loadData();
+  try {
+    await vendorsStore.changePage(page);
+  } catch (error) {
+    console.error("페이지 변경 실패:", error);
+    alert(t("messages.error.loadFailed"));
+  }
 };
 
 const handleSearch = async () => {
   selectedItems.value = [];
-  searchQuery.value = searchQueryInput.value;
-  currentPage.value = 1;
-  await loadData();
+  try {
+    await vendorsStore.executeSearch(searchQueryInput.value);
+  } catch (error) {
+    console.error("검색 실패:", error);
+    alert(t("messages.error.loadFailed"));
+  }
 };
 
 const openRegistModal = () => {
@@ -499,8 +476,8 @@ const openRegistModal = () => {
     vendorType: "",
     location: "",
     address: "",
-    country: "",
-    countryCodeTel: "",
+    country: "KR",
+    countryCodeTel: "+82",
     contactTel: "",
     contactFax: "",
     contactEmail: "",
@@ -527,7 +504,7 @@ const closeRegistModal = () => {
 
 const editItem = (item: VendorItem) => {
   isEditMode.value = true;
-  editingVendorId.value = item.id;
+  editingVendorId.value = item.vendorId;
   newVendor.value = {
     vendorId: item.vendorId,
     vendorName: item.vendorName,
@@ -584,7 +561,7 @@ const handleSave = async () => {
       };
 
       await vendorsStore.updateVendor(editingVendorId.value, updateData);
-      alert(t("messages.success.updated"));
+      alert(t("messages.success.updateSuccess"));
     } else {
       // 등록 로직
       const createData: VendorCreateRequest = {
@@ -613,7 +590,7 @@ const handleSave = async () => {
       };
 
       await vendorsStore.createVendor(createData);
-      alert(t("messages.success.registered"));
+      alert(t("messages.success.registerSuccess"));
     }
 
     closeRegistModal();
@@ -636,12 +613,12 @@ const handleDelete = async () => {
     )
   ) {
     try {
-      const selectedIds = selectedItems.value.map((item) => item.id);
+      const selectedVendorIds = selectedItems.value.map((item) => item.vendorId);
       
-      if (selectedIds.length === 1) {
-        await vendorsStore.deleteVendor(selectedIds[0]);
+      if (selectedVendorIds.length === 1) {
+        await vendorsStore.deleteVendor(selectedVendorIds[0]);
       } else {
-        await vendorsStore.deleteVendors(selectedIds);
+        await vendorsStore.deleteVendors(selectedVendorIds);
       }
       
       selectedItems.value = [];

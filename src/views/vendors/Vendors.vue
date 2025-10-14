@@ -666,7 +666,7 @@ const vendorVerticalData = computed(() => {
   data.push({ columnName: t("columns.vendors.note"), value: item.note || "-", editable: true });
   data.push({ 
     columnName: t("columns.vendors.isPreferred"), 
-    value: item.isPreferred ? t("common.status.active") : t("common.status.inactive"),
+    value: item.isPreferred ? "true" : "false",
     editable: true,
     fieldType: "select",
     options: [
@@ -677,7 +677,7 @@ const vendorVerticalData = computed(() => {
   data.push({ columnName: t("columns.vendors.preferredLevel"), value: item.preferredLevel?.toString() || "0", editable: true });
   data.push({ 
     columnName: t("common.statusLabel"), 
-    value: item.isActive ? t("common.status.active") : t("common.status.inactive"),
+    value: item.isActive ? "true" : "false",
     editable: true,
     fieldType: "select",
     options: [

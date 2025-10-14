@@ -96,7 +96,13 @@
 
               <!-- 일반 모드 -->
               <template v-else>
-                {{ item.value }}
+                <!-- select 타입인 경우 options에서 label 찾기 -->
+                <template v-if="item.fieldType === 'select' && item.options">
+                  {{ item.options.find(opt => opt.value === item.value)?.label || item.value }}
+                </template>
+                <template v-else>
+                  {{ item.value }}
+                </template>
               </template>
             </td>
           </tr>

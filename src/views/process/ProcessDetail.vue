@@ -5676,9 +5676,9 @@ const handleFormulaSave = async () => {
         file_name: item.file_name
       })));
       
-      // 계산식 그리드 새로고침 (저장된 데이터가 이미 그리드에 반영되어 있으므로 생략)
-      // await refreshFormulaData();
-      // console.log('계산식 그리드 새로고침 완료');
+      // 계산식 그리드 새로고침
+      await refreshFormulaData();
+      console.log('계산식 그리드 새로고침 완료');
       
       alert('계산식 저장이 완료되었습니다.');
     } else {
@@ -7093,11 +7093,15 @@ const refreshFormulaData = async () => {
       const formulaItems = formulaResult.response.map((item: any, index: number) => {
         return {
           id: `existing_formula_${item.id || index}`,
+          no: (index + 1).toString(),
+          registeredFormula: item.formula_name || 'NONE',
+          formula_code: item.formula_code || '',
+          registrationDate: item.created_at || item.registration_date || formatDate(new Date()),
+          infoOverview: item.formula_scope || '',
+          remarks: item.output_type || '',
           formula_id: item.formula_id || item.id,
-          formula_name: item.formula_name || 'NONE',
-          formula_description: item.formula_description || '',
           file_name: item.file_name || null,
-          process_dependencies: item.process_dependencies || null, // process_dependencies 추가
+          process_dependencies: item.process_dependencies || null,
           _originalData: item // 원본 데이터 보존
         };
       });

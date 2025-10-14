@@ -530,6 +530,45 @@
                 accept=".svg"
               />
             </div>
+
+            <!-- 단가이력 -->
+            <div class="detail-section price-history-section">
+              <h4 class="section-title">단가이력</h4>
+              <DataTable
+                :columns="priceHistoryColumns"
+                :data="priceHistoryData"
+                :loading="false"
+                :selectable="false"
+                :stickyHeader="true"
+              >
+                <!-- 단가 슬롯 -->
+                <template #cell-price_value="{ item }">
+                  {{
+                    item.price_value ? item.price_value.toLocaleString() : "-"
+                  }}
+                </template>
+
+                <!-- 단가등록일 슬롯 -->
+                <template #cell-price_date="{ item }">
+                  {{ item.price_date || "-" }}
+                </template>
+
+                <!-- 단가유형 슬롯 -->
+                <template #cell-price_type="{ item }">
+                  {{ item.price_type || "-" }}
+                </template>
+
+                <!-- 단위 슬롯 -->
+                <template #cell-price_unit_code="{ item }">
+                  {{ item.price_unit_code || "-" }}
+                </template>
+
+                <!-- 제공처 슬롯 -->
+                <template #cell-price_reference="{ item }">
+                  {{ item.price_reference || "-" }}
+                </template>
+              </DataTable>
+            </div>
           </div>
         </div>
       </div>
@@ -597,6 +636,14 @@ const modalTabs = [
 ];
 const modalActiveTab = ref(0);
 
+interface PriceHistoryItem {
+  price_value: number;
+  price_date: string;
+  price_type: string;
+  price_unit_code: string;
+  price_reference: string;
+}
+
 interface MachineItem {
   equipment_id: string;
   equipment_code: string;
@@ -633,6 +680,7 @@ interface MachineItem {
   vendor_id?: string;
   updated_by: string;
   manufacturer_en?: string;
+  equipment_price_history?: PriceHistoryItem[];
 }
 
 // 테이블 컬럼 설정
@@ -672,6 +720,40 @@ const tableColumns: TableColumn[] = [
     key: "details",
     title: t("columns.machine.details"),
     width: "80px",
+    sortable: false,
+  },
+];
+
+// 단가이력 테이블 컬럼 설정
+const priceHistoryColumns: TableColumn[] = [
+  {
+    key: "price_value",
+    title: "단가",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "price_date",
+    title: "단가등록일",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "price_type",
+    title: "단가유형",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "price_unit_code",
+    title: "단위",
+    width: "50px",
+    sortable: false,
+  },
+  {
+    key: "price_reference",
+    title: "제공처",
+    width: "100px",
     sortable: false,
   },
 ];
@@ -874,6 +956,14 @@ const specVerticalData = computed(() => {
   });
 
   return data;
+});
+
+// 단가이력 데이터
+const priceHistoryData = computed(() => {
+  if (!detailItemData.value || !detailItemData.value.equipment_price_history) {
+    return [];
+  }
+  return detailItemData.value.equipment_price_history;
 });
 
 // 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
@@ -1915,6 +2005,24 @@ onMounted(async () => {
     font-weight: 600;
     color: $text-color;
     border-radius: 4px;
+  }
+}
+
+.price-history-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+
+  :deep(.data-table-container) {
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  :deep(.data-table) {
+    min-width: 600px;
+    width: 100%;
   }
 }
 

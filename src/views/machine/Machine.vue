@@ -2010,8 +2010,6 @@ onMounted(async () => {
 
 .price-history-section {
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid $border-color;
 
   :deep(.data-table-container) {
     max-height: 250px;

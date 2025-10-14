@@ -1,108 +1,155 @@
 <template>
   <div class="vendors-page">
-    <!-- 검색 바 -->
-    <div class="action-bar">
-      <div class="search-bar">
-        <div class="group-form">
-          <label for="search" class="label-search">{{
-            t("common.search")
-          }}</label>
-          <div class="form-item">
-            <input
-              type="text"
-              id="search"
-              :placeholder="t('placeholder.vendorsSearch')"
-              v-model="searchQueryInput"
-              @keyup.enter="handleSearch"
-            />
+    <div class="page-layout" :class="{ 'detail-open': isDetailPanelOpen }">
+      <!-- 메인 콘텐츠 영역 -->
+      <div class="main-content">
+        <!-- 검색 바 -->
+        <div class="action-bar">
+          <div class="search-bar">
+            <div class="group-form">
+              <label for="search" class="label-search">{{
+                t("common.search")
+              }}</label>
+              <div class="form-item">
+                <input
+                  type="text"
+                  id="search"
+                  :placeholder="t('placeholder.vendorsSearch')"
+                  v-model="searchQueryInput"
+                  @keyup.enter="handleSearch"
+                />
+              </div>
+              <button class="btn-search" @click="handleSearch">
+                {{ t("common.search") }}
+              </button>
+            </div>
           </div>
-          <button class="btn-search" @click="handleSearch">
-            {{ t("common.search") }}
-          </button>
+          <div class="btns">
+            <button class="btn btn-primary btn-add" @click="openRegistModal">
+              {{ t("common.register") }}
+            </button>
+            <button
+              class="btn btn-primary btn-delete"
+              @click="handleDelete"
+              :disabled="selectedItems.length === 0"
+            >
+              {{ t("common.delete") }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 데이터 테이블 -->
+        <DataTable
+          :columns="tableColumns"
+          :data="vendorList"
+          :loading="loading"
+          :selectable="true"
+          :selection-mode="'multiple'"
+          :show-select-all="true"
+          row-key="vendorId"
+          :selected-items="selectedItems"
+          @selection-change="handleSelectionChange"
+        >
+          <!-- 순번 슬롯 -->
+          <template #cell-id="{ index }">
+            {{ (currentPage - 1) * pageSize + index + 1 }}
+          </template>
+
+          <!-- 업체명 슬롯 (vendor_name / vendor_name_en) -->
+          <template #cell-vendorName="{ item }">
+            {{ item.vendorName }}{{ item.vendorNameEn ? ' / ' + item.vendorNameEn : '' }}
+          </template>
+
+          <!-- 연락처 슬롯 (country_code_tel + contact_tel) -->
+          <template #cell-contactTel="{ item }">
+            {{ item.countryCodeTel ? item.countryCodeTel + '-' : '' }}{{ item.contactTel || '' }}
+          </template>
+
+          <!-- 선호도 슬롯 -->
+          <template #cell-isPreferred="{ value }">
+            {{ value ? '활성' : '비활성' }}
+          </template>
+
+          <!-- 홈페이지 슬롯 (URL이 있으면 하이퍼링크로 표시) -->
+          <template #cell-homepage="{ item }">
+            <a 
+              v-if="item.homepage" 
+              :href="item.homepage" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="link-homepage"
+              @click.stop
+            >
+              {{ item.homepage }}
+            </a>
+            <span v-else>-</span>
+          </template>
+
+          <template #cell-actions="{ item }">
+            <button class="btn-edit" @click.stop="openDetailPanel(item)">
+              {{ t("common.view") }}
+            </button>
+          </template>
+        </DataTable>
+
+        <!-- 페이징 -->
+        <div class="pagination-container">
+          <Pagination
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="handlePageChange"
+          />
         </div>
       </div>
-      <div class="btns">
-        <button class="btn btn-primary btn-add" @click="openRegistModal">
-          {{ t("common.add") }}
-        </button>
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleDelete"
-          :disabled="selectedItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
+
+      <!-- 상세정보 패널 -->
+      <div v-if="isDetailPanelOpen" class="detail-panel">
+        <div class="detail-panel-header">
+          <h3>{{ t("common.detailInfo") }}</h3>
+          <div class="header-buttons">
+            <button
+              v-if="!isDetailEditMode"
+              class="btn-edit"
+              @click="toggleEditMode"
+            >
+              {{ t("common.edit") }}
+            </button>
+            <button
+              v-if="isDetailEditMode"
+              class="btn-save"
+              @click="saveDetailChanges"
+            >
+              {{ t("common.save") }}
+            </button>
+            <button
+              class="btn-close"
+              @click="closeDetailPanel"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div class="detail-panel-body">
+          <div class="detail-tables-container">
+            <div class="detail-section">
+              <VerticalDataTable
+                :data="vendorVerticalData"
+                :loading="false"
+                :editMode="isDetailEditMode"
+                @field-change="handleFieldChange"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 데이터 테이블 -->
-    <DataTable
-      :columns="tableColumns"
-      :data="vendorList"
-      :loading="loading"
-      :selectable="true"
-      :selection-mode="'multiple'"
-      :show-select-all="true"
-      row-key="vendorId"
-      :selected-items="selectedItems"
-      @selection-change="handleSelectionChange"
-    >
-      <!-- 순번 슬롯 -->
-      <template #cell-id="{ index }">
-        {{ (currentPage - 1) * pageSize + index + 1 }}
-      </template>
-
-      <!-- 업체명 슬롯 (vendor_name / vendor_name_en) -->
-      <template #cell-vendorName="{ item }">
-        {{ item.vendorName }}{{ item.vendorNameEn ? ' / ' + item.vendorNameEn : '' }}
-      </template>
-
-      <!-- 연락처 슬롯 (country_code_tel + contact_tel) -->
-      <template #cell-contactTel="{ item }">
-        {{ item.countryCodeTel ? item.countryCodeTel + '-' : '' }}{{ item.contactTel || '' }}
-      </template>
-
-      <!-- 선호여부 슬롯 -->
-      <template #cell-isPreferred="{ value }">
-        {{ value ? '활성' : '비활성' }}
-      </template>
-
-      <!-- 홈페이지 슬롯 (URL이 있으면 하이퍼링크로 표시) -->
-      <template #cell-homepage="{ item }">
-        <a 
-          v-if="item.homepage" 
-          :href="item.homepage" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="link-homepage"
-          @click.stop
-        >
-          {{ item.homepage }}
-        </a>
-        <span v-else>-</span>
-      </template>
-
-      <template #cell-actions="{ item }">
-        <button class="btn-edit" @click.stop="editItem(item)">
-          {{ t("common.edit") }}
-        </button>
-      </template>
-    </DataTable>
-
-    <!-- 페이징 -->
-    <div class="pagination-container">
-      <Pagination
-        :current-page="currentPage"
-        :total-pages="totalPages"
-        @page-change="handlePageChange"
-      />
-    </div>
-
-    <!-- 등록/수정 모달 -->
+    <!-- 등록 모달 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container modal-container-large">
         <div class="modal-header">
-          <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
+          <h3>{{ t("common.register") }}</h3>
           <button
             class="btn-close"
             @click="closeRegistModal"
@@ -338,12 +385,12 @@ import { ref, computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import { useI18n } from "vue-i18n";
 import {
   useVendorsStore,
   type VendorItem,
   type VendorCreateRequest,
-  type VendorUpdateRequest,
 } from "@/stores/vendorsStore";
 
 const { t } = useI18n();
@@ -372,6 +419,14 @@ interface RegistForm {
   isPreferred: boolean;
   preferredLevel: number;
   isActive: boolean;
+}
+
+interface VerticalDataItem {
+  columnName: string;
+  value: string;
+  editable?: boolean;
+  fieldType?: string;
+  options?: Array<{ label: string; value: string }>;
 }
 
 // 테이블 컬럼 설정
@@ -416,7 +471,7 @@ const tableColumns: TableColumn[] = [
   {
     key: "mainProducts",
     title: "주요제품",
-    width: "150px",
+    width: "230px",
     sortable: true,
   },
   {
@@ -427,7 +482,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "isPreferred",
-    title: "선호여부",
+    title: "선호도",
     width: "100px",
     sortable: true,
   },
@@ -438,11 +493,11 @@ const tableColumns: TableColumn[] = [
     sortable: true,
     dateFormat: "YYYY-MM-DD",
   },
-  { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
+  { key: "actions", title: t("common.detailInfo"), width: "80px", sortable: false },
 ];
 
 // Store에서 상태 가져오기 (storeToRefs를 사용하여 reactivity 유지)
-const { vendorList, loading, totalPages, currentPage, pageSize } = storeToRefs(vendorsStore);
+const { vendorList, loading, totalPages, currentPage, pageSize, detailVendor } = storeToRefs(vendorsStore);
 
 // 컴포넌트 로컬 상태 (UI 전용)
 const selectedItems = ref<VendorItem[]>([]);
@@ -450,6 +505,8 @@ const searchQueryInput = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
 const editingVendorId = ref<string | null>(null);
+const isDetailPanelOpen = ref(false);
+const isDetailEditMode = ref(false);
 const newVendor = ref<RegistForm>({
   vendorId: "",
   vendorName: "",
@@ -553,69 +610,129 @@ const closeRegistModal = () => {
   editingVendorId.value = null;
 };
 
-const editItem = (item: VendorItem) => {
-  isEditMode.value = true;
-  editingVendorId.value = item.vendorId;
-  newVendor.value = {
-    vendorId: item.vendorId,
-    vendorName: item.vendorName,
-    vendorNameEn: item.vendorNameEn || "",
-    vendorType: item.vendorType || "",
-    location: item.location || "",
-    address: item.address || "",
-    country: item.country || "",
-    countryCodeTel: item.countryCodeTel || "",
-    contactTel: item.contactTel || "",
-    contactFax: item.contactFax || "",
-    contactEmail: item.contactEmail || "",
-    mainDesignType: item.mainDesignType || "",
-    manufacturerCategory: item.manufacturerCategory || "",
-    mainProducts: item.mainProducts || "",
-    homepage: item.homepage || "",
-    brn: item.brn || "",
-    dunsn: item.dunsn || "",
-    certification: item.certification || "",
-    note: item.note || "",
-    isPreferred: item.isPreferred || false,
-    preferredLevel: item.preferredLevel || 0,
-    isActive: item.isActive,
+const openDetailPanel = (item: VendorItem) => {
+  vendorsStore.setDetailVendor(item);
+  isDetailPanelOpen.value = true;
+  isDetailEditMode.value = false;
+};
+
+const closeDetailPanel = () => {
+  isDetailPanelOpen.value = false;
+  vendorsStore.setDetailVendor(null);
+  isDetailEditMode.value = false;
+};
+
+const toggleEditMode = () => {
+  isDetailEditMode.value = !isDetailEditMode.value;
+};
+
+const saveDetailChanges = async () => {
+  if (!detailVendor.value) return;
+  
+  try {
+    await vendorsStore.saveDetailVendor();
+    alert(t("messages.success.updateSuccess"));
+    isDetailEditMode.value = false;
+  } catch (error) {
+    console.error("상세정보 수정 실패:", error);
+    alert(t("messages.error.updateFailed"));
+  }
+};
+
+// VerticalDataTable용 데이터 구성
+const vendorVerticalData = computed(() => {
+  if (!detailVendor.value) return [];
+  const item = detailVendor.value;
+  const data: VerticalDataItem[] = [];
+
+  data.push({ columnName: t("columns.vendors.vendorId"), value: item.vendorId || "-" });
+  data.push({ columnName: t("columns.vendors.vendorName"), value: item.vendorName || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.vendorNameEn"), value: item.vendorNameEn || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.vendorType"), value: item.vendorType || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.location"), value: item.location || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.address"), value: item.address || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.country"), value: item.country || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.countryCodeTel"), value: item.countryCodeTel || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.contactTel"), value: item.contactTel || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.contactFax"), value: item.contactFax || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.contactEmail"), value: item.contactEmail || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.mainDesignType"), value: item.mainDesignType || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.manufacturerCategory"), value: item.manufacturerCategory || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.mainProducts"), value: item.mainProducts || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.homepage"), value: item.homepage || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.brn"), value: item.brn || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.dunsn"), value: item.dunsn || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.certification"), value: item.certification || "-", editable: true });
+  data.push({ columnName: t("columns.vendors.note"), value: item.note || "-", editable: true });
+  data.push({ 
+    columnName: t("columns.vendors.isPreferred"), 
+    value: item.isPreferred ? t("common.status.active") : t("common.status.inactive"),
+    editable: true,
+    fieldType: "select",
+    options: [
+      { value: "true", label: t("common.status.active") },
+      { value: "false", label: t("common.status.inactive") }
+    ]
+  });
+  data.push({ columnName: t("columns.vendors.preferredLevel"), value: item.preferredLevel?.toString() || "0", editable: true });
+  data.push({ 
+    columnName: t("common.statusLabel"), 
+    value: item.isActive ? t("common.status.active") : t("common.status.inactive"),
+    editable: true,
+    fieldType: "select",
+    options: [
+      { value: "true", label: t("common.status.active") },
+      { value: "false", label: t("common.status.inactive") }
+    ]
+  });
+
+  return data;
+});
+
+// 필드 변경 핸들러
+const handleFieldChange = (columnName: string, newValue: string) => {
+  if (!detailVendor.value) return;
+
+  const fieldMap: Record<string, keyof VendorItem> = {
+    [t("columns.vendors.vendorName")]: "vendorName",
+    [t("columns.vendors.vendorNameEn")]: "vendorNameEn",
+    [t("columns.vendors.vendorType")]: "vendorType",
+    [t("columns.vendors.location")]: "location",
+    [t("columns.vendors.address")]: "address",
+    [t("columns.vendors.country")]: "country",
+    [t("columns.vendors.countryCodeTel")]: "countryCodeTel",
+    [t("columns.vendors.contactTel")]: "contactTel",
+    [t("columns.vendors.contactFax")]: "contactFax",
+    [t("columns.vendors.contactEmail")]: "contactEmail",
+    [t("columns.vendors.mainDesignType")]: "mainDesignType",
+    [t("columns.vendors.manufacturerCategory")]: "manufacturerCategory",
+    [t("columns.vendors.mainProducts")]: "mainProducts",
+    [t("columns.vendors.homepage")]: "homepage",
+    [t("columns.vendors.brn")]: "brn",
+    [t("columns.vendors.dunsn")]: "dunsn",
+    [t("columns.vendors.certification")]: "certification",
+    [t("columns.vendors.note")]: "note",
+    [t("columns.vendors.preferredLevel")]: "preferredLevel",
   };
-  isRegistModalOpen.value = true;
+
+  const fieldKey = fieldMap[columnName];
+  if (fieldKey) {
+    if (fieldKey === "preferredLevel") {
+      vendorsStore.updateDetailVendorField(fieldKey, parseInt(newValue) || 0);
+    } else {
+      vendorsStore.updateDetailVendorField(fieldKey, newValue);
+    }
+  } else if (columnName === t("columns.vendors.isPreferred")) {
+    vendorsStore.updateDetailVendorField("isPreferred", newValue === "true");
+  } else if (columnName === t("common.statusLabel")) {
+    vendorsStore.updateDetailVendorField("isActive", newValue === "true");
+  }
 };
 
 const handleSave = async () => {
   try {
-    if (isEditMode.value && editingVendorId.value) {
-      // 수정 로직
-      const updateData: VendorUpdateRequest = {
-        vendorName: newVendor.value.vendorName,
-        vendorNameEn: newVendor.value.vendorNameEn,
-        vendorType: newVendor.value.vendorType,
-        location: newVendor.value.location,
-        address: newVendor.value.address,
-        country: newVendor.value.country,
-        countryCodeTel: newVendor.value.countryCodeTel,
-        contactTel: newVendor.value.contactTel,
-        contactFax: newVendor.value.contactFax,
-        contactEmail: newVendor.value.contactEmail,
-        mainDesignType: newVendor.value.mainDesignType,
-        manufacturerCategory: newVendor.value.manufacturerCategory,
-        mainProducts: newVendor.value.mainProducts,
-        homepage: newVendor.value.homepage,
-        brn: newVendor.value.brn,
-        dunsn: newVendor.value.dunsn,
-        certification: newVendor.value.certification,
-        note: newVendor.value.note,
-        isPreferred: newVendor.value.isPreferred,
-        preferredLevel: newVendor.value.preferredLevel,
-        isActive: newVendor.value.isActive,
-      };
-
-      await vendorsStore.updateVendor(editingVendorId.value, updateData);
-      alert(t("messages.success.updateSuccess"));
-    } else {
-      // 등록 로직
-      const createData: VendorCreateRequest = {
+    // 등록 로직만 처리 (수정은 saveDetailChanges에서 처리)
+    const createData: VendorCreateRequest = {
         vendorId: newVendor.value.vendorId,
         vendorName: newVendor.value.vendorName,
         vendorNameEn: newVendor.value.vendorNameEn,
@@ -640,9 +757,8 @@ const handleSave = async () => {
         isActive: newVendor.value.isActive,
       };
 
-      await vendorsStore.createVendor(createData);
-      alert(t("messages.success.registerSuccess"));
-    }
+    await vendorsStore.createVendor(createData);
+    alert(t("messages.success.registerSuccess"));
 
     closeRegistModal();
     selectedItems.value = [];
@@ -692,6 +808,177 @@ onMounted(() => {
 
 .vendors-page {
   padding: $spacing-lg;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.page-layout {
+  display: grid;
+  height: calc(100vh - #{$spacing-lg * 2});
+  width: 100%;
+  overflow: hidden;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  transition: grid-template-columns 0.3s ease;
+
+  &.detail-open {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.main-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.detail-panel {
+  background: white;
+  border-left: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  .detail-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid $border-color;
+    background: $background-light;
+    flex-shrink: 0;
+
+    h3 {
+      margin: 0;
+      color: $text-color;
+      font-size: 1.25rem;
+    }
+
+    .header-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .btn-edit,
+      .btn-save {
+        padding: 0.5rem 1rem;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        background: $background-light;
+        color: $text-color;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+
+      .btn-save {
+        background: $success-color;
+        color: white;
+        border-color: $success-color;
+      }
+
+      .btn-close {
+        padding: 0.5rem;
+        border: none;
+        background: transparent;
+        color: $text-color;
+        cursor: pointer;
+        font-size: 1.25rem;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .detail-panel-body {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+
+  .detail-tables-container {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .detail-section {
+    width: 100%;
+
+    .section-title {
+      margin: 0 0 12px 0;
+      padding: 8px 12px;
+      background: $background-light;
+      border-left: 4px solid $primary-color;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $text-color;
+      border-radius: 4px;
+    }
+  }
+
+  .detail-info {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0.75rem;
+    align-items: center;
+
+    dt {
+      font-weight: bold;
+      color: $text-color;
+    }
+
+    dd {
+      margin: 0;
+      color: $text-color;
+
+      .form-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        font-size: 0.9rem;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+        }
+      }
+
+      select.form-input {
+        width: 100%;
+      }
+
+      textarea.form-input {
+        resize: vertical;
+      }
+    }
+  }
+}
+
+// VerticalDataTable 스타일 오버라이드
+.detail-section :deep(.vertical-data-table-container) {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.detail-section :deep(.vertical-data-table) {
+  font-size: 0.875rem;
+
+  .column-name {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: $text-color;
+    width: 35%;
+  }
+
+  .column-value {
+    width: 65%;
+    word-break: break-word;
+  }
 }
 
 .action-bar {
@@ -897,6 +1184,11 @@ onMounted(() => {
 .link-homepage {
   color: $primary-color;
   text-decoration: none;
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  line-height: 1.4;
   
   &:hover {
     text-decoration: underline;

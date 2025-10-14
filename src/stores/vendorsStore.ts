@@ -99,6 +99,7 @@ export const useVendorsStore = defineStore("vendors", () => {
   const pageSize = ref(10);
   const totalPages = ref(1);
   const searchQuery = ref("");
+  const detailVendor = ref<VendorItem | null>(null);
 
   // computed
   const vendorCount = computed(() => vendorList.value.length);
@@ -536,6 +537,50 @@ export const useVendorsStore = defineStore("vendors", () => {
     await loadVendorData();
   };
 
+  // 상세정보 관련
+  const setDetailVendor = (vendor: VendorItem | null) => {
+    detailVendor.value = vendor ? { ...vendor } : null;
+  };
+
+  const updateDetailVendorField = (fieldName: keyof VendorItem, value: unknown) => {
+    if (!detailVendor.value) return;
+    
+    (detailVendor.value as Record<string, unknown>)[fieldName] = value;
+  };
+
+  const saveDetailVendor = async () => {
+    if (!detailVendor.value) {
+      throw new Error("저장할 상세정보가 없습니다.");
+    }
+
+    const updateData: VendorUpdateRequest = {
+      vendorName: detailVendor.value.vendorName,
+      vendorNameEn: detailVendor.value.vendorNameEn,
+      vendorType: detailVendor.value.vendorType,
+      location: detailVendor.value.location,
+      address: detailVendor.value.address,
+      country: detailVendor.value.country,
+      countryCodeTel: detailVendor.value.countryCodeTel,
+      contactTel: detailVendor.value.contactTel,
+      contactFax: detailVendor.value.contactFax,
+      contactEmail: detailVendor.value.contactEmail,
+      mainDesignType: detailVendor.value.mainDesignType,
+      manufacturerCategory: detailVendor.value.manufacturerCategory,
+      mainProducts: detailVendor.value.mainProducts,
+      homepage: detailVendor.value.homepage,
+      brn: detailVendor.value.brn,
+      dunsn: detailVendor.value.dunsn,
+      certification: detailVendor.value.certification,
+      note: detailVendor.value.note,
+      isPreferred: detailVendor.value.isPreferred,
+      preferredLevel: detailVendor.value.preferredLevel,
+      isActive: detailVendor.value.isActive,
+    };
+
+    await updateVendor(detailVendor.value.vendorId, updateData);
+    await loadVendorData();
+  };
+
   // 상태 초기화
   const resetStore = () => {
     vendorList.value = [];
@@ -546,6 +591,7 @@ export const useVendorsStore = defineStore("vendors", () => {
     pageSize.value = 10;
     totalPages.value = 1;
     searchQuery.value = "";
+    detailVendor.value = null;
   };
 
   return {
@@ -558,6 +604,7 @@ export const useVendorsStore = defineStore("vendors", () => {
     pageSize,
     totalPages,
     searchQuery,
+    detailVendor,
     // computed
     vendorCount,
     // 액션
@@ -570,6 +617,10 @@ export const useVendorsStore = defineStore("vendors", () => {
     loadVendorData,
     executeSearch,
     changePage,
+    // 상세정보 관련
+    setDetailVendor,
+    updateDetailVendorField,
+    saveDetailVendor,
     // 로컬 상태 업데이트
     addLocalVendor,
     updateLocalVendor,

@@ -67,6 +67,21 @@
         {{ value ? '활성' : '비활성' }}
       </template>
 
+      <!-- 홈페이지 슬롯 (URL이 있으면 하이퍼링크로 표시) -->
+      <template #cell-homepage="{ item }">
+        <a 
+          v-if="item.homepage" 
+          :href="item.homepage" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="link-homepage"
+          @click.stop
+        >
+          {{ item.homepage }}
+        </a>
+        <span v-else>-</span>
+      </template>
+
       <template #cell-actions="{ item }">
         <button class="btn-edit" @click.stop="editItem(item)">
           {{ t("common.edit") }}
@@ -876,5 +891,20 @@ onMounted(() => {
   gap: 0.5rem;
   padding: 1rem;
   border-top: 1px solid $border-color;
+}
+
+// 홈페이지 링크 스타일
+.link-homepage {
+  color: $primary-color;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+    color: darken($primary-color, 10%);
+  }
+  
+  &:visited {
+    color: $primary-color;
+  }
 }
 </style>

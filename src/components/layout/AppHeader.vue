@@ -204,6 +204,7 @@ const currentPageTitle = computed<string>(() => {
     return t("pageTitles.machineManagement");
   if (currentPath.startsWith("/user")) return t("pageTitles.userManagement");
   if (currentPath.startsWith("/code")) return t("pageTitles.codeManagement");
+  if (currentPath.startsWith("/vendors")) return t("pageTitles.vendorsManagement");
 
   return t("pageTitles.default");
 });

@@ -90,7 +90,7 @@ const codeBasedMenus = {
   },
   WEB10: {
     path: "/vendors",
-    icon: "/images/icons/WEB09.svg",
+    icon: "/images/icons/WEB10.svg",
     titleKey: "sidebar.vendors",
   },
 };

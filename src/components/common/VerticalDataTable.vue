@@ -186,7 +186,6 @@ const getRowKey = (item: any, index: number) => {
 
       &:hover {
         background-color: $background-light;
-        cursor: pointer;
       }
 
       .column-name {

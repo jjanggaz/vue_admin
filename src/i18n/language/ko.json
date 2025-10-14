@@ -741,7 +741,7 @@
     "enterMenuName": "메뉴명을 입력하세요",
     "enterMenuOrder": "정렬순서를 입력하세요",
     "selectGroupName": "그룹명 선택",
-    "vendorsSearch": "키워드 검색"
+    "vendorsSearch": "업체명, 주요제품 키워드 검색"
   },
   "datatable": {
     "loading": "데이터를 불러오는 중...",

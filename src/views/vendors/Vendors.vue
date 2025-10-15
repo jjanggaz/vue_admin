@@ -140,6 +140,11 @@
                 @field-change="handleFieldChange"
               />
             </div>
+            <div class="catalog-button-section">
+              <button class="btn btn-catalog" @click="openCatalogModal">
+                {{ t("common.catalog") || "카탈로그" }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -377,6 +382,25 @@
         </div>
       </div>
     </div>
+
+    <!-- 카탈로그 모달 -->
+    <div v-if="isCatalogModalOpen" class="modal-overlay" @click.self="closeCatalogModal">
+      <div class="modal-container modal-container-xlarge">
+        <div class="modal-header">
+          <h3>{{ t("common.catalog") || "카탈로그" }}</h3>
+          <button
+            class="btn-close"
+            @click="closeCatalogModal"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body modal-body-catalog">
+          <CatalogContent />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -386,15 +410,18 @@ import { storeToRefs } from "pinia";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
+import CatalogContent from "@/views/vendors/Catalog.vue";
 import { useI18n } from "vue-i18n";
 import {
   useVendorsStore,
   type VendorItem,
   type VendorCreateRequest,
 } from "@/stores/vendorsStore";
+import { useCatalogStore } from "@/stores/catalogStore";
 
 const { t } = useI18n();
 const vendorsStore = useVendorsStore();
+const catalogStore = useCatalogStore();
 
 interface RegistForm {
   vendorId: string;
@@ -507,6 +534,7 @@ const isEditMode = ref(false);
 const editingVendorId = ref<string | null>(null);
 const isDetailPanelOpen = ref(false);
 const isDetailEditMode = ref(false);
+const isCatalogModalOpen = ref(false);
 const newVendor = ref<RegistForm>({
   vendorId: "",
   vendorName: "",
@@ -637,6 +665,20 @@ const saveDetailChanges = async () => {
     console.error("상세정보 수정 실패:", error);
     alert(t("messages.error.updateFailed"));
   }
+};
+
+const openCatalogModal = () => {
+  if (!detailVendor.value) {
+    alert("업체 정보를 먼저 선택해주세요.");
+    return;
+  }
+  isCatalogModalOpen.value = true;
+};
+
+const closeCatalogModal = () => {
+  isCatalogModalOpen.value = false;
+  // 카탈로그 데이터 초기화
+  catalogStore.clearEquipmentList();
 };
 
 // VerticalDataTable용 데이터 구성
@@ -920,6 +962,30 @@ onMounted(() => {
     }
   }
 
+  .catalog-button-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-color;
+    display: flex;
+    justify-content: center;
+    
+    .btn-catalog {
+      padding: 0.75rem 2rem;
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: color.scale($primary-color, $lightness: -10%);
+      }
+    }
+  }
+
   .detail-info {
     display: grid;
     grid-template-columns: 150px 1fr;
@@ -1109,6 +1175,15 @@ onMounted(() => {
   overflow-y: auto;
 }
 
+.modal-container-xlarge {
+  background: white;
+  border-radius: 8px;
+  width: 98%;
+  max-width: 1800px;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1136,6 +1211,25 @@ onMounted(() => {
 
 .modal-body {
   padding: 1rem;
+}
+
+.modal-body-catalog {
+  padding: 0;
+  max-height: calc(95vh - 120px);
+  overflow-y: auto;
+  
+  // Catalog 컴포넌트 내부의 중복 헤더와 닫기 버튼 숨기기
+  :deep(.page-header) {
+    display: none;
+  }
+  
+  :deep(.wrap-page) {
+    padding: 1rem;
+  }
+  
+  :deep(.footer-actions) {
+    display: none;
+  }
 }
 
 .column-regist {

@@ -98,7 +98,25 @@
               <template v-else>
                 <!-- select 타입인 경우 options에서 label 찾기 -->
                 <template v-if="item.fieldType === 'select' && item.options">
-                  {{ item.options.find(opt => opt.value === item.value)?.label || item.value }}
+                  {{
+                    item.options.find((opt) => opt.value === item.value)
+                      ?.label || item.value
+                  }}
+                </template>
+                <!-- file 타입이고 값이 있으면 다운로드 가능하게 -->
+                <template
+                  v-else-if="
+                    item.fieldType === 'file' &&
+                    item.value &&
+                    item.value !== '-'
+                  "
+                >
+                  <span
+                    class="file-download-link"
+                    @click.stop="emit('file-download', item.columnName)"
+                  >
+                    {{ item.value }}
+                  </span>
                 </template>
                 <template v-else>
                   {{ item.value }}
@@ -120,6 +138,7 @@ interface Props {
     editable?: boolean;
     fieldType?: string;
     options?: Array<{ value: string; label: string }>;
+    filePath?: string;
   }>;
   loading?: boolean;
   rowKey?: string;
@@ -142,6 +161,7 @@ const emit = defineEmits<{
   "field-change": [fieldName: string, value: string];
   "file-attach": [fieldName: string];
   "file-remove": [fieldName: string];
+  "file-download": [fieldName: string];
 }>();
 
 const isSelected = (item: any): boolean => {
@@ -244,6 +264,17 @@ const getRowKey = (item: any, index: number) => {
               color: white;
               border-color: $primary-color;
             }
+          }
+        }
+
+        .file-download-link {
+          color: $primary-color;
+          cursor: pointer;
+          text-decoration: underline;
+
+          &:hover {
+            color: darken($primary-color, 10%);
+            font-weight: 500;
           }
         }
       }

@@ -313,7 +313,7 @@ const extractZipContents = async (file: File) => {
       "jpeg",
       "png",
       "gif",
-      //"svg",
+      "svg",
     ];
     const invalidFiles: string[] = [];
     let hasAllowedFile = false;

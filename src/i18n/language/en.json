@@ -1149,6 +1149,7 @@
       "uploadFileRequired": "Upload file is required.",
       "noFileToUpload": "No file to upload.",
       "noFileToRegister": "No file to register.",
+      "noFileToDownload": "No file to download.",
       "commonCodesFail": "Failed to retrieve common codes.",
       "commonCodeRetrieveFail": "Failed to retrieve common codes.",
       "commonCodeRetrieveError": "Error occurred while retrieving common codes.",

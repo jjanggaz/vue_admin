@@ -492,7 +492,14 @@
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
           <div class="model-thumbnail-section">
-            <div class="thumbnail-placeholder">
+            <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
+              <img
+                :src="thumbnailImageUrl"
+                :alt="t('common.modelThumbnailSection')"
+                class="thumbnail-image"
+              />
+            </div>
+            <div v-else class="thumbnail-placeholder">
               <span class="thumbnail-text">{{
                 t("common.noModelThumbnail")
               }}</span>
@@ -509,6 +516,7 @@
                 @field-change="handleFieldChange"
                 @file-attach="handleFileAttach"
                 @file-remove="handleFileRemove"
+                @file-download="handleFileDownload"
               />
 
               <!-- 숨겨진 파일 input들 -->
@@ -782,6 +790,42 @@ const selectedMachineCategory = ref("");
 const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
+const thumbnailImageUrl = ref<string>("");
+
+// 썸네일 MIME 타입 추정 헬퍼
+const getImageMimeType = (info: any): string => {
+  const fallback = "image/png";
+  const mime = info?.mime_type || info?.content_type;
+  if (typeof mime === "string" && mime.startsWith("image/")) return mime;
+  const name: string | undefined = info?.file_name || info?.filename;
+  if (name) {
+    const ext = name.split(".").pop()?.toLowerCase();
+    switch (ext) {
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "png":
+        return "image/png";
+      case "gif":
+        return "image/gif";
+      case "webp":
+        return "image/webp";
+      case "svg":
+        return "image/svg+xml";
+    }
+  }
+  return fallback;
+};
+
+// base64 패딩 보정
+const normalizeBase64 = (b64: string): string => {
+  const s = b64.trim();
+  const pad = s.length % 4;
+  if (pad === 2) return s + "==";
+  if (pad === 3) return s + "=";
+  if (pad === 1) return s.slice(0, -1); // 잘못된 끝 문자 제거
+  return s;
+};
 
 // 상세검색 관련 변수들
 const isDetailSearchOpen = ref(false);
@@ -835,13 +879,8 @@ const editData = ref({
   thumbnailFile: "",
 });
 
-// 콤보박스 옵션들 (임시 데이터)
-const manufacturers = ref([
-  { value: "samsung", label: "삼성" },
-  { value: "lg", label: "LG" },
-  { value: "hyundai", label: "현대" },
-  { value: "doosan", label: "두산" },
-]);
+// 콤보박스 옵션들 (API로부터 동적 로드)
+const manufacturers = ref<Array<{ value: string; label: string }>>([]);
 
 // VerticalDataTable용 사양 데이터 - 동적 생성
 const specVerticalData = computed(() => {
@@ -861,7 +900,7 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.machine.company"),
-    value: item.manufacturer || "-",
+    value: item.vendor_id || "-",
     editable: true,
     fieldType: "select",
     options: manufacturers.value,
@@ -936,34 +975,41 @@ const specVerticalData = computed(() => {
     });
   }
 
-  // 5. 파일 필드 (3D, Revit, 심볼, 썸네일, 계산식)
+  // 5. 파일 필드 (3D, 썸네일, Revit, 심볼, 계산식)
   data.push({
     columnName: "3D",
-    value: (item as any).model_3d_url || "",
+    value: (item as any).model_file_info?.file_name || "-",
+    filePath: (item as any).model_file_info?.file_path,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("common.thumbnail"),
-    value: (item as any).thumbnail_url || "",
+    value: (item as any).thumbnail_file_info?.file_name || "-",
+    filePath: (item as any).thumbnail_file_info?.file_path,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: "Revit",
-    value: (item as any).revit_file_url || "",
+    value: (item as any).rvt_file_info?.file_name || "-",
+    filePath: (item as any).rvt_file_info?.file_path,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("common.symbol"),
-    value: (item as any).symbol_url || "",
+    value: (item as any).symbol_file_info?.file_name || "-",
+    filePath: (item as any).symbol_file_info?.file_path,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("columns.machine.formula"),
-    value: (item as any).formula_url || "",
+    value: (item as any).formula_url || "-",
+    filePath: (item as any).formula_file_info?.file_path,
+    editable: true,
+    fieldType: "file",
   });
 
   return data;
@@ -1073,7 +1119,17 @@ const openDetailPanel = async (item: MachineItem) => {
   try {
     // 기계 공통 상세 정보 조회
     if (item.root_equipment_type) {
-      await machineStore.fetchMachineDetailCommon(item.root_equipment_type);
+      const response = await machineStore.fetchMachineDetailCommon(
+        item.root_equipment_type
+      );
+
+      // 제조사 목록을 manufacturers에 세팅
+      if (response?.response?.data) {
+        manufacturers.value = response.response.data.map((vendor: any) => ({
+          value: vendor.vendor_id,
+          label: vendor.vendor_name,
+        }));
+      }
     }
 
     // 기계 파일 상세 정보 조회
@@ -1084,7 +1140,64 @@ const openDetailPanel = async (item: MachineItem) => {
       thumbnail_id: item.thumbnail_id,
       formula_id: item.formula_id,
     };
-    await machineStore.fetchMachineDetailFiles(item.equipment_id, fileParams);
+    const fileResponse = await machineStore.fetchMachineDetailFiles(
+      item.equipment_id,
+      fileParams
+    );
+
+    // 썸네일 이미지 데이터 처리
+    const thumbInfo = fileResponse?.response?.data?.thumbnail_file;
+    if (thumbInfo?.data) {
+      const raw = thumbInfo.data as unknown;
+      const mimeType = getImageMimeType(thumbInfo);
+
+      // 1) base64 문자열
+      if (typeof raw === "string") {
+        // 이미 data URL이면 그대로 사용
+        if (raw.startsWith("data:")) {
+          thumbnailImageUrl.value = raw;
+        } else {
+          // 순수 base64를 안전하게 Blob으로 변환 후 표시
+          try {
+            const b64 = normalizeBase64(raw);
+            const byteString = atob(b64);
+            const len = byteString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) bytes[i] = byteString.charCodeAt(i);
+            const blob = new Blob([bytes], { type: mimeType });
+            thumbnailImageUrl.value = URL.createObjectURL(blob);
+          } catch {
+            // 디코딩 실패 시 표시 초기화
+            thumbnailImageUrl.value = "";
+          }
+        }
+      }
+      // 2) ArrayBuffer
+      else if (raw instanceof ArrayBuffer) {
+        const blob = new Blob([raw], { type: mimeType });
+        thumbnailImageUrl.value = URL.createObjectURL(blob);
+      }
+      // 3) Uint8Array (또는 TypedArray 유사)
+      else if (raw instanceof Uint8Array) {
+        const ab = raw.buffer.slice(
+          raw.byteOffset,
+          raw.byteOffset + raw.byteLength
+        ) as ArrayBuffer; // 명시적으로 ArrayBuffer로 단언
+        const blob = new Blob([ab], { type: mimeType });
+        thumbnailImageUrl.value = URL.createObjectURL(blob);
+      }
+      // 4) number[] (백엔드가 숫자 배열을 보내는 경우 대비)
+      else if (Array.isArray(raw)) {
+        const u8 = new Uint8Array(raw as number[]);
+        const blob = new Blob([u8], { type: mimeType });
+        thumbnailImageUrl.value = URL.createObjectURL(blob);
+      } else {
+        // 알 수 없는 포맷: 표시 초기화
+        thumbnailImageUrl.value = "";
+      }
+    } else {
+      thumbnailImageUrl.value = "";
+    }
   } catch (error) {
     console.error("상세 정보 조회 실패:", error);
   }
@@ -1093,6 +1206,12 @@ const closeDetailPanel = () => {
   isDetailPanelOpen.value = false;
   detailItemData.value = null;
   isDetailEditMode.value = false;
+
+  // 썸네일 이미지 URL 정리 (메모리 누수 방지)
+  if (thumbnailImageUrl.value && thumbnailImageUrl.value.startsWith("blob:")) {
+    URL.revokeObjectURL(thumbnailImageUrl.value);
+  }
+  thumbnailImageUrl.value = "";
 };
 
 const toggleEditMode = () => {
@@ -1281,6 +1400,49 @@ const handleFileRemove = (fieldName: string) => {
       break;
     default:
       console.error(`지원하지 않는 필드명: ${fieldName}`);
+  }
+};
+
+// 파일 다운로드 핸들러
+const handleFileDownload = (fieldName: string) => {
+  console.log(`파일 다운로드 요청: ${fieldName}`);
+
+  if (!detailItemData.value) return;
+
+  const item = detailItemData.value;
+  let fileInfo = null;
+
+  // 필드명에 따라 파일 정보 가져오기
+  switch (fieldName) {
+    case "3D":
+      fileInfo = (item as any).model_file_info;
+      break;
+    case t("common.thumbnail"):
+      fileInfo = (item as any).thumbnail_file_info;
+      break;
+    case "Revit":
+      fileInfo = (item as any).rvt_file_info;
+      break;
+    case t("common.symbol"):
+      fileInfo = (item as any).symbol_file_info;
+      break;
+  }
+
+  // file_path가 있으면 다운로드
+  if (fileInfo?.file_path) {
+    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/${
+      fileInfo.file_path
+    }`;
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = fileInfo.file_name || "download";
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    alert(t("messages.warning.noFileToDownload"));
   }
 };
 
@@ -1935,6 +2097,24 @@ onMounted(async () => {
       margin-bottom: 1.5rem;
       display: flex;
       justify-content: center;
+
+      .thumbnail-image-container {
+        width: 200px;
+        height: 150px;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        overflow: hidden;
+
+        .thumbnail-image {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+      }
 
       .thumbnail-placeholder {
         width: 200px;

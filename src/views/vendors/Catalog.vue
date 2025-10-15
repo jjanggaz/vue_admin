@@ -183,14 +183,41 @@ const equipmentData = computed(() => {
     return []
   }
   
-  const data = catalogStore.equipmentList.map((equipment: any) => ({
-    ...equipment,
-    manufacturer: equipment.vendor_name || equipment.manufacturer || '',
-    vendor_id: equipment.vendor_id || '',
-    search_criteria: equipment.search_criteria ? toRaw(equipment.search_criteria) : null,
-    output_values: equipment.output_values ? toRaw(equipment.output_values) : null,
-    specifications: equipment.specifications ? toRaw(equipment.specifications) : null,
-  }))
+  // price 필드 포맷팅 함수
+  const formatPriceField = (value: any, fieldName: string) => {
+    if (fieldName.toLowerCase().includes('price')) {
+      if (!value || value === '' || value === '견적필요') {
+        return value || ''
+      }
+      
+      // 숫자로 변환 시도
+      const numValue = parseFloat(value)
+      if (!isNaN(numValue)) {
+        return numValue.toLocaleString('ko-KR')
+      }
+    }
+    return value
+  }
+  
+  const data = catalogStore.equipmentList.map((equipment: any) => {
+    const formattedEquipment = { ...equipment }
+    
+    // 모든 필드를 순회하며 price 관련 필드 포맷팅
+    Object.keys(formattedEquipment).forEach(key => {
+      if (key.toLowerCase().includes('price')) {
+        formattedEquipment[key] = formatPriceField(formattedEquipment[key], key)
+      }
+    })
+    
+    return {
+      ...formattedEquipment,
+      manufacturer: equipment.vendor_name || equipment.manufacturer || '',
+      vendor_id: equipment.vendor_id || '',
+      search_criteria: equipment.search_criteria ? toRaw(equipment.search_criteria) : null,
+      output_values: equipment.output_values ? toRaw(equipment.output_values) : null,
+      specifications: equipment.specifications ? toRaw(equipment.specifications) : null,
+    }
+  })
   
   console.log('[Settings] 변환된 장비 데이터:', data)
   return data
@@ -586,7 +613,7 @@ onUnmounted(() => {
     table-layout: fixed;
     
     td {
-      font-size: 11px;
+      font-size: 12px;
       white-space: nowrap;
       padding: 6px 8px;
       text-align: center;

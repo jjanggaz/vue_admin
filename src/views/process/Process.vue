@@ -3,7 +3,7 @@
     <!-- Add Button -->
     <div class="action-bar">
       <div class="search-bar">
-        <!-- 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼 -->
+        <!-- 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색 버튼 -->
         <div class="search-row first-row">
           <div class="group-form">
             <label for="searchUnit" class="label-title">{{ t("codeManagement.categories.unit") }}</label>
@@ -93,20 +93,22 @@
               <button class="btn btn-primary btn-search" @click="handleSearch">
                 {{ t("common.search") }}
               </button>
-              <button class="btn btn-primary btn-regist" @click="handleRegist">
-                {{ t("common.register") }}
-              </button>
-              <button
-                class="btn btn-primary btn-delete"
-                @click="handleDelete"
-                :disabled="processStore.selectedItems.length === 0"
-                :title="`선택된 항목: ${processStore.selectedItems.length}개`"
-              >
-                {{ t("process.deleteSelected") }} ({{ processStore.selectedItems.length }})
-              </button>
             </div>
           </div>
         </div>
+      </div>
+      
+      <div class="btns">
+        <button class="btn btn-primary btn-regist" @click="handleRegist">
+          {{ t("common.register") }}
+        </button>
+        <button
+          class="btn btn-primary btn-delete"
+          @click="handleDelete"
+          :disabled="processStore.selectedItems.length === 0"
+        >
+          {{ t("common.delete") }}
+        </button>
       </div>
     </div>
 
@@ -465,7 +467,7 @@ const tableColumns: TableColumn[] = [
   }, // 공정심볼 (SVG 미리보기)
   {
     key: "viewDetail",
-    title: t("process.viewDetail"),
+    title: t("common.detailInfo"),
     sortable: false,
     formatter: (value) => formatDate(value),
   }, // 상세보기
@@ -1370,102 +1372,108 @@ onMounted(async () => {
 
 .action-bar {
   display: flex;
-  margin-bottom: $spacing-lg;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
   
-        .search-bar {
+  // 각 줄의 스타일
+  .search-row {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: flex-start;
+    width: 100%;
+    flex-wrap: wrap;
     
-    // 각 줄의 스타일
-    .search-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: flex-start;
-      width: 100%;
+    &.first-row {
+      // 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
       flex-wrap: wrap;
       
-      &.first-row {
-        // 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
-        flex-wrap: nowrap;
+      .group-form {
+        flex: 0 0 auto;
+        min-width: 0;
         
-        .group-form {
-          flex: 0 0 auto;
-          min-width: 0;
-          
-          // 셀렉트 폭 조정
-          .form-select {
-            max-width: 120px;
-            min-width: 80px;
-          }
-          
-          // 공정구분 셀렉트 폭 조정
-          &:nth-child(3) .form-select {
-            max-width: 150px;
-            min-width: 120px;
-          }
-          
-          // 공정중분류 셀렉트 폭 조정
-          &:nth-child(4) .form-select {
-            max-width: 180px;
-            min-width: 150px;
-          }
-          
-          // 공정명 셀렉트 폭 조정
-          &:nth-child(5) .form-select {
-            max-width: 200px;
-            min-width: 180px;
-          }
-          
-          // 라벨 폭 조정
-          .label-title {
-            font-size: 0.85rem;
-            white-space: nowrap;
-          }
+        &.button-group-right {
+          margin-left: auto;
         }
-      }
-      
-      &.second-row {
-        // 두 번째 줄: 등록/삭제 버튼들
-        .group-form {
-          flex: 0 0 auto;
-          min-width: 0;
-          
-          // 셀렉트 폭 조정
-          .form-select {
-            max-width: 100px;
-            min-width: 80px;
-          }
-          
-          // 라벨 폭 조정
-          .label-title {
-            font-size: 0.85rem;
-            white-space: nowrap;
-          }
+        
+        // 셀렉트 폭 조정
+        .form-select {
+          max-width: 120px;
+          min-width: 80px;
+        }
+        
+        // 공정구분 셀렉트 폭 조정
+        &:nth-child(3) .form-select {
+          max-width: 150px;
+          min-width: 120px;
+        }
+        
+        // 공정중분류 셀렉트 폭 조정
+        &:nth-child(4) .form-select {
+          max-width: 180px;
+          min-width: 150px;
+        }
+        
+        // 공정명 셀렉트 폭 조정
+        &:nth-child(5) .form-select {
+          max-width: 200px;
+          min-width: 180px;
+        }
+        
+        // 라벨 폭 조정
+        .label-title {
+          font-size: 0.85rem;
+          white-space: nowrap;
         }
       }
     }
     
-    .group-form {
-      margin-bottom: 1rem;
-      min-width: 0;
-      
-      // 셀렉트 폭 조정
-      .form-select {
-        max-width: 180px;
-        min-width: 120px;
-      }
-      
-      // 버튼 그룹 스타일
-      .button-group {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
+    &.second-row {
+      // 두 번째 줄: 등록/삭제 버튼들
+      .group-form {
+        flex: 0 0 auto;
+        min-width: 0;
         
-        .btn {
-          margin-right: 0;
+        // 셀렉트 폭 조정
+        .form-select {
+          max-width: 100px;
+          min-width: 80px;
         }
+        
+        // 라벨 폭 조정
+        .label-title {
+          font-size: 0.85rem;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+  
+  .group-form {
+    margin-bottom: 1rem;
+    min-width: 0;
+    
+    // 셀렉트 폭 조정
+    .form-select {
+      max-width: 180px;
+      min-width: 120px;
+    }
+    
+    // 버튼 그룹 스타일
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      
+      .btn {
+        margin-right: 0;
       }
     }
   }

@@ -250,7 +250,7 @@ const zipTableColumns: TableColumn[] = [
 ];
 
 // 파일 크기 포맷팅 함수
-function formatFileSize(bytes: number): string {
+const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
@@ -258,7 +258,7 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
+};
 
 // 구조물 대분류 변경 시 하위 구조물 타입 로드
 // 컴포넌트 마운트 시 공통코드 조회
@@ -281,7 +281,7 @@ const handleStructureTypeChange = async () => {
 };
 
 // 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
-function validateBasicSelections(): boolean {
+const validateBasicSelections = (): boolean => {
   if (!selectedStructureType.value) {
     alert(t("messages.warning.selectStructureType"));
     return false;
@@ -292,12 +292,12 @@ function validateBasicSelections(): boolean {
   }
 
   return true;
-}
+};
 
 // 편집 모드 삭제 로직 제거
 
 // ZIP 파일 내부 파일 목록 추출 함수 (임시 구현)
-async function extractZipContents(file: File) {
+const extractZipContents = async (file: File) => {
   try {
     // JSZip 라이브러리 로드 시도
     let JSZip;
@@ -454,10 +454,10 @@ async function extractZipContents(file: File) {
     zipFileList.value = [];
     showZipContents.value = false;
   }
-}
+};
 
 // 파일 변경 핸들러들
-async function handleAllFileChange(e: Event) {
+const handleAllFileChange = async (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -480,9 +480,9 @@ async function handleAllFileChange(e: Event) {
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";
-}
+};
 
-function handleFormulaFileChange(e: Event) {
+const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -497,9 +497,9 @@ function handleFormulaFileChange(e: Event) {
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";
-}
+};
 
-function handleDtdFileChange(e: Event) {
+const handleDtdFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -514,9 +514,9 @@ function handleDtdFileChange(e: Event) {
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";
-}
+};
 
-function handleThumbnailFileChange(e: Event) {
+const handleThumbnailFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -537,9 +537,9 @@ function handleThumbnailFileChange(e: Event) {
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";
-}
+};
 
-function handleRevitFileChange(e: Event) {
+const handleRevitFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -554,10 +554,10 @@ function handleRevitFileChange(e: Event) {
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";
-}
+};
 
 // 등록 함수
-async function onRegister() {
+const onRegister = async () => {
   if (!validateBasicSelections()) return;
 
   if (!allFileName.value) {
@@ -623,10 +623,10 @@ async function onRegister() {
     console.error("구조물 등록 실패:", error);
     alert("구조물 등록 중 오류가 발생했습니다.");
   }
-}
+};
 
 // 폼 초기화 함수
-function resetForm() {
+const resetForm = () => {
   selectedStructureType.value = "";
   selectedMachineName.value = "";
   remarks.value = "";
@@ -653,7 +653,7 @@ function resetForm() {
   if (dtdFileInput.value) dtdFileInput.value.value = "";
   if (thumbnailFileInput.value) thumbnailFileInput.value.value = "";
   if (revitFileInput.value) revitFileInput.value.value = "";
-}
+};
 
 // 수정 로직 제거 (StructureUpdateTab에서 처리)
 defineExpose({ onRegister });

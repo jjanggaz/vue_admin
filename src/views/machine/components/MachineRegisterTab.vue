@@ -3,7 +3,7 @@
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ 기계명</span>
+        <span class="label required">⊙ {{ t("common.machineName") }}</span>
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -20,14 +20,14 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ Excel 업로드</span>
+        <span class="label required">⊙ {{ t("common.excelUpload") }}</span>
         <div class="file-upload-group">
           <input
             type="text"
             class="input file-name-input"
             :value="excelFileName"
             readonly
-            placeholder="파일을 선택하세요"
+            :placeholder="t('placeholder.selectFile')"
           />
           <input
             type="file"
@@ -41,7 +41,7 @@
             class="btn-file"
             @click="excelFileInput?.click()"
           >
-            파일 선택
+            {{ t("common.chooseFile") }}
           </button>
         </div>
       </div>
@@ -51,21 +51,21 @@
           class="btn-outline"
           @click.prevent="onDownloadExcelTemplate"
         >
-          Excel 양식 다운로드
+          {{ t("common.excelTemplateDownload") }}
         </button>
         <button
           type="button"
           class="btn-register"
           @click="handleMachineRegister"
         >
-          기계 등록
+          {{ t("common.machineRegister") }}
         </button>
       </div>
     </div>
 
     <!-- 리스트 테이블 -->
     <div class="section-header">
-      <div class="section-title">⊙ 기계리스트 업로드</div>
+      <div class="section-title">⊙ {{ t("common.machineUpload") }}</div>
       <div class="section-actions">
         <div class="file-upload-group">
           <input
@@ -73,7 +73,7 @@
             class="input file-name-input"
             :value="bulkFileName"
             readonly
-            placeholder="파일을 선택하세요"
+            :placeholder="t('placeholder.selectFile')"
           />
           <input
             type="file"
@@ -87,14 +87,14 @@
             class="btn-file"
             @click="bulkFileInput?.click()"
           >
-            모델 대량 업로드
+            {{ t("common.bulkModelUpload") }}
           </button>
           <button
             type="button"
             class="btn-register"
             @click="handleModelRegister"
           >
-            모델 등록
+            {{ t("common.modelRegister") }}
           </button>
         </div>
       </div>
@@ -122,6 +122,29 @@
         <template #cell-size="{ value }">
           {{ formatFileSize(value) }}
         </template>
+
+        <!-- 결과 슬롯 -->
+        <template #cell-result="{ item }">
+          <span
+            :class="{
+              'result-success':
+                item.result === t('messages.success.uploadSuccess'),
+              'result-failed':
+                item.result === t('messages.success.uploadFailed'),
+              'result-skipped':
+                item.result === t('messages.success.uploadSkipped'),
+            }"
+          >
+            {{ item.result || "-" }}
+          </span>
+        </template>
+
+        <!-- 비고 슬롯 -->
+        <template #cell-remarks="{ item }">
+          <span class="remarks-text" :title="item.remarks">
+            {{ item.remarks || "-" }}
+          </span>
+        </template>
       </DataTable>
     </div>
   </div>
@@ -145,31 +168,49 @@ const selectedMachineName = ref("");
 // 엑셀 업로드 입력 ref
 const excelFileInput = ref<HTMLInputElement | null>(null);
 const excelFileName = ref<string>("");
+const excelFile = ref<File | null>(null);
 // 대량 업로드 입력 ref
 const bulkFileInput = ref<HTMLInputElement | null>(null);
 const bulkFileName = ref<string>("");
+const bulkFile = ref<File | null>(null);
 
 // ZIP 파일 내부 파일 목록
 const zipFileList = ref<
-  Array<{ name: string; size: number; type: string; lastModified?: string }>
+  Array<{
+    name: string;
+    size: number;
+    type: string;
+    lastModified?: string;
+    result?: string;
+    remarks?: string;
+  }>
 >([]);
 const showZipContents = ref(false);
 
+// 업로드 결과 저장
+const uploadResult = ref<{
+  success_files: Array<{ file_name: string; reason?: string }>;
+  failed_files: Array<{ file_name: string; reason?: string }>;
+  skipped_files: Array<{ file_name: string; reason?: string }>;
+} | null>(null);
+
 // ZIP 파일 목록 테이블 컬럼
 const zipTableColumns: TableColumn[] = [
-  { key: "name", title: t("common.fileName"), width: "40%", sortable: false },
-  { key: "type", title: t("common.fileType"), width: "20%", sortable: false },
-  { key: "size", title: t("common.fileSize"), width: "20%", sortable: false },
+  { key: "name", title: t("common.fileName"), width: "25%", sortable: false },
+  { key: "type", title: t("common.fileType"), width: "15%", sortable: false },
+  { key: "size", title: t("common.fileSize"), width: "10%", sortable: false },
   {
     key: "lastModified",
     title: t("common.lastModified"),
-    width: "20%",
+    width: "15%",
     sortable: false,
   },
+  { key: "result", title: t("common.result"), width: "10%", sortable: false },
+  { key: "remarks", title: t("common.remarks"), width: "25%", sortable: false },
 ];
 
 // 파일 크기 포맷팅 함수
-function formatFileSize(bytes: number): string {
+const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
@@ -177,10 +218,63 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
+};
+
+// 업로드 결과에 따라 zipFileList 업데이트
+const updateZipFileListWithResult = (resultData: any) => {
+  if (!resultData?.details) return;
+
+  const { success_files, failed_files, skipped_files } = resultData.details;
+
+  // zipFileList의 각 항목에 대해 결과와 비고를 매핑
+  zipFileList.value = zipFileList.value.map((file) => {
+    // 성공 파일 체크
+    const successFile = success_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (successFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadSuccess"),
+        remarks: successFile.reason || "-",
+      };
+    }
+
+    // 실패 파일 체크
+    const failedFile = failed_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (failedFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadFailed"),
+        remarks: failedFile.reason || "-",
+      };
+    }
+
+    // 제외 파일 체크
+    const skippedFile = skipped_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (skippedFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadSkipped"),
+        remarks: skippedFile.reason || "-",
+      };
+    }
+
+    // 매칭되지 않은 경우
+    return {
+      ...file,
+      result: "-",
+      remarks: "-",
+    };
+  });
+};
 
 // ZIP 파일 내부 파일 목록 추출 함수
-async function extractZipContents(file: File) {
+const extractZipContents = async (file: File) => {
   try {
     // JSZip 라이브러리 로드 시도
     let JSZip;
@@ -286,6 +380,7 @@ async function extractZipContents(file: File) {
       zipFileList.value = [];
       showZipContents.value = false;
       bulkFileName.value = "";
+      bulkFile.value = null;
       return;
     }
 
@@ -302,6 +397,7 @@ async function extractZipContents(file: File) {
       zipFileList.value = [];
       showZipContents.value = false;
       bulkFileName.value = "";
+      bulkFile.value = null;
       return;
     }
 
@@ -321,38 +417,66 @@ async function extractZipContents(file: File) {
     alert(t("messages.warning.zipReadFail"));
     zipFileList.value = [];
     showZipContents.value = false;
+    bulkFile.value = null;
   }
-}
+};
 
 // 공통 검증 함수: 기계명 필수 체크
-function validateBasicSelections(): boolean {
+const validateBasicSelections = (): boolean => {
   if (!selectedMachineName.value) {
     alert(t("messages.warning.selectMachineName"));
     return false;
   }
 
   return true;
-}
+};
 
 // 버튼 핸들러들
-function onDownloadExcelTemplate() {
+const onDownloadExcelTemplate = async () => {
   if (!validateBasicSelections()) return;
-  // TODO: 템플릿 다운로드 로직 연결
-}
+
+  try {
+    const response = await machineStore.downloadExcelTemplate(
+      selectedMachineName.value
+    );
+
+    // 파일 다운로드 처리
+    if (response?.response) {
+      // Blob 데이터가 있는 경우
+      const blob = response.response;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${selectedMachineName.value}_template.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
+  } catch (error: any) {
+    console.error("Excel 템플릿 다운로드 실패:", error);
+    // error.response의 message가 있으면 표시, 없으면 기본 메시지
+    const errorMessage =
+      error?.message || t("messages.warning.excelTemplateDownloadFailed");
+    alert(errorMessage);
+  }
+};
 
 // 엑셀 파일 변경 핸들러
-function handleExcelFileChange(e: Event) {
+const handleExcelFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
 
   if (!file) {
     excelFileName.value = "";
+    excelFile.value = null;
     return;
   }
 
   // 기본 선택 검증
   if (!validateBasicSelections()) {
     input.value = "";
+    excelFile.value = null;
     return;
   }
 
@@ -365,6 +489,7 @@ function handleExcelFileChange(e: Event) {
     );
     input.value = "";
     excelFileName.value = "";
+    excelFile.value = null;
     return;
   }
 
@@ -376,21 +501,22 @@ function handleExcelFileChange(e: Event) {
     );
     input.value = "";
     excelFileName.value = "";
+    excelFile.value = null;
     return;
   }
 
   excelFileName.value = file.name;
-
-  // TODO: 실제 파싱/업로드 로직 연결 (예: FormData 전송 또는 xlsx 파싱)
-}
+  excelFile.value = file;
+};
 
 // 대량 업로드 파일 변경 핸들러
-async function handleBulkFileChange(e: Event) {
+const handleBulkFileChange = async (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
 
   if (!file) {
     bulkFileName.value = "";
+    bulkFile.value = null;
     zipFileList.value = [];
     showZipContents.value = false;
     return;
@@ -399,6 +525,7 @@ async function handleBulkFileChange(e: Event) {
   // 기본 선택 검증
   if (!validateBasicSelections()) {
     input.value = "";
+    bulkFile.value = null;
     return;
   }
 
@@ -411,6 +538,7 @@ async function handleBulkFileChange(e: Event) {
     );
     input.value = "";
     bulkFileName.value = "";
+    bulkFile.value = null;
     zipFileList.value = [];
     showZipContents.value = false;
     return;
@@ -424,12 +552,14 @@ async function handleBulkFileChange(e: Event) {
     );
     input.value = "";
     bulkFileName.value = "";
+    bulkFile.value = null;
     zipFileList.value = [];
     showZipContents.value = false;
     return;
   }
 
   bulkFileName.value = file.name;
+  bulkFile.value = file;
 
   // ZIP 파일인 경우 내부 파일 목록 추출
   if (file.name.toLowerCase().endsWith(".zip")) {
@@ -438,36 +568,87 @@ async function handleBulkFileChange(e: Event) {
     zipFileList.value = [];
     showZipContents.value = false;
   }
-
-  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
-  input.value = "";
-}
+};
 
 // 기계 등록 핸들러
-function handleMachineRegister() {
+const handleMachineRegister = async () => {
   if (!validateBasicSelections()) return;
 
-  if (!excelFileName.value) {
+  if (!excelFileName.value || !excelFile.value) {
     alert(t("messages.warning.selectExcelFile"));
     return;
   }
 
-  // TODO: 기계 등록 로직 연결
-  console.log("기계 등록:", excelFileName.value);
-}
+  try {
+    // machineStore의 uploadMachineExcel 함수 호출
+    await machineStore.uploadMachineExcel(
+      selectedMachineName.value,
+      excelFile.value
+    );
+
+    alert(t("messages.success.machineRegistered"));
+
+    // 성공 시 초기화
+    excelFileName.value = "";
+    excelFile.value = null;
+    if (excelFileInput.value) {
+      excelFileInput.value.value = "";
+    }
+    isRegistered.value = true;
+  } catch (error) {
+    console.error("기계 등록 실패:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    alert(errorMessage);
+  }
+};
 
 // 모델 등록 핸들러
-function handleModelRegister() {
+const handleModelRegister = async () => {
   if (!validateBasicSelections()) return;
 
-  if (!bulkFileName.value) {
+  if (!bulkFileName.value || !bulkFile.value) {
     alert(t("messages.warning.selectModelFile"));
     return;
   }
 
-  // TODO: 모델 등록 로직 연결
-  console.log("모델 등록:", bulkFileName.value);
-}
+  try {
+    // machineStore의 uploadModelZip 함수 호출
+    const response = await machineStore.uploadModelZip(
+      selectedMachineName.value,
+      bulkFile.value
+    );
+
+    // 업로드 결과 저장 및 그리드 업데이트
+    const apiResponse = response?.response as any;
+    const resultData = apiResponse?.data?.data;
+
+    if (resultData?.summary && resultData?.details) {
+      uploadResult.value = resultData.details;
+
+      // zipFileList를 업로드 결과로 업데이트
+      updateZipFileListWithResult(resultData);
+
+      // 요약 정보 표시
+      const summary = resultData.summary;
+      const message = `${t("messages.success.uploadCompleted")}\n\n${t(
+        "common.totalFiles"
+      )}: ${summary.total_files || 0}\n${t("common.successCount")}: ${
+        summary.success_count || 0
+      }\n${t("common.skippedCount")}: ${summary.skipped_count || 0}\n${t(
+        "common.failedCount"
+      )}: ${summary.failed_count || 0}`;
+      alert(message);
+    } else {
+      alert(t("messages.success.modelRegistered"));
+    }
+  } catch (error) {
+    console.error("모델 등록 실패:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    alert(errorMessage);
+  }
+};
 </script>
 
 <style scoped lang="scss">
@@ -811,6 +992,34 @@ $desktop: 1200px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+
+  // 결과 상태 스타일
+  :deep(.result-success) {
+    color: #10b981;
+    font-weight: 600;
+  }
+
+  :deep(.result-failed) {
+    color: #ef4444;
+    font-weight: 600;
+  }
+
+  :deep(.result-skipped) {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+
+  // 비고 텍스트 스타일
+  :deep(.remarks-text) {
+    font-size: 13px;
+    color: #6b7280;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    cursor: help;
+  }
 }
 
 .zip-contents-title {

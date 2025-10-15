@@ -376,6 +376,189 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  // Excel 템플릿 다운로드
+  const downloadExcelTemplate = async (machineName: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/tempExcel/${encodeURIComponent(machineName)}`,
+        undefined,
+        {
+          method: "GET",
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("Excel 템플릿 다운로드 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Excel 템플릿 다운로드에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 기계 Excel 파일 업로드
+  const uploadMachineExcel = async (machineName: string, excelFile: File) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+      formData.append("excel_file", excelFile);
+
+      const response = await request(
+        `/api/machine/uploadModelExcel/${encodeURIComponent(machineName)}`,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("기계 Excel 업로드 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "기계 Excel 업로드에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 모델 ZIP 파일 업로드
+  const uploadModelZip = async (machineName: string, zipFile: File) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+      formData.append("all_file", zipFile);
+
+      const response = await request(
+        `/api/machine/uploadModelZip/${encodeURIComponent(machineName)}`,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("모델 ZIP 업로드 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "모델 ZIP 업로드에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteMachine = async (
+    equipmentId: string,
+    params: {
+      model_file_id?: string;
+      rvt_file_id?: string;
+      symbol_id?: string;
+      thumbnail_id?: string;
+      formula_id?: string;
+    }
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/delete/${encodeURIComponent(equipmentId)}`,
+        undefined,
+        {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("기계 삭제 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "기계 삭제에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const fetchMachineDetailCommon = async (equipmentType: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/detail/common/${encodeURIComponent(equipmentType)}`,
+        undefined,
+        { method: "POST" }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("기계 공통 상세 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "기계 공통 상세 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const fetchMachineDetailFiles = async (
+    equipmentId: string,
+    params: {
+      model_file_id?: string;
+      rvt_file_id?: string;
+      symbol_id?: string;
+      thumbnail_id?: string;
+      formula_id?: string;
+    }
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/detail/files/${encodeURIComponent(equipmentId)}`,
+        undefined,
+        {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("기계 파일 상세 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "기계 파일 상세 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -399,5 +582,11 @@ export const useMachineStore = defineStore("machine", () => {
     fetchMachineCommonCode,
     fetchDepthDetail,
     fetchDepthDetailBySearchType,
+    downloadExcelTemplate,
+    uploadMachineExcel,
+    uploadModelZip,
+    deleteMachine,
+    fetchMachineDetailCommon,
+    fetchMachineDetailFiles,
   };
 });

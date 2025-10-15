@@ -7,7 +7,9 @@
         <div class="search-filter-bar">
           <div class="filter-group">
             <div class="filter-item">
-              <label for="machineCategory">기계 대분류</label>
+              <label for="machineCategory">{{
+                t("machine.machineMajorCategory")
+              }}</label>
               <select
                 id="machineCategory"
                 v-model="selectedMachineCategory"
@@ -491,7 +493,9 @@
           <!-- 모델 썸네일 이미지 영역 -->
           <div class="model-thumbnail-section">
             <div class="thumbnail-placeholder">
-              <span class="thumbnail-text">모델 썸네일 없음</span>
+              <span class="thumbnail-text">{{
+                t("common.noModelThumbnail")
+              }}</span>
             </div>
           </div>
 
@@ -517,6 +521,13 @@
               />
               <input
                 type="file"
+                ref="fileThumbnail"
+                @change="handleFileSelect('thumbnail', $event)"
+                style="display: none"
+                accept=".jpg,.jpeg,.png,.gif"
+              />
+              <input
+                type="file"
                 ref="fileRevit"
                 @change="handleFileSelect('revit', $event)"
                 style="display: none"
@@ -533,7 +544,7 @@
 
             <!-- 단가이력 -->
             <div class="detail-section price-history-section">
-              <h4 class="section-title">단가이력</h4>
+              <h4 class="section-title">{{ t("common.priceHistory") }}</h4>
               <DataTable
                 :columns="priceHistoryColumns"
                 :data="priceHistoryData"
@@ -628,10 +639,10 @@ const machineStore = useMachineStore();
 
 // 모달 탭 구성 - 등록 모드만 사용
 const modalTabs = [
-  { key: "machine", label: "기계 등록" },
+  { key: "machine", label: t("common.machineRegistration") },
   {
     key: "formula",
-    label: "기계 계산식 등록",
+    label: t("common.machineFormulaRegistration"),
   },
 ];
 const modalActiveTab = ref(0);
@@ -678,6 +689,7 @@ interface MachineItem {
   thumbnail_id?: string;
   power_unit?: string;
   vendor_id?: string;
+  formula_id?: string;
   updated_by: string;
   manufacturer_en?: string;
   equipment_price_history?: PriceHistoryItem[];
@@ -728,31 +740,31 @@ const tableColumns: TableColumn[] = [
 const priceHistoryColumns: TableColumn[] = [
   {
     key: "price_value",
-    title: "단가",
+    title: t("common.unitPrice"),
     width: "50px",
     sortable: false,
   },
   {
     key: "price_date",
-    title: "단가등록일",
+    title: t("common.unitPriceDate"),
     width: "50px",
     sortable: false,
   },
   {
     key: "price_type",
-    title: "단가유형",
+    title: t("common.priceType"),
     width: "50px",
     sortable: false,
   },
   {
     key: "price_unit_code",
-    title: "단위",
+    title: t("common.unit"),
     width: "50px",
     sortable: false,
   },
   {
     key: "price_reference",
-    title: "제공처",
+    title: t("common.provider"),
     width: "100px",
     sortable: false,
   },
@@ -820,6 +832,7 @@ const editData = ref({
   model3dFile: "",
   revitFile: "",
   symbolFile: "",
+  thumbnailFile: "",
 });
 
 // 콤보박스 옵션들 (임시 데이터)
@@ -828,13 +841,6 @@ const manufacturers = ref([
   { value: "lg", label: "LG" },
   { value: "hyundai", label: "현대" },
   { value: "doosan", label: "두산" },
-]);
-
-const models = ref([
-  { value: "model1", label: "모델1" },
-  { value: "model2", label: "모델2" },
-  { value: "model3", label: "모델3" },
-  { value: "model4", label: "모델4" },
 ]);
 
 // VerticalDataTable용 사양 데이터 - 동적 생성
@@ -864,8 +870,7 @@ const specVerticalData = computed(() => {
     columnName: t("columns.machine.model"),
     value: item.model_number || "-",
     editable: true,
-    fieldType: "select",
-    options: models.value,
+    fieldType: "input",
   });
 
   // 2. output_values 동적 추가
@@ -931,10 +936,16 @@ const specVerticalData = computed(() => {
     });
   }
 
-  // 5. 파일 필드 (3D, Revit, 심볼, 계산식)
+  // 5. 파일 필드 (3D, Revit, 심볼, 썸네일, 계산식)
   data.push({
     columnName: "3D",
     value: (item as any).model_3d_url || "",
+    editable: true,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: t("common.thumbnail"),
+    value: (item as any).thumbnail_url || "",
     editable: true,
     fieldType: "file",
   });
@@ -945,7 +956,7 @@ const specVerticalData = computed(() => {
     fieldType: "file",
   });
   data.push({
-    columnName: t("columns.machine.symbol"),
+    columnName: t("common.symbol"),
     value: (item as any).symbol_url || "",
     editable: true,
     fieldType: "file",
@@ -1014,7 +1025,7 @@ const closeRegistModal = () => {
 
 // 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
 
-const handleDelete = () => {
+const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
@@ -1024,19 +1035,59 @@ const handleDelete = () => {
       t("messages.confirm.deleteItems", { count: selectedItems.value.length })
     )
   ) {
-    const selectedIds = selectedItems.value.map((item) => item.equipment_id);
-    machineList.value = machineList.value.filter(
-      (item) => !selectedIds.includes(item.equipment_id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
+    try {
+      // 선택된 항목들에 대해 삭제 API 호출
+      for (const item of selectedItems.value) {
+        const deleteParams = {
+          model_file_id: item.model_file_id,
+          rvt_file_id: item.rvt_file_id,
+          symbol_id: item.symbol_id,
+          thumbnail_id: item.thumbnail_id,
+          formula_id: item.formula_id,
+        };
+
+        await machineStore.deleteMachine(item.equipment_id, deleteParams);
+      }
+
+      selectedItems.value = [];
+      alert(t("messages.success.deleted"));
+
+      // 삭제 후 데이터 재조회
+      await loadData();
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t("messages.error.deleteFailed");
+      alert(errorMessage);
+    }
   }
 };
 
-const openDetailPanel = (item: MachineItem) => {
+const openDetailPanel = async (item: MachineItem) => {
   detailItemData.value = item;
   isDetailPanelOpen.value = true;
   isDetailEditMode.value = false;
+
+  try {
+    // 기계 공통 상세 정보 조회
+    if (item.root_equipment_type) {
+      await machineStore.fetchMachineDetailCommon(item.root_equipment_type);
+    }
+
+    // 기계 파일 상세 정보 조회
+    const fileParams = {
+      model_file_id: item.model_file_id,
+      rvt_file_id: item.rvt_file_id,
+      symbol_id: item.symbol_id,
+      thumbnail_id: item.thumbnail_id,
+      formula_id: item.formula_id,
+    };
+    await machineStore.fetchMachineDetailFiles(item.equipment_id, fileParams);
+  } catch (error) {
+    console.error("상세 정보 조회 실패:", error);
+  }
 };
 const closeDetailPanel = () => {
   isDetailPanelOpen.value = false;
@@ -1078,6 +1129,7 @@ const handleFileSelect = (type: string, event: Event) => {
       "3d": [".dtdx"],
       revit: [".rvt"],
       symbol: [".svg"],
+      thumbnail: [".jpg", ".jpeg", ".png", ".gif"],
     };
 
     const fileExtension = file.name
@@ -1119,6 +1171,13 @@ const handleFileSelect = (type: string, event: Event) => {
           (detailItemData.value as any).symbol_url = file.name;
         }
         break;
+      case "thumbnail":
+        editData.value.thumbnailFile = file.name;
+        // 그리드 데이터도 업데이트
+        if (detailItemData.value) {
+          (detailItemData.value as any).thumbnail_url = file.name;
+        }
+        break;
     }
     console.log(`${type} 파일 선택됨:`, file.name);
   }
@@ -1130,10 +1189,10 @@ const handleFieldChange = (fieldName: string, value: string) => {
 
   // editData에 반영
   switch (fieldName) {
-    case "제조사":
+    case t("common.manufacturer"):
       editData.value.manufacturer = value;
       break;
-    case "모델명":
+    case t("common.modelName"):
       editData.value.modelNumber = value;
       break;
   }
@@ -1143,6 +1202,7 @@ const handleFieldChange = (fieldName: string, value: string) => {
 const file3d = ref<HTMLInputElement>();
 const fileRevit = ref<HTMLInputElement>();
 const fileSymbol = ref<HTMLInputElement>();
+const fileThumbnail = ref<HTMLInputElement>();
 
 // 그리드에서 파일 첨부 처리
 const handleFileAttach = (fieldName: string) => {
@@ -1159,9 +1219,14 @@ const handleFileAttach = (fieldName: string) => {
         fileRevit.value.click();
       }
       break;
-    case "심볼":
+    case t("common.symbol"):
       if (fileSymbol.value) {
         fileSymbol.value.click();
+      }
+      break;
+    case t("common.thumbnail"):
+      if (fileThumbnail.value) {
+        fileThumbnail.value.click();
       }
       break;
     default:
@@ -1194,7 +1259,7 @@ const handleFileRemove = (fieldName: string) => {
         fileRevit.value.value = "";
       }
       break;
-    case "심볼":
+    case t("common.symbol"):
       editData.value.symbolFile = "";
       if (detailItemData.value) {
         (detailItemData.value as any).symbol_url = "";
@@ -1202,6 +1267,16 @@ const handleFileRemove = (fieldName: string) => {
       // 파일 input 초기화
       if (fileSymbol.value) {
         fileSymbol.value.value = "";
+      }
+      break;
+    case t("common.thumbnail"):
+      editData.value.thumbnailFile = "";
+      if (detailItemData.value) {
+        (detailItemData.value as any).thumbnail_url = "";
+      }
+      // 파일 input 초기화
+      if (fileThumbnail.value) {
+        fileThumbnail.value.value = "";
       }
       break;
     default:

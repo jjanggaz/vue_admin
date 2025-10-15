@@ -3,7 +3,7 @@
     <!-- 상단 필터 -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ 기계명</span>
+        <span class="label required">⊙ {{ t("common.machineName") }}</span>
         <select class="input select-md" v-model="selectedMachineName">
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -16,7 +16,9 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 기계중분류</span>
+        <span class="label required"
+          >⊙ {{ t("common.machineSubCategory") }}</span
+        >
         <select
           class="input select-sm"
           :disabled="!isStep1Enabled"
@@ -33,14 +35,14 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ 계산식파일</span>
+        <span class="label required">⊙ {{ t("common.formulaFile") }}</span>
         <div class="file-upload-group">
           <input
             type="text"
             class="input file-name-input"
             :value="formulaFileName"
             readonly
-            placeholder="파일을 선택하세요"
+            :placeholder="t('placeholder.selectFile')"
           />
           <input
             type="file"
@@ -54,10 +56,10 @@
             class="btn-file"
             @click="formulaFileInput?.click()"
           >
-            파일 선택
+            {{ t("common.chooseFile") }}
           </button>
           <button type="button" class="btn-register" @click="handleRegister">
-            등록
+            {{ t("common.register") }}
           </button>
         </div>
       </div>
@@ -65,7 +67,9 @@
 
     <!-- 계산식 리스트 -->
     <div class="section-header">
-      <div class="section-title">⊙ 기계 계산식 버전관리</div>
+      <div class="section-title">
+        ⊙ {{ t("common.formulaVersionManagement") }}
+      </div>
       <div class="section-actions">
         <button class="btn-danger">{{ t("common.delete") }}</button>
       </div>
@@ -105,12 +109,32 @@ const selectedThirdDept = ref("");
 const isStep1Enabled = ref(false); // 기계중분류
 
 const listColumns: TableColumn[] = [
-  { key: "no", title: "순번", width: "80px", sortable: false },
-  { key: "type", title: "기계 타입", width: "150px", sortable: false },
-  { key: "version", title: "계산식 버전", width: "150px", sortable: false },
-  { key: "unit", title: "단위", width: "100px", sortable: false },
-  { key: "createdAt", title: "생성일자", width: "150px", sortable: false },
-  { key: "updatedAt", title: "수정일자", width: "150px", sortable: false },
+  { key: "no", title: t("common.no"), width: "80px", sortable: false },
+  {
+    key: "type",
+    title: t("common.machineType"),
+    width: "150px",
+    sortable: false,
+  },
+  {
+    key: "version",
+    title: t("common.formulaVersion"),
+    width: "150px",
+    sortable: false,
+  },
+  { key: "unit", title: t("common.unit"), width: "100px", sortable: false },
+  {
+    key: "createdAt",
+    title: t("common.createdDate"),
+    width: "150px",
+    sortable: false,
+  },
+  {
+    key: "updatedAt",
+    title: t("common.updatedDate"),
+    width: "150px",
+    sortable: false,
+  },
 ];
 const listRows = ref<any[]>([]);
 
@@ -149,7 +173,7 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
 });
 
 // 계산식 파일 업로드 핸들러
-function handleFormulaFileChange(e: Event) {
+const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
 
@@ -184,10 +208,10 @@ function handleFormulaFileChange(e: Event) {
     formulaFileName.value = "";
     formulaFile.value = null;
   }
-}
+};
 
 // 등록 함수
-async function handleRegister() {
+const handleRegister = async () => {
   // 필수 항목 validation
   if (!selectedMachineName.value) {
     alert(t("messages.warning.selectMachineName"));
@@ -224,7 +248,7 @@ async function handleRegister() {
     console.error("등록 실패:", error);
     alert(t("messages.error.registrationFailed"));
   }
-}
+};
 </script>
 
 <style scoped lang="scss">

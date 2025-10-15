@@ -316,7 +316,7 @@ const editModeRows = ref<Array<Record<string, unknown>>>([]);
 // 수정 모드에서는 구조물 대분류/타입 변경 불가 (비활성 상태)
 
 // 공통 검증 함수: 구조물 대분류 및 타입 필수 체크
-function validateBasicSelections(): boolean {
+const validateBasicSelections = (): boolean => {
   if (!selectedStructureType.value) {
     alert(t("messages.warning.selectStructureType"));
     return false;
@@ -327,10 +327,10 @@ function validateBasicSelections(): boolean {
   }
 
   return true;
-}
+};
 // 등록 목록 삭제 로직 제거
 
-function onDeleteSelectedEditMode() {
+const onDeleteSelectedEditMode = () => {
   if (!validateBasicSelections()) return;
 
   // 선택된 항목이 있는지 확인
@@ -346,9 +346,9 @@ function onDeleteSelectedEditMode() {
   if (confirm(t("messages.confirm.deleteFormula", { name: formulaName }))) {
     handleDeleteFormula();
   }
-}
+};
 
-async function handleDeleteFormula() {
+const handleDeleteFormula = async () => {
   try {
     if (
       !props.selectedItem?.structure_id ||
@@ -376,10 +376,10 @@ async function handleDeleteFormula() {
     console.error("공식 삭제 실패:", error);
     alert(t("messages.warning.formulaDeleteFail"));
   }
-}
+};
 
 // 파일 변경 핸들러들
-function handleFormulaFileChange(e: Event) {
+const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -397,9 +397,9 @@ function handleFormulaFileChange(e: Event) {
     }
     formulaFileName.value = file.name;
   }
-}
+};
 
-function handleDtdFileChange(e: Event) {
+const handleDtdFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -417,9 +417,9 @@ function handleDtdFileChange(e: Event) {
     }
     dtdFileName.value = file.name;
   }
-}
+};
 
-function handleThumbnailFileChange(e: Event) {
+const handleThumbnailFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -443,9 +443,9 @@ function handleThumbnailFileChange(e: Event) {
     }
     thumbnailFileName.value = file.name;
   }
-}
+};
 
-function handleRevitFileChange(e: Event) {
+const handleRevitFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
@@ -463,7 +463,7 @@ function handleRevitFileChange(e: Event) {
     }
     revitFileName.value = file.name;
   }
-}
+};
 
 // 등록 함수 제거 (수정 전용)
 
@@ -480,7 +480,7 @@ const formatDate = (dateString: string) => {
 };
 
 // 수정 함수
-async function onUpdate() {
+const onUpdate = async () => {
   if (!validateBasicSelections()) return;
 
   // 파일 첨부 validation
@@ -544,7 +544,7 @@ async function onUpdate() {
     console.error("구조물 수정 실패:", error);
     alert(t("messages.warning.structureUpdateFail"));
   }
-}
+};
 
 defineExpose({ onUpdate });
 </script>

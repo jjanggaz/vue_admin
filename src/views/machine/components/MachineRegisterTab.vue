@@ -440,18 +440,22 @@ const onDownloadExcelTemplate = async () => {
       selectedMachineName.value
     );
 
-    // 파일 다운로드 처리
-    if (response?.response) {
-      // Blob 데이터가 있는 경우
-      const blob = response.response;
-      const url = window.URL.createObjectURL(blob);
+    // download_url로 파일 다운로드
+    const downloadUrl = response?.response?.data?.files?.[0]?.download_url;
+    const originalFilename =
+      response?.response?.data?.files?.[0]?.original_filename;
+
+    if (downloadUrl) {
       const link = document.createElement("a");
-      link.href = url;
-      link.download = `${selectedMachineName.value}_template.xlsx`;
+      link.href = downloadUrl;
+      link.download =
+        originalFilename || `${selectedMachineName.value}_template.xlsx`;
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+    } else {
+      alert(t("messages.warning.excelTemplateDownloadFailed"));
     }
   } catch (error: any) {
     console.error("Excel 템플릿 다운로드 실패:", error);

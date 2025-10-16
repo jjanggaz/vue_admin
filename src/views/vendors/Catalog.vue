@@ -66,13 +66,13 @@
           <input 
             id="testCodeKey"
             type="text" 
-            v-model="testCodeKey" 
+            v-model="catalogStore.testCodeKey" 
             placeholder="예: M_PMP0602" 
             class="test-input"
           >
         </div>
         <div class="test-button-group">
-          <button type="button" class="btn btn-search" @click="testUnityEvent">
+          <button type="button" class="btn btn-search" @click="catalogStore.testUnityEvent">
             조회
       </button>
         </div>
@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick, toRaw } from 'vue'
+import { computed, onMounted, onUnmounted, watch, nextTick, toRaw } from 'vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { useCatalogStore } from '@/stores/catalogStore'
@@ -91,31 +91,12 @@ import { useCatalogStore } from '@/stores/catalogStore'
 // 카탈로그 스토어 사용
 const catalogStore = useCatalogStore()
 
-// 더블클릭 감지용 상태
-const clickState = ref({
-  count: 0,
-  lastTime: 0,
-  lastRow: null as number | null
-})
-
-const DOUBLE_CLICK_THRESHOLD = 400 // 400ms 내 더블클릭으로 간주
-
-// 매개변수 (Unity에서 전달받을 값들)
-const equipmentParams = reactive({
-  codeKey: '',
-  reqValue: '',
-  columnName: ''
-})
-
-// 테스트용 변수 (화면 로드 시 로직에 영향 없음)
-const testCodeKey = ref('')
-
 
 // 매개변수 로그 출력
 console.log('[Settings] 받은 매개변수:', {
-  codeKey: equipmentParams.codeKey,
-  reqValue: equipmentParams.reqValue,
-  columnName: equipmentParams.columnName
+  codeKey: catalogStore.equipmentParams.codeKey,
+  reqValue: catalogStore.equipmentParams.reqValue,
+  columnName: catalogStore.equipmentParams.columnName
 })
 
 // 기본 장비 카탈로그 컬럼 정의
@@ -148,7 +129,7 @@ const equipmentColumns = computed(() => {
   if (catalogStore.availableFields && catalogStore.availableFields.length > 0) {
     console.log('[Settings] 동적 컬럼 생성 시작 - available_fields:', catalogStore.availableFields)
     
-    const dynamicColumns = catalogStore.availableFields.map((field: any) => {
+    const dynamicColumns = catalogStore.availableFields.map((field) => {
       // name_kr이 있으면 name_kr \n (field_name) 형식으로 줄바꿈 추가, 없으면 field_name을 카멜케이스로 변환
       const title = field.name_kr 
         ? `${field.name_kr}\n(${field.field_name})`
@@ -184,14 +165,14 @@ const equipmentData = computed(() => {
   }
   
   // price 필드 포맷팅 함수
-  const formatPriceField = (value: any, fieldName: string) => {
+  const formatPriceField = (value: unknown, fieldName: string) => {
     if (fieldName.toLowerCase().includes('price')) {
       if (!value || value === '' || value === '견적필요') {
         return value || ''
       }
       
       // 숫자로 변환 시도
-      const numValue = parseFloat(value)
+      const numValue = parseFloat(String(value))
       if (!isNaN(numValue)) {
         return numValue.toLocaleString('ko-KR')
       }
@@ -199,7 +180,7 @@ const equipmentData = computed(() => {
     return value
   }
   
-  const data = catalogStore.equipmentList.map((equipment: any) => {
+  const data = catalogStore.equipmentList.map((equipment) => {
     const formattedEquipment = { ...equipment }
     
     // 모든 필드를 순회하며 price 관련 필드 포맷팅
@@ -223,154 +204,12 @@ const equipmentData = computed(() => {
   return data
 })
 
-// 행 클릭 핸들러 (더블클릭 감지 포함)
-// Note: 현재 DataTable 컴포넌트와의 통합을 위해 보류됨
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const handleRowClick = (equipment: any, index: number) => {
-  const currentTime = Date.now()
-  const state = clickState.value
-  
-  // 같은 행이고 시간 간격이 짧으면 클릭 카운트 증가
-  if (state.lastRow === index && (currentTime - state.lastTime) < DOUBLE_CLICK_THRESHOLD) {
-    state.count++
-  } else {
-    // 다른 행이거나 시간 간격이 길면 클릭 카운트 리셋
-    state.count = 1
-  }
-  
-  // 클릭 정보 업데이트
-  state.lastTime = currentTime
-  state.lastRow = index
-  
-  // 더블클릭 감지 (2번째 클릭)
-  if (state.count === 2) {
-    showEquipmentDetails(equipment)
-    
-    // 상태 초기화
-    state.count = 0
-    state.lastTime = 0
-    state.lastRow = null
-    return
-  }
-  
-  // 일반 클릭 처리 (단일 클릭)
-  if (state.count === 1) {
-    selectEquipment(equipment)
-  }
-  
-  // 일정 시간 후 상태 초기화
-  setTimeout(() => {
-    if (state.lastTime === currentTime && state.count === 1) {
-      state.count = 0
-      state.lastTime = 0
-      state.lastRow = null
-    }
-  }, DOUBLE_CLICK_THRESHOLD)
-}
-
-// 장비 선택 함수
-const selectEquipment = (_equipment: any) => {
-  // 선택된 장비를 목록에 추가하는 로직
-  // 중복 선택 방지 등 추가 로직 구현 가능
-}
-
-// dtd 객체 로드 대기 함수
-const waitForDtd = (maxAttempts = 10, delay = 100) => {
-  return new Promise((resolve) => {
-    let attempts = 0
-    
-    const checkDtd = () => {
-      attempts++
-      if ((window as any).dtd && typeof (window as any).dtd.SendCommand === 'function') {
-        resolve(true)
-      } else if (attempts < maxAttempts) {
-        setTimeout(checkDtd, delay)
-      } else {
-        resolve(false)
-      }
-    }
-    
-    checkDtd()
-  })
-}
-
-// 장비 정보 전송 함수 (더블클릭 시 호출)
-const showEquipmentDetails = async (equipment: any) => {
-  console.log('[Settings] 장비 정보 전송:', equipment)
-  
-  // 조회조건의 equipment_type 값 가져오기 (equipmentParams.codeKey 또는 equipment.equipment_type)
-  const equipmentType = equipmentParams.codeKey || equipment.equipment_type || ''
-  
-  // dtd.SendCommand 호출
-  const commandData = {
-    equipment_id: equipment.equipment_id || '',
-    equipment_code: equipment.equipment_code || '',
-    equipment_type: equipmentType,
-    vendor_id: equipment.vendor_id || '',
-    model_number: equipment.model_number || '',
-    manufacturer: equipment.manufacturer || equipment.vendor_name || '',
-    search_criteria: equipment.search_criteria ? toRaw(equipment.search_criteria) : null,
-    output_values: equipment.output_values ? toRaw(equipment.output_values) : null,
-    specifications: equipment.specifications ? toRaw(equipment.specifications) : null
-  }
-  
-  console.log('[Settings] dtd.SendCommand 호출:', commandData)
-  console.log('[Settings] search_criteria:', commandData.search_criteria)
-  console.log('[Settings] output_values:', commandData.output_values)
-  console.log('[Settings] specifications:', commandData.specifications)
-  
-  try {
-    // dtd 객체 로드 대기 (최대 1초)
-    const dtdAvailable = await waitForDtd(10, 100)
-    
-    if (dtdAvailable) {
-      (window as any).dtd.SendCommand("web", "Catalog", commandData)
-      console.log('[Settings] dtd.SendCommand 호출 완료')
-    } else {
-      console.warn('[Settings] dtd.SendCommand가 사용할 수 없습니다. 대체 방법 사용')
-      
-      // 대체 방법 1: window.postMessage 사용
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: 'DISPATCH_UNITY_CATALOG_EVENT',
-          eventData: {
-            source: 'equipment_catalog',
-            codeKey: commandData.equipment_type,
-            reqValue: commandData.equipment_id,
-            columnName: commandData.model_number,
-            commandData: commandData
-          }
-        }, '*')
-        console.log('[Settings] window.parent.postMessage로 대체 전송 완료')
-      } else {
-        // 대체 방법 2: localStorage에 저장
-        localStorage.setItem('equipmentCatalogSelection', JSON.stringify(commandData))
-        console.log('[Settings] localStorage에 데이터 저장:', commandData)
-      }
-    }
-  } catch (error) {
-    console.error('[Settings] dtd.SendCommand 호출 오류:', error)
-    
-    // 오류 발생 시에도 대체 방법 시도
-    try {
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: 'EQUIPMENT_SELECTION',
-          data: commandData
-        }, '*')
-        console.log('[Settings] 오류 후 window.parent.postMessage로 대체 전송')
-      }
-    } catch (fallbackError) {
-      console.error('[Settings] 대체 방법도 실패:', fallbackError)
-    }
-  }
-}
 
 // 페이지 이동 함수
 const goToPage = (page: number) => {
   if (page < 1 || page > catalogStore.totalPages) return
   
-  const searchValue = equipmentParams.codeKey || ''
+  const searchValue = catalogStore.equipmentParams.codeKey || ''
   if (searchValue) {
     catalogStore.searchEquipment(searchValue, page)
   }
@@ -381,54 +220,9 @@ const closeModal = () => {
   window.close();
 }
 
-// 장비 검색 실행 함수
-const executeSearch = async (codeKey: string) => {
-  if (!codeKey || codeKey.trim() === '') {
-    console.log('[Settings] codeKey가 없어서 조회 건너뜀')
-    return
-  }
-  
-  console.log('[Settings] 자동 조회 시작:', codeKey)
-  console.log('[Settings] catalogStore 확인:', catalogStore)
-  console.log('[Settings] searchEquipment 타입:', typeof catalogStore.searchEquipment)
-  
-  try {
-    // 1단계: 코드 검색
-    if (typeof catalogStore.searchCode === 'function') {
-      const codeResult = await catalogStore.searchCode(codeKey)
-      if (codeResult) {
-        console.log('[Settings] 코드 검색 결과:', codeResult)
-      }
-    } else {
-      console.warn('[Settings] searchCode 함수를 찾을 수 없습니다')
-    }
-    
-    // 2단계: 컬럼 정보 조회
-    if (typeof catalogStore.getColumnInfo === 'function') {
-      const columnInfo = await catalogStore.getColumnInfo(codeKey)
-      if (columnInfo) {
-        console.log('[Settings] 컬럼 정보:', columnInfo)
-      }
-    } else {
-      console.warn('[Settings] getColumnInfo 함수를 찾을 수 없습니다')
-    }
-    
-    // 3단계: 장비 검색
-    if (typeof catalogStore.searchEquipment === 'function') {
-      await catalogStore.searchEquipment(codeKey, 1)
-      await nextTick()
-      console.log('[Settings] 자동 조회 완료')
-    } else {
-      console.error('[Settings] searchEquipment 함수를 찾을 수 없습니다')
-      console.log('[Settings] catalogStore의 사용 가능한 메서드:', Object.keys(catalogStore))
-    }
-  } catch (error: any) {
-    console.error('[Settings] 자동 조회 중 오류:', error)
-  }
-}
 
 // codeKey가 변경될 때 자동 조회
-watch(() => equipmentParams.codeKey, async (newCodeKey, oldCodeKey) => {
+watch(() => catalogStore.equipmentParams.codeKey, async (newCodeKey, oldCodeKey) => {
   console.log('[Settings] equipmentParams.codeKey 변경됨:', { 
     old: oldCodeKey, 
     new: newCodeKey 
@@ -440,18 +234,18 @@ watch(() => equipmentParams.codeKey, async (newCodeKey, oldCodeKey) => {
     return
   }
   
-  await executeSearch(newCodeKey)
+  await catalogStore.executeSearch(newCodeKey)
 })
 
 // 장비 목록 변경 시 컬럼 정보 재조회
 watch(() => catalogStore.equipmentList, async (newEquipmentList) => {
-  if (newEquipmentList && newEquipmentList.length > 0 && equipmentParams.codeKey) {
+  if (newEquipmentList && newEquipmentList.length > 0 && catalogStore.equipmentParams.codeKey) {
     try {
-      const equipmentTypes = [...new Set(newEquipmentList.map((item: any) => item.equipment_type).filter(Boolean))]
+      const equipmentTypes = [...new Set(newEquipmentList.map((item) => item.equipment_type).filter(Boolean))]
       if (equipmentTypes.length > 0 && typeof catalogStore.getColumnInfo === 'function') {
         await catalogStore.getColumnInfo(equipmentTypes[0])
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Settings] 장비 목록 변경 시 컬럼 정보 재조회 오류:', error)
     }
   }
@@ -467,94 +261,22 @@ watch(() => catalogStore.availableFields, (newFields) => {
 }, { deep: true })
 
 
-// UnityEvent 테스트 함수
-const testUnityEvent = async () => {
-    console.log('[Settings] UnityEvent 테스트 시작');
-    console.log('[Settings] 테스트 CodeKey:', testCodeKey.value);
-    
-    if (!testCodeKey.value || testCodeKey.value.trim() === '') {
-        console.warn('[Settings] CodeKey를 입력해주세요.');
-        alert('CodeKey를 입력해주세요.');
-        return;
-    }
-    
-    // handleUnityEvent를 직접 호출하기 위한 CustomEvent 생성
-    const customEvent = new CustomEvent('unity-catalog-popup-open', {
-        detail: {
-            source: 'unity_common_equipment',
-            codeKey: testCodeKey.value,
-            reqValue: '',
-            columnName: ''
-        },
-        bubbles: true
-    });
-    
-    console.log('[Settings] CustomEvent 생성:', customEvent);
-    console.log('[Settings] CustomEvent detail:', customEvent.detail);
-    
-    // document.dispatchEvent로 handleUnityEvent 호출
-    document.dispatchEvent(customEvent);
-    
-    // executeSearch를 직접 호출하여 검색 실행 보장
-    await executeSearch(testCodeKey.value);
-    
-    console.log('[Settings] UnityEvent 테스트 완료');
-}
 
-function CatalogPopUpOpen(codeKey: any, reqValue: any, columnName: any) {
-    console.log('[WebApp] 카탈로그 팝업 오픈:', {
-        codeKey: codeKey,
-        reqValue: reqValue,
-        columnName: columnName
-    });
-    
-    // 매개변수 저장
-    equipmentParams.codeKey = codeKey || ''
-    equipmentParams.reqValue = reqValue || ''
-    equipmentParams.columnName = columnName || ''
-}
-
-// unity-catalog-popup-open 이벤트 핸들러 함수
-const handleUnityEvent = (event: Event) => {
-    const { source, codeKey, reqValue, columnName } = (event as CustomEvent).detail;
-    
-    if (source !== 'unity_common_equipment') return;
-    if (!codeKey) return;
-    
-    const safeReqValue = reqValue || 0;
-    const safeColumnName = columnName || '';
-    
-    CatalogPopUpOpen(codeKey, safeReqValue, safeColumnName);
-}
-
-// postMessage 이벤트 핸들러 함수
-const handlePostMessage = (event: MessageEvent) => {
-    if (event.data?.type === 'DISPATCH_UNITY_CATALOG_EVENT') {
-        const eventData = event.data.eventData;
-        const customEvent = new CustomEvent('unity-catalog-popup-open', {
-            detail: {
-                source: eventData.source,
-                codeKey: eventData.codeKey,
-                reqValue: eventData.reqValue,
-                columnName: eventData.columnName
-            },
-            bubbles: true
-        });
-        
-        document.dispatchEvent(customEvent);
-    }
+// 전역 함수로 노출 (Unity에서 호출하기 위해)
+;(window as { CatalogPopUpOpen?: (codeKey: string, reqValue: string, columnName: string) => void }).CatalogPopUpOpen = (codeKey: string, reqValue: string, columnName: string) => {
+  catalogStore.catalogPopUpOpen(codeKey, reqValue, columnName)
 }
 
 // 컴포넌트 마운트 시 이벤트 리스너 등록
 onMounted(() => {
-    document.addEventListener('unity-catalog-popup-open', handleUnityEvent);
-    window.addEventListener('message', handlePostMessage);
+    document.addEventListener('unity-catalog-popup-open', catalogStore.handleUnityEvent);
+    window.addEventListener('message', catalogStore.handlePostMessage);
 })
 
 // 컴포넌트 언마운트 시 이벤트 리스너 제거
 onUnmounted(() => {
-    document.removeEventListener('unity-catalog-popup-open', handleUnityEvent);
-    window.removeEventListener('message', handlePostMessage);
+    document.removeEventListener('unity-catalog-popup-open', catalogStore.handleUnityEvent);
+    window.removeEventListener('message', catalogStore.handlePostMessage);
 })
 
 

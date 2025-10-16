@@ -2,16 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { request } from '@/utils/request'
 
-// 장비 검색 요청 인터페이스
-interface EquipmentSearchRequest {
-  search_field: string
-  search_value: string
-  order_by: string
-  include_vendor: boolean
-  page?: number
-  page_size?: number
-}
-
 // 장비 아이템 인터페이스
 interface EquipmentItem {
   equipment_id: string
@@ -22,37 +12,17 @@ interface EquipmentItem {
   vendor_id: string
   model_number: string
   manufacturer?: string
-  search_criteria?: any
-  output_values?: any
-  specifications?: any
-  [key: string]: any  // 동적 필드를 위한 인덱스 시그니처
-}
-
-// 장비 검색 응답 인터페이스
-interface EquipmentSearchResponse {
-  items: EquipmentItem[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-}
-
-// 컬럼 정보 응답 인터페이스
-interface ColumnInfoResponse {
-  columns: any[]
-  // 필요한 다른 필드 추가
+  vendor_name?: string
+  search_criteria?: Record<string, unknown>
+  output_values?: Record<string, unknown>
+  specifications?: Record<string, unknown>
+  [key: string]: unknown  // 동적 필드를 위한 인덱스 시그니처
 }
 
 // 코드 검색 요청 인터페이스
 interface CodeSearchRequest {
   search_field: string
   search_value: string
-}
-
-// 코드 검색 응답 인터페이스
-interface CodeSearchResponse {
-  items: any[]
-  // 필요한 다른 필드 추가
 }
 
 export const useCatalogStore = defineStore('catalog', () => {
@@ -68,7 +38,12 @@ export const useCatalogStore = defineStore('catalog', () => {
   const totalPages = ref(0)
   
   // 동적 컬럼 정보
-  const availableFields = ref<any[]>([])
+  const availableFields = ref<Array<{
+    field_name: string
+    name_kr?: string
+    category?: string
+    type?: string
+  }>>([])
   
   // 코드 정보
   const codeNameKr = ref('')
@@ -116,7 +91,7 @@ export const useCatalogStore = defineStore('catalog', () => {
         codeNameEn.value = ''
         return null
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('코드 검색 API 오류:', err)
       return null
     }
@@ -137,7 +112,11 @@ export const useCatalogStore = defineStore('catalog', () => {
           console.log('[machineStore] available_fields 원본 데이터:', response.response.available_fields)
           
           // available_fields를 그대로 사용하되, category 정보 추가
-          const fieldsWithCategory = response.response.available_fields.map((field: any) => ({
+          const fieldsWithCategory = response.response.available_fields.map((field: {
+            field_name: string
+            name_kr?: string
+            type?: string
+          }) => ({
             ...field,
             category: field.type || 'unknown' // type 필드를 category로 매핑
           }))
@@ -156,7 +135,7 @@ export const useCatalogStore = defineStore('catalog', () => {
         availableFields.value = []
         return null
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('컬럼 정보 조회 API 오류:', err)
       availableFields.value = []
       return null
@@ -174,9 +153,6 @@ export const useCatalogStore = defineStore('catalog', () => {
     error.value = null
 
     try {
-      // searchValue가 코드 형태인지 확인 (예: M_PMP0602)
-      const isCodeFormat = /^[A-Z_]+[0-9]+$/.test(searchValue.trim())
-      
       // 기존 형식만 사용
       const requestData = {
         search_field: 'equipment_type',
@@ -221,9 +197,9 @@ export const useCatalogStore = defineStore('catalog', () => {
         totalPages.value = 0
         error.value = '검색 결과가 없습니다.'
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('장비 검색 API 오류:', err)
-      error.value = err.message || '장비 검색 중 오류가 발생했습니다.'
+      error.value = (err as Error).message || '장비 검색 중 오류가 발생했습니다.'
       equipmentList.value = []
     } finally {
       isLoading.value = false
@@ -248,6 +224,270 @@ export const useCatalogStore = defineStore('catalog', () => {
     // 선택된 장비 처리 로직 추가 가능
   }
 
+  // Unity 이벤트 처리 관련 상태
+  const equipmentParams = ref({
+    codeKey: '',
+    reqValue: '',
+    columnName: ''
+  })
+
+  // 테스트용 변수
+  const testCodeKey = ref('')
+
+  // 더블클릭 감지용 상태
+  const clickState = ref({
+    count: 0,
+    lastTime: 0,
+    lastRow: null as number | null
+  })
+
+  const DOUBLE_CLICK_THRESHOLD = 400 // 400ms 내 더블클릭으로 간주
+
+  // dtd 객체 로드 대기 함수
+  const waitForDtd = (maxAttempts = 10, delay = 100) => {
+    return new Promise((resolve) => {
+      let attempts = 0
+      
+      const checkDtd = () => {
+        attempts++
+        if ((window as { dtd?: { SendCommand?: (target: string, command: string, data: Record<string, unknown>) => void } }).dtd && typeof (window as { dtd?: { SendCommand?: (target: string, command: string, data: Record<string, unknown>) => void } }).dtd?.SendCommand === 'function') {
+          resolve(true)
+        } else if (attempts < maxAttempts) {
+          setTimeout(checkDtd, delay)
+        } else {
+          resolve(false)
+        }
+      }
+      
+      checkDtd()
+    })
+  }
+
+  // 장비 정보 전송 함수 (더블클릭 시 호출)
+  const showEquipmentDetails = async (equipment: EquipmentItem) => {
+    console.log('[Settings] 장비 정보 전송:', equipment)
+    
+    // 조회조건의 equipment_type 값 가져오기 (equipmentParams.codeKey 또는 equipment.equipment_type)
+    const equipmentType = equipmentParams.value.codeKey || equipment.equipment_type || ''
+    
+    // dtd.SendCommand 호출
+    const commandData = {
+      equipment_id: equipment.equipment_id || '',
+      equipment_code: equipment.equipment_code || '',
+      equipment_type: equipmentType,
+      vendor_id: equipment.vendor_id || '',
+      model_number: equipment.model_number || '',
+      manufacturer: equipment.manufacturer || '',
+      search_criteria: equipment.search_criteria || null,
+      output_values: equipment.output_values || null,
+      specifications: equipment.specifications || null
+    }
+    
+    console.log('[Settings] dtd.SendCommand 호출:', commandData)
+    console.log('[Settings] search_criteria:', commandData.search_criteria)
+    console.log('[Settings] output_values:', commandData.output_values)
+    console.log('[Settings] specifications:', commandData.specifications)
+    
+    try {
+      // dtd 객체 로드 대기 (최대 1초)
+      const dtdAvailable = await waitForDtd(10, 100)
+      
+      if (dtdAvailable) {
+        ;(window as unknown as { dtd: { SendCommand: (target: string, command: string, data: Record<string, unknown>) => void } }).dtd.SendCommand("web", "Catalog", commandData)
+        console.log('[Settings] dtd.SendCommand 호출 완료')
+      } else {
+        console.warn('[Settings] dtd.SendCommand가 사용할 수 없습니다. 대체 방법 사용')
+        
+        // 대체 방법 1: window.postMessage 사용
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'DISPATCH_UNITY_CATALOG_EVENT',
+            eventData: {
+              source: 'equipment_catalog',
+              codeKey: commandData.equipment_type,
+              reqValue: commandData.equipment_id,
+              columnName: commandData.model_number,
+              commandData: commandData
+            }
+          }, '*')
+          console.log('[Settings] window.parent.postMessage로 대체 전송 완료')
+        } else {
+          // 대체 방법 2: localStorage에 저장
+          localStorage.setItem('equipmentCatalogSelection', JSON.stringify(commandData))
+          console.log('[Settings] localStorage에 데이터 저장:', commandData)
+        }
+      }
+    } catch (error) {
+      console.error('[Settings] dtd.SendCommand 호출 오류:', error)
+      
+      // 오류 발생 시에도 대체 방법 시도
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'EQUIPMENT_SELECTION',
+            data: commandData
+          }, '*')
+          console.log('[Settings] 오류 후 window.parent.postMessage로 대체 전송')
+        }
+      } catch (fallbackError) {
+        console.error('[Settings] 대체 방법도 실패:', fallbackError)
+      }
+    }
+  }
+
+  // 행 클릭 핸들러 (더블클릭 감지 포함)
+  const handleRowClick = (equipment: EquipmentItem, index: number) => {
+    const currentTime = Date.now()
+    const state = clickState.value
+    
+    // 같은 행이고 시간 간격이 짧으면 클릭 카운트 증가
+    if (state.lastRow === index && (currentTime - state.lastTime) < DOUBLE_CLICK_THRESHOLD) {
+      state.count++
+    } else {
+      // 다른 행이거나 시간 간격이 길면 클릭 카운트 리셋
+      state.count = 1
+    }
+    
+    // 클릭 정보 업데이트
+    state.lastTime = currentTime
+    state.lastRow = index
+    
+    // 더블클릭 감지 (2번째 클릭)
+    if (state.count === 2) {
+      showEquipmentDetails(equipment)
+      
+      // 상태 초기화
+      state.count = 0
+      state.lastTime = 0
+      state.lastRow = null
+      return
+    }
+    
+    // 일반 클릭 처리 (단일 클릭)
+    if (state.count === 1) {
+      selectEquipment(equipment)
+    }
+    
+    // 일정 시간 후 상태 초기화
+    setTimeout(() => {
+      if (state.lastTime === currentTime && state.count === 1) {
+        state.count = 0
+        state.lastTime = 0
+        state.lastRow = null
+      }
+    }, DOUBLE_CLICK_THRESHOLD)
+  }
+
+  // 장비 검색 실행 함수
+  const executeSearch = async (codeKey: string) => {
+    if (!codeKey || codeKey.trim() === '') {
+      console.log('[Settings] codeKey가 없어서 조회 건너뜀')
+      return
+    }
+    
+    console.log('[Settings] 자동 조회 시작:', codeKey)
+    console.log('[Settings] catalogStore 확인:', { searchCode: typeof searchCode, getColumnInfo: typeof getColumnInfo, searchEquipment: typeof searchEquipment })
+    
+    try {
+      // 1단계: 코드 검색
+      const codeResult = await searchCode(codeKey)
+      if (codeResult) {
+        console.log('[Settings] 코드 검색 결과:', codeResult)
+      }
+      
+      // 2단계: 컬럼 정보 조회
+      const columnInfo = await getColumnInfo(codeKey)
+      if (columnInfo) {
+        console.log('[Settings] 컬럼 정보:', columnInfo)
+      }
+      
+      // 3단계: 장비 검색
+      await searchEquipment(codeKey, 1)
+      console.log('[Settings] 자동 조회 완료')
+    } catch (error: unknown) {
+      console.error('[Settings] 자동 조회 중 오류:', error)
+    }
+  }
+
+  // UnityEvent 테스트 함수
+  const testUnityEvent = async () => {
+    console.log('[Settings] UnityEvent 테스트 시작')
+    console.log('[Settings] 테스트 CodeKey:', testCodeKey.value)
+    
+    if (!testCodeKey.value || testCodeKey.value.trim() === '') {
+      console.warn('[Settings] CodeKey를 입력해주세요.')
+      alert('CodeKey를 입력해주세요.')
+      return
+    }
+    
+    // handleUnityEvent를 직접 호출하기 위한 CustomEvent 생성
+    const customEvent = new CustomEvent('unity-catalog-popup-open', {
+      detail: {
+        source: 'unity_common_equipment',
+        codeKey: testCodeKey.value,
+        reqValue: '',
+        columnName: ''
+      },
+      bubbles: true
+    })
+    
+    console.log('[Settings] CustomEvent 생성:', customEvent)
+    console.log('[Settings] CustomEvent detail:', customEvent.detail)
+    
+    // document.dispatchEvent로 handleUnityEvent 호출
+    document.dispatchEvent(customEvent)
+    
+    // executeSearch를 직접 호출하여 검색 실행 보장
+    await executeSearch(testCodeKey.value)
+    
+    console.log('[Settings] UnityEvent 테스트 완료')
+  }
+
+  // 카탈로그 팝업 오픈 함수
+  const catalogPopUpOpen = (codeKey: string, reqValue: string, columnName: string) => {
+    console.log('[WebApp] 카탈로그 팝업 오픈:', {
+      codeKey: codeKey,
+      reqValue: reqValue,
+      columnName: columnName
+    })
+    
+    // 매개변수 저장
+    equipmentParams.value.codeKey = codeKey || ''
+    equipmentParams.value.reqValue = reqValue || ''
+    equipmentParams.value.columnName = columnName || ''
+  }
+
+  // unity-catalog-popup-open 이벤트 핸들러 함수
+  const handleUnityEvent = (event: Event) => {
+    const { source, codeKey, reqValue, columnName } = (event as CustomEvent).detail
+    
+    if (source !== 'unity_common_equipment') return
+    if (!codeKey) return
+    
+    const safeReqValue = reqValue || 0
+    const safeColumnName = columnName || ''
+    
+    catalogPopUpOpen(codeKey, safeReqValue, safeColumnName)
+  }
+
+  // postMessage 이벤트 핸들러 함수
+  const handlePostMessage = (event: MessageEvent) => {
+    if (event.data?.type === 'DISPATCH_UNITY_CATALOG_EVENT') {
+      const eventData = event.data.eventData
+      const customEvent = new CustomEvent('unity-catalog-popup-open', {
+        detail: {
+          source: eventData.source,
+          codeKey: eventData.codeKey,
+          reqValue: eventData.reqValue,
+          columnName: eventData.columnName
+        },
+        bubbles: true
+      })
+      
+      document.dispatchEvent(customEvent)
+    }
+  }
+
   return {
     // 상태
     equipmentList,
@@ -267,6 +507,11 @@ export const useCatalogStore = defineStore('catalog', () => {
     codeNameKr,
     codeNameEn,
     
+    // Unity 이벤트 처리 관련 상태
+    equipmentParams,
+    testCodeKey,
+    clickState,
+    
     // 계산된 속성
     hasEquipment,
     
@@ -275,6 +520,15 @@ export const useCatalogStore = defineStore('catalog', () => {
     getColumnInfo,
     searchEquipment,
     clearEquipmentList,
-    selectEquipment
+    selectEquipment,
+    
+    // Unity 이벤트 처리 액션
+    showEquipmentDetails,
+    handleRowClick,
+    executeSearch,
+    testUnityEvent,
+    catalogPopUpOpen,
+    handleUnityEvent,
+    handlePostMessage
   }
 })

@@ -797,7 +797,7 @@ const getImageMimeType = (info: any): string => {
   const fallback = "image/png";
   const mime = info?.mime_type || info?.content_type;
   if (typeof mime === "string" && mime.startsWith("image/")) return mime;
-  const name: string | undefined = info?.file_name || info?.filename;
+  const name: string | undefined = info?.original_filename || info?.file_name;
   if (name) {
     const ext = name.split(".").pop()?.toLowerCase();
     switch (ext) {
@@ -978,36 +978,36 @@ const specVerticalData = computed(() => {
   // 5. 파일 필드 (3D, 썸네일, Revit, 심볼, 계산식)
   data.push({
     columnName: "3D",
-    value: (item as any).model_file_info?.file_name || "-",
-    filePath: (item as any).model_file_info?.file_path,
+    value: (item as any).model_file_info?.original_filename || "-",
+    filePath: (item as any).model_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("common.thumbnail"),
-    value: (item as any).thumbnail_file_info?.file_name || "-",
-    filePath: (item as any).thumbnail_file_info?.file_path,
+    value: (item as any).thumbnail_file_info?.original_filename || "-",
+    filePath: (item as any).thumbnail_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: "Revit",
-    value: (item as any).rvt_file_info?.file_name || "-",
-    filePath: (item as any).rvt_file_info?.file_path,
+    value: (item as any).rvt_file_info?.original_filename || "-",
+    filePath: (item as any).rvt_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("common.symbol"),
-    value: (item as any).symbol_file_info?.file_name || "-",
-    filePath: (item as any).symbol_file_info?.file_path,
+    value: (item as any).symbol_file_info?.original_filename || "-",
+    filePath: (item as any).symbol_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
   data.push({
     columnName: t("columns.machine.formula"),
     value: (item as any).formula_url || "-",
-    filePath: (item as any).formula_file_info?.file_path,
+    filePath: (item as any).formula_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
@@ -1428,15 +1428,15 @@ const handleFileDownload = (fieldName: string) => {
       break;
   }
 
-  // file_path가 있으면 다운로드
-  if (fileInfo?.file_path) {
-    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/${
-      fileInfo.file_path
+  // download_url이 있으면 다운로드
+  if (fileInfo?.download_url) {
+    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}${
+      fileInfo.download_url
     }`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = fileInfo.file_name || "download";
+    link.download = fileInfo.original_filename || "download";
     link.target = "_blank";
     document.body.appendChild(link);
     link.click();

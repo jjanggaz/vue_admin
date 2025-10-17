@@ -149,7 +149,7 @@ export const usePipeStore = defineStore("pipe", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/common/code", undefined, {
+      const response = await request("/api/pipe/common/code", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,7 +189,7 @@ export const usePipeStore = defineStore("pipe", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/depth", undefined, {
+      const response = await request("/api/pipe/depth", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +228,7 @@ export const usePipeStore = defineStore("pipe", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/search", undefined, {
+      const response = await request("/api/pipe/search", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -258,7 +258,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/common/code/${searchValue}`,
+        `/api/pipe/common/code/${searchValue}`,
         undefined,
         {
           method: "GET",
@@ -326,7 +326,7 @@ export const usePipeStore = defineStore("pipe", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/depth/detail", undefined, {
+      const response = await request("/api/pipe/depth/detail", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +357,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/depth/detail/searchType/${encodeURIComponent(searchKey)}`,
+        `/api/pipe/depth/detail/searchType/${encodeURIComponent(searchKey)}`,
         undefined,
         {
           method: "GET",
@@ -383,7 +383,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/tempExcel/${encodeURIComponent(pipeName)}`,
+        `/api/pipe/tempExcel/${encodeURIComponent(pipeName)}`,
         undefined,
         {
           method: "GET",
@@ -413,7 +413,7 @@ export const usePipeStore = defineStore("pipe", () => {
       formData.append("excel_file", excelFile);
 
       const response = await request(
-        `/api/machine/uploadModelExcel/${encodeURIComponent(pipeName)}`,
+        `/api/pipe/uploadModelExcel/${encodeURIComponent(pipeName)}`,
         undefined,
         {
           method: "POST",
@@ -444,7 +444,7 @@ export const usePipeStore = defineStore("pipe", () => {
       formData.append("all_file", zipFile);
 
       const response = await request(
-        `/api/machine/uploadModelZip/${encodeURIComponent(pipeName)}`,
+        `/api/pipe/uploadModelZip/${encodeURIComponent(pipeName)}`,
         undefined,
         {
           method: "POST",
@@ -478,7 +478,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/delete/${encodeURIComponent(equipmentId)}`,
+        `/api/pipe/delete/${encodeURIComponent(equipmentId)}`,
         undefined,
         {
           method: "POST",
@@ -504,7 +504,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/detail/common/${encodeURIComponent(equipmentType)}`,
+        `/api/pipe/detail/common/${encodeURIComponent(equipmentType)}`,
         undefined,
         { method: "POST" }
       );
@@ -537,7 +537,7 @@ export const usePipeStore = defineStore("pipe", () => {
 
     try {
       const response = await request(
-        `/api/machine/detail/files/${encodeURIComponent(equipmentId)}`,
+        `/api/pipe/detail/files/${encodeURIComponent(equipmentId)}`,
         undefined,
         {
           method: "POST",

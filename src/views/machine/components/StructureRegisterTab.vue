@@ -144,7 +144,7 @@
           <input
             type="file"
             ref="revitFileInput"
-            accept=".rvt"
+            accept=".rvt,rfa"
             style="display: none"
             @change="handleRevitFileChange"
           />
@@ -333,6 +333,7 @@ const extractZipContents = async (file: File) => {
       "py",
       "dtdx",
       "rvt",
+      "rfa",
       "jpg",
       "jpeg",
       "png",
@@ -357,7 +358,7 @@ const extractZipContents = async (file: File) => {
           fileType = "Formula";
         } else if (["dtdx"].includes(fileExtension)) {
           fileType = "3D Model";
-        } else if (["rvt"].includes(fileExtension)) {
+        } else if (["rvt", "rfa"].includes(fileExtension)) {
           fileType = "Revit Model";
         } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
           fileType = "Thumbnail Image";
@@ -407,9 +408,7 @@ const extractZipContents = async (file: File) => {
 
     // 허용된 파일이 하나도 없으면 첨부 불가 처리
     if (!hasAllowedFile) {
-      alert(
-        "ZIP 파일에 허용된 형식(.py, .dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다."
-      );
+      alert(t("messages.warning.noAllowedFileInStructureZip"));
       zipFileList.value = [];
       showZipContents.value = false;
       allFileName.value = "";
@@ -424,9 +423,9 @@ const extractZipContents = async (file: File) => {
       if (!hasDtdx) missing.push("3D모델(.dtdx)");
       if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
       alert(
-        `ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 계산식(.py)\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- Revit모델(.rvt)\n\n누락: ${missing.join(
-          ", "
-        )}`
+        t("messages.warning.missingRequiredFilesInZip", {
+          missing: missing.join(", "),
+        })
       );
       zipFileList.value = [];
       showZipContents.value = false;
@@ -438,9 +437,9 @@ const extractZipContents = async (file: File) => {
     // 허용되지 않은 파일이 있으면 경고
     if (invalidFiles.length > 0) {
       alert(
-        `ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n${invalidFiles.join(
-          "\n"
-        )}\n\n허용된 파일 형식:\n- 필수: .py, .dtdx, .jpg, .jpeg, .png, .gif\n- 선택: .rvt`
+        t("messages.warning.invalidFilesInZip", {
+          files: invalidFiles.join("\n"),
+        })
       );
     }
 
@@ -448,9 +447,7 @@ const extractZipContents = async (file: File) => {
     showZipContents.value = true;
   } catch (error) {
     console.error("ZIP 파일 읽기 실패:", error);
-    alert(
-      "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다."
-    );
+    alert(t("messages.warning.zipFileReadError"));
     zipFileList.value = [];
     showZipContents.value = false;
   }
@@ -528,7 +525,7 @@ const handleThumbnailFileChange = (e: Event) => {
     }
     const allowed = ["image/png", "image/jpeg", "image/gif"];
     if (!allowed.includes(file.type)) {
-      alert("이미지 파일만 업로드할 수 있습니다. (png, jpg, gif)");
+      alert(t("messages.warning.imageFileOnly"));
       input.value = ""; // input 초기화
       return;
     }
@@ -613,15 +610,15 @@ const onRegister = async () => {
     const response = await structureStore.createStructure(formData);
 
     if (response?.success) {
-      alert("구조물이 성공적으로 등록되었습니다.");
+      alert(t("messages.success.structureRegistered"));
       // 등록 완료 후 폼 초기화
       resetForm();
     } else {
-      alert("구조물 등록에 실패했습니다.");
+      alert(t("messages.warning.structureRegisterFailed"));
     }
   } catch (error) {
     console.error("구조물 등록 실패:", error);
-    alert("구조물 등록 중 오류가 발생했습니다.");
+    alert(t("messages.warning.structureRegisterError"));
   }
 };
 

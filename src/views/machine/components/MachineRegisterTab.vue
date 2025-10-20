@@ -311,6 +311,7 @@ const extractZipContents = async (file: File) => {
     const allowedExtensions = [
       "dtdx",
       "rvt",
+      "rfa",
       "jpg",
       "jpeg",
       "png",
@@ -333,7 +334,7 @@ const extractZipContents = async (file: File) => {
         // 파일 확장자에 따른 타입 분류
         if (["dtdx"].includes(fileExtension)) {
           fileType = "3D Model";
-        } else if (["rvt"].includes(fileExtension)) {
+        } else if (["rvt", "rfa"].includes(fileExtension)) {
           fileType = "Revit Model";
         } else if (["svg"].includes(fileExtension)) {
           fileType = "Symbol";

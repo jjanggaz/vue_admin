@@ -116,7 +116,7 @@
           <input
             type="file"
             ref="revitFileInput"
-            accept=".rvt"
+            accept=".rvt,.rfa"
             style="display: none"
             @change="handleRevitFileChange"
           />
@@ -456,7 +456,7 @@ const handleRevitFileChange = (e: Event) => {
       return;
     }
     const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".rvt")) {
+    if (!lower.endsWith(".rvt") && !lower.endsWith(".rfa")) {
       alert(t("messages.warning.rvtFileOnly"));
       input.value = "";
       return;

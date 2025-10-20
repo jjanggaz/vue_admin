@@ -592,6 +592,7 @@ export const useMachineStore = defineStore("machine", () => {
   const fetchMachineDetailFiles = async (
     equipmentId: string,
     params: {
+      equipment_type?: string;
       model_file_id?: string;
       rvt_file_id?: string;
       symbol_id?: string;
@@ -620,6 +621,82 @@ export const useMachineStore = defineStore("machine", () => {
         err instanceof Error
           ? err.message
           : "기계 파일 상세 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const searchFormula = async (equipmentType: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/machine/search/formula", undefined, {
+        method: "POST",
+        body: JSON.stringify({ equipment_type: equipmentType }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return response;
+    } catch (err) {
+      console.error("계산식 검색 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 검색에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const createFormula = async (params: {
+    python_file: File;
+    formula_id?: string;
+  }) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+      formData.append("python_file", params.python_file);
+      if (params.formula_id) {
+        formData.append("formula_id", params.formula_id);
+      }
+
+      const response = await request("/api/machine/create/formula", undefined, {
+        method: "POST",
+        body: formData,
+      });
+
+      return response;
+    } catch (err) {
+      console.error("계산식 생성 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 생성에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteFormula = async (formulaId: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/machine/delete/formula/${encodeURIComponent(formulaId)}`,
+        undefined,
+        {
+          method: "DELETE",
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("계산식 삭제 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 삭제에 실패했습니다.";
       throw err;
     } finally {
       loading.value = false;
@@ -656,5 +733,8 @@ export const useMachineStore = defineStore("machine", () => {
     updateMachine,
     fetchMachineDetailCommon,
     fetchMachineDetailFiles,
+    searchFormula,
+    createFormula,
+    deleteFormula,
   };
 });

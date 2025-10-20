@@ -3,7 +3,9 @@
     <!-- 상단 필터 -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.machineName") }}</span>
+        <span class="label required"
+          >⊙ {{ t("common.machineMajorCategory") }}</span
+        >
         <select class="input select-md" v-model="selectedMachineName">
           <option value="">{{ t("common.select") }}</option>
           <option
@@ -35,6 +37,23 @@
         </select>
       </div>
       <div class="group-form inline">
+        <span class="label">⊙ {{ t("common.machineType") }}</span>
+        <select
+          class="input select-sm"
+          :disabled="!isStep2Enabled"
+          v-model="selectedFourthDept"
+        >
+          <option value="">{{ t("common.select") }}</option>
+          <option
+            v-for="dept in fourthDepthOptions"
+            :key="dept.code_id"
+            :value="dept.code_key"
+          >
+            {{ dept.code_value }}
+          </option>
+        </select>
+      </div>
+      <div class="group-form inline formula-file-group">
         <span class="label required">⊙ {{ t("common.formulaFile") }}</span>
         <div class="file-upload-group">
           <input
@@ -71,7 +90,9 @@
         ⊙ {{ t("common.formulaVersionManagement") }}
       </div>
       <div class="section-actions">
-        <button class="btn-danger">{{ t("common.delete") }}</button>
+        <button class="btn-danger" @click="handleDelete">
+          {{ t("common.delete") }}
+        </button>
       </div>
     </div>
     <DataTable
@@ -83,11 +104,20 @@
       :select-header-text="t('common.selectColumn')"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
-    />
-
-    <div class="pagination-container">
-      <Pagination :current-page="1" :total-pages="1" />
-    </div>
+    >
+      <template #cell-fileName="{ item }">
+        <a
+          v-if="item._downloadUrl"
+          :href="item._downloadUrl"
+          target="_blank"
+          class="file-download-link"
+          @click.stop
+        >
+          {{ item._fileName }}
+        </a>
+        <span v-else>{{ item._fileName || "-" }}</span>
+      </template>
+    </DataTable>
   </div>
 </template>
 
@@ -95,7 +125,6 @@
 import { useI18n } from "vue-i18n";
 import { ref, watch } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
@@ -104,9 +133,14 @@ const machineStore = useMachineStore();
 // 선택 상태
 const selectedMachineName = ref("");
 const selectedThirdDept = ref("");
+const selectedFourthDept = ref("");
 
 // 단계별 enable 상태
 const isStep1Enabled = ref(false); // 기계중분류
+const isStep2Enabled = ref(false); // 기계유형
+
+// 4Depth 옵션
+const fourthDepthOptions = ref<any[]>([]);
 
 const listColumns: TableColumn[] = [
   { key: "no", title: t("common.no"), width: "80px", sortable: false },
@@ -117,21 +151,21 @@ const listColumns: TableColumn[] = [
     sortable: false,
   },
   {
+    key: "fileName",
+    title: t("common.fileName"),
+    width: "180px",
+    sortable: false,
+  },
+  {
     key: "version",
     title: t("common.formulaVersion"),
-    width: "150px",
+    width: "120px",
     sortable: false,
   },
   { key: "unit", title: t("common.unit"), width: "100px", sortable: false },
   {
     key: "createdAt",
     title: t("common.createdDate"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "updatedAt",
-    title: t("common.updatedDate"),
     width: "150px",
     sortable: false,
   },
@@ -149,11 +183,78 @@ const formulaFileName = ref("");
 const formulaFile = ref<File | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 
+// 현재 선택된 formula_id (검색 결과에서 가져옴)
+const currentFormulaId = ref<string>("");
+
+// 날짜 포맷 함수 (YYYY-MM-DD)
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}-${month}-${day}`;
+};
+
+// 계산식 검색 결과를 테이블 데이터로 변환
+const setFormulaListData = (response: any) => {
+  console.log("setFormulaListData 호출됨:", response);
+
+  // API 응답 구조 확인 (response.data 또는 response.response.data)
+  const data = response?.response?.data || response?.data;
+
+  if (!data?.formula) {
+    console.log("formula 데이터 없음");
+    listRows.value = [];
+    return;
+  }
+
+  const formula = data.formula;
+  const equipmentType = data.equipment_type;
+
+  console.log("formula:", formula);
+  console.log("equipmentType:", equipmentType);
+
+  // 단일 항목을 배열로 변환
+  listRows.value = [
+    {
+      no: 1,
+      type: equipmentType?.code_value || formula.equipment_type || "-",
+      fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장
+      version: formula.formula_version || "-",
+      unit: formula.unit_system_code || "-",
+      createdAt: formatDate(formula.uploaded_at),
+      formulaId: formula.formula_id,
+      rawData: formula,
+      _downloadUrl: formula.download_url, // 다운로드 URL 저장
+      _fileName: formula.file_name, // 원본 파일명 저장
+    },
+  ];
+
+  // formula_id 저장
+  currentFormulaId.value = formula.formula_id || "";
+
+  console.log("listRows 설정됨:", listRows.value);
+  console.log("currentFormulaId:", currentFormulaId.value);
+};
+
 // 기계명 선택 시 3차 깊이별 조회
 watch(selectedMachineName, async (newValue, _oldValue) => {
   // 하위 단계 초기화
   selectedThirdDept.value = "";
+  selectedFourthDept.value = "";
   isStep1Enabled.value = false;
+  isStep2Enabled.value = false;
+  fourthDepthOptions.value = [];
+  listRows.value = []; // 테이블 초기화
+  currentFormulaId.value = ""; // formula_id 초기화
+
+  // 파일 초기화
+  formulaFileName.value = "";
+  formulaFile.value = null;
+  if (formulaFileInput.value) {
+    formulaFileInput.value.value = "";
+  }
 
   // 값이 있을 때만 3차 코드 조회 후 1단계 활성화
   if (newValue) {
@@ -168,6 +269,75 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
       console.error("3차 깊이별 공통코드 조회 실패:", error);
       alert(t("messages.warning.thirdDepthCodeLoadFail"));
       isStep1Enabled.value = false;
+    }
+  }
+});
+
+// 기계중분류 선택 시 4차 깊이별 조회 및 계산식 검색
+watch(selectedThirdDept, async (newValue, _oldValue) => {
+  // 하위 단계 초기화
+  selectedFourthDept.value = "";
+  isStep2Enabled.value = false;
+  fourthDepthOptions.value = [];
+  currentFormulaId.value = ""; // formula_id 초기화
+
+  // 파일 초기화
+  formulaFileName.value = "";
+  formulaFile.value = null;
+  if (formulaFileInput.value) {
+    formulaFileInput.value.value = "";
+  }
+
+  // 값이 있을 때만 4차 코드 조회 후 2단계 활성화
+  if (newValue) {
+    try {
+      const response = await machineStore.fetchThirdDepth(newValue, 4);
+      if (response?.response && response.response.length > 0) {
+        fourthDepthOptions.value = response.response;
+        isStep2Enabled.value = true;
+      } else {
+        isStep2Enabled.value = false;
+      }
+
+      // 계산식 검색 API 호출
+      const formulaResponse = await machineStore.searchFormula(newValue);
+      console.log("계산식 검색 결과 (3Depth):", formulaResponse);
+
+      // 계산식 검색 결과를 테이블에 표시
+      setFormulaListData(formulaResponse);
+    } catch (error) {
+      console.error("4차 깊이별 공통코드 조회 또는 계산식 검색 실패:", error);
+      isStep2Enabled.value = false;
+      listRows.value = []; // 에러 시 테이블 초기화
+    }
+  }
+});
+
+// 기계유형 선택 시 계산식 검색
+watch(selectedFourthDept, async (newValue, _oldValue) => {
+  currentFormulaId.value = ""; // formula_id 초기화
+
+  // 파일 초기화
+  formulaFileName.value = "";
+  formulaFile.value = null;
+  if (formulaFileInput.value) {
+    formulaFileInput.value.value = "";
+  }
+
+  // newValue가 없으면 기계중분류 값으로 조회
+  const searchValue = newValue || selectedThirdDept.value;
+
+  if (searchValue) {
+    try {
+      // 계산식 검색 API 호출
+      const formulaResponse = await machineStore.searchFormula(searchValue);
+      console.log("계산식 검색 결과 (4Depth):", formulaResponse);
+
+      // 계산식 검색 결과를 테이블에 표시
+      setFormulaListData(formulaResponse);
+    } catch (error) {
+      console.error("계산식 검색 실패:", error);
+      listRows.value = []; // 에러 시 테이블 초기화
     }
   }
 });
@@ -202,8 +372,46 @@ const handleFormulaFileChange = (e: Event) => {
       return;
     }
 
-    formulaFileName.value = file.name;
-    formulaFile.value = file;
+    // 선택된 equipment_type 결정 (4Depth 우선, 없으면 3Depth)
+    const equipmentType = selectedFourthDept.value || selectedThirdDept.value;
+
+    if (equipmentType) {
+      // 파일명에서 확장자를 제외한 이름 추출
+      const fileNameWithoutExt = file.name.substring(
+        0,
+        file.name.lastIndexOf(".")
+      );
+
+      // 파일명에 equipmentType이 포함되어 있는지 확인
+      if (fileNameWithoutExt.includes(equipmentType)) {
+        // 이미 포함되어 있으면 원본 파일명 사용
+        formulaFileName.value = file.name;
+        formulaFile.value = file;
+      } else {
+        // 포함되어 있지 않으면 파일명을 equipment_type으로 변경
+        const newFileName = `${equipmentType}${fileExtension}`;
+
+        // 새로운 파일 객체 생성
+        const renamedFile = new File([file], newFileName, {
+          type: file.type,
+        });
+
+        formulaFileName.value = newFileName;
+        formulaFile.value = renamedFile;
+
+        // 파일명 변경 알림
+        alert(
+          t("messages.success.fileNameChanged", {
+            oldName: file.name,
+            newName: newFileName,
+          })
+        );
+      }
+    } else {
+      // equipment_type이 선택되지 않은 경우 원본 파일명 사용
+      formulaFileName.value = file.name;
+      formulaFile.value = file;
+    }
   } else {
     formulaFileName.value = "";
     formulaFile.value = null;
@@ -214,39 +422,155 @@ const handleFormulaFileChange = (e: Event) => {
 const handleRegister = async () => {
   // 필수 항목 validation
   if (!selectedMachineName.value) {
-    alert(t("messages.warning.selectMachineName"));
+    alert(t("messages.warning.selectMachineMajorCategory"));
     return;
   }
 
   if (!selectedThirdDept.value) {
-    alert(t("messages.warning.selectStructureType"));
+    alert(t("messages.warning.selectMachineSubCategory"));
     return;
   }
 
+  // 기계 타입은 선택 사항 (필수 아님)
+  // if (!selectedFourthDept.value) {
+  //   alert(t("messages.warning.selectMachineType"));
+  //   return;
+  // }
+
   if (!formulaFile.value) {
-    alert(t("messages.warning.selectFormulaFileAttach"));
+    alert(t("messages.warning.selectFormulaFile"));
     return;
   }
 
   try {
-    // 여기에 실제 등록 API 호출 로직 추가
     console.log("등록 데이터:", {
       machineName: selectedMachineName.value,
       thirdDept: selectedThirdDept.value,
+      fourthDept: selectedFourthDept.value,
       file: formulaFile.value,
+      formulaId: currentFormulaId.value,
     });
 
-    alert(t("messages.success.formulaCreateSuccess"));
+    // 선택된 equipment_type 결정 (4Depth 우선, 없으면 3Depth)
+    const selectedEquipmentType =
+      selectedFourthDept.value || selectedThirdDept.value;
 
-    // 등록 후 초기화
-    formulaFileName.value = "";
-    formulaFile.value = null;
-    if (formulaFileInput.value) {
-      formulaFileInput.value.value = "";
+    // API 호출 (파일은 이미 첨부 시점에 변경됨)
+    const params: { python_file: File; formula_id?: string } = {
+      python_file: formulaFile.value,
+    };
+
+    // formula_id가 있고, 선택한 equipment_type과 그리드 데이터의 equipment_type이 일치하는 경우에만 추가
+    if (currentFormulaId.value && selectedEquipmentType) {
+      // 그리드에서 현재 선택된 formula_id에 해당하는 데이터 찾기
+      const currentFormulaData = listRows.value.find(
+        (row: any) => row.formula_id === currentFormulaId.value
+      );
+
+      if (
+        currentFormulaData &&
+        currentFormulaData.equipment_type === selectedEquipmentType
+      ) {
+        params.formula_id = currentFormulaId.value;
+        console.log("formula_id 추가됨:", currentFormulaId.value);
+      } else {
+        console.log("equipment_type 불일치로 formula_id 제외:", {
+          selected: selectedEquipmentType,
+          gridData: currentFormulaData?.equipment_type,
+        });
+      }
+    }
+
+    const response = await machineStore.createFormula(params);
+
+    if (response?.success) {
+      alert(t("messages.success.formulaCreateSuccess"));
+
+      // 등록 후 초기화
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      currentFormulaId.value = ""; // formula_id 초기화
+      if (formulaFileInput.value) {
+        formulaFileInput.value.value = "";
+      }
+
+      // 계산식 목록 새로고침 (4Depth가 선택되어 있으면 4Depth로, 아니면 3Depth로)
+      if (selectedFourthDept.value) {
+        const formulaResponse = await machineStore.searchFormula(
+          selectedFourthDept.value
+        );
+        setFormulaListData(formulaResponse);
+      } else if (selectedThirdDept.value) {
+        const formulaResponse = await machineStore.searchFormula(
+          selectedThirdDept.value
+        );
+        setFormulaListData(formulaResponse);
+      }
+    } else {
+      throw new Error(response?.message || "등록에 실패했습니다.");
     }
   } catch (error) {
     console.error("등록 실패:", error);
     alert(t("messages.error.registrationFailed"));
+  }
+};
+
+// 삭제 함수
+const handleDelete = async () => {
+  // 선택된 항목 확인
+  if (selectedItems.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  const selectedItem = selectedItems.value[0];
+  const formulaId = selectedItem.formulaId;
+
+  if (!formulaId) {
+    alert(t("messages.warning.noFormulaIdToDelete"));
+    return;
+  }
+
+  if (!confirm(t("messages.confirm.deleteItem"))) {
+    return;
+  }
+
+  try {
+    console.log("삭제할 formula_id:", formulaId);
+
+    // 삭제 API 호출
+    const response = await machineStore.deleteFormula(formulaId);
+
+    if (response?.success) {
+      alert(t("messages.success.deleted"));
+
+      // 삭제 후 초기화
+      selectedItems.value = [];
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      currentFormulaId.value = "";
+      if (formulaFileInput.value) {
+        formulaFileInput.value.value = "";
+      }
+
+      // 계산식 목록 새로고침
+      if (selectedFourthDept.value) {
+        const formulaResponse = await machineStore.searchFormula(
+          selectedFourthDept.value
+        );
+        setFormulaListData(formulaResponse);
+      } else if (selectedThirdDept.value) {
+        const formulaResponse = await machineStore.searchFormula(
+          selectedThirdDept.value
+        );
+        setFormulaListData(formulaResponse);
+      }
+    } else {
+      throw new Error(response?.message || "삭제에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("삭제 실패:", error);
+    alert(t("messages.error.deleteFailed"));
   }
 };
 </script>
@@ -261,7 +585,7 @@ $desktop: 1200px;
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
   gap: 12px 16px;
-  align-items: center;
+  align-items: start;
   margin-bottom: 14px;
   background: #f7f9fc;
   border: 1px solid #e5e9f2;
@@ -269,11 +593,20 @@ $desktop: 1200px;
   padding: 14px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 
+  // 계산식 파일 그룹 (전체 너비 사용)
+  .formula-file-group {
+    grid-column: 1 / -1; // 전체 컬럼 차지
+  }
+
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
     gap: 10px 12px;
     padding: 12px;
+
+    .formula-file-group {
+      grid-column: 1 / -1;
+    }
   }
 
   // 모바일 크기에서 1열로 변경
@@ -281,6 +614,10 @@ $desktop: 1200px;
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 10px;
+
+    .formula-file-group {
+      grid-column: 1;
+    }
   }
 }
 
@@ -569,6 +906,23 @@ $desktop: 1200px;
   @media (max-width: $mobile) {
     padding: 6px 12px;
     font-size: 12px;
+  }
+}
+
+// 파일 다운로드 링크 스타일
+.file-download-link {
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    color: #1557b0;
+  }
+
+  &:visited {
+    color: #1a73e8;
   }
 }
 </style>

@@ -3,7 +3,9 @@
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.machineName") }}</span>
+        <span class="label required"
+          >⊙ {{ t("common.machineMajorCategory") }}</span
+        >
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -424,7 +426,7 @@ const extractZipContents = async (file: File) => {
 // 공통 검증 함수: 기계명 필수 체크
 const validateBasicSelections = (): boolean => {
   if (!selectedMachineName.value) {
-    alert(t("messages.warning.selectMachineName"));
+    alert(t("messages.warning.selectMachineMajorCategory"));
     return false;
   }
 

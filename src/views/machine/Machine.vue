@@ -991,7 +991,7 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.machine.formula"),
-    value: (item as any).formula_url || "-",
+    value: (item as any).formula_name || "-",
     editable: false,
     fieldType: "text",
   });
@@ -1120,6 +1120,36 @@ const openDetailPanel = async (item: MachineItem) => {
           label: vendor.vendor_name,
         }));
       }
+    }
+
+    // 기계 파일 상세 정보 조회
+    const filesParams: any = {
+      equipment_type: item.equipment_type,
+    };
+
+    // 파일 ID들이 있으면 추가
+    if (item.model_file_id) filesParams.model_file_id = item.model_file_id;
+    if (item.rvt_file_id) filesParams.rvt_file_id = item.rvt_file_id;
+    if (item.symbol_id) filesParams.symbol_id = item.symbol_id;
+    if (item.thumbnail_id) filesParams.thumbnail_id = item.thumbnail_id;
+    if (item.formula_id) filesParams.formula_id = item.formula_id;
+
+    const filesResponse = await machineStore.fetchMachineDetailFiles(
+      item.equipment_id,
+      filesParams
+    );
+
+    console.log("파일 상세 정보:", filesResponse);
+
+    // 계산식 정보 처리
+    if (filesResponse?.response?.data?.formula_info?.data?.formula?.file_name) {
+      const formulaFileName =
+        filesResponse.response.data.formula_info.data.formula.file_name;
+      // detailItemData에 계산식 파일명 업데이트
+      if (detailItemData.value) {
+        (detailItemData.value as any).formula_name = formulaFileName;
+      }
+      console.log("계산식 파일명:", formulaFileName);
     }
 
     // 썸네일 이미지 URL 처리 - download_url 사용
@@ -1334,13 +1364,15 @@ const handleFieldChange = (fieldName: string, value: string) => {
   console.log(`필드 변경: ${fieldName} = ${value}`);
 
   // editData에 반영
-  switch (fieldName) {
-    case t("common.manufacturer"):
-      editData.value.vendor_id = value;
-      break;
-    case t("common.modelName"):
-      editData.value.modelNumber = value;
-      break;
+  // 제조사 필드 확인 (columns.machine.company)
+  if (fieldName === t("columns.machine.company")) {
+    editData.value.vendor_id = value;
+    console.log("vendor_id 업데이트:", value);
+  }
+  // 모델명 필드 확인 (columns.machine.model)
+  else if (fieldName === t("columns.machine.model")) {
+    editData.value.modelNumber = value;
+    console.log("modelNumber 업데이트:", value);
   }
 };
 

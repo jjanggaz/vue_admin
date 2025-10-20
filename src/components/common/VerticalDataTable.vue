@@ -69,12 +69,12 @@
                     type="button"
                     class="btn-attach-small"
                     @click="
-                      item.value
+                      item.value && item.value !== '-'
                         ? emit('file-remove', item.columnName)
                         : emit('file-attach', item.columnName)
                     "
                   >
-                    {{ item.value ? "첨부취소" : "첨부" }}
+                    {{ item.value && item.value !== "-" ? "첨부취소" : "첨부" }}
                   </button>
                 </div>
 

@@ -481,6 +481,13 @@
               {{ t("common.save") }}
             </button>
             <button
+              v-if="isDetailEditMode"
+              class="btn-cancel"
+              @click="cancelEditMode"
+            >
+              {{ t("common.cancel") }}
+            </button>
+            <button
               class="btn-close"
               @click="closeDetailPanel"
               aria-label="Close"
@@ -493,10 +500,19 @@
           <!-- 모델 썸네일 이미지 영역 -->
           <div class="model-thumbnail-section">
             <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
+              <!-- 로딩 오버레이 -->
+              <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
+                <div class="loading-spinner"></div>
+                <span class="loading-text">{{ t("common.loading") }}</span>
+              </div>
+              <!-- 이미지 -->
               <img
                 :src="thumbnailImageUrl"
                 :alt="t('common.modelThumbnailSection')"
                 class="thumbnail-image"
+                :class="{ hidden: isThumbnailLoading }"
+                @load="isThumbnailLoading = false"
+                @error="isThumbnailLoading = false"
               />
             </div>
             <div v-else class="thumbnail-placeholder">
@@ -791,41 +807,7 @@ const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
-
-// 썸네일 MIME 타입 추정 헬퍼
-const getImageMimeType = (info: any): string => {
-  const fallback = "image/png";
-  const mime = info?.mime_type || info?.content_type;
-  if (typeof mime === "string" && mime.startsWith("image/")) return mime;
-  const name: string | undefined = info?.original_filename || info?.file_name;
-  if (name) {
-    const ext = name.split(".").pop()?.toLowerCase();
-    switch (ext) {
-      case "jpg":
-      case "jpeg":
-        return "image/jpeg";
-      case "png":
-        return "image/png";
-      case "gif":
-        return "image/gif";
-      case "webp":
-        return "image/webp";
-      case "svg":
-        return "image/svg+xml";
-    }
-  }
-  return fallback;
-};
-
-// base64 패딩 보정
-const normalizeBase64 = (b64: string): string => {
-  const s = b64.trim();
-  const pad = s.length % 4;
-  if (pad === 2) return s + "==";
-  if (pad === 3) return s + "=";
-  if (pad === 1) return s.slice(0, -1); // 잘못된 끝 문자 제거
-  return s;
-};
+const isThumbnailLoading = ref(false);
 
 // 상세검색 관련 변수들
 const isDetailSearchOpen = ref(false);
@@ -878,6 +860,9 @@ const editData = ref({
   symbolFile: "",
   thumbnailFile: "",
 });
+
+// 원본 데이터 백업 (취소 시 복원용)
+const originalItemData = ref<MachineItem | null>(null);
 
 // 콤보박스 옵션들 (API로부터 동적 로드)
 const manufacturers = ref<Array<{ value: string; label: string }>>([]);
@@ -1007,9 +992,8 @@ const specVerticalData = computed(() => {
   data.push({
     columnName: t("columns.machine.formula"),
     value: (item as any).formula_url || "-",
-    filePath: (item as any).formula_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
+    editable: false,
+    fieldType: "text",
   });
 
   return data;
@@ -1112,6 +1096,12 @@ const handleDelete = async () => {
 };
 
 const openDetailPanel = async (item: MachineItem) => {
+  // 이전 썸네일 초기화 (새 항목을 열 때마다 초기화)
+  thumbnailImageUrl.value = "";
+  isThumbnailLoading.value = false;
+
+  // 원본 데이터 백업 (깊은 복사)
+  originalItemData.value = JSON.parse(JSON.stringify(item));
   detailItemData.value = item;
   isDetailPanelOpen.value = true;
   isDetailEditMode.value = false;
@@ -1132,90 +1122,61 @@ const openDetailPanel = async (item: MachineItem) => {
       }
     }
 
-    // 기계 파일 상세 정보 조회
-    const fileParams = {
-      model_file_id: item.model_file_id,
-      rvt_file_id: item.rvt_file_id,
-      symbol_id: item.symbol_id,
-      thumbnail_id: item.thumbnail_id,
-      formula_id: item.formula_id,
-    };
-    const fileResponse = await machineStore.fetchMachineDetailFiles(
-      item.equipment_id,
-      fileParams
-    );
-
-    // 썸네일 이미지 데이터 처리
-    const thumbInfo = fileResponse?.response?.data?.thumbnail_file;
-    if (thumbInfo?.data) {
-      const raw = thumbInfo.data as unknown;
-      const mimeType = getImageMimeType(thumbInfo);
-
-      // 1) base64 문자열
-      if (typeof raw === "string") {
-        // 이미 data URL이면 그대로 사용
-        if (raw.startsWith("data:")) {
-          thumbnailImageUrl.value = raw;
-        } else {
-          // 순수 base64를 안전하게 Blob으로 변환 후 표시
-          try {
-            const b64 = normalizeBase64(raw);
-            const byteString = atob(b64);
-            const len = byteString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) bytes[i] = byteString.charCodeAt(i);
-            const blob = new Blob([bytes], { type: mimeType });
-            thumbnailImageUrl.value = URL.createObjectURL(blob);
-          } catch {
-            // 디코딩 실패 시 표시 초기화
-            thumbnailImageUrl.value = "";
-          }
-        }
-      }
-      // 2) ArrayBuffer
-      else if (raw instanceof ArrayBuffer) {
-        const blob = new Blob([raw], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      }
-      // 3) Uint8Array (또는 TypedArray 유사)
-      else if (raw instanceof Uint8Array) {
-        const ab = raw.buffer.slice(
-          raw.byteOffset,
-          raw.byteOffset + raw.byteLength
-        ) as ArrayBuffer; // 명시적으로 ArrayBuffer로 단언
-        const blob = new Blob([ab], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      }
-      // 4) number[] (백엔드가 숫자 배열을 보내는 경우 대비)
-      else if (Array.isArray(raw)) {
-        const u8 = new Uint8Array(raw as number[]);
-        const blob = new Blob([u8], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      } else {
-        // 알 수 없는 포맷: 표시 초기화
-        thumbnailImageUrl.value = "";
-      }
+    // 썸네일 이미지 URL 처리 - download_url 사용
+    const thumbnailInfo = (item as any).thumbnail_file_info;
+    if (thumbnailInfo?.download_url) {
+      isThumbnailLoading.value = true;
+      thumbnailImageUrl.value = thumbnailInfo.download_url;
     } else {
       thumbnailImageUrl.value = "";
     }
   } catch (error) {
     console.error("상세 정보 조회 실패:", error);
+    isThumbnailLoading.value = false;
   }
 };
 const closeDetailPanel = () => {
   isDetailPanelOpen.value = false;
   detailItemData.value = null;
+  originalItemData.value = null;
   isDetailEditMode.value = false;
 
-  // 썸네일 이미지 URL 정리 (메모리 누수 방지)
-  if (thumbnailImageUrl.value && thumbnailImageUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(thumbnailImageUrl.value);
-  }
+  // 썸네일 이미지 URL 및 로딩 상태 초기화
   thumbnailImageUrl.value = "";
+  isThumbnailLoading.value = false;
 };
 
 const toggleEditMode = () => {
   isDetailEditMode.value = !isDetailEditMode.value;
+};
+
+const cancelEditMode = () => {
+  // 수정 모드 취소 시 원본 데이터로 되돌리기
+  if (originalItemData.value && detailItemData.value) {
+    // 원본 데이터로 복원 (깊은 복사)
+    detailItemData.value = JSON.parse(JSON.stringify(originalItemData.value));
+
+    // 썸네일 이미지 URL도 복원
+    const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
+    if (thumbnailInfo?.download_url) {
+      thumbnailImageUrl.value = thumbnailInfo.download_url;
+    } else {
+      thumbnailImageUrl.value = "";
+    }
+  }
+
+  // editData 초기화
+  editData.value = {
+    equipmentType: "",
+    manufacturer: "",
+    modelNumber: "",
+    model3dFile: "",
+    revitFile: "",
+    symbolFile: "",
+    thumbnailFile: "",
+  };
+
+  isDetailEditMode.value = false;
 };
 
 const saveDetailChanges = async () => {
@@ -1361,7 +1322,8 @@ const handleFileRemove = (fieldName: string) => {
     case "3D":
       editData.value.model3dFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).model_3d_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).model_file_info = null;
       }
       // 파일 input 초기화
       if (file3d.value) {
@@ -1371,7 +1333,8 @@ const handleFileRemove = (fieldName: string) => {
     case "Revit":
       editData.value.revitFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).revit_file_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).rvt_file_info = null;
       }
       // 파일 input 초기화
       if (fileRevit.value) {
@@ -1381,7 +1344,8 @@ const handleFileRemove = (fieldName: string) => {
     case t("common.symbol"):
       editData.value.symbolFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).symbol_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).symbol_file_info = null;
       }
       // 파일 input 초기화
       if (fileSymbol.value) {
@@ -1391,7 +1355,8 @@ const handleFileRemove = (fieldName: string) => {
     case t("common.thumbnail"):
       editData.value.thumbnailFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).thumbnail_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).thumbnail_file_info = null;
       }
       // 파일 input 초기화
       if (fileThumbnail.value) {
@@ -1430,9 +1395,7 @@ const handleFileDownload = (fieldName: string) => {
 
   // download_url이 있으면 다운로드
   if (fileInfo?.download_url) {
-    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}${
-      fileInfo.download_url
-    }`;
+    const downloadUrl = fileInfo.download_url;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
@@ -2057,7 +2020,8 @@ onMounted(async () => {
       gap: 0.5rem;
 
       .btn-edit,
-      .btn-save {
+      .btn-save,
+      .btn-cancel {
         padding: 0.5rem 1rem;
         border: 1px solid $border-color;
         border-radius: 4px;
@@ -2065,12 +2029,31 @@ onMounted(async () => {
         color: $text-color;
         cursor: pointer;
         font-size: 0.875rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: color.scale($background-light, $lightness: -5%);
+        }
       }
 
       .btn-save {
         background: $success-color;
         color: white;
         border-color: $success-color;
+
+        &:hover {
+          background: color.scale($success-color, $lightness: -10%);
+        }
+      }
+
+      .btn-cancel {
+        background: $error-color;
+        color: white;
+        border-color: $error-color;
+
+        &:hover {
+          background: color.scale($error-color, $lightness: -10%);
+        }
       }
 
       .btn-close {
@@ -2099,20 +2082,53 @@ onMounted(async () => {
       justify-content: center;
 
       .thumbnail-image-container {
-        width: 200px;
-        height: 150px;
-        border: 1px solid $border-color;
-        border-radius: 8px;
+        width: 280px;
+        height: 210px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: white;
         overflow: hidden;
+        position: relative;
 
         .thumbnail-image {
           max-width: 100%;
           max-height: 100%;
           object-fit: contain;
+          transition: opacity 0.3s;
+
+          &.hidden {
+            opacity: 0;
+          }
+        }
+
+        .thumbnail-loading-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(2px);
+          gap: 0.75rem;
+          z-index: 1;
+
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid $border-color;
+            border-top-color: $primary-color;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+
+          .loading-text {
+            color: $text-light;
+            font-size: 0.875rem;
+          }
         }
       }
 
@@ -2130,6 +2146,12 @@ onMounted(async () => {
           color: $text-light;
           font-size: 0.875rem;
           text-align: center;
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
       }
     }

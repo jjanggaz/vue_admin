@@ -1077,6 +1077,7 @@
   "messages": {
     "success": {
       "excelDataImported": "Excel 데이터가 성공적으로 가져와졌습니다.",
+      "saved": "저장되었습니다.",
       "deleted": "삭제되었습니다.",
       "userInfoUpdated": "사용자 정보가 수정되었습니다.",
       "userRegistered": "사용자가 등록되었습니다.",

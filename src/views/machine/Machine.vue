@@ -853,7 +853,7 @@ const isDetailEditMode = ref(false);
 // 편집 모드 데이터
 const editData = ref({
   equipmentType: "",
-  manufacturer: "",
+  vendor_id: "",
   modelNumber: "",
   model3dFile: "",
   revitFile: "",
@@ -1147,6 +1147,18 @@ const closeDetailPanel = () => {
 };
 
 const toggleEditMode = () => {
+  if (!isDetailEditMode.value && detailItemData.value) {
+    // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화
+    editData.value = {
+      equipmentType: detailItemData.value.equipment_type || "",
+      vendor_id: detailItemData.value.vendor_id || "",
+      modelNumber: detailItemData.value.model_number || "",
+      model3dFile: "",
+      revitFile: "",
+      symbolFile: "",
+      thumbnailFile: "",
+    };
+  }
   isDetailEditMode.value = !isDetailEditMode.value;
 };
 
@@ -1168,7 +1180,7 @@ const cancelEditMode = () => {
   // editData 초기화
   editData.value = {
     equipmentType: "",
-    manufacturer: "",
+    vendor_id: "",
     modelNumber: "",
     model3dFile: "",
     revitFile: "",
@@ -1183,14 +1195,52 @@ const saveDetailChanges = async () => {
   if (!detailItemData.value) return;
 
   try {
-    // 여기에 저장 로직을 추가할 수 있습니다
-    // 예: API 호출로 데이터 업데이트
-    console.log("저장할 데이터:", detailItemData.value);
-    console.log("편집된 데이터:", editData.value);
+    const item = detailItemData.value;
 
-    // 저장 성공 후 편집 모드 종료
-    isDetailEditMode.value = false;
-    alert(t("messages.success.saved"));
+    console.log("현재 editData:", editData.value);
+    console.log("현재 detailItemData:", item);
+
+    // 업데이트 파라미터 준비
+    const updateParams: any = {
+      equipment_type: item.equipment_type,
+      vendor_id: editData.value.vendor_id,
+      model_number: editData.value.modelNumber,
+    };
+
+    console.log("업데이트 파라미터:", updateParams);
+
+    // 새로 추가된 파일들 확인
+    if (file3d.value?.files?.[0]) {
+      updateParams.dtd_model_file = file3d.value.files[0];
+    }
+    if (fileThumbnail.value?.files?.[0]) {
+      updateParams.thumbnail_file = fileThumbnail.value.files[0];
+    }
+    if (fileRevit.value?.files?.[0]) {
+      updateParams.revit_model_file = fileRevit.value.files[0];
+    }
+    if (fileSymbol.value?.files?.[0]) {
+      updateParams.symbol_file = fileSymbol.value.files[0];
+    }
+
+    console.log("업데이트 파라미터:", updateParams);
+
+    // API 호출
+    const response = await machineStore.updateMachine(
+      item.equipment_id,
+      updateParams
+    );
+
+    if (response?.success) {
+      // 저장 성공 후 편집 모드 종료
+      isDetailEditMode.value = false;
+      alert(t("messages.success.saved"));
+
+      // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
+      await loadData();
+    } else {
+      throw new Error(response?.message || "저장에 실패했습니다.");
+    }
   } catch (error) {
     console.error("저장 중 오류 발생:", error);
     alert(t("messages.error.saveFailed"));
@@ -1234,28 +1284,44 @@ const handleFileSelect = (type: string, event: Event) => {
         editData.value.model3dFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).model_3d_url = file.name;
+          if (!(detailItemData.value as any).model_file_info) {
+            (detailItemData.value as any).model_file_info = {};
+          }
+          (detailItemData.value as any).model_file_info.original_filename =
+            file.name;
         }
         break;
       case "revit":
         editData.value.revitFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).revit_file_url = file.name;
+          if (!(detailItemData.value as any).rvt_file_info) {
+            (detailItemData.value as any).rvt_file_info = {};
+          }
+          (detailItemData.value as any).rvt_file_info.original_filename =
+            file.name;
         }
         break;
       case "symbol":
         editData.value.symbolFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).symbol_url = file.name;
+          if (!(detailItemData.value as any).symbol_file_info) {
+            (detailItemData.value as any).symbol_file_info = {};
+          }
+          (detailItemData.value as any).symbol_file_info.original_filename =
+            file.name;
         }
         break;
       case "thumbnail":
         editData.value.thumbnailFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).thumbnail_url = file.name;
+          if (!(detailItemData.value as any).thumbnail_file_info) {
+            (detailItemData.value as any).thumbnail_file_info = {};
+          }
+          (detailItemData.value as any).thumbnail_file_info.original_filename =
+            file.name;
         }
         break;
     }
@@ -1270,7 +1336,7 @@ const handleFieldChange = (fieldName: string, value: string) => {
   // editData에 반영
   switch (fieldName) {
     case t("common.manufacturer"):
-      editData.value.manufacturer = value;
+      editData.value.vendor_id = value;
       break;
     case t("common.modelName"):
       editData.value.modelNumber = value;
@@ -1413,6 +1479,11 @@ const handleFileDownload = (fieldName: string) => {
 // 데이터 로드 (RoleManagement.vue 패턴 적용)
 const loadData = async () => {
   try {
+    // 상세정보창이 열려있으면 닫기
+    if (isDetailPanelOpen.value) {
+      closeDetailPanel();
+    }
+
     // 상세검색이 열려있고 기계유형 옵션이 있는데 선택하지 않은 경우
     if (
       isDetailSearchOpen.value &&

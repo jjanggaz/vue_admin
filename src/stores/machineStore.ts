@@ -498,6 +498,73 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  const updateMachine = async (
+    equipmentId: string,
+    params: {
+      equipment_type?: string;
+      vendor_id?: string;
+      model_number?: string;
+      dtd_model_file?: File;
+      thumbnail_file?: File;
+      revit_model_file?: File;
+      symbol_file?: File;
+    }
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+
+      // updateParams 객체 생성
+      const updateParams: any = {};
+      if (params.equipment_type) {
+        updateParams.equipment_type = params.equipment_type;
+      }
+      if (params.vendor_id) {
+        updateParams.vendor_id = params.vendor_id;
+      }
+      if (params.model_number) {
+        updateParams.model_number = params.model_number;
+      }
+
+      // updateParams를 JSON 문자열로 FormData에 추가
+      formData.append("updateParams", JSON.stringify(updateParams));
+
+      // 파일들 추가
+      if (params.dtd_model_file) {
+        formData.append("dtd_model_file", params.dtd_model_file);
+      }
+      if (params.thumbnail_file) {
+        formData.append("thumbnail_file", params.thumbnail_file);
+      }
+      if (params.revit_model_file) {
+        formData.append("revit_model_file", params.revit_model_file);
+      }
+      if (params.symbol_file) {
+        formData.append("symbol_file", params.symbol_file);
+      }
+
+      const response = await request(
+        `/api/machine/update/${encodeURIComponent(equipmentId)}`,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("기계 수정 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "기계 수정에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const fetchMachineDetailCommon = async (equipmentType: string) => {
     loading.value = true;
     error.value = null;
@@ -586,6 +653,7 @@ export const useMachineStore = defineStore("machine", () => {
     uploadMachineExcel,
     uploadModelZip,
     deleteMachine,
+    updateMachine,
     fetchMachineDetailCommon,
     fetchMachineDetailFiles,
   };

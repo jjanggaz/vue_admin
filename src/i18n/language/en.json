@@ -1077,6 +1077,7 @@
   "messages": {
     "success": {
       "excelDataImported": "Excel data has been successfully imported.",
+      "saved": "Successfully saved.",
       "deleted": "Successfully deleted.",
       "userInfoUpdated": "User information updated.",
       "userRegistered": "User registered successfully.",

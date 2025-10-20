@@ -104,9 +104,11 @@
       <!-- 계산식 파일 다운로드 슬롯 -->
       <template #cell-formula_file_name="{ item }">
         <span
-          v-if="item.formula?.file_uri && item.formula?.has_file"
+          v-if="item.formula?.download_url"
           class="download-link"
-          @click="downloadFile(item.formula.file_uri, item.formula_file_name)"
+          @click="
+            downloadFile(item.formula.download_url, item.formula_file_name)
+          "
         >
           {{ item.formula_file_name }}
         </span>
@@ -116,10 +118,13 @@
       <!-- 3D 모델 파일 다운로드 슬롯 -->
       <template #cell-dtdx_model_file_name="{ item }">
         <span
-          v-if="item.dtdx_model?.file_uri && item.dtdx_model?.has_file"
+          v-if="item.dtdx_model?.download_url"
           class="download-link"
           @click="
-            downloadFile(item.dtdx_model.file_uri, item.dtdx_model_file_name)
+            downloadFile(
+              item.dtdx_model.download_url,
+              item.dtdx_model_file_name
+            )
           "
         >
           {{ item.dtdx_model_file_name }}
@@ -130,10 +135,10 @@
       <!-- REVIT 모델 파일 다운로드 슬롯 -->
       <template #cell-rvt_model_file_name="{ item }">
         <span
-          v-if="item.rvt_model?.file_uri && item.rvt_model?.has_file"
+          v-if="item.rvt_model?.download_url"
           class="download-link"
           @click="
-            downloadFile(item.rvt_model.file_uri, item.rvt_model_file_name)
+            downloadFile(item.rvt_model.download_url, item.rvt_model_file_name)
           "
         >
           {{ item.rvt_model_file_name }}
@@ -233,28 +238,24 @@ interface StructureItem {
   description: string;
   // 원본 중첩 객체들 (필요시 사용)
   formula?: {
-    file_name: string;
+    original_filename: string;
     formula_name: string;
-    has_file: boolean;
-    file_uri?: string;
+    download_url?: string;
     formula_id?: string;
   };
   dtdx_model?: {
-    file_name: string;
-    has_file: boolean;
-    file_uri?: string;
+    original_filename: string;
+    download_url?: string;
     model_file_id?: string;
   };
   rvt_model?: {
-    file_name: string;
-    has_file: boolean;
-    file_uri?: string;
+    original_filename: string;
+    download_url?: string;
     model_file_id?: string;
   };
   thumbnail?: {
-    file_name: string;
-    has_file: boolean;
-    file_uri?: string;
+    original_filename: string;
+    download_url?: string;
     symbol_id?: string;
   };
 }
@@ -477,15 +478,11 @@ const onChildUpdate = async () => {
 };
 
 // 파일 다운로드 함수
-const downloadFile = (fileUri: string, fileName: string) => {
-  if (!fileUri) {
+const downloadFile = (downloadUrl: string, fileName: string) => {
+  if (!downloadUrl) {
     alert("다운로드할 파일이 없습니다.");
     return;
   }
-
-  // API 서버 URL과 file_uri를 조합하여 다운로드 URL 생성
-  const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/${fileUri}`;
-
   // 새 창에서 다운로드 실행
   const link = document.createElement("a");
   link.href = downloadUrl;
@@ -536,10 +533,10 @@ const loadData = async () => {
         structure_name: item.structure_name,
         structure_type: item.structure_type,
         unit_system_code: item.unit_system_code,
-        formula_file_name: item.formula?.file_name || "-",
-        dtdx_model_file_name: item.dtdx_model?.file_name || "-",
-        rvt_model_file_name: item.rvt_model?.file_name || "-",
-        thumbnail_file_name: item.thumbnail?.symbol_name || "-",
+        formula_file_name: item.formula?.original_filename || "-",
+        dtdx_model_file_name: item.dtdx_model?.original_filename || "-",
+        rvt_model_file_name: item.rvt_model?.original_filename || "-",
+        thumbnail_file_name: item.thumbnail?.original_filename || "-",
         created_at: item.created_at,
         description: item.description || "-",
         // 원본 데이터도 유지 (필요시 사용)

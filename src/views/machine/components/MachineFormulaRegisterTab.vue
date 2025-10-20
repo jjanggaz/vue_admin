@@ -56,7 +56,7 @@
             class="btn-file"
             @click="formulaFileInput?.click()"
           >
-            {{ t("common.chooseFile") }}
+            {{ t("common.selectFile") }}
           </button>
           <button type="button" class="btn-register" @click="handleRegister">
             {{ t("common.register") }}
@@ -289,16 +289,34 @@ $desktop: 1200px;
   flex-direction: column;
   gap: 6px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
+  width: 100%; // 전체 너비 사용
 
   &.inline {
     flex-direction: row;
     align-items: center;
     gap: 12px;
+    flex-wrap: nowrap; // 한 줄로 유지
+
+    .label {
+      flex-shrink: 0; // 라벨은 축소되지 않음
+      white-space: nowrap; // 라벨 텍스트 줄바꿈 방지
+    }
+
+    .input,
+    select {
+      flex: 1; // input/select가 남은 공간 차지
+      min-width: 0;
+    }
+
+    .file-upload-group {
+      flex: 1;
+    }
 
     @media (max-width: $mobile) {
       flex-direction: column;
       align-items: stretch;
       gap: 8px;
+      flex-wrap: wrap;
     }
   }
 }
@@ -306,8 +324,9 @@ $desktop: 1200px;
 .label {
   font-size: 13px;
   color: #475467;
-  min-width: 100px;
+  min-width: 110px;
   flex-shrink: 0;
+  white-space: nowrap;
 
   &.required::after {
     content: " (＊)";
@@ -318,6 +337,7 @@ $desktop: 1200px;
   @media (max-width: $mobile) {
     min-width: auto;
     font-size: 12px;
+    white-space: normal;
   }
 }
 

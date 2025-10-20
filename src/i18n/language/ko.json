@@ -341,24 +341,6 @@
     "output": {
       "id": "순번"
     },
-    "machine": {
-      "no": "순번",
-      "mcId": "기계코드",
-      "name": "기계명",
-      "type": "기계유형",
-      "capacity": "용량",
-      "model": "모델명",
-      "formula": "계산식",
-      "company": "제조사",
-      "details": "상세정보",
-      "unitPrice": "단가",
-      "code": "기계코드",
-      "structureType": "구조물 구분",
-      "structureTypeDetail": "구조물 타입",
-      "model3d": "3D모델",
-      "revitModel": "Revit모델",
-      "remarks": "비고"
-    },
     "pipe": {
       "no": "순번",
       "pcId": "배관코드",
@@ -405,7 +387,6 @@
     "result": "결과",
     "machineSubCategory": "기계중분류",
     "formulaVersionManagement": "기계 계산식 버전관리",
-    "formulaVersion": "계산식 버전",
     "createdDate": "생성일자",
     "updatedDate": "수정일자",
     "machineUpload": "기계리스트 업로드",
@@ -414,9 +395,7 @@
     "machineRegister": "기계 등록",
     "excelTemplateDownload": "Excel 양식 다운로드",
     "excelUpload": "Excel 업로드",
-    "formulaFile": "계산식파일",
     "machineName": "기계명",
-    "machineType": "기계 타입",
     "machineRegistration": "기계 등록",
     "machineFormulaRegistration": "기계 계산식 등록",
     "pipeRegistration": "배관 등록",
@@ -426,7 +405,6 @@
     "priceType": "단가유형",
     "provider": "제공처",
     "manufacturer": "제조사",
-    "modelName": "모델명",
     "symbol": "심볼",
     "thumbnail": "썸네일",
     "modelThumbnailSection": "모델 썸네일",
@@ -488,7 +466,6 @@
     "symbolImagePlaceholder": "심볼 이미지가 표시됩니다",
     "noSymbolImage": "저장된 심볼 이미지가 없습니다.",
     "noAttachedSymbolImage": "첨부한 심볼 이미지가 없습니다.",
-    "fileName": "파일명",
     "fileType": "파일 타입",
     "fileSize": "파일 크기",
     "lastModified": "수정일",
@@ -506,11 +483,7 @@
     "remarks": "비고",
     "zipFileList": "ZIP 파일 내부 파일 목록",
     "filesCount": "{count}개 파일",
-    "machineType": {
-      "pump": "펌프",
-      "motor": "모터",
-      "conveyor": "컨베이어"
-    },
+    "machineType": "기계 타입",
     "machineCodeStatus": {
       "active": "사용",
       "inactive": "미사용"

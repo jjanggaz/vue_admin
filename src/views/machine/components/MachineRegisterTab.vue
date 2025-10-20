@@ -41,7 +41,7 @@
             class="btn-file"
             @click="excelFileInput?.click()"
           >
-            {{ t("common.chooseFile") }}
+            {{ t("common.selectFile") }}
           </button>
         </div>
       </div>

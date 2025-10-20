@@ -1339,7 +1339,7 @@
       "imageFileOnly": "Only image files can be uploaded. (png, jpg, gif)",
       "structureRegisterFailed": "Structure registration failed.",
       "structureRegisterError": "An error occurred while registering the structure.",
-      "zipMissingRequiredFiles": "Required files are missing from the ZIP file.\n\nRequired files:\n- 3D model (.dtdx)\n- Thumbnail image (.jpg/.jpeg/.png/.gif)\n\nOptional files:\n- Symbol (.svg)\n- Revit model (.rvt)\n\nMissing: {missing}",
+      "zipMissingRequiredFiles": "Required files are missing from the ZIP file.\n\nRequired files:\n- 3D model (.dtdx)\n- Thumbnail image (.jpg/.jpeg/.png/.gif)\n\nOptional files:\n- Symbol (.svg)\n- Revit model (.rvt/.rfa)\n\nMissing: {missing}",
       "zipInvalidFiles": "The ZIP file contains invalid files:\n\n{files}\n\nAllowed file formats:\n- Required: .dtdx, .jpg, .jpeg, .png, .gif\n- Optional: .svg, .rvt",
       "zipReadFail": "Unable to read ZIP file. The file may be corrupted or in an unsupported format.",
       "pyFileExtensionOnly": "Only .py file extension is allowed for formula files.",

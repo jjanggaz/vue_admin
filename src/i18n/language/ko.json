@@ -1335,7 +1335,7 @@
       "imageFileOnly": "이미지 파일만 업로드할 수 있습니다. (png, jpg, gif)",
       "structureRegisterFailed": "구조물 등록에 실패했습니다.",
       "structureRegisterError": "구조물 등록 중 오류가 발생했습니다.",
-      "zipMissingRequiredFiles": "ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- 심볼(.svg)\n- Revit모델(.rvt)\n\n누락: {missing}",
+      "zipMissingRequiredFiles": "ZIP 파일에 필수 파일이 빠졌습니다.\n\n필수 파일:\n- 3D모델(.dtdx)\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\n\n선택 파일:\n- 심볼(.svg)\n- Revit모델(.rvt/.rfa)\n\n누락: {missing}",
       "zipInvalidFiles": "ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n{files}\n\n허용된 파일 형식:\n- 필수: .dtdx, .jpg, .jpeg, .png, .gif\n- 선택: .svg, .rvt",
       "zipReadFail": "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다.",
       "pyFileExtensionOnly": "계산식 파일은 .py 확장자만 허용됩니다.",

@@ -577,6 +577,12 @@ const newCode = ref<CodeItem>({
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   {
+    key: "code_order",
+    title: t("columns.code.order"),
+    width: "80px",
+    sortable: true,
+  },
+  {
     key: "parent_key",
     title: t("columns.code.parentCode"),
     width: "100px",

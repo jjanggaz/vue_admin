@@ -140,11 +140,11 @@
                 @field-change="handleFieldChange"
               />
             </div>
-            <div class="catalog-button-section">
+            <!-- <div class="catalog-button-section">
               <button class="btn btn-catalog" @click="openCatalogModal">
                 {{ t("common.catalog") || "카탈로그" }}
               </button>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

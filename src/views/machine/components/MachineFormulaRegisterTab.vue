@@ -70,11 +70,7 @@
             accept=".py"
             style="display: none"
           />
-          <button
-            type="button"
-            class="btn-file"
-            @click="formulaFileInput?.click()"
-          >
+          <button type="button" class="btn-file" @click="handleFileSelectClick">
             {{ t("common.selectFile") }}
           </button>
           <button type="button" class="btn-register" @click="handleRegister">
@@ -342,6 +338,24 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
   }
 });
 
+// 파일 선택 버튼 클릭 핸들러
+const handleFileSelectClick = () => {
+  // 기계 대분류 선택 확인
+  if (!selectedMachineName.value) {
+    alert(t("messages.warning.selectMachineMajorCategory"));
+    return;
+  }
+
+  // 기계 중분류 선택 확인
+  if (!selectedThirdDept.value) {
+    alert(t("messages.warning.selectMachineSubCategory"));
+    return;
+  }
+
+  // 검증 통과 시 파일 선택 다이얼로그 열기
+  formulaFileInput.value?.click();
+};
+
 // 계산식 파일 업로드 핸들러
 const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
@@ -382,30 +396,22 @@ const handleFormulaFileChange = (e: Event) => {
         file.name.lastIndexOf(".")
       );
 
-      // 파일명에 equipmentType이 포함되어 있는지 확인
-      if (fileNameWithoutExt.includes(equipmentType)) {
-        // 이미 포함되어 있으면 원본 파일명 사용
+      // 파일명의 마지막에 equipmentType이 있는지 확인
+      if (fileNameWithoutExt.endsWith(equipmentType)) {
+        // 파일명의 마지막에 equipmentType이 있으면 첨부 허용
         formulaFileName.value = file.name;
         formulaFile.value = file;
       } else {
-        // 포함되어 있지 않으면 파일명을 equipment_type으로 변경
-        const newFileName = `${equipmentType}${fileExtension}`;
-
-        // 새로운 파일 객체 생성
-        const renamedFile = new File([file], newFileName, {
-          type: file.type,
-        });
-
-        formulaFileName.value = newFileName;
-        formulaFile.value = renamedFile;
-
-        // 파일명 변경 알림
+        // 파일명의 마지막에 equipmentType이 없으면 경고 및 첨부 취소
         alert(
-          t("messages.success.fileNameChanged", {
-            oldName: file.name,
-            newName: newFileName,
+          t("messages.warning.invalidFormulaFileName", {
+            equipmentType: equipmentType,
           })
         );
+        input.value = ""; // 파일 선택 초기화
+        formulaFileName.value = "";
+        formulaFile.value = null;
+        return;
       }
     } else {
       // equipment_type이 선택되지 않은 경우 원본 파일명 사용

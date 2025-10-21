@@ -94,7 +94,7 @@
           <input
             type="file"
             ref="thumbnailFileInput"
-            accept=".png,.jpg,.jpeg,.gif,.svg"
+            accept=".png,.jpg,.jpeg,.gif"
             style="display: none"
             @change="handleThumbnailFileChange"
           />
@@ -429,14 +429,14 @@ const handleThumbnailFileChange = (e: Event) => {
       input.value = "";
       return;
     }
-    const allowed = ["image/png", "image/jpeg", "image/gif", "image/svg+xml"];
+    const allowed = ["image/png", "image/jpeg", "image/gif"];
     if (!allowed.includes(file.type)) {
       alert(t("messages.warning.imageFileOnly"));
       input.value = "";
       return;
     }
     const lower = file.name.toLowerCase();
-    if (!/\.(png|jpg|jpeg|gif|svg)$/i.test(lower)) {
+    if (!/\.(png|jpg|jpeg|gif)$/i.test(lower)) {
       alert(t("messages.warning.imageExtensionOnly"));
       input.value = "";
       return;

@@ -1373,9 +1373,9 @@ const handleFileSelect = (type: string, event: Event) => {
 
     if (!allowedExts.includes(fileExtension)) {
       alert(
-        `허용되지 않는 파일 형식입니다.\n허용된 확장자: ${allowedExts.join(
-          ", "
-        )}`
+        t("messages.warning.invalidFileExtension", {
+          extensions: allowedExts.join(", "),
+        })
       );
       // 파일 input 초기화
       target.value = "";

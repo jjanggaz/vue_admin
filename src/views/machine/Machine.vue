@@ -1286,6 +1286,12 @@ const cancelEditMode = () => {
 const saveDetailChanges = async () => {
   if (!detailItemData.value) return;
 
+  // 업체명 필수 검증
+  if (!editData.value.vendor_id) {
+    alert(t("messages.warning.selectManufacturer"));
+    return;
+  }
+
   try {
     const item = detailItemData.value;
 

@@ -1321,6 +1321,7 @@
       "selectMachineName": "Please select a machine name.",
       "selectMachineMajorCategory": "Please select a machine major category.",
       "selectMachineSubCategory": "Please select a machine sub category.",
+      "selectManufacturer": "Please select a vendor.",
       "selectStructureMachineName": "Please select a structure machine name.",
       "fileSizeExceed": "File size cannot exceed {size}MB.",
       "selectAllFile": "Please select the integrated file containing formula, 3D DTD model, model thumbnail, and REVIT file.",

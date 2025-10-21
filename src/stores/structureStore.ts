@@ -106,7 +106,14 @@ export const useStructureStore = defineStore("structure", () => {
   const error = ref<string | null>(null);
 
   // 구조물 검색 결과 데이터
-  const searchResults = ref<Array<Record<string, unknown>>>([]);
+  const searchResults = ref<{
+    total: number;
+    total_pages: number;
+    page: number;
+    page_size: number;
+    items: Record<string, unknown>[];
+    search_info?: Record<string, unknown>;
+  } | null>(null);
 
   // 공통 코드 조회 결과 데이터
   const editSecondDepth = ref<Record<string, unknown>[]>([]);

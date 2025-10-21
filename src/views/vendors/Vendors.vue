@@ -57,25 +57,27 @@
 
           <!-- 업체명 슬롯 (vendor_name / vendor_name_en) -->
           <template #cell-vendorName="{ item }">
-            {{ item.vendorName }}{{ item.vendorNameEn ? ' / ' + item.vendorNameEn : '' }}
+            {{ item.vendorName
+            }}{{ item.vendorNameEn ? " / " + item.vendorNameEn : "" }}
           </template>
 
           <!-- 연락처 슬롯 (country_code_tel + contact_tel) -->
           <template #cell-contactTel="{ item }">
-            {{ item.countryCodeTel ? item.countryCodeTel + '-' : '' }}{{ item.contactTel || '' }}
+            {{ item.countryCodeTel ? item.countryCodeTel + "-" : ""
+            }}{{ item.contactTel || "" }}
           </template>
 
           <!-- 선호도 슬롯 -->
           <template #cell-isPreferred="{ value }">
-            {{ value ? '활성' : '비활성' }}
+            {{ value ? "활성" : "비활성" }}
           </template>
 
           <!-- 홈페이지 슬롯 (URL이 있으면 하이퍼링크로 표시) -->
           <template #cell-homepage="{ item }">
-            <a 
-              v-if="item.homepage" 
-              :href="item.homepage" 
-              target="_blank" 
+            <a
+              v-if="item.homepage"
+              :href="item.homepage"
+              target="_blank"
               rel="noopener noreferrer"
               class="link-homepage"
               @click.stop
@@ -94,6 +96,13 @@
 
         <!-- 페이징 -->
         <div class="pagination-container">
+          <div class="total-count">
+            {{
+              t("common.totalCount", {
+                count: vendorsStore.totalCount || 0,
+              })
+            }}
+          </div>
           <Pagination
             :current-page="currentPage"
             :total-pages="totalPages"
@@ -174,7 +183,7 @@
                 :disabled="isEditMode"
               />
             </dd>
-            
+
             <dt class="essential">{{ t("columns.vendors.vendorName") }}</dt>
             <dd>
               <input
@@ -183,7 +192,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt class="essential">{{ t("columns.vendors.vendorNameEn") }}</dt>
             <dd>
               <input
@@ -192,7 +201,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.vendorType") }}</dt>
             <dd>
               <input
@@ -201,7 +210,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.location") }}</dt>
             <dd>
               <input
@@ -210,7 +219,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.address") }}</dt>
             <dd>
               <input
@@ -219,7 +228,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.country") }}</dt>
             <dd>
               <input
@@ -228,7 +237,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.countryCodeTel") }}</dt>
             <dd>
               <input
@@ -237,7 +246,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.contactTel") }}</dt>
             <dd>
               <input
@@ -246,7 +255,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.contactFax") }}</dt>
             <dd>
               <input
@@ -255,7 +264,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.contactEmail") }}</dt>
             <dd>
               <input
@@ -264,7 +273,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.mainDesignType") }}</dt>
             <dd>
               <input
@@ -273,7 +282,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.manufacturerCategory") }}</dt>
             <dd>
               <input
@@ -282,7 +291,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.mainProducts") }}</dt>
             <dd>
               <input
@@ -291,7 +300,7 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.homepage") }}</dt>
             <dd>
               <input
@@ -300,25 +309,17 @@
                 class="form-input"
               />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.brn") }}</dt>
             <dd>
-              <input
-                v-model="newVendor.brn"
-                type="text"
-                class="form-input"
-              />
+              <input v-model="newVendor.brn" type="text" class="form-input" />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.dunsn") }}</dt>
             <dd>
-              <input
-                v-model="newVendor.dunsn"
-                type="text"
-                class="form-input"
-              />
+              <input v-model="newVendor.dunsn" type="text" class="form-input" />
             </dd>
-            
+
             <dt>{{ t("columns.vendors.certification") }}</dt>
             <dd>
               <textarea
@@ -327,7 +328,7 @@
                 rows="2"
               ></textarea>
             </dd>
-            
+
             <dt>{{ t("columns.vendors.note") }}</dt>
             <dd>
               <textarea
@@ -336,15 +337,17 @@
                 rows="3"
               ></textarea>
             </dd>
-            
+
             <dt>{{ t("columns.vendors.isPreferred") }}</dt>
             <dd>
               <select v-model="newVendor.isPreferred" class="form-input">
                 <option :value="true">{{ t("common.status.active") }}</option>
-                <option :value="false">{{ t("common.status.inactive") }}</option>
+                <option :value="false">
+                  {{ t("common.status.inactive") }}
+                </option>
               </select>
             </dd>
-            
+
             <dt>{{ t("columns.vendors.preferredLevel") }}</dt>
             <dd>
               <input
@@ -354,7 +357,7 @@
                 min="0"
               />
             </dd>
-            
+
             <dt class="essential">{{ t("common.statusLabel") }}</dt>
             <dd>
               <select v-model="newVendor.isActive" class="form-input">
@@ -384,7 +387,11 @@
     </div>
 
     <!-- 카탈로그 모달 -->
-    <div v-if="isCatalogModalOpen" class="modal-overlay" @click.self="closeCatalogModal">
+    <div
+      v-if="isCatalogModalOpen"
+      class="modal-overlay"
+      @click.self="closeCatalogModal"
+    >
       <div class="modal-container modal-container-xlarge">
         <div class="modal-header">
           <h3>{{ t("common.catalog") || "카탈로그" }}</h3>
@@ -469,7 +476,7 @@ const tableColumns: TableColumn[] = [
     title: t("columns.vendors.vendorId"),
     width: "120px",
     sortable: true,
-    hidden: true,  // Hidden 처리
+    hidden: true, // Hidden 처리
   },
   {
     key: "vendorName",
@@ -520,11 +527,17 @@ const tableColumns: TableColumn[] = [
     sortable: true,
     dateFormat: "YYYY-MM-DD",
   },
-  { key: "actions", title: t("common.detailInfo"), width: "80px", sortable: false },
+  {
+    key: "actions",
+    title: t("common.detailInfo"),
+    width: "80px",
+    sortable: false,
+  },
 ];
 
 // Store에서 상태 가져오기 (storeToRefs를 사용하여 reactivity 유지)
-const { vendorList, loading, totalPages, currentPage, pageSize, detailVendor } = storeToRefs(vendorsStore);
+const { vendorList, loading, totalPages, currentPage, pageSize, detailVendor } =
+  storeToRefs(vendorsStore);
 
 // 컴포넌트 로컬 상태 (UI 전용)
 const selectedItems = ref<VendorItem[]>([]);
@@ -656,7 +669,7 @@ const toggleEditMode = () => {
 
 const saveDetailChanges = async () => {
   if (!detailVendor.value) return;
-  
+
   try {
     await vendorsStore.saveDetailVendor();
     alert(t("messages.success.updateSuccess"));
@@ -687,45 +700,124 @@ const vendorVerticalData = computed(() => {
   const item = detailVendor.value;
   const data: VerticalDataItem[] = [];
 
-  data.push({ columnName: t("columns.vendors.vendorId"), value: item.vendorId || "-" });
-  data.push({ columnName: t("columns.vendors.vendorName"), value: item.vendorName || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.vendorNameEn"), value: item.vendorNameEn || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.vendorType"), value: item.vendorType || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.location"), value: item.location || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.address"), value: item.address || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.country"), value: item.country || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.countryCodeTel"), value: item.countryCodeTel || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.contactTel"), value: item.contactTel || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.contactFax"), value: item.contactFax || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.contactEmail"), value: item.contactEmail || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.mainDesignType"), value: item.mainDesignType || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.manufacturerCategory"), value: item.manufacturerCategory || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.mainProducts"), value: item.mainProducts || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.homepage"), value: item.homepage || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.brn"), value: item.brn || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.dunsn"), value: item.dunsn || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.certification"), value: item.certification || "-", editable: true });
-  data.push({ columnName: t("columns.vendors.note"), value: item.note || "-", editable: true });
-  data.push({ 
-    columnName: t("columns.vendors.isPreferred"), 
+  data.push({
+    columnName: t("columns.vendors.vendorId"),
+    value: item.vendorId || "-",
+  });
+  data.push({
+    columnName: t("columns.vendors.vendorName"),
+    value: item.vendorName || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.vendorNameEn"),
+    value: item.vendorNameEn || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.vendorType"),
+    value: item.vendorType || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.location"),
+    value: item.location || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.address"),
+    value: item.address || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.country"),
+    value: item.country || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.countryCodeTel"),
+    value: item.countryCodeTel || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.contactTel"),
+    value: item.contactTel || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.contactFax"),
+    value: item.contactFax || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.contactEmail"),
+    value: item.contactEmail || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.mainDesignType"),
+    value: item.mainDesignType || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.manufacturerCategory"),
+    value: item.manufacturerCategory || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.mainProducts"),
+    value: item.mainProducts || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.homepage"),
+    value: item.homepage || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.brn"),
+    value: item.brn || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.dunsn"),
+    value: item.dunsn || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.certification"),
+    value: item.certification || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.note"),
+    value: item.note || "-",
+    editable: true,
+  });
+  data.push({
+    columnName: t("columns.vendors.isPreferred"),
     value: item.isPreferred ? "true" : "false",
     editable: true,
     fieldType: "select",
     options: [
       { value: "true", label: t("common.status.active") },
-      { value: "false", label: t("common.status.inactive") }
-    ]
+      { value: "false", label: t("common.status.inactive") },
+    ],
   });
-  data.push({ columnName: t("columns.vendors.preferredLevel"), value: item.preferredLevel?.toString() || "0", editable: true });
-  data.push({ 
-    columnName: t("common.statusLabel"), 
+  data.push({
+    columnName: t("columns.vendors.preferredLevel"),
+    value: item.preferredLevel?.toString() || "0",
+    editable: true,
+  });
+  data.push({
+    columnName: t("common.statusLabel"),
     value: item.isActive ? "true" : "false",
     editable: true,
     fieldType: "select",
     options: [
       { value: "true", label: t("common.status.active") },
-      { value: "false", label: t("common.status.inactive") }
-    ]
+      { value: "false", label: t("common.status.inactive") },
+    ],
   });
 
   return data;
@@ -775,29 +867,29 @@ const handleSave = async () => {
   try {
     // 등록 로직만 처리 (수정은 saveDetailChanges에서 처리)
     const createData: VendorCreateRequest = {
-        vendorId: newVendor.value.vendorId,
-        vendorName: newVendor.value.vendorName,
-        vendorNameEn: newVendor.value.vendorNameEn,
-        vendorType: newVendor.value.vendorType,
-        location: newVendor.value.location,
-        address: newVendor.value.address,
-        country: newVendor.value.country,
-        countryCodeTel: newVendor.value.countryCodeTel,
-        contactTel: newVendor.value.contactTel,
-        contactFax: newVendor.value.contactFax,
-        contactEmail: newVendor.value.contactEmail,
-        mainDesignType: newVendor.value.mainDesignType,
-        manufacturerCategory: newVendor.value.manufacturerCategory,
-        mainProducts: newVendor.value.mainProducts,
-        homepage: newVendor.value.homepage,
-        brn: newVendor.value.brn,
-        dunsn: newVendor.value.dunsn,
-        certification: newVendor.value.certification,
-        note: newVendor.value.note,
-        isPreferred: newVendor.value.isPreferred,
-        preferredLevel: newVendor.value.preferredLevel,
-        isActive: newVendor.value.isActive,
-      };
+      vendorId: newVendor.value.vendorId,
+      vendorName: newVendor.value.vendorName,
+      vendorNameEn: newVendor.value.vendorNameEn,
+      vendorType: newVendor.value.vendorType,
+      location: newVendor.value.location,
+      address: newVendor.value.address,
+      country: newVendor.value.country,
+      countryCodeTel: newVendor.value.countryCodeTel,
+      contactTel: newVendor.value.contactTel,
+      contactFax: newVendor.value.contactFax,
+      contactEmail: newVendor.value.contactEmail,
+      mainDesignType: newVendor.value.mainDesignType,
+      manufacturerCategory: newVendor.value.manufacturerCategory,
+      mainProducts: newVendor.value.mainProducts,
+      homepage: newVendor.value.homepage,
+      brn: newVendor.value.brn,
+      dunsn: newVendor.value.dunsn,
+      certification: newVendor.value.certification,
+      note: newVendor.value.note,
+      isPreferred: newVendor.value.isPreferred,
+      preferredLevel: newVendor.value.preferredLevel,
+      isActive: newVendor.value.isActive,
+    };
 
     await vendorsStore.createVendor(createData);
     alert(t("messages.success.registerSuccess"));
@@ -822,14 +914,16 @@ const handleDelete = async () => {
     )
   ) {
     try {
-      const selectedVendorIds = selectedItems.value.map((item) => item.vendorId);
-      
+      const selectedVendorIds = selectedItems.value.map(
+        (item) => item.vendorId
+      );
+
       if (selectedVendorIds.length === 1) {
         await vendorsStore.deleteVendor(selectedVendorIds[0]);
       } else {
         await vendorsStore.deleteVendors(selectedVendorIds);
       }
-      
+
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
       await loadData();
@@ -968,7 +1062,7 @@ onMounted(() => {
     border-top: 1px solid $border-color;
     display: flex;
     justify-content: center;
-    
+
     .btn-catalog {
       padding: 0.75rem 2rem;
       background-color: $primary-color;
@@ -979,7 +1073,7 @@ onMounted(() => {
       font-size: 1rem;
       font-weight: 500;
       transition: background-color 0.2s;
-      
+
       &:hover {
         background-color: color.scale($primary-color, $lightness: -10%);
       }
@@ -1142,6 +1236,17 @@ onMounted(() => {
 .pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 .modal-overlay {
@@ -1217,16 +1322,16 @@ onMounted(() => {
   padding: 0;
   max-height: calc(95vh - 120px);
   overflow-y: auto;
-  
+
   // Catalog 컴포넌트 내부의 중복 헤더와 닫기 버튼 숨기기
   :deep(.page-header) {
     display: none;
   }
-  
+
   :deep(.wrap-page) {
     padding: 1rem;
   }
-  
+
   :deep(.footer-actions) {
     display: none;
   }
@@ -1283,12 +1388,12 @@ onMounted(() => {
   word-break: break-all;
   overflow-wrap: break-word;
   line-height: 1.4;
-  
+
   &:hover {
     text-decoration: underline;
     color: darken($primary-color, 10%);
   }
-  
+
   &:visited {
     color: $primary-color;
   }

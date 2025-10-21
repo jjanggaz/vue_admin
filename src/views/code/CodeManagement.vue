@@ -154,6 +154,13 @@
 
         <!-- Pagination -->
         <div class="pagination-container">
+          <div class="total-count">
+            {{
+              t("common.totalCount", {
+                count: totalCount || 0,
+              })
+            }}
+          </div>
           <Pagination
             :current-page="currentPage"
             :total-pages="totalPages"
@@ -1278,8 +1285,17 @@ const handleEdit = () => {
 .pagination-container {
   display: flex;
   justify-content: center;
-  padding: 16px;
-  border-top: 1px solid #e5e7eb;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+  }
 }
 
 // Modal Styles

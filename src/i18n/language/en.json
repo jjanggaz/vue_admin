@@ -412,6 +412,7 @@
     "noModelThumbnail": "No Model Thumbnail",
     "priceHistory": "Price History",
     "totalFiles": "Total Files",
+    "totalCount": "Total Count : {count} items",
     "successCount": "Success",
     "failedCount": "Failed",
     "skippedCount": "Skipped",

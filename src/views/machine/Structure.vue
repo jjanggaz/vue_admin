@@ -154,6 +154,13 @@
 
     <!-- 페이징 -->
     <div class="pagination-container">
+      <div class="total-count">
+        {{
+          t("common.totalCount", {
+            count: structureStore.searchResults?.total || 0,
+          })
+        }}
+      </div>
       <Pagination
         :current-page="currentPage"
         :total-pages="totalPagesComputed"
@@ -723,6 +730,17 @@ onMounted(async () => {
 .pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 // 반응형 브레이크포인트

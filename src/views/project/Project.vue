@@ -52,6 +52,13 @@
     </DataTable>
     <!-- 페이징 -->
     <div class="pagination-container">
+      <div class="total-count">
+        {{
+          t("common.totalCount", {
+            count: projectStore.totalCount || 0,
+          })
+        }}
+      </div>
       <Pagination
         :current-page="currentPage"
         :total-pages="totalPages"
@@ -379,6 +386,22 @@ onMounted(async () => {
 .loading-spinner {
   color: #666;
   font-size: 1.1rem;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 // 모달이 제대로 표시되도록 하는 스타일

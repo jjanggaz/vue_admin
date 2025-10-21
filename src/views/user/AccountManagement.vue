@@ -85,6 +85,13 @@
     </DataTable>
     <!-- Pagination -->
     <div class="pagination-container">
+      <div class="total-count">
+        {{
+          t("common.totalCount", {
+            count: userStore.totalCount || 0,
+          })
+        }}
+      </div>
       <Pagination
         :current-page="userStore.page"
         :total-pages="totalPagesComputed"
@@ -898,5 +905,21 @@ const handleEdit = () => {
 
 .btn-cancel-password {
   margin-top: 4px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+  }
 }
 </style>

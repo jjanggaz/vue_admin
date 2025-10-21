@@ -51,6 +51,9 @@
               />
               <button class="btn-detail-search" @click="toggleDetailSearch">
                 {{ t("common.detailCondition") }}
+                <span class="arrow-icon">{{
+                  isDetailSearchOpen ? "▲" : "▼"
+                }}</span>
               </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
@@ -453,6 +456,13 @@
 
         <!-- 페이징 -->
         <div class="pagination-container">
+          <div class="total-count">
+            {{
+              t("common.totalCount", {
+                count: machineStore.searchResults?.total || 0,
+              })
+            }}
+          </div>
           <Pagination
             :current-page="currentPage"
             :total-pages="totalPagesComputed"
@@ -2604,6 +2614,7 @@ onMounted(async () => {
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 930px;
 
   .detail-search-header {
     position: relative;
@@ -2846,6 +2857,14 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 0.9rem;
   margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .arrow-icon {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+  }
 
   &:hover {
     background-color: color.scale(#6c757d, $lightness: -10%);
@@ -2965,6 +2984,17 @@ onMounted(async () => {
 .pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 // 반응형 브레이크포인트

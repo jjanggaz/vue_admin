@@ -412,6 +412,7 @@
     "noModelThumbnail": "모델 썸네일 없음",
     "priceHistory": "단가이력",
     "totalFiles": "총 파일",
+    "totalCount": "총 건수 : {count} 건",
     "successCount": "성공",
     "failedCount": "실패",
     "skippedCount": "제외",

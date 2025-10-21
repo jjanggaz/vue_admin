@@ -50,7 +50,7 @@
                 class="form-input"
               />
               <button class="btn-detail-search" @click="toggleDetailSearch">
-                {{ t("common.detailSearch") }}
+                {{ t("common.detailCondition") }}
               </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
@@ -62,7 +62,7 @@
         <!-- 상세검색 패널 -->
         <div v-if="isDetailSearchOpen" class="detail-search-panel">
           <div class="detail-search-header">
-            <h3>{{ t("common.detailSearch") }}</h3>
+            <h3>{{ t("common.detailCondition") }}</h3>
             <div class="detail-search-row">
               <div class="detail-search-item">
                 <label>{{ t("machine.machineSubCategory") }}</label>

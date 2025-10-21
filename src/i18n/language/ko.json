@@ -422,6 +422,7 @@
     "select": "-- 선택 --",
     "selectItem": "항목을 선택해주세요",
     "detailSearch": "상세검색",
+    "detailCondition": "상세조건",
     "selectColumn": "선택",
     "selected": "선택됨",
     "logout": "로그아웃",

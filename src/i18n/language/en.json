@@ -422,6 +422,7 @@
     "select": "-- Select --",
     "selectItem": "Please select an item",
     "detailSearch": "Detail Search",
+    "detailCondition": "Detail Condition",
     "selectColumn": "Select",
     "selected": "Selected",
     "logout": "Logout",

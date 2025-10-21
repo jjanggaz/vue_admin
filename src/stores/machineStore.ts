@@ -504,6 +504,9 @@ export const useMachineStore = defineStore("machine", () => {
       equipment_type?: string;
       vendor_id?: string;
       model_number?: string;
+      output_values?: Record<string, any>;
+      search_criteria?: Record<string, any>;
+      specifications?: Record<string, any>;
       dtd_model_file?: File;
       thumbnail_file?: File;
       revit_model_file?: File;
@@ -526,6 +529,15 @@ export const useMachineStore = defineStore("machine", () => {
       }
       if (params.model_number) {
         updateParams.model_number = params.model_number;
+      }
+      if (params.output_values) {
+        updateParams.output_values = params.output_values;
+      }
+      if (params.search_criteria) {
+        updateParams.search_criteria = params.search_criteria;
+      }
+      if (params.specifications) {
+        updateParams.specifications = params.specifications;
       }
 
       // updateParams를 JSON 문자열로 FormData에 추가

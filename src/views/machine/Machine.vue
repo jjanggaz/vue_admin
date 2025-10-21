@@ -851,7 +851,18 @@ const detailSearch = ref({
 const isDetailEditMode = ref(false);
 
 // 편집 모드 데이터
-const editData = ref({
+const editData = ref<{
+  equipmentType: string;
+  vendor_id: string;
+  modelNumber: string;
+  model3dFile: string;
+  revitFile: string;
+  symbolFile: string;
+  thumbnailFile: string;
+  output_values: Record<string, any>;
+  search_criteria: Record<string, any>;
+  specifications: Record<string, any>;
+}>({
   equipmentType: "",
   vendor_id: "",
   modelNumber: "",
@@ -859,6 +870,9 @@ const editData = ref({
   revitFile: "",
   symbolFile: "",
   thumbnailFile: "",
+  output_values: {},
+  search_criteria: {},
+  specifications: {},
 });
 
 // 원본 데이터 백업 (취소 시 복원용)
@@ -900,19 +914,23 @@ const specVerticalData = computed(() => {
   // 2. output_values 동적 추가
   if (item.output_values) {
     Object.values(item.output_values).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_code
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_code}`
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value;
+      // 수정 모드이거나 값이 있는 경우 표시
+      if (
+        isDetailEditMode.value ||
+        (field.value !== null &&
+          field.value !== undefined &&
+          field.value !== "")
+      ) {
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
+          value: isDetailEditMode.value
+            ? field.value
+            : typeof field.value === "number"
+            ? field.value.toLocaleString()
+            : field.value,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
         });
       }
     });
@@ -921,19 +939,23 @@ const specVerticalData = computed(() => {
   // 3. search_criteria 동적 추가
   if (item.search_criteria) {
     Object.values(item.search_criteria).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_symbol
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_symbol}`
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value;
+      // 수정 모드이거나 값이 있는 경우 표시
+      if (
+        isDetailEditMode.value ||
+        (field.value !== null &&
+          field.value !== undefined &&
+          field.value !== "")
+      ) {
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
+          value: isDetailEditMode.value
+            ? field.value
+            : typeof field.value === "number"
+            ? field.value.toLocaleString()
+            : field.value,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
         });
       }
     });
@@ -942,19 +964,23 @@ const specVerticalData = computed(() => {
   // 4. specifications 동적 추가
   if (item.specifications) {
     Object.values(item.specifications).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_symbol
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_symbol}`
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value;
+      // 수정 모드이거나 값이 있는 경우 표시
+      if (
+        isDetailEditMode.value ||
+        (field.value !== null &&
+          field.value !== undefined &&
+          field.value !== "")
+      ) {
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
+          value: isDetailEditMode.value
+            ? field.value
+            : typeof field.value === "number"
+            ? field.value.toLocaleString()
+            : field.value,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
         });
       }
     });
@@ -1187,7 +1213,40 @@ const toggleEditMode = () => {
       revitFile: "",
       symbolFile: "",
       thumbnailFile: "",
+      output_values: {},
+      search_criteria: {},
+      specifications: {},
     };
+
+    // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
+    const item = detailItemData.value;
+
+    if (item.output_values) {
+      Object.entries(item.output_values).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.output_values[key] = { ...field };
+        }
+      );
+    }
+
+    if (item.search_criteria) {
+      Object.entries(item.search_criteria).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.search_criteria[key] = { ...field };
+        }
+      );
+    }
+
+    if (item.specifications) {
+      Object.entries(item.specifications).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.specifications[key] = { ...field };
+        }
+      );
+    }
   }
   isDetailEditMode.value = !isDetailEditMode.value;
 };
@@ -1216,6 +1275,9 @@ const cancelEditMode = () => {
     revitFile: "",
     symbolFile: "",
     thumbnailFile: "",
+    output_values: {},
+    search_criteria: {},
+    specifications: {},
   };
 
   isDetailEditMode.value = false;
@@ -1236,6 +1298,17 @@ const saveDetailChanges = async () => {
       vendor_id: editData.value.vendor_id,
       model_number: editData.value.modelNumber,
     };
+
+    // output_values, search_criteria, specifications 추가
+    if (Object.keys(editData.value.output_values).length > 0) {
+      updateParams.output_values = editData.value.output_values;
+    }
+    if (Object.keys(editData.value.search_criteria).length > 0) {
+      updateParams.search_criteria = editData.value.search_criteria;
+    }
+    if (Object.keys(editData.value.specifications).length > 0) {
+      updateParams.specifications = editData.value.specifications;
+    }
 
     console.log("업데이트 파라미터:", updateParams);
 
@@ -1363,6 +1436,8 @@ const handleFileSelect = (type: string, event: Event) => {
 const handleFieldChange = (fieldName: string, value: string) => {
   console.log(`필드 변경: ${fieldName} = ${value}`);
 
+  const isEnglish = locale.value === "en";
+
   // editData에 반영
   // 제조사 필드 확인 (columns.machine.company)
   if (fieldName === t("columns.machine.company")) {
@@ -1373,6 +1448,78 @@ const handleFieldChange = (fieldName: string, value: string) => {
   else if (fieldName === t("columns.machine.model")) {
     editData.value.modelNumber = value;
     console.log("modelNumber 업데이트:", value);
+  }
+  // 동적 필드 처리 (output_values, search_criteria, specifications)
+  else {
+    // detailItemData에서 해당 필드 찾기
+    const item = detailItemData.value;
+    if (!item) return;
+
+    // output_values에서 찾기
+    if (item.output_values) {
+      const outputField = Object.entries(item.output_values).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (outputField) {
+        const [key] = outputField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.output_values[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const numValue = Number(value);
+          editData.value.output_values[key].value =
+            !isNaN(numValue) && value !== "" ? numValue : value;
+        }
+        console.log(`output_values.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // search_criteria에서 찾기
+    if (item.search_criteria) {
+      const searchField = Object.entries(item.search_criteria).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (searchField) {
+        const [key] = searchField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.search_criteria[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const numValue = Number(value);
+          editData.value.search_criteria[key].value =
+            !isNaN(numValue) && value !== "" ? numValue : value;
+        }
+        console.log(`search_criteria.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // specifications에서 찾기
+    if (item.specifications) {
+      const specField = Object.entries(item.specifications).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (specField) {
+        const [key] = specField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.specifications[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const numValue = Number(value);
+          editData.value.specifications[key].value =
+            !isNaN(numValue) && value !== "" ? numValue : value;
+        }
+        console.log(`specifications.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
   }
 };
 

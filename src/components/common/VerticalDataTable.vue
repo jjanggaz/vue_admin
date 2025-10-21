@@ -81,7 +81,7 @@
                 <!-- 기본 텍스트 필드 -->
                 <input
                   v-else
-                  type="text"
+                  :type="item.fieldType === 'number' ? 'number' : 'text'"
                   :value="item.value"
                   @input="
                     emit(

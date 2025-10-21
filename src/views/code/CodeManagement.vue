@@ -996,6 +996,7 @@ const updateCode = async () => {
       const requestData: CodeUpdateRequest = {
         code_value: newCode.value.code_value,
         code_value_en: newCode.value.code_value_en,
+        code_order: newCode.value.code_order,
         is_active: newCode.value.is_active,
         description: newCode.value.description,
       };

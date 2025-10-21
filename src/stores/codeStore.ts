@@ -44,6 +44,7 @@ export interface CodeCreateRequest {
 export interface CodeUpdateRequest {
   code_value: string;
   code_value_en: string;
+  code_order: string;
   is_active: boolean;
   description: string;
 }

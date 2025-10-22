@@ -453,6 +453,7 @@
     "structure3DRegisterList": "3D Structure Registration List",
     "structure3DFormulaVersionManagement": "3D Structure Formula Version Management",
     "formulaVersion": "Formula Version",
+    "formulaScope": "Formula Scope",
     "creationDate": "Creation Date",
     "appliedVersion": "Applied Version",
     "selectFile": "Select File",

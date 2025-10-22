@@ -154,6 +154,12 @@ const listColumns: TableColumn[] = [
     sortable: false,
   },
   {
+    key: "formulaScope",
+    title: t("common.formulaScope"),
+    width: "120px",
+    sortable: false,
+  },
+  {
     key: "version",
     title: t("common.formulaVersion"),
     width: "120px",
@@ -214,6 +220,12 @@ const setFormulaListData = (response: any) => {
     no: index + 1,
     type: equipmentType?.code_value || formula.ownership_code_key || "-",
     fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장
+    formulaScope:
+      formula.is_ownship_formula === true
+        ? t("common.equipmentTypeScope")
+        : formula.is_ownship_formula === false
+        ? t("common.subCategoryScope")
+        : "-",
     version: formula.formula_version || "-",
     unit: formula.unit_system_code || "-",
     createdAt: formatDate(formula.uploaded_at),

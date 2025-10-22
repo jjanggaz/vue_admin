@@ -757,6 +757,12 @@ interface MachineItem {
   updated_by: string;
   manufacturer_en?: string;
   equipment_price_history?: PriceHistoryItem[];
+  formula?: {
+    formula_id?: string;
+    file_name?: string;
+    download_url?: string;
+    is_ownship_formula?: boolean;
+  };
 }
 
 // 테이블 컬럼 설정
@@ -1140,14 +1146,18 @@ const handleDelete = async () => {
     try {
       // 선택된 항목들에 대해 삭제 API 호출
       for (const item of selectedItems.value) {
-        const deleteParams = {
+        const deleteParams: any = {
           equipment_type: item.equipment_type,
           model_file_id: item.model_file_id,
           rfa_file_id: item.rfa_file_id,
           symbol_id: item.symbol_id,
           thumbnail_id: item.thumbnail_id,
-          formula_id: item.formula_id,
         };
+
+        // is_ownship_formula가 true인 경우에만 formula_id 추가
+        if (item.formula?.is_ownship_formula === true) {
+          deleteParams.formula_id = item.formula.formula_id;
+        }
 
         await machineStore.deleteMachine(item.equipment_id, deleteParams);
       }

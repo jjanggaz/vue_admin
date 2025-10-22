@@ -1207,7 +1207,7 @@
       "invalidRequestData": "Invalid request data.",
       "deleteDataRequired": "Delete data is required.",
       "deleteDataNull": "Delete data is null.",
-      "fileSizeExceeded": "File size is too large. Maximum 100MB upload allowed.",
+      "fileSizeExceeded": "File size is too large. Maximum {size}MB upload allowed.",
       "symbolIdRequired": "Symbol ID is required.",
       "uploadFileRequired": "Upload file is required.",
       "noFileToUpload": "No file to upload.",

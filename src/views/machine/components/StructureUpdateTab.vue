@@ -383,7 +383,7 @@ const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 50;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
@@ -403,7 +403,7 @@ const handleDtdFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 50;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
@@ -423,7 +423,7 @@ const handleThumbnailFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 50;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";
@@ -449,7 +449,7 @@ const handleRevitFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 50;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = "";

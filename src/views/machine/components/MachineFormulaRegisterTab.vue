@@ -376,9 +376,11 @@ const handleFormulaFileChange = (e: Event) => {
     }
 
     // 파일 크기 validation (예: 10MB 제한)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 200 * 1024 * 1024; // 200MB
     if (file.size > maxSize) {
-      alert(t("messages.warning.fileSizeLimit10MB"));
+      alert(
+        t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })
+      );
       input.value = ""; // 파일 선택 초기화
       formulaFileName.value = "";
       formulaFile.value = null;

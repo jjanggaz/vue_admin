@@ -500,7 +500,7 @@ const handleExcelFileChange = (e: Event) => {
   }
 
   // 크기 검증 (예: 10MB)
-  const maxSize = 10 * 1024 * 1024;
+  const maxSize = 200 * 1024 * 1024; // 200MB
   if (file.size > maxSize) {
     alert(
       t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })
@@ -551,7 +551,7 @@ const handleBulkFileChange = async (e: Event) => {
   }
 
   // 크기 검증 (예: 200MB)
-  const maxSize = 200 * 1024 * 1024;
+  const maxSize = 200 * 1024 * 1024; // 200MB
   if (file.size > maxSize) {
     alert(
       t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })

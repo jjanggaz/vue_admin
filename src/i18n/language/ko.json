@@ -1203,7 +1203,7 @@
       "invalidRequestData": "유효하지 않은 요청 데이터입니다.",
       "deleteDataRequired": "삭제 데이터가 필요합니다.",
       "deleteDataNull": "삭제 데이터가 null입니다.",
-      "fileSizeExceeded": "파일 크기가 너무 큽니다. 최대 100MB까지 업로드 가능합니다.",
+      "fileSizeExceed": "파일 크기가 너무 큽니다. 최대 {size}MB까지 업로드 가능합니다.",
       "symbolIdRequired": "심볼 ID가 필요합니다.",
       "uploadFileRequired": "업로드할 파일이 필요합니다.",
       "noFileToUpload": "업로드할 파일이 없습니다.",

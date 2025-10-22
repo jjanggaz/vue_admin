@@ -457,7 +457,7 @@ const handleAllFileChange = async (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 100;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
@@ -482,7 +482,7 @@ const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 10;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
@@ -516,7 +516,7 @@ const handleThumbnailFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 10;
+    const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화

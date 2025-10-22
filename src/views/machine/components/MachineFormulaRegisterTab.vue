@@ -100,6 +100,7 @@
       :select-header-text="t('common.selectColumn')"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
+      row-key="formulaId"
     >
       <template #cell-fileName="{ item }">
         <a
@@ -179,9 +180,6 @@ const formulaFileName = ref("");
 const formulaFile = ref<File | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 
-// 현재 선택된 formula_id (검색 결과에서 가져옴)
-const currentFormulaId = ref<string>("");
-
 // 날짜 포맷 함수 (YYYY-MM-DD)
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -199,39 +197,32 @@ const setFormulaListData = (response: any) => {
   // API 응답 구조 확인 (response.data 또는 response.response.data)
   const data = response?.response?.data || response?.data;
 
-  if (!data?.formula) {
-    console.log("formula 데이터 없음");
+  if (!data?.formulas || !Array.isArray(data.formulas)) {
+    console.log("formulas 데이터 없음");
     listRows.value = [];
     return;
   }
 
-  const formula = data.formula;
+  const formulas = data.formulas;
   const equipmentType = data.equipment_type;
 
-  console.log("formula:", formula);
+  console.log("formulas:", formulas);
   console.log("equipmentType:", equipmentType);
 
-  // 단일 항목을 배열로 변환
-  listRows.value = [
-    {
-      no: 1,
-      type: equipmentType?.code_value || formula.equipment_type || "-",
-      fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장
-      version: formula.formula_version || "-",
-      unit: formula.unit_system_code || "-",
-      createdAt: formatDate(formula.uploaded_at),
-      formulaId: formula.formula_id,
-      rawData: formula,
-      _downloadUrl: formula.download_url, // 다운로드 URL 저장
-      _fileName: formula.file_name, // 원본 파일명 저장
-    },
-  ];
-
-  // formula_id 저장
-  currentFormulaId.value = formula.formula_id || "";
-
+  // formulas 배열을 listRows로 변환
+  listRows.value = formulas.map((formula: any, index: number) => ({
+    no: index + 1,
+    type: equipmentType?.code_value || formula.ownership_code_key || "-",
+    fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장
+    version: formula.formula_version || "-",
+    unit: formula.unit_system_code || "-",
+    createdAt: formatDate(formula.uploaded_at),
+    formulaId: formula.formula_id,
+    rawData: formula,
+    _downloadUrl: formula.download_url, // 다운로드 URL 저장
+    _fileName: formula.file_name, // 원본 파일명 저장
+  }));
   console.log("listRows 설정됨:", listRows.value);
-  console.log("currentFormulaId:", currentFormulaId.value);
 };
 
 // 기계명 선택 시 3차 깊이별 조회
@@ -243,7 +234,6 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
   isStep2Enabled.value = false;
   fourthDepthOptions.value = [];
   listRows.value = []; // 테이블 초기화
-  currentFormulaId.value = ""; // formula_id 초기화
 
   // 파일 초기화
   formulaFileName.value = "";
@@ -275,7 +265,6 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
   selectedFourthDept.value = "";
   isStep2Enabled.value = false;
   fourthDepthOptions.value = [];
-  currentFormulaId.value = ""; // formula_id 초기화
 
   // 파일 초기화
   formulaFileName.value = "";
@@ -311,8 +300,6 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
 
 // 기계유형 선택 시 계산식 검색
 watch(selectedFourthDept, async (newValue, _oldValue) => {
-  currentFormulaId.value = ""; // formula_id 초기화
-
   // 파일 초기화
   formulaFileName.value = "";
   formulaFile.value = null;
@@ -454,38 +441,12 @@ const handleRegister = async () => {
       thirdDept: selectedThirdDept.value,
       fourthDept: selectedFourthDept.value,
       file: formulaFile.value,
-      formulaId: currentFormulaId.value,
     });
-
-    // 선택된 equipment_type 결정 (4Depth 우선, 없으면 3Depth)
-    const selectedEquipmentType =
-      selectedFourthDept.value || selectedThirdDept.value;
 
     // API 호출 (파일은 이미 첨부 시점에 변경됨)
     const params: { python_file: File; formula_id?: string } = {
       python_file: formulaFile.value,
     };
-
-    // formula_id가 있고, 선택한 equipment_type과 그리드 데이터의 equipment_type이 일치하는 경우에만 추가
-    if (currentFormulaId.value && selectedEquipmentType) {
-      // 그리드에서 현재 선택된 formula_id에 해당하는 데이터 찾기
-      const currentFormulaData = listRows.value.find(
-        (row: any) => row.formula_id === currentFormulaId.value
-      );
-
-      if (
-        currentFormulaData &&
-        currentFormulaData.equipment_type === selectedEquipmentType
-      ) {
-        params.formula_id = currentFormulaId.value;
-        console.log("formula_id 추가됨:", currentFormulaId.value);
-      } else {
-        console.log("equipment_type 불일치로 formula_id 제외:", {
-          selected: selectedEquipmentType,
-          gridData: currentFormulaData?.equipment_type,
-        });
-      }
-    }
 
     const response = await machineStore.createFormula(params);
 
@@ -495,7 +456,6 @@ const handleRegister = async () => {
       // 등록 후 초기화
       formulaFileName.value = "";
       formulaFile.value = null;
-      currentFormulaId.value = ""; // formula_id 초기화
       if (formulaFileInput.value) {
         formulaFileInput.value.value = "";
       }
@@ -554,7 +514,6 @@ const handleDelete = async () => {
       selectedItems.value = [];
       formulaFileName.value = "";
       formulaFile.value = null;
-      currentFormulaId.value = "";
       if (formulaFileInput.value) {
         formulaFileInput.value.value = "";
       }

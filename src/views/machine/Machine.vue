@@ -446,6 +446,27 @@
             }}
           </template>
 
+          <!-- 계산식 슬롯 -->
+          <template #cell-formula_file_name="{ item }">
+            {{ item.formula?.file_name || "-" }}
+          </template>
+
+          <!-- 계산식 구분 슬롯 -->
+          <template #cell-formula_scope="{ item }">
+            {{
+              item.formula?.is_ownship_formula === true
+                ? t("common.equipmentTypeScope")
+                : item.formula?.is_ownship_formula === false
+                ? t("common.subCategoryScope")
+                : "-"
+            }}
+          </template>
+
+          <!-- 업체명 슬롯 -->
+          <template #cell-vendor_name="{ item }">
+            {{ item.vendor_info?.vendor_name || "-" }}
+          </template>
+
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
             <button class="btn-view" @click.stop="openDetailPanel(item)">
@@ -731,13 +752,7 @@ interface MachineItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
-  {
-    key: "equipment_code",
-    title: t("columns.machine.mcId"),
-    width: "150px",
-    sortable: false,
-  },
+  { key: "no", title: t("columns.machine.no"), width: "30px", sortable: false },
   {
     key: "equipment_type_name",
     title: t("columns.machine.type"),
@@ -745,7 +760,25 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "manufacturer",
+    key: "formula_file_name",
+    title: t("columns.machine.formula"),
+    width: "150px",
+    sortable: false,
+  },
+  {
+    key: "formula_scope",
+    title: t("columns.machine.formulaScope"),
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "equipment_code",
+    title: t("columns.machine.mcId"),
+    width: "150px",
+    sortable: false,
+  },
+  {
+    key: "vendor_name",
     title: t("columns.machine.company"),
     width: "150px",
     sortable: false,
@@ -1025,12 +1058,6 @@ const specVerticalData = computed(() => {
     editable: true,
     fieldType: "file",
   });
-  data.push({
-    columnName: t("columns.machine.formula"),
-    value: (item as any).formula_name || "-",
-    editable: false,
-    fieldType: "text",
-  });
 
   return data;
 });
@@ -1156,36 +1183,6 @@ const openDetailPanel = async (item: MachineItem) => {
           label: vendor.vendor_name,
         }));
       }
-    }
-
-    // 기계 파일 상세 정보 조회
-    const filesParams: any = {
-      equipment_type: item.equipment_type,
-    };
-
-    // 파일 ID들이 있으면 추가
-    if (item.model_file_id) filesParams.model_file_id = item.model_file_id;
-    if (item.rvt_file_id) filesParams.rvt_file_id = item.rvt_file_id;
-    if (item.symbol_id) filesParams.symbol_id = item.symbol_id;
-    if (item.thumbnail_id) filesParams.thumbnail_id = item.thumbnail_id;
-    if (item.formula_id) filesParams.formula_id = item.formula_id;
-
-    const filesResponse = await machineStore.fetchMachineDetailFiles(
-      item.equipment_id,
-      filesParams
-    );
-
-    console.log("파일 상세 정보:", filesResponse);
-
-    // 계산식 정보 처리
-    if (filesResponse?.response?.data?.formula_info?.data?.formula?.file_name) {
-      const formulaFileName =
-        filesResponse.response.data.formula_info.data.formula.file_name;
-      // detailItemData에 계산식 파일명 업데이트
-      if (detailItemData.value) {
-        (detailItemData.value as any).formula_name = formulaFileName;
-      }
-      console.log("계산식 파일명:", formulaFileName);
     }
 
     // 썸네일 이미지 URL 처리 - download_url 사용

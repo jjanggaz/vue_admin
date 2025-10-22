@@ -735,7 +735,8 @@ interface MachineItem {
   symbol_id?: string;
   symbol_metadata?: Record<string, unknown>;
   pressure_unit?: string;
-  rvt_file_id?: string;
+  rfa_file_id?: string;
+  rfa_file_info?: Record<string, unknown>;
   is_active: boolean;
   file_name?: string;
   created_by: string;
@@ -1046,8 +1047,8 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: "Revit",
-    value: (item as any).rvt_file_info?.original_filename || "-",
-    filePath: (item as any).rvt_file_info?.download_url,
+    value: (item as any).rfa_file_info?.original_filename || "-",
+    filePath: (item as any).rfa_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
@@ -1132,8 +1133,9 @@ const handleDelete = async () => {
       // 선택된 항목들에 대해 삭제 API 호출
       for (const item of selectedItems.value) {
         const deleteParams = {
+          equipment_type: item.equipment_type,
           model_file_id: item.model_file_id,
-          rvt_file_id: item.rvt_file_id,
+          rfa_file_id: item.rfa_file_id,
           symbol_id: item.symbol_id,
           thumbnail_id: item.thumbnail_id,
           formula_id: item.formula_id,
@@ -1411,10 +1413,10 @@ const handleFileSelect = (type: string, event: Event) => {
         editData.value.revitFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          if (!(detailItemData.value as any).rvt_file_info) {
-            (detailItemData.value as any).rvt_file_info = {};
+          if (!(detailItemData.value as any).rfa_file_info) {
+            (detailItemData.value as any).rfa_file_info = {};
           }
-          (detailItemData.value as any).rvt_file_info.original_filename =
+          (detailItemData.value as any).rfa_file_info.original_filename =
             file.name;
         }
         break;
@@ -1592,7 +1594,7 @@ const handleFileRemove = (fieldName: string) => {
       editData.value.revitFile = "";
       if (detailItemData.value) {
         // 기존 파일 정보 초기화
-        (detailItemData.value as any).rvt_file_info = null;
+        (detailItemData.value as any).rfa_file_info = null;
       }
       // 파일 input 초기화
       if (fileRevit.value) {
@@ -1644,7 +1646,7 @@ const handleFileDownload = (fieldName: string) => {
       fileInfo = (item as any).thumbnail_file_info;
       break;
     case "Revit":
-      fileInfo = (item as any).rvt_file_info;
+      fileInfo = (item as any).rfa_file_info;
       break;
     case t("common.symbol"):
       fileInfo = (item as any).symbol_file_info;

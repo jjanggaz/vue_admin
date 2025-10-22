@@ -592,7 +592,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  updateMetricFileData.length > 0
+                  isUpdateMetricFileAttached
                     ? updateMetricFileData
                     : currentMetricGridData
                 "
@@ -666,7 +666,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  updateImperialFileData.length > 0
+                  isUpdateImperialFileAttached
                     ? updateImperialFileData
                     : currentImperialGridData
                 "
@@ -1232,6 +1232,8 @@ const updateMetricFileName = ref<string>("");
 const updateImperialFileName = ref<string>("");
 const updateMetricFile = ref<File | null>(null);
 const updateImperialFile = ref<File | null>(null);
+const isUpdateMetricFileAttached = ref<boolean>(false);
+const isUpdateImperialFileAttached = ref<boolean>(false);
 
 const gridColumns: TableColumn[] = [
   { key: "id", title: t("columns.outflow.no"), width: "80px" },
@@ -1385,6 +1387,10 @@ const handleUpdateMetricFileUpload = async (event: Event) => {
     updateMetricFileName.value = file.name;
     updateMetricFile.value = file; // 파일 저장
 
+    // 파일 첨부 시 즉시 그리드 초기화 및 플래그 설정
+    updateMetricFileData.value = [];
+    isUpdateMetricFileAttached.value = true;
+
     try {
       // FormData 생성하여 API 호출
       const formData = new FormData();
@@ -1435,14 +1441,12 @@ const handleUpdateMetricFileUpload = async (event: Event) => {
         updateMetricFileData.value = extractedData;
         console.log("수정 모달 Metric 계산식 추출 완료:", extractedData);
       } else {
-        // API 응답이 없으면 빈 배열로 설정
-        updateMetricFileData.value = [];
-        console.log("API 응답이 없어서 빈 배열로 설정");
+        // input_parameters가 없어도 이미 빈 배열로 초기화됨
+        console.log("input_parameters가 없어서 빈 배열 유지");
       }
     } catch (error) {
       console.error("계산식 추출 에러:", error);
-      // API 실패 시 빈 배열로 설정
-      updateMetricFileData.value = [];
+      // 에러 발생 시에도 빈 배열 유지 (이미 초기화됨)
       alert(t("messages.warning.fileReadError"));
     }
   }
@@ -1541,6 +1545,10 @@ const handleUpdateImperialFileUpload = async (event: Event) => {
     updateImperialFileName.value = file.name;
     updateImperialFile.value = file; // 파일 저장
 
+    // 파일 첨부 시 즉시 그리드 초기화 및 플래그 설정
+    updateImperialFileData.value = [];
+    isUpdateImperialFileAttached.value = true;
+
     try {
       // FormData 생성하여 API 호출
       const formData = new FormData();
@@ -1591,14 +1599,12 @@ const handleUpdateImperialFileUpload = async (event: Event) => {
         updateImperialFileData.value = extractedData;
         console.log("수정 모달 Imperial 계산식 추출 완료:", extractedData);
       } else {
-        // API 응답이 없으면 빈 배열로 설정
-        updateImperialFileData.value = [];
-        console.log("API 응답이 없어서 빈 배열로 설정");
+        // input_parameters가 없어도 이미 빈 배열로 초기화됨
+        console.log("input_parameters가 없어서 빈 배열 유지");
       }
     } catch (error) {
       console.error("계산식 추출 에러:", error);
-      // API 실패 시 빈 배열로 설정
-      updateImperialFileData.value = [];
+      // 에러 발생 시에도 빈 배열 유지 (이미 초기화됨)
       alert(t("messages.warning.fileReadError"));
     }
   }
@@ -1873,6 +1879,10 @@ const openUpdateModal = async () => {
     ];
   }
 
+  // 파일 첨부 플래그 초기화
+  isUpdateMetricFileAttached.value = false;
+  isUpdateImperialFileAttached.value = false;
+
   // 모달 열기
   isUpdateModalOpen.value = true;
 
@@ -1904,6 +1914,8 @@ const closeUpdateModal = () => {
   updateImperialFileName.value = "";
   updateMetricFile.value = null;
   updateImperialFile.value = null;
+  isUpdateMetricFileAttached.value = false;
+  isUpdateImperialFileAttached.value = false;
 };
 
 const updateTab = async () => {
@@ -1921,41 +1933,69 @@ const updateTab = async () => {
       (wft) => wft.flow_type_id === currentTab.flow_type_id
     );
 
-    // Metric 파라미터 데이터 준비 (선택된 파라미터만)
-    const metricParameters =
-      updateMetricFileData.value.length > 0
-        ? updateMetricFileData.value
-            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
-            .map((item) => ({
-              flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
-              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
-              parameter_code: item.parameter_code,
-              parameter_name: item.parameter_name,
-              is_active: item.is_active,
-              is_required: item.is_required,
-              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
-              parameter_unit: item.unit,
-              remarks: item.remarks || undefined,
-            }))
-        : undefined;
+    // Metric 파라미터 데이터 준비
+    // 파일이 첨부되었으면 updateMetricFileData 사용, 아니면 currentMetricGridData 사용
+    const metricParameters = isUpdateMetricFileAttached.value
+      ? updateMetricFileData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+          .map((item) => ({
+            flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
+            parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : currentMetricGridData.value.length > 0
+      ? currentMetricGridData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "")
+          .map((item) => ({
+            flow_type_id: currentTab.flow_type_id,
+            parameter_id: item.parameter_id || "",
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : undefined;
 
-    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
-    const imperialParameters =
-      updateImperialFileData.value.length > 0
-        ? updateImperialFileData.value
-            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
-            .map((item) => ({
-              flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
-              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
-              parameter_code: item.parameter_code,
-              parameter_name: item.parameter_name,
-              is_active: item.is_active,
-              is_required: item.is_required,
-              default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
-              parameter_unit: item.unit,
-              remarks: item.remarks || undefined,
-            }))
-        : undefined;
+    // Imperial 파라미터 데이터 준비
+    // 파일이 첨부되었으면 updateImperialFileData 사용, 아니면 currentImperialGridData 사용
+    const imperialParameters = isUpdateImperialFileAttached.value
+      ? updateImperialFileData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+          .map((item) => ({
+            flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
+            parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0, // NaN/undefined/null인 경우 0으로 처리
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : currentImperialGridData.value.length > 0
+      ? currentImperialGridData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "")
+          .map((item) => ({
+            flow_type_id: currentTab.flow_type_id,
+            parameter_id: item.parameter_id || "",
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: isNaN(item.effluent) ? 0 : item.effluent ?? 0,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : undefined;
 
     // 수정할 데이터 준비
     const requestData = {

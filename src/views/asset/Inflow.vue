@@ -398,9 +398,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  imperialFileData.length > 0
-                    ? imperialFileData
-                    : currentGridData
+                  isImperialFileAttached ? imperialFileData : currentGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -592,9 +590,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  metricFileData.length > 0
-                    ? metricFileData
-                    : currentMetricGridData
+                  isMetricFileAttached ? metricFileData : currentMetricGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -661,7 +657,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  imperialFileData.length > 0
+                  isImperialFileAttached
                     ? imperialFileData
                     : currentImperialGridData
                 "
@@ -1211,6 +1207,8 @@ const metricFileName = ref<string>("");
 const imperialFileName = ref<string>("");
 const metricFile = ref<File | null>(null);
 const imperialFile = ref<File | null>(null);
+const isMetricFileAttached = ref<boolean>(false);
+const isImperialFileAttached = ref<boolean>(false);
 
 // 여기2
 const gridColumns: TableColumn[] = [
@@ -1287,6 +1285,10 @@ const handleMetricFileUpload = async (event: Event) => {
     metricFileName.value = file.name;
     metricFile.value = file; // 파일 저장
 
+    // 파일 첨부 시 즉시 그리드 초기화 및 플래그 설정
+    metricFileData.value = [];
+    isMetricFileAttached.value = true;
+
     try {
       // FormData 생성하여 API 호출
       const formData = new FormData();
@@ -1337,14 +1339,12 @@ const handleMetricFileUpload = async (event: Event) => {
         metricFileData.value = extractedData;
         console.log("Metric 계산식 추출 완료:", extractedData);
       } else {
-        // API 응답이 없으면 빈 배열로 설정
-        metricFileData.value = [];
-        console.log("API 응답이 없어서 빈 배열로 설정");
+        // input_parameters가 없어도 이미 빈 배열로 초기화됨
+        console.log("input_parameters가 없어서 빈 배열 유지");
       }
     } catch (error) {
       console.error("계산식 추출 에러:", error);
-      // API 실패 시 빈 배열로 설정
-      metricFileData.value = [];
+      // 에러 발생 시에도 빈 배열 유지 (이미 초기화됨)
       alert(t("messages.warning.fileReadError"));
     }
   }
@@ -1364,6 +1364,10 @@ const handleImperialFileUpload = async (event: Event) => {
 
     imperialFileName.value = file.name;
     imperialFile.value = file; // 파일 저장
+
+    // 파일 첨부 시 즉시 그리드 초기화 및 플래그 설정
+    imperialFileData.value = [];
+    isImperialFileAttached.value = true;
 
     try {
       // FormData 생성하여 API 호출
@@ -1415,14 +1419,12 @@ const handleImperialFileUpload = async (event: Event) => {
         imperialFileData.value = extractedData;
         console.log("Imperial 계산식 추출 완료:", extractedData);
       } else {
-        // API 응답이 없으면 빈 배열로 설정
-        imperialFileData.value = [];
-        console.log("API 응답이 없어서 빈 배열로 설정");
+        // input_parameters가 없어도 이미 빈 배열로 초기화됨
+        console.log("input_parameters가 없어서 빈 배열 유지");
       }
     } catch (error) {
       console.error("계산식 추출 에러:", error);
-      // API 실패 시 빈 배열로 설정
-      imperialFileData.value = [];
+      // 에러 발생 시에도 빈 배열 유지 (이미 초기화됨)
       alert(t("messages.warning.fileReadError"));
     }
   }
@@ -1555,6 +1557,10 @@ const openModal = () => {
   isModalOpen.value = true;
   newTabName.value = "";
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
+
+  // 파일 첨부 플래그 초기화
+  isMetricFileAttached.value = false;
+  isImperialFileAttached.value = false;
 };
 
 const openCodeManagementModal = () => {
@@ -1639,6 +1645,10 @@ const openUpdateModal = async () => {
     }
   }
 
+  // 파일 첨부 플래그 초기화
+  isMetricFileAttached.value = false;
+  isImperialFileAttached.value = false;
+
   isUpdateModalOpen.value = true;
 
   // 모달이 열린 후 SVG 이미지 주입
@@ -1669,6 +1679,8 @@ const closeModal = () => {
   imperialFileName.value = "";
   metricFile.value = null;
   imperialFile.value = null;
+  isMetricFileAttached.value = false;
+  isImperialFileAttached.value = false;
 };
 
 const closeUpdateModal = () => {
@@ -1686,6 +1698,8 @@ const closeUpdateModal = () => {
   imperialFileName.value = "";
   metricFile.value = null;
   imperialFile.value = null;
+  isMetricFileAttached.value = false;
+  isImperialFileAttached.value = false;
 };
 
 const createNewTab = async () => {
@@ -1878,41 +1892,69 @@ const updateTab = async () => {
       (wft) => wft.flow_type_id === currentTab.flow_type_id
     );
 
-    // Metric 파라미터 데이터 준비 (선택된 파라미터만)
-    const metricParameters =
-      metricFileData.value.length > 0
-        ? metricFileData.value
-            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
-            .map((item) => ({
-              flow_type_id: flowTypeId, // flow_type_id 추가
-              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
-              parameter_code: item.parameter_code,
-              parameter_name: item.parameter_name,
-              is_active: item.is_active,
-              is_required: item.is_required,
-              default_value: item.influent,
-              parameter_unit: item.unit,
-              remarks: item.remarks || undefined,
-            }))
-        : undefined;
+    // Metric 파라미터 데이터 준비
+    // 파일이 첨부되었으면 metricFileData 사용, 아니면 currentMetricGridData 사용
+    const metricParameters = isMetricFileAttached.value
+      ? metricFileData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+          .map((item) => ({
+            flow_type_id: flowTypeId, // flow_type_id 추가
+            parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: item.influent,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : currentMetricGridData.value.length > 0
+      ? currentMetricGridData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "")
+          .map((item) => ({
+            flow_type_id: flowTypeId,
+            parameter_id: item.parameter_id || "",
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: item.influent,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : undefined;
 
-    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
-    const imperialParameters =
-      imperialFileData.value.length > 0
-        ? imperialFileData.value
-            .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
-            .map((item) => ({
-              flow_type_id: flowTypeId, // flow_type_id 추가
-              parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
-              parameter_code: item.parameter_code,
-              parameter_name: item.parameter_name,
-              is_active: item.is_active,
-              is_required: item.is_required,
-              default_value: item.influent,
-              parameter_unit: item.unit,
-              remarks: item.remarks || undefined,
-            }))
-        : undefined;
+    // Imperial 파라미터 데이터 준비
+    // 파일이 첨부되었으면 imperialFileData 사용, 아니면 currentImperialGridData 사용
+    const imperialParameters = isImperialFileAttached.value
+      ? imperialFileData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
+          .map((item) => ({
+            flow_type_id: flowTypeId, // flow_type_id 추가
+            parameter_id: item.parameter_id || "", // parameter_id 사용 (없으면 빈 값)
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: item.influent,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : currentImperialGridData.value.length > 0
+      ? currentImperialGridData.value
+          .filter((item) => item.parameter_code && item.parameter_code !== "")
+          .map((item) => ({
+            flow_type_id: flowTypeId,
+            parameter_id: item.parameter_id || "",
+            parameter_code: item.parameter_code,
+            parameter_name: item.parameter_name,
+            is_active: item.is_active,
+            is_required: item.is_required,
+            default_value: item.influent,
+            parameter_unit: item.unit,
+            remarks: item.remarks || undefined,
+          }))
+      : undefined;
 
     // 유입종류 수정
     const requestData = {

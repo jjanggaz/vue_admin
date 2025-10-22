@@ -277,6 +277,7 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
   selectedFourthDept.value = "";
   isStep2Enabled.value = false;
   fourthDepthOptions.value = [];
+  listRows.value = []; // 테이블 초기화
 
   // 파일 초기화
   formulaFileName.value = "";
@@ -315,6 +316,8 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
   // 파일 초기화
   formulaFileName.value = "";
   formulaFile.value = null;
+  listRows.value = []; // 테이블 초기화
+
   if (formulaFileInput.value) {
     formulaFileInput.value.value = "";
   }

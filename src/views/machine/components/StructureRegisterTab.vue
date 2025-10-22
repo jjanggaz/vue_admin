@@ -144,7 +144,7 @@
           <input
             type="file"
             ref="revitFileInput"
-            accept=".rvt,rfa"
+            accept=".rvt"
             style="display: none"
             @change="handleRevitFileChange"
           />
@@ -333,7 +333,6 @@ const extractZipContents = async (file: File) => {
       "py",
       "dtdx",
       "rvt",
-      "rfa",
       "jpg",
       "jpeg",
       "png",
@@ -358,7 +357,7 @@ const extractZipContents = async (file: File) => {
           fileType = "Formula";
         } else if (["dtdx"].includes(fileExtension)) {
           fileType = "3D Model";
-        } else if (["rvt", "rfa"].includes(fileExtension)) {
+        } else if (["rvt"].includes(fileExtension)) {
           fileType = "Revit Model";
         } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
           fileType = "Thumbnail Image";

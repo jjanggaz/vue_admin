@@ -586,7 +586,7 @@
                 ref="fileRevit"
                 @change="handleFileSelect('revit', $event)"
                 style="display: none"
-                accept=".rvt,.rfa"
+                accept=".rfa"
               />
               <input
                 type="file"
@@ -1373,7 +1373,7 @@ const handleFileSelect = (type: string, event: Event) => {
     // 파일 확장자 validation
     const allowedExtensions = {
       "3d": [".dtdx"],
-      revit: [".rvt", ".rfa"],
+      revit: [".rfa"],
       symbol: [".svg"],
       thumbnail: [".jpg", ".jpeg", ".png", ".gif"],
     };

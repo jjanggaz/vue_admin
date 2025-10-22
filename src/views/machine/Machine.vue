@@ -448,7 +448,15 @@
 
           <!-- 계산식 슬롯 -->
           <template #cell-formula_file_name="{ item }">
-            {{ item.formula?.file_name || "-" }}
+            <a
+              v-if="item.formula?.download_url"
+              :href="item.formula.download_url"
+              target="_blank"
+              class="link-download"
+            >
+              {{ item.formula.file_name || "-" }}
+            </a>
+            <span v-else>{{ item.formula?.file_name || "-" }}</span>
           </template>
 
           <!-- 계산식 구분 슬롯 -->
@@ -2977,6 +2985,17 @@ onMounted(async () => {
 
   &:hover {
     background-color: color.scale($primary-color, $lightness: -10%);
+  }
+}
+
+.link-download {
+  color: $primary-color;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+    color: color.scale($primary-color, $lightness: -10%);
   }
 }
 

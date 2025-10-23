@@ -156,17 +156,23 @@
       :selection-mode="'single'"
       :select-header-text="t('common.selectColumn')"
       :show-select-all="false"
+      row-key="formula_id"
     >
-      <template #cell-created_at="{ value }">
-        {{ formatDate(value) }}
+      <template #cell-file_name="{ value, item }">
+        <a
+          v-if="item.download_url"
+          :href="item.download_url"
+          target="_blank"
+          class="file-link"
+        >
+          {{ value }}
+        </a>
+        <span v-else>{{ value }}</span>
       </template>
-      <template #cell-updated_at="{ value }">
+      <template #cell-uploaded_at="{ value }">
         {{ formatDate(value) }}
       </template>
     </DataTable>
-    <div class="pagination-container">
-      <Pagination :current-page="1" :total-pages="1" />
-    </div>
   </div>
 </template>
 
@@ -174,7 +180,6 @@
 import { useI18n } from "vue-i18n";
 import { ref, watch, onMounted } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import Pagination from "@/components/common/Pagination.vue";
 import { useStructureStore } from "@/stores/structureStore";
 
 // 수정 전용 컴포넌트로 사용 (등록 모드 관련 props 제거)
@@ -268,9 +273,9 @@ onMounted(async () => {
     }
 
     // 구조물 공식 검색
-    if (props.selectedItem?.formula?.formula_id) {
+    if (props.selectedItem?.structure_type) {
       await structureStore.fetchStructureFormula(
-        props.selectedItem.formula.formula_id
+        props.selectedItem.structure_type
       );
 
       // 검색 결과를 그리드에 매핑
@@ -278,11 +283,13 @@ onMounted(async () => {
         editModeRows.value = structureStore.formulaSearchResults.map(
           (item: any, index: number) => ({
             no: index + 1,
+            formula_id: item.formula_id || "",
             formula_name: item.formula_name || "-",
+            file_name: item.file_name || "-",
+            download_url: item.download_url || "",
             formula_version: item.formula_version || "-",
-            created_at: item.created_at || "-",
-            updated_at: item.updated_at || "-",
             unit_system_code: item.unit_system_code || "-",
+            uploaded_at: item.uploaded_at || "-",
           })
         );
       }
@@ -302,10 +309,10 @@ const editModeColumns: TableColumn[] = [
     title: t("columns.machine.structureTypeDetail"),
     width: "140px",
   },
+  { key: "file_name", title: t("common.formulaFile"), width: "200px" },
   { key: "formula_version", title: t("common.formulaVersion"), width: "120px" },
   { key: "unit_system_code", title: t("common.unit"), width: "100px" },
-  { key: "created_at", title: t("common.creationDate"), width: "120px" },
-  { key: "updated_at", title: "수정 일자", width: "120px" },
+  { key: "uploaded_at", title: t("common.creationDate"), width: "120px" },
 ];
 
 // 등록용 데이터 제거
@@ -350,17 +357,18 @@ const onDeleteSelectedEditMode = () => {
 
 const handleDeleteFormula = async () => {
   try {
-    if (
-      !props.selectedItem?.structure_id ||
-      !props.selectedItem?.formula?.formula_id
-    ) {
+    // 첫 번째 항목을 선택된 것으로 간주 (단일 선택 모드)
+    const selectedItem = editModeRows.value[0];
+    const formulaId = selectedItem.formula_id as string;
+
+    if (!props.selectedItem?.structure_id || !formulaId) {
       alert(t("messages.warning.noFormulaToDelete"));
       return;
     }
 
     await structureStore.deleteStructureFormula(
       props.selectedItem.structure_id,
-      props.selectedItem.formula.formula_id
+      formulaId
     );
 
     // 삭제 성공 후 그리드에서 해당 항목 제거
@@ -525,7 +533,7 @@ const onUpdate = async () => {
       structure_type: selectedStructureType.value,
       structure_type_detail: selectedMachineName.value,
       description: remarks.value,
-      formula_id: props.selectedItem?.formula?.formula_id,
+      //formula_id: props.selectedItem?.formula?.formula_id,
       dtdx_model_file_id: props.selectedItem?.dtdx_model?.model_file_id,
       rvt_model_file_id: props.selectedItem?.rvt_model?.model_file_id,
       thumbnail_symbol_id: props.selectedItem?.thumbnail?.symbol_id,
@@ -906,6 +914,22 @@ $desktop: 1200px;
 
   @media (max-width: $mobile) {
     max-height: 60vh;
+  }
+}
+
+// 파일 링크 스타일
+.file-link {
+  color: #3b82f6;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: #7c3aed;
   }
 }
 </style>

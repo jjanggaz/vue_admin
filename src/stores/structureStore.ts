@@ -498,24 +498,27 @@ export const useStructureStore = defineStore("structure", () => {
   };
 
   // 구조물 공식 검색 함수
-  const fetchStructureFormula = async (formulaId: string) => {
+  const fetchStructureFormula = async (structureType: string) => {
     loading.value = true;
     error.value = null;
 
     try {
       const response = await request(
-        `/api/structure/search/formula/${formulaId}`,
+        `/api/structure/search/formula`,
         undefined,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            structure_type: structureType,
+          }),
         }
       );
 
-      if (response?.response?.data?.items) {
-        formulaSearchResults.value = response.response.data.items;
+      if (response?.response?.data?.formulas) {
+        formulaSearchResults.value = response.response.data.formulas;
       }
 
       return response;

@@ -4,6 +4,19 @@
     <div class="search-filter-bar">
       <div class="filter-group">
         <div class="filter-item">
+          <label for="unit">{{ t("common.unit") }}</label>
+          <select id="unit" v-model="selectedUnit" class="form-select">
+            <option value="">{{ t("common.select") }}</option>
+            <option
+              v-for="unit in structureStore.unitSystems"
+              :key="unit.unit_system_id"
+              :value="unit.system_code"
+            >
+              {{ unit.system_name }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-item">
           <label for="structureType">{{
             t("common.structureMajorCategory")
           }}</label>
@@ -39,19 +52,6 @@
               :value="form.code_key"
             >
               {{ form.code_value }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label for="unit">{{ t("common.unit") }}</label>
-          <select id="unit" v-model="selectedUnit" class="form-select">
-            <option value="">{{ t("common.select") }}</option>
-            <option
-              v-for="unit in structureStore.unitSystems"
-              :key="unit.unit_system_id"
-              :value="unit.system_code"
-            >
-              {{ unit.system_name }}
             </option>
           </select>
         </div>

@@ -387,21 +387,21 @@ const extractZipContents = async (file: File) => {
     }
 
     // 필수 파일(.dtdx, 썸네일 이미지)이 모두 포함되어 있는지 검증
-    if (!(hasDtdx && hasImage)) {
-      const missing: string[] = [];
-      if (!hasDtdx) missing.push("3D모델(.dtdx)");
-      if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
-      alert(
-        t("messages.warning.zipMissingRequiredFiles", {
-          missing: missing.join(", "),
-        })
-      );
-      zipFileList.value = [];
-      showZipContents.value = false;
-      bulkFileName.value = "";
-      bulkFile.value = null;
-      return;
-    }
+    // if (!(hasDtdx && hasImage)) {
+    //   const missing: string[] = [];
+    //   if (!hasDtdx) missing.push("3D모델(.dtdx)");
+    //   if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
+    //   alert(
+    //     t("messages.warning.zipMissingRequiredFiles", {
+    //       missing: missing.join(", "),
+    //     })
+    //   );
+    //   zipFileList.value = [];
+    //   showZipContents.value = false;
+    //   bulkFileName.value = "";
+    //   bulkFile.value = null;
+    //   return;
+    // }
 
     // 허용되지 않은 파일이 있으면 경고
     if (invalidFiles.length > 0) {

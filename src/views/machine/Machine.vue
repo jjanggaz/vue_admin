@@ -7,6 +7,19 @@
         <div class="search-filter-bar">
           <div class="filter-group">
             <div class="filter-item">
+              <label for="unit">{{ t("common.unit") }}</label>
+              <select id="unit" v-model="selectedUnit" class="form-select">
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="unit in machineStore.unitSystems"
+                  :key="unit.unit_system_id"
+                  :value="unit.system_code"
+                >
+                  {{ unit.system_name }}
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
               <label for="machineCategory">{{
                 t("machine.machineMajorCategory")
               }}</label>
@@ -23,19 +36,6 @@
                   :value="category.code_key"
                 >
                   {{ category.code_value }}
-                </option>
-              </select>
-            </div>
-            <div class="filter-item">
-              <label for="unit">{{ t("common.unit") }}</label>
-              <select id="unit" v-model="selectedUnit" class="form-select">
-                <option value="">{{ t("common.select") }}</option>
-                <option
-                  v-for="unit in machineStore.unitSystems"
-                  :key="unit.unit_system_id"
-                  :value="unit.system_code"
-                >
-                  {{ unit.system_name }}
                 </option>
               </select>
             </div>
@@ -1063,7 +1063,7 @@ const specVerticalData = computed(() => {
     columnName: "Revit",
     value: (item as any).rfa_file_info?.original_filename || "-",
     filePath: (item as any).rfa_file_info?.download_url,
-    editable: true,
+    editable: false,
     fieldType: "file",
   });
   data.push({
@@ -1124,11 +1124,17 @@ const handleSearch = async () => {
 };
 
 const openRegistModal = () => {
+  // 상세보기 창이 열려있으면 닫기
+  if (isDetailPanelOpen.value) {
+    isDetailPanelOpen.value = false;
+  }
   isRegistModalOpen.value = true;
 };
 
-const closeRegistModal = () => {
+const closeRegistModal = async () => {
   isRegistModalOpen.value = false;
+  // 등록 모달 닫을 때 데이터 새로고침
+  await loadData();
 };
 
 // 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
@@ -2631,7 +2637,7 @@ onMounted(async () => {
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 930px;
+  max-width: 1050px;
 
   .detail-search-header {
     position: relative;
@@ -3207,7 +3213,7 @@ $tablet: 1024px;
 }
 
 .form-input {
-  width: 100%;
+  width: 300px;
   padding: 0.5rem;
   border: 1px solid $border-color;
   border-radius: 4px;

@@ -41,7 +41,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.formulaFile") }}</span>
+        <span class="label">⊙ {{ t("common.formulaFile") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -62,7 +62,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.dtdModel") }}</span>
+        <span class="label">⊙ {{ t("common.dtdModel") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -83,7 +83,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.modelThumbnail") }}</span>
+        <span class="label">⊙ {{ t("common.modelThumbnail") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"

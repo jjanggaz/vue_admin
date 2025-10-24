@@ -480,7 +480,16 @@ const formatDate = (dateString: string) => {
   if (!dateString) return "-";
   try {
     const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+    return date
+      .toLocaleString("sv-SE", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+      .replace(",", ""); // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
   } catch (error) {
     console.error("날짜 포맷팅 오류:", error);
     return dateString;

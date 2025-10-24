@@ -189,11 +189,22 @@ const formulaFileInput = ref<HTMLInputElement | null>(null);
 // 날짜 포맷 함수 (YYYY-MM-DD)
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  return `${year}-${month}-${day}`;
+  try {
+    const date = new Date(dateString);
+    return date
+      .toLocaleString("sv-SE", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+      .replace(",", ""); // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
+  } catch (error) {
+    console.error("날짜 포맷팅 오류:", error);
+    return dateString;
+  }
 };
 
 // 계산식 검색 결과를 테이블 데이터로 변환

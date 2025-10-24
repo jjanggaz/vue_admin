@@ -1094,7 +1094,16 @@ const loadWaterFlowTypeParameters = async (
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
-          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          uploadDate: new Date(formula.created_at)
+            .toLocaleString("sv-SE", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
           isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
         }));
@@ -1124,7 +1133,16 @@ const loadWaterFlowTypeParameters = async (
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
-          uploadDate: new Date(formula.created_at).toISOString().split("T")[0], // YYYY-MM-DD 형태로 변환
+          uploadDate: new Date(formula.created_at)
+            .toLocaleString("sv-SE", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
           isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
         }));

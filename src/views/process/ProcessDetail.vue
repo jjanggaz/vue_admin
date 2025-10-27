@@ -57,7 +57,7 @@
          </div>
         
         <div class="form-group">
-            <label class="required">{{ t("process.processSymbol") }} <span class="required-mark">*</span></label>
+            <label>{{ t("process.processSymbol") }}</label>
           <div class="file-input-group">
             <input
               type="file"
@@ -6096,14 +6096,8 @@ const createNewProcess = async () => {
       return;
     }
     
-    // 공정심볼 파일이 있는지 확인 (새로 선택한 파일 또는 기존 파일)
+    // 공정심볼 파일이 있는지 확인 (선택사항)
     const symbolFile = processStore.selectedFiles['processSymbol'];
-    const existingSymbol = processStore.processDetail.processSymbol;
-    
-    if (!symbolFile && !existingSymbol) {
-      alert('공정심볼 파일을 선택해주세요.');
-      return;
-    }
     
     // 공정명에서 실제 코드 값 찾기
     const selectedProcessNameOption = processStore.searchProcessNameOptions.find(

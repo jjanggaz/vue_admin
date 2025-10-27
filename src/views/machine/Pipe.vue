@@ -7,6 +7,19 @@
         <div class="search-filter-bar">
           <div class="filter-group">
             <div class="filter-item">
+              <label for="unit">{{ t("common.unit") }}</label>
+              <select id="unit" v-model="selectedUnit" class="form-select">
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="unit in pipeStore.unitSystems"
+                  :key="unit.unit_system_id"
+                  :value="unit.system_code"
+                >
+                  {{ unit.system_name }}
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
               <label for="machineCategory">{{
                 t("pipe.pipeMajorCategory")
               }}</label>
@@ -27,19 +40,6 @@
               </select>
             </div>
             <div class="filter-item">
-              <label for="unit">{{ t("common.unit") }}</label>
-              <select id="unit" v-model="selectedUnit" class="form-select">
-                <option value="">{{ t("common.select") }}</option>
-            <option
-              v-for="unit in pipeStore.unitSystems"
-              :key="unit.unit_system_id"
-              :value="unit.system_code"
-            >
-              {{ unit.system_name }}
-            </option>
-              </select>
-            </div>
-            <div class="filter-item">
               <label for="search">{{ t("common.search") }}</label>
               <input
                 type="text"
@@ -50,7 +50,10 @@
                 class="form-input"
               />
               <button class="btn-detail-search" @click="toggleDetailSearch">
-                {{ t("common.detailSearch") }}
+                {{ t("common.detailCondition") }}
+                <span class="arrow-icon">{{
+                  isDetailSearchOpen ? "▲" : "▼"
+                }}</span>
               </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
@@ -62,7 +65,7 @@
         <!-- 상세검색 패널 -->
         <div v-if="isDetailSearchOpen" class="detail-search-panel">
           <div class="detail-search-header">
-            <h3>{{ t("common.detailSearch") }}</h3>
+            <h3>{{ t("common.detailCondition") }}</h3>
             <div class="detail-search-row">
               <div class="detail-search-item">
                 <label>{{ t("pipe.pipeSubCategory") }}</label>
@@ -443,6 +446,35 @@
             }}
           </template>
 
+          <!-- 계산식 슬롯 -->
+          <template #cell-formula_file_name="{ item }">
+            <a
+              v-if="item.formula?.download_url"
+              :href="item.formula.download_url"
+              target="_blank"
+              class="link-download"
+            >
+              {{ item.formula.file_name || "-" }}
+            </a>
+            <span v-else>{{ item.formula?.file_name || "-" }}</span>
+          </template>
+
+          <!-- 계산식 구분 슬롯 -->
+          <template #cell-formula_scope="{ item }">
+            {{
+              item.formula?.is_ownship_formula === true
+                ? t("common.equipmentTypeScope")
+                : item.formula?.is_ownship_formula === false
+                ? t("common.subCategoryScope")
+                : "-"
+            }}
+          </template>
+
+          <!-- 업체명 슬롯 -->
+          <template #cell-vendor_name="{ item }">
+            {{ item.vendor_info?.vendor_name || "-" }}
+          </template>
+
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
             <button class="btn-view" @click.stop="openDetailPanel(item)">
@@ -453,6 +485,13 @@
 
         <!-- 페이징 -->
         <div class="pagination-container">
+          <div class="total-count">
+            {{
+              t("common.totalCount", {
+                count: pipeStore.searchResults?.total || 0,
+              })
+            }}
+          </div>
           <Pagination
             :current-page="currentPage"
             :total-pages="totalPagesComputed"
@@ -481,6 +520,13 @@
               {{ t("common.save") }}
             </button>
             <button
+              v-if="isDetailEditMode"
+              class="btn-cancel"
+              @click="cancelEditMode"
+            >
+              {{ t("common.cancel") }}
+            </button>
+            <button
               class="btn-close"
               @click="closeDetailPanel"
               aria-label="Close"
@@ -493,10 +539,19 @@
           <!-- 모델 썸네일 이미지 영역 -->
           <div class="model-thumbnail-section">
             <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
+              <!-- 로딩 오버레이 -->
+              <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
+                <div class="loading-spinner"></div>
+                <span class="loading-text">{{ t("common.loading") }}</span>
+              </div>
+              <!-- 이미지 -->
               <img
                 :src="thumbnailImageUrl"
                 :alt="t('common.modelThumbnailSection')"
                 class="thumbnail-image"
+                :class="{ hidden: isThumbnailLoading }"
+                @load="isThumbnailLoading = false"
+                @error="isThumbnailLoading = false"
               />
             </div>
             <div v-else class="thumbnail-placeholder">
@@ -791,6 +846,7 @@ const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
+const isThumbnailLoading = ref(false);
 
 // 썸네일 MIME 타입 추정 헬퍼
 const getImageMimeType = (info: any): string => {
@@ -878,6 +934,9 @@ const editData = ref({
   symbolFile: "",
   thumbnailFile: "",
 });
+
+// 원본 데이터 백업 (취소 시 복원용)
+const originalItemData = ref<MachineItem | null>(null);
 
 // 콤보박스 옵션들 (API로부터 동적 로드)
 const manufacturers = ref<Array<{ value: string; label: string }>>([]);
@@ -1065,8 +1124,10 @@ const openRegistModal = () => {
   isRegistModalOpen.value = true;
 };
 
-const closeRegistModal = () => {
+const closeRegistModal = async () => {
   isRegistModalOpen.value = false;
+  // 등록 모달 닫을 때 데이터 새로고침
+  await loadData();
 };
 
 // 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
@@ -1112,6 +1173,12 @@ const handleDelete = async () => {
 };
 
 const openDetailPanel = async (item: MachineItem) => {
+  // 이전 썸네일 초기화 (새 항목을 열 때마다 초기화)
+  thumbnailImageUrl.value = "";
+  isThumbnailLoading.value = false;
+
+  // 원본 데이터 백업 (깊은 복사)
+  originalItemData.value = JSON.parse(JSON.stringify(item));
   detailItemData.value = item;
   isDetailPanelOpen.value = true;
   isDetailEditMode.value = false;
@@ -1205,17 +1272,48 @@ const openDetailPanel = async (item: MachineItem) => {
 const closeDetailPanel = () => {
   isDetailPanelOpen.value = false;
   detailItemData.value = null;
+  originalItemData.value = null;
   isDetailEditMode.value = false;
 
-  // 썸네일 이미지 URL 정리 (메모리 누수 방지)
+  // 썸네일 이미지 URL 및 로딩 상태 초기화
   if (thumbnailImageUrl.value && thumbnailImageUrl.value.startsWith("blob:")) {
     URL.revokeObjectURL(thumbnailImageUrl.value);
   }
   thumbnailImageUrl.value = "";
+  isThumbnailLoading.value = false;
 };
 
 const toggleEditMode = () => {
   isDetailEditMode.value = !isDetailEditMode.value;
+};
+
+const cancelEditMode = () => {
+  // 수정 모드 취소 시 원본 데이터로 되돌리기
+  if (originalItemData.value && detailItemData.value) {
+    // 원본 데이터로 복원 (깊은 복사)
+    detailItemData.value = JSON.parse(JSON.stringify(originalItemData.value));
+
+    // 썸네일 이미지 URL도 복원
+    const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
+    if (thumbnailInfo?.download_url) {
+      thumbnailImageUrl.value = thumbnailInfo.download_url;
+    } else {
+      thumbnailImageUrl.value = "";
+    }
+  }
+
+  // editData 초기화
+  editData.value = {
+    equipmentType: "",
+    manufacturer: "",
+    modelNumber: "",
+    model3dFile: "",
+    revitFile: "",
+    symbolFile: "",
+    thumbnailFile: "",
+  };
+
+  isDetailEditMode.value = false;
 };
 
 const saveDetailChanges = async () => {
@@ -2057,7 +2155,8 @@ onMounted(async () => {
       gap: 0.5rem;
 
       .btn-edit,
-      .btn-save {
+      .btn-save,
+      .btn-cancel {
         padding: 0.5rem 1rem;
         border: 1px solid $border-color;
         border-radius: 4px;
@@ -2065,12 +2164,31 @@ onMounted(async () => {
         color: $text-color;
         cursor: pointer;
         font-size: 0.875rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: color.scale($background-light, $lightness: -5%);
+        }
       }
 
       .btn-save {
         background: $success-color;
         color: white;
         border-color: $success-color;
+
+        &:hover {
+          background: color.scale($success-color, $lightness: -10%);
+        }
+      }
+
+      .btn-cancel {
+        background: $error-color;
+        color: white;
+        border-color: $error-color;
+
+        &:hover {
+          background: color.scale($error-color, $lightness: -10%);
+        }
       }
 
       .btn-close {
@@ -2099,20 +2217,53 @@ onMounted(async () => {
       justify-content: center;
 
       .thumbnail-image-container {
-        width: 200px;
-        height: 150px;
-        border: 1px solid $border-color;
-        border-radius: 8px;
+        width: 280px;
+        height: 210px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: white;
         overflow: hidden;
+        position: relative;
 
         .thumbnail-image {
           max-width: 100%;
           max-height: 100%;
           object-fit: contain;
+          transition: opacity 0.3s;
+
+          &.hidden {
+            opacity: 0;
+          }
+        }
+
+        .thumbnail-loading-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(2px);
+          gap: 0.75rem;
+          z-index: 1;
+
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid $border-color;
+            border-top-color: $primary-color;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+
+          .loading-text {
+            color: $text-light;
+            font-size: 0.875rem;
+          }
         }
       }
 
@@ -2130,6 +2281,12 @@ onMounted(async () => {
           color: $text-light;
           font-size: 0.875rem;
           text-align: center;
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
       }
     }

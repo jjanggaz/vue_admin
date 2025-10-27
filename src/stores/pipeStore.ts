@@ -320,7 +320,7 @@ export const usePipeStore = defineStore("pipe", () => {
     }
   };
 
-  // 상세 깊이 코드 조회 (/api/machine/depth/detail)
+  // 상세 깊이 코드 조회 (/api/pipe/depth/detail)
   const fetchDepthDetail = async (codeGroup: string, codeLevel: number = 4) => {
     loading.value = true;
     error.value = null;
@@ -559,6 +559,161 @@ export const usePipeStore = defineStore("pipe", () => {
     }
   };
 
+  const updatePipe = async (
+    equipmentId: string,
+    params: {
+      equipment_type?: string;
+      vendor_id?: string;
+      model_number?: string;
+      output_values?: Record<string, any>;
+      search_criteria?: Record<string, any>;
+      specifications?: Record<string, any>;
+      dtd_model_file?: File;
+      thumbnail_file?: File;
+      rvt_model_file?: File;
+      symbol_file?: File;
+    }
+  ) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+
+      // updateParams 객체 생성
+      const updateParams: any = {};
+      if (params.equipment_type) {
+        updateParams.equipment_type = params.equipment_type;
+      }
+      if (params.vendor_id) {
+        updateParams.vendor_id = params.vendor_id;
+      }
+      if (params.model_number) {
+        updateParams.model_number = params.model_number;
+      }
+      if (params.output_values) {
+        updateParams.output_values = params.output_values;
+      }
+      if (params.search_criteria) {
+        updateParams.search_criteria = params.search_criteria;
+      }
+      if (params.specifications) {
+        updateParams.specifications = params.specifications;
+      }
+
+      // updateParams를 JSON 문자열로 FormData에 추가
+      formData.append("updateParams", JSON.stringify(updateParams));
+
+      // 파일들 추가
+      if (params.dtd_model_file) {
+        formData.append("dtd_model_file", params.dtd_model_file);
+      }
+      if (params.thumbnail_file) {
+        formData.append("thumbnail_file", params.thumbnail_file);
+      }
+      if (params.rvt_model_file) {
+        formData.append("rvt_model_file", params.rvt_model_file);
+      }
+      if (params.symbol_file) {
+        formData.append("symbol_file", params.symbol_file);
+      }
+
+      const response = await request(
+        `/api/pipe/update/${encodeURIComponent(equipmentId)}`,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("배관 수정 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "배관 수정에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const searchFormula = async (equipmentType: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/pipe/search/formula", undefined, {
+        method: "POST",
+        body: JSON.stringify({ equipment_type: equipmentType }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return response;
+    } catch (err) {
+      console.error("계산식 검색 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 검색에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const createFormula = async (params: {
+    python_file: File;
+    formula_id?: string;
+  }) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const formData = new FormData();
+      formData.append("python_file", params.python_file);
+      if (params.formula_id) {
+        formData.append("formula_id", params.formula_id);
+      }
+
+      const response = await request("/api/pipe/create/formula", undefined, {
+        method: "POST",
+        body: formData,
+      });
+
+      return response;
+    } catch (err) {
+      console.error("계산식 생성 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 생성에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteFormula = async (formulaId: string) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request(
+        `/api/pipe/delete/formula/${encodeURIComponent(formulaId)}`,
+        undefined,
+        {
+          method: "DELETE",
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.error("계산식 삭제 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "계산식 삭제에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -588,5 +743,9 @@ export const usePipeStore = defineStore("pipe", () => {
     deletePipe,
     fetchPipeDetailCommon,
     fetchPipeDetailFiles,
+    updatePipe,
+    searchFormula,
+    createFormula,
+    deleteFormula,
   };
 });

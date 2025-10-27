@@ -121,7 +121,19 @@
                 :showSelectAll="false"
                 :selectedItems="selectedMetricFormula"
                 @selection-change="onMetricFormulaSelectionChange"
-              />
+              >
+                <template #cell-formula="{ value, item }">
+                  <a
+                    v-if="item.download_url"
+                    :href="item.download_url"
+                    target="_blank"
+                    class="formula-link"
+                  >
+                    {{ value }}
+                  </a>
+                  <span v-else>{{ value }}</span>
+                </template>
+              </DataTable>
             </div>
           </div>
 
@@ -192,7 +204,19 @@
                 :showSelectAll="false"
                 :selectedItems="selectedImperialFormula"
                 @selection-change="onImperialFormulaSelectionChange"
-              />
+              >
+                <template #cell-formula="{ value, item }">
+                  <a
+                    v-if="item.download_url"
+                    :href="item.download_url"
+                    target="_blank"
+                    class="formula-link"
+                  >
+                    {{ value }}
+                  </a>
+                  <span v-else>{{ value }}</span>
+                </template>
+              </DataTable>
             </div>
           </div>
         </div>
@@ -1094,6 +1118,7 @@ const loadWaterFlowTypeParameters = async (
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
+          download_url: formula.download_url || "", // 다운로드 URL
           uploadDate: new Date(formula.created_at)
             .toLocaleString("sv-SE", {
               year: "numeric",
@@ -1133,6 +1158,7 @@ const loadWaterFlowTypeParameters = async (
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
+          download_url: formula.download_url || "", // 다운로드 URL
           uploadDate: new Date(formula.created_at)
             .toLocaleString("sv-SE", {
               year: "numeric",
@@ -2521,5 +2547,20 @@ onBeforeUnmount(() => {
   color: #6b7280;
   font-size: 14px;
   font-style: italic;
+}
+
+.formula-link {
+  color: #3b82f6;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: #7c3aed;
+  }
 }
 </style>

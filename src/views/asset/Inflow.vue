@@ -575,9 +575,20 @@
             <dt>{{ t("common.symbolImage") }}</dt>
             <dd>
               <div class="symbol-image-preview">
-                <span v-if="!symbolImageContent" class="no-symbol-message">
-                  {{ t("common.noSymbolImage") }}
-                </span>
+                <div class="symbol-content">
+                  <span v-if="!symbolImageContent" class="no-symbol-message">
+                    {{ t("common.noSymbolImage") }}
+                  </span>
+                  <div v-else v-html="symbolImageContent"></div>
+                </div>
+                <button
+                  v-if="symbolImageContent && isExistingSymbol"
+                  class="delete-symbol-btn"
+                  @click="handleDeleteSymbol"
+                  title="심볼 삭제"
+                >
+                  ×
+                </button>
               </div>
             </dd>
           </dl>
@@ -896,6 +907,9 @@ const uploadForm = ref<UploadForm>({
   category: "",
   file: null,
 });
+
+// 기존 심볼인지 새로 첨부한 심볼인지 구분
+const isExistingSymbol = ref(false);
 
 // 데이터베이스에서 가져온 탭 데이터
 const tabs = ref<TabInfo[]>([]);
@@ -1290,6 +1304,9 @@ const handleFileUpload = (event: Event) => {
 
     uploadForm.value.file = file;
 
+    // 새로 첨부한 파일이므로 기존 심볼이 아님
+    isExistingSymbol.value = false;
+
     // SVG 미리보기: 파일 내용을 읽어 symbolImageContent에 주입
     const reader = new FileReader();
     reader.onload = () => {
@@ -1623,6 +1640,7 @@ const openUpdateModal = async () => {
 
   // 심볼 이미지 콘텐츠 초기화
   symbolImageContent.value = "";
+  isExistingSymbol.value = false;
 
   // 현재 선택된 탭의 정보로 수정 폼 초기화
   const currentTab = tabs.value[activeTab.value];
@@ -1663,6 +1681,8 @@ const openUpdateModal = async () => {
         if (fileInfoResponse?.response?.file_info?.response?.content) {
           symbolImageContent.value =
             fileInfoResponse.response.file_info.response.content;
+          // 기존 심볼이 로드되었으므로 true로 설정
+          isExistingSymbol.value = true;
         }
       } catch (error) {
         console.error("파일 정보 조회 실패:", error);
@@ -1694,16 +1714,6 @@ const openUpdateModal = async () => {
   isImperialFileAttached.value = false;
 
   isUpdateModalOpen.value = true;
-
-  // 모달이 열린 후 SVG 이미지 주입
-  nextTick(() => {
-    if (symbolImageContent.value) {
-      const symbolPreview = document.querySelector(".symbol-image-preview");
-      if (symbolPreview) {
-        symbolPreview.innerHTML = symbolImageContent.value;
-      }
-    }
-  });
 };
 
 const closeModal = () => {
@@ -1727,6 +1737,52 @@ const closeModal = () => {
   isImperialFileAttached.value = false;
 };
 
+const handleDeleteSymbol = async () => {
+  if (confirm(t("messages.confirm.deleteSymbol"))) {
+    try {
+      // 현재 탭의 svg_symbol_id 가져오기
+      const currentTab = tabs.value[activeTab.value];
+      const originalWaterFlowType = inflowStore.waterFlowTypes.find(
+        (wft) => wft.flow_type_id === currentTab?.flow_type_id
+      );
+
+      if (originalWaterFlowType?.svg_symbol_id) {
+        // API 호출로 심볼 삭제
+        const response = await inflowStore.deleteSymbol(
+          originalWaterFlowType.svg_symbol_id,
+          originalWaterFlowType.flow_type_id || "",
+          originalWaterFlowType.flow_type_code || "",
+          originalWaterFlowType.flow_type_name || "",
+          originalWaterFlowType.symbol_info?.symbol_color || ""
+        );
+
+        // response에서 newSymbolId를 받아서 기존 svg_symbol_id 업데이트
+        if (response?.response?.newSymbolId) {
+          const newSymbolId = response.response.newSymbolId;
+          // store의 waterFlowTypes에서 해당 항목 찾아서 svg_symbol_id 업데이트
+          const targetFlowType = inflowStore.waterFlowTypes.find(
+            (wft) => wft.flow_type_id === originalWaterFlowType.flow_type_id
+          );
+          if (targetFlowType) {
+            targetFlowType.svg_symbol_id = newSymbolId;
+          }
+        }
+
+        // 성공 메시지
+        alert(t("messages.success.symbolDeleteSuccess"));
+      }
+
+      // UI 상태 초기화
+      symbolImageContent.value = "";
+      uploadForm.value.file = null;
+      uploadForm.value.existingFileName = "";
+    } catch (error) {
+      console.error("심볼 삭제 실패:", error);
+      alert(t("messages.error.symbolDeleteFailed"));
+    }
+  }
+};
+
 const closeUpdateModal = () => {
   isUpdateModalOpen.value = false;
   // 수정 폼 초기화
@@ -1736,6 +1792,8 @@ const closeUpdateModal = () => {
   uploadForm.value.title = "";
   uploadForm.value.existingFileName = ""; // 기존 파일명 초기화
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
+  symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
+  isExistingSymbol.value = false; // 기존 심볼 플래그 초기화
   metricFileData.value = [];
   imperialFileData.value = [];
   metricFileName.value = "";
@@ -2534,13 +2592,22 @@ onBeforeUnmount(() => {
   justify-content: center;
   height: 100px;
   overflow: hidden;
-}
+  position: relative;
 
-.symbol-image-preview svg {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  .symbol-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+    }
+  }
 }
 
 .no-symbol-message {
@@ -2561,6 +2628,32 @@ onBeforeUnmount(() => {
 
   &:visited {
     color: #7c3aed;
+  }
+}
+
+.delete-symbol-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 18px;
+  font-weight: normal;
+  font-family: Arial, sans-serif;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  z-index: 10;
+  padding: 1px 0 0 0;
+  margin: 0;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.7);
   }
 }
 </style>

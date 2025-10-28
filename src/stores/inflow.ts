@@ -645,6 +645,46 @@ export const useInflowStore = defineStore("inflow", {
       }
     },
 
+    // 심볼 삭제
+    async deleteSymbol(
+      symbolId: string,
+      flowTypeId: string,
+      flowTypeCode: string,
+      flowTypeName: string,
+      symbolColor: string
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/inflow/symbols/${symbolId}`,
+          undefined,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              flow_type_id: flowTypeId,
+              flow_type_code: flowTypeCode,
+              flow_type_name: flowTypeName,
+              symbol_color: symbolColor,
+            }),
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("심볼 삭제 실패:", error);
+        this.error =
+          error instanceof Error ? error.message : "심볼 삭제에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // 유입종류 삭제
     async deleteWaterFlowType(flowTypeId: string) {
       this.loading = true;

@@ -41,26 +41,6 @@
           >
             <div class="th-content">
               <span class="th-text">{{ column.title }}</span>
-              <span v-if="column.sortable" class="sort-icon">
-                <span
-                  class="sort-arrow sort-up"
-                  :class="{
-                    active:
-                      sortConfig.key === column.key &&
-                      sortConfig.direction === 'asc',
-                  }"
-                  >▲</span
-                >
-                <span
-                  class="sort-arrow sort-down"
-                  :class="{
-                    active:
-                      sortConfig.key === column.key &&
-                      sortConfig.direction === 'desc',
-                  }"
-                  >▼</span
-                >
-              </span>
             </div>
           </th>
         </tr>

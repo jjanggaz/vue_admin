@@ -347,6 +347,7 @@
       "pcId": "Pipe Code",
       "name": "Pipe Name",
       "type": "Pipe Type",
+      "materialType": "Material Type",
       "capacity": "Capacity",
       "model": "Model",
       "formula": "Formula",
@@ -392,6 +393,7 @@
     "createdDate": "Created Date",
     "updatedDate": "Updated Date",
     "machineUpload": "Machine List Upload",
+    "pipeUpload": "Pipe List Upload",
     "bulkModelUpload": "Bulk Model Upload",
     "modelRegister": "Model Register",
     "machineRegister": "Machine Register",
@@ -985,7 +987,8 @@
     "diffuse_area_m2": "Diffuse Area",
     "diameter_mm": "Diameter",
     "dia_phi_mm": "Phi Diameter",
-    "other": "Other"
+    "other": "Other",
+    "materialType": "Material Type"
   },
   "pipe": {
     "pipeType": "Pipe Type",
@@ -998,6 +1001,7 @@
     "pressure": "Pressure",
     "head": "Head",
     "material": "Material",
+    "specification": "Specification",
     "pipeDiameter": "Pipe Diameter",
     "diameter": "Diameter",
     "dia_mm": "Outer Diameter",

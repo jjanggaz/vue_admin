@@ -347,6 +347,7 @@
       "pcId": "배관코드",
       "name": "배관명",
       "type": "배관유형",
+      "materialType": "자재유형",
       "capacity": "용량",
       "model": "모델명",
       "formula": "계산식",
@@ -392,6 +393,7 @@
     "createdDate": "생성일자",
     "updatedDate": "수정일자",
     "machineUpload": "기계리스트 업로드",
+    "pipeUpload": "배관리스트 업로드",
     "bulkModelUpload": "모델 대량 업로드",
     "modelRegister": "모델 등록",
     "machineRegister": "기계 등록",
@@ -994,6 +996,7 @@
     "pressure": "압력",
     "head": "양정",
     "material": "재질",
+    "specification": "규격",
     "pipeDiameter": "배관직경",
     "diameter": "직경",
     "dia_mm": "외경",
@@ -1002,7 +1005,8 @@
     "diffuse_area_m2": "산기면적",
     "diameter_mm": "관경",
     "dia_phi_mm": "직경",
-    "other": "기타"
+    "other": "기타",
+    "materialType": "자재유형"
   },
   "pageTitles": {
     "dashboard": "대시보드",

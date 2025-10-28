@@ -21,7 +21,7 @@
             </div>
             <div class="filter-item">
               <label for="machineCategory">{{
-                t("pipe.pipeMajorCategory")
+                t("pipe.materialType")
               }}</label>
               <select
                 id="machineCategory"
@@ -475,6 +475,25 @@
             {{ item.vendor_info?.vendor_name || "-" }}
           </template>
 
+          <!-- 재질 슬롯 -->
+          <template #cell-material="{ item }">
+            {{ item.specifications?.material?.value || "-" }}
+          </template>
+
+          <!-- 규격 슬롯 -->
+          <template #cell-specification="{ item }">
+            {{ item.specifications?.specification?.value || item.specifications?.standard?.value || "-" }}
+          </template>
+
+          <!-- 압력 슬롯 -->
+          <template #cell-pressure="{ item }">
+            {{
+              item.specifications?.pressure?.value
+                ? `${item.specifications.pressure.value} ${item.specifications.pressure.unit_symbol || ""}`
+                : "-"
+            }}
+          </template>
+
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
             <button class="btn-view" @click.stop="openDetailPanel(item)">
@@ -762,27 +781,39 @@ interface MachineItem {
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.pipe.no"), width: "60px", sortable: false },
   {
+    key: "equipment_type_name",
+    title: t("columns.pipe.materialType"),
+    width: "120px",
+    sortable: false,
+  },
+  {
     key: "equipment_code",
     title: t("columns.pipe.pcId"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "equipment_type_name",
-    title: t("columns.pipe.type"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "manufacturer",
-    title: t("columns.pipe.company"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "model_number",
-    title: t("columns.pipe.model"),
     width: "120px",
+    sortable: false,
+  },
+  {
+    key: "equipment_name",
+    title: t("columns.pipe.name"),
+    width: "150px",
+    sortable: false,
+  },
+  {
+    key: "material",
+    title: t("pipe.material"),
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "specification",
+    title: t("pipe.specification"),
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "pressure",
+    title: t("pipe.pressure"),
+    width: "100px",
     sortable: false,
   },
   {
@@ -794,7 +825,7 @@ const tableColumns: TableColumn[] = [
   {
     key: "details",
     title: t("columns.pipe.details"),
-    width: "80px",
+    width: "100px",
     sortable: false,
   },
 ];

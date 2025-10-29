@@ -2098,6 +2098,16 @@ const updateTab = async () => {
           }))
       : undefined;
 
+    // 파일명 변경 함수 (flow_type_code + 원본파일명)
+    const renameFile = (
+      file: File | null,
+      flowTypeCode: string | undefined
+    ): File | undefined => {
+      if (!file || !flowTypeCode) return undefined;
+      const newFileName = `${flowTypeCode}_${file.name}`;
+      return new File([file], newFileName, { type: file.type });
+    };
+
     // 수정할 데이터 준비
     const requestData = {
       waterFlowTypeData: {
@@ -2114,8 +2124,11 @@ const updateTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
-      metricFile: updateMetricFile.value || undefined, // Metric 계산식 파일
-      imperialFile: updateImperialFile.value || undefined, // Imperial 계산식 파일
+      metricFile: renameFile(updateMetricFile.value, currentTab.flow_type_code), // Metric 계산식 파일 (파일명 변경)
+      imperialFile: renameFile(
+        updateImperialFile.value,
+        currentTab.flow_type_code
+      ), // Imperial 계산식 파일 (파일명 변경)
     };
 
     // 수정 API 호출
@@ -2228,6 +2241,16 @@ const createNewTab = async () => {
       });
     });
 
+    // 파일명 변경 함수 (flow_type_code + 원본파일명)
+    const renameFile = (
+      file: File | null,
+      flowTypeCode: string | undefined
+    ): File | undefined => {
+      if (!file || !flowTypeCode) return undefined;
+      const newFileName = `${flowTypeCode}_${file.name}`;
+      return new File([file], newFileName, { type: file.type });
+    };
+
     // 유출종류와 파라미터를 한 번에 등록
     const requestData = {
       waterFlowTypeData: {
@@ -2243,8 +2266,8 @@ const createNewTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
-      metricFile: metricFile.value || undefined, // Metric 계산식 파일
-      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일
+      metricFile: renameFile(metricFile.value, selectedOutputType.value), // Metric 계산식 파일 (파일명 변경)
+      imperialFile: renameFile(imperialFile.value, selectedOutputType.value), // Imperial 계산식 파일 (파일명 변경)
     };
 
     const response = await outflowStore.createWaterFlowType(requestData);

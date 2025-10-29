@@ -681,19 +681,157 @@
           </button>
         </div>
         <div class="modal-body">
-          <div class="tabs-wrapper">
-            <div
-              v-for="(tab, idx) in modalTabs"
-              :key="tab.key"
-              :class="['tab', { active: modalActiveTab === idx }]"
-              @click="modalActiveTab = idx"
-            >
-              {{ tab.label }}
+          <!-- 등록 폼 -->
+          <div class="pipe-register-form">
+            <!-- 상단 검색/필터 영역 -->
+            <div class="filter-bar">
+              <div class="group-form inline">
+                <span class="label required"
+                  >⊙ {{ t("pipe.materialType") }}</span
+                >
+                <select
+                  class="input select-md"
+                  v-model="registerSelectedPipeName"
+                  :disabled="registerIsRegistered"
+                >
+                  <option value="">{{ t("common.select") }}</option>
+                  <option
+                    v-for="pipe in pipeStore.secondDepth"
+                    :key="pipe.code_id"
+                    :value="pipe.code_key"
+                  >
+                    {{ pipe.code_value }}
+                  </option>
+                </select>
             </div>
+              <div class="group-form inline">
+                <span class="label required">⊙ {{ t("common.excelUpload") }}</span>
+                <div class="file-upload-group">
+                  <input
+                    type="text"
+                    class="input file-name-input"
+                    :value="registerExcelFileName"
+                    readonly
+                    :placeholder="t('placeholder.selectFile')"
+                  />
+                  <input
+                    type="file"
+                    ref="registerExcelFileInput"
+                    accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                    style="display: none"
+                    @change="handleRegisterExcelFileChange"
+                  />
+                  <button
+                    type="button"
+                    class="btn-file"
+                    @click="registerExcelFileInput?.click()"
+                  >
+                    {{ t("common.selectFile") }}
+                  </button>
           </div>
-          <div class="tab-content">
-            <MachineRegisterTab v-if="modalActiveTab === 0" />
-            <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
+              </div>
+              <div class="group-form inline right-align">
+                <button
+                  type="button"
+                  class="btn-outline"
+                  @click.prevent="onDownloadExcelTemplate"
+                >
+                  {{ t("common.excelTemplateDownload") }}
+                </button>
+                <button
+                  type="button"
+                  class="btn-register"
+                  @click="handlePipeRegister"
+                >
+                  {{ t("common.machineRegister") }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 리스트 테이블 -->
+            <div class="section-header">
+              <div class="section-title">⊙ {{ t("common.pipeUpload") }}</div>
+              <div class="section-actions">
+                <div class="file-upload-group">
+                  <input
+                    type="text"
+                    class="input file-name-input"
+                    :value="registerBulkFileName"
+                    readonly
+                    :placeholder="t('placeholder.selectFile')"
+                  />
+                  <input
+                    type="file"
+                    ref="registerBulkFileInput"
+                    accept=".zip"
+                    style="display: none"
+                    @change="handleRegisterBulkFileChange"
+                  />
+                  <button
+                    type="button"
+                    class="btn-file"
+                    @click="registerBulkFileInput?.click()"
+                  >
+                    {{ t("common.bulkModelUpload") }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-register"
+                    @click="handleModelRegister"
+                  >
+                    {{ t("common.modelRegister") }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ZIP 파일 내부 파일 목록 테이블 -->
+            <div
+              v-if="registerShowZipContents && registerZipFileList.length > 0"
+              class="zip-contents-section"
+            >
+              <h4 class="zip-contents-title">
+                {{ t("common.zipFileList") }} ({{
+                  t("common.filesCount", { count: registerZipFileList.length })
+                }})
+              </h4>
+              <DataTable
+                :columns="registerZipTableColumns"
+                :data="registerZipFileList"
+                :loading="false"
+                :selectable="false"
+                :show-select-all="false"
+                :max-height="'300px'"
+              >
+                <!-- 파일 크기 포맷팅 슬롯 -->
+                <template #cell-size="{ value }">
+                  {{ formatFileSize(value) }}
+                </template>
+
+                <!-- 결과 슬롯 -->
+                <template #cell-result="{ item }">
+                  <span
+                    :class="{
+                      'result-success':
+                        item.result === t('messages.success.uploadSuccess'),
+                      'result-failed':
+                        item.result === t('messages.success.uploadFailed'),
+                      'result-skipped':
+                        item.result === t('messages.success.uploadSkipped'),
+                    }"
+                  >
+                    {{ item.result || "-" }}
+                  </span>
+                </template>
+
+                <!-- 비고 슬롯 -->
+                <template #cell-remarks="{ item }">
+                  <span class="remarks-text" :title="item.remarks">
+                    {{ item.remarks || "-" }}
+                  </span>
+                </template>
+              </DataTable>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -711,23 +849,11 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
-import MachineRegisterTab from "./components/MachineRegisterTab.vue";
-import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
 import { useI18n } from "vue-i18n";
 import { usePipeStore } from "@/stores/pipeStore";
 
 const { t, locale } = useI18n();
 const pipeStore = usePipeStore();
-
-// 모달 탭 구성 - 등록 모드만 사용
-const modalTabs = [
-  { key: "pipe", label: t("common.pipeRegistration") },
-  {
-    key: "formula",
-    label: t("common.pipeFormulaRegistration"),
-  },
-];
-const modalActiveTab = ref(0);
 
 interface PriceHistoryItem {
   price_value: number;
@@ -878,6 +1004,45 @@ const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
 const isThumbnailLoading = ref(false);
+
+// 등록 팝업 관련 변수들
+const registerIsRegistered = ref(false);
+const registerSelectedPipeName = ref("");
+const registerExcelFileInput = ref<HTMLInputElement | null>(null);
+const registerExcelFileName = ref<string>("");
+const registerExcelFile = ref<File | null>(null);
+const registerBulkFileInput = ref<HTMLInputElement | null>(null);
+const registerBulkFileName = ref<string>("");
+const registerBulkFile = ref<File | null>(null);
+const registerZipFileList = ref<
+  Array<{
+    name: string;
+    size: number;
+    type: string;
+    lastModified?: string;
+    result?: string;
+    remarks?: string;
+  }>
+>([]);
+const registerShowZipContents = ref(false);
+const registerUploadResult = ref<{
+  success_files: Array<{ file_name: string; reason?: string }>;
+  failed_files: Array<{ file_name: string; reason?: string }>;
+  skipped_files: Array<{ file_name: string; reason?: string }>;
+} | null>(null);
+const registerZipTableColumns: TableColumn[] = [
+  { key: "name", title: t("common.fileName"), width: "25%", sortable: false },
+  { key: "type", title: t("common.fileType"), width: "15%", sortable: false },
+  { key: "size", title: t("common.fileSize"), width: "10%", sortable: false },
+  {
+    key: "lastModified",
+    title: t("common.lastModified"),
+    width: "15%",
+    sortable: false,
+  },
+  { key: "result", title: t("common.result"), width: "10%", sortable: false },
+  { key: "remarks", title: t("common.remarks"), width: "25%", sortable: false },
+];
 
 // 썸네일 MIME 타입 추정 헬퍼
 const getImageMimeType = (info: any): string => {
@@ -1161,7 +1326,336 @@ const closeRegistModal = async () => {
   await loadData();
 };
 
-// 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
+// 파일 크기 포맷팅 함수
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
+// 업로드 결과에 따라 registerZipFileList 업데이트
+const updateRegisterZipFileListWithResult = (resultData: any) => {
+  if (!resultData?.details) return;
+
+  const { success_files, failed_files, skipped_files } = resultData.details;
+
+  // registerZipFileList의 각 항목에 대해 결과와 비고를 매핑
+  registerZipFileList.value = registerZipFileList.value.map((file) => {
+    // 성공 파일 체크
+    const successFile = success_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (successFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadSuccess"),
+        remarks: successFile.reason || "-",
+      };
+    }
+
+    // 실패 파일 체크
+    const failedFile = failed_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (failedFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadFailed"),
+        remarks: failedFile.reason || "-",
+      };
+    }
+
+    // 제외 파일 체크
+    const skippedFile = skipped_files?.find(
+      (f: any) => f.file_name === file.name
+    );
+    if (skippedFile) {
+      return {
+        ...file,
+        result: t("messages.success.uploadSkipped"),
+        remarks: skippedFile.reason || "-",
+      };
+    }
+
+    // 매칭되지 않은 경우
+    return {
+      ...file,
+      result: "-",
+      remarks: "-",
+    };
+  });
+};
+
+// ZIP 파일 내부 파일 목록 추출 함수
+const extractRegisterZipContents = async (file: File) => {
+  try {
+    // JSZip 라이브러리 로드 시도
+    let JSZip;
+    try {
+      const jszipModule = await import("jszip");
+      JSZip = jszipModule.default;
+    } catch (importError) {
+      console.warn("JSZip 라이브러리를 로드할 수 없습니다:", importError);
+      // JSZip 없이 기본 정보만 표시
+      const fileInfo = {
+        name: file.name,
+        size: file.size,
+        type: "ZIP Archive",
+        lastModified: new Date(file.lastModified).toLocaleString(),
+      };
+      registerZipFileList.value = [fileInfo];
+      registerShowZipContents.value = true;
+      return;
+    }
+
+    const zip = new JSZip();
+    const zipData = await zip.loadAsync(file);
+
+    const fileList: Array<{
+      name: string;
+      size: number;
+      type: string;
+      lastModified?: string;
+    }> = [];
+
+    // 허용된 파일 확장자 목록
+    const allowedExtensions = [
+      "dtdx",
+      "rfa",
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "svg",
+    ];
+    const invalidFiles: string[] = [];
+    let hasAllowedFile = false;
+
+    // ZIP 파일 내부의 모든 파일을 순회
+    zipData.forEach((relativePath: string, zipEntry: any) => {
+      if (!zipEntry.dir) {
+        // 디렉토리가 아닌 파일만
+        const fileExtension =
+          relativePath.split(".").pop()?.toLowerCase() || "";
+        let fileType = "Unknown";
+
+        // 파일 확장자에 따른 타입 분류
+        if (["dtdx"].includes(fileExtension)) {
+          fileType = "3D Model";
+        } else if (["rfa"].includes(fileExtension)) {
+          fileType = "Revit Model";
+        } else if (["svg"].includes(fileExtension)) {
+          fileType = "Symbol";
+        } else if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
+          fileType = "Thumbnail Image";
+        }
+
+        // 허용/비허용 판정
+        if (fileExtension && allowedExtensions.includes(fileExtension)) {
+          hasAllowedFile = true;
+        } else if (fileExtension) {
+          invalidFiles.push(relativePath);
+        }
+
+        // 파일 크기 가져오기
+        let fileSize = 0;
+        if (zipEntry._data?.uncompressedSize) {
+          fileSize = zipEntry._data.uncompressedSize;
+        } else if (zipEntry.uncompressedSize) {
+          fileSize = zipEntry.uncompressedSize;
+        } else if (zipEntry._data?.compressedSize) {
+          fileSize = zipEntry._data.compressedSize;
+        } else if (zipEntry.compressedSize) {
+          fileSize = zipEntry.compressedSize;
+        }
+
+        fileList.push({
+          name: relativePath,
+          size: fileSize,
+          type: fileType,
+          lastModified: zipEntry.date
+            ? zipEntry.date.toLocaleString()
+            : "Unknown",
+        });
+      }
+    });
+
+    // 허용된 파일이 하나도 없으면 첨부 불가 처리
+    if (!hasAllowedFile) {
+      alert(t("messages.warning.noAllowedFileInZip"));
+      registerZipFileList.value = [];
+      registerShowZipContents.value = false;
+      registerBulkFileName.value = "";
+      registerBulkFile.value = null;
+      return;
+    }
+
+    // 허용되지 않은 파일이 있으면 경고
+    if (invalidFiles.length > 0) {
+      alert(
+        t("messages.warning.zipInvalidFiles", {
+          files: invalidFiles.join("\n"),
+        })
+      );
+    }
+
+    registerZipFileList.value = fileList;
+    registerShowZipContents.value = true;
+  } catch (error) {
+    console.error("ZIP 파일 읽기 실패:", error);
+    alert(t("messages.warning.zipReadFail"));
+    registerZipFileList.value = [];
+    registerShowZipContents.value = false;
+    registerBulkFile.value = null;
+  }
+};
+
+// 공통 검증 함수: 자재유형 필수 체크
+const validateRegisterBasicSelections = (): boolean => {
+  if (!registerSelectedPipeName.value) {
+    alert(t("messages.warning.selectMachineMajorCategory"));
+    return false;
+  }
+
+  return true;
+};
+
+// 엑셀 파일 선택 핸들러
+const handleRegisterExcelFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    registerExcelFileName.value = file.name;
+    registerExcelFile.value = file;
+  }
+};
+
+// ZIP 파일 선택 핸들러
+const handleRegisterBulkFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    registerBulkFileName.value = file.name;
+    registerBulkFile.value = file;
+    await extractRegisterZipContents(file);
+  }
+};
+
+// 엑셀 템플릿 다운로드
+const onDownloadExcelTemplate = async () => {
+  if (!validateRegisterBasicSelections()) return;
+
+  try {
+    const response = await pipeStore.downloadExcelTemplate(
+      registerSelectedPipeName.value
+    );
+
+    // download_url로 파일 다운로드
+    const downloadUrl = response?.response?.data?.files?.[0]?.download_url;
+    const originalFilename =
+      response?.response?.data?.files?.[0]?.original_filename;
+
+    if (downloadUrl) {
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = originalFilename || "template.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      alert(t("messages.error.downloadFailed"));
+    }
+  } catch (error) {
+    console.error("템플릿 다운로드 실패:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : t("messages.error.downloadFailed");
+    alert(errorMessage);
+  }
+};
+
+// 배관 등록 핸들러
+const handlePipeRegister = async () => {
+  if (!validateRegisterBasicSelections()) return;
+
+  if (!registerExcelFileName.value || !registerExcelFile.value) {
+    alert(t("messages.warning.selectExcelFile"));
+    return;
+  }
+
+  try {
+    // pipeStore의 uploadPipeExcel 함수 호출
+    await pipeStore.uploadPipeExcel(
+      registerSelectedPipeName.value,
+      registerExcelFile.value
+    );
+
+    alert(t("messages.success.machineRegistered"));
+
+    // 성공 시 초기화
+    registerExcelFileName.value = "";
+    registerExcelFile.value = null;
+    if (registerExcelFileInput.value) {
+      registerExcelFileInput.value.value = "";
+    }
+    registerIsRegistered.value = true;
+  } catch (error) {
+    console.error("배관 등록 실패:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    alert(errorMessage);
+  }
+};
+
+// 모델 등록 핸들러
+const handleModelRegister = async () => {
+  if (!validateRegisterBasicSelections()) return;
+
+  if (!registerBulkFileName.value || !registerBulkFile.value) {
+    alert(t("messages.warning.selectModelFile"));
+    return;
+  }
+
+  try {
+    // pipeStore의 uploadModelZip 함수 호출
+    const response = await pipeStore.uploadModelZip(
+      registerSelectedPipeName.value,
+      registerBulkFile.value
+    );
+
+    // 업로드 결과 저장 및 그리드 업데이트
+    const apiResponse = response?.response as any;
+    const resultData = apiResponse?.data?.data;
+
+    if (resultData?.summary && resultData?.details) {
+      registerUploadResult.value = resultData.details;
+
+      // registerZipFileList를 업로드 결과로 업데이트
+      updateRegisterZipFileListWithResult(resultData);
+
+      // 요약 정보 표시
+      const summary = resultData.summary;
+      const message = `${t("messages.success.uploadCompleted")}\n\n${t(
+        "common.totalFiles"
+      )}: ${summary.total_files || 0}\n${t("common.successCount")}: ${
+        summary.success_count || 0
+      }\n${t("common.skippedCount")}: ${summary.skipped_count || 0}\n${t(
+        "common.failedCount"
+      )}: ${summary.failed_count || 0}`;
+      alert(message);
+    } else {
+      alert(t("messages.success.modelRegistered"));
+    }
+  } catch (error) {
+    console.error("모델 등록 실패:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    alert(errorMessage);
+  }
+};
 
 const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
@@ -2756,6 +3250,14 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 0.9rem;
   margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .arrow-icon {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+  }
 
   &:hover {
     background-color: color.scale(#6c757d, $lightness: -10%);
@@ -2866,6 +3368,7 @@ onMounted(async () => {
   padding: 0.25rem 0.5rem;
   cursor: pointer;
   font-size: 0.8rem;
+  transition: background-color 0.2s;
 
   &:hover {
     background-color: color.scale($primary-color, $lightness: -10%);
@@ -2875,6 +3378,17 @@ onMounted(async () => {
 .pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 // 반응형 브레이크포인트
@@ -2983,49 +3497,6 @@ $tablet: 1024px;
   }
 }
 
-.tabs-wrapper {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  overflow-x: auto; // 탭이 많을 때 스크롤 가능
-
-  @media (max-width: $mobile) {
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-  }
-}
-
-.tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: border 0.2s, color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  @media (max-width: $mobile) {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
-}
-
-.tab.active {
-  color: #1a73e8;
-  border-bottom: 2px solid #1a73e8;
-  font-weight: bold;
-}
-
-.tab-content {
-  margin-top: 1.5rem;
-
-  @media (max-width: $mobile) {
-    margin-top: 1rem;
-  }
-}
 
 .column-regist {
   display: grid;
@@ -3090,5 +3561,235 @@ $tablet: 1024px;
     gap: 0.4rem;
     justify-content: center;
   }
+}
+
+// 등록 폼 스타일
+.pipe-register-form {
+  width: 100%;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  gap: 12px 16px;
+  align-items: center;
+  margin-bottom: 14px;
+  background: #f7f9fc;
+  border: 1px solid #e5e9f2;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+  // 태블릿 크기에서 2열로 변경
+  @media (max-width: $tablet) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 10px 12px;
+    padding: 12px;
+  }
+
+  // 모바일 크기에서 1열로 변경
+  @media (max-width: $mobile) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+}
+
+.group-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0; // flex 아이템이 축소될 수 있도록 함
+
+  &.wide {
+    grid-column: span 2;
+
+    @media (max-width: $tablet) {
+      grid-column: span 1;
+    }
+  }
+
+  &.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+
+    @media (max-width: $mobile) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+  }
+
+  &.right-align {
+    justify-content: flex-end;
+  }
+}
+
+.label {
+  font-size: 13px;
+  color: #475467;
+  min-width: 100px;
+  flex-shrink: 0;
+
+  &.required::after {
+    content: " (＊)";
+    color: #e74c3c;
+    margin-left: 4px;
+  }
+
+  @media (max-width: $mobile) {
+    min-width: auto;
+    font-size: 12px;
+  }
+}
+
+.input {
+  height: 32px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #fff;
+  width: 100%;
+  min-width: 0; // input이 축소될 수 있도록 함
+
+  @media (max-width: $mobile) {
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+.select-md {
+  min-width: 220px;
+
+  @media (max-width: $tablet) {
+    min-width: 180px;
+  }
+
+  @media (max-width: $mobile) {
+    min-width: 150px;
+  }
+}
+
+.file-upload-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+
+  .file-name-input {
+    flex: 1;
+  }
+
+  .btn-file {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: #e5e7eb;
+    }
+
+    @media (max-width: $mobile) {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+.btn-outline {
+  background: transparent;
+  color: #475467;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+.btn-register {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #357abd;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e5e9f2;
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #101828;
+  }
+
+  .section-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.zip-contents-section {
+  margin-top: 1rem;
+
+  .zip-contents-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475467;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.result-success {
+  color: #12b76a;
+}
+
+.result-failed {
+  color: #f04438;
+}
+
+.result-skipped {
+  color: #f79009;
+}
+
+.remarks-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 </style>

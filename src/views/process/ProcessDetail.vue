@@ -7,7 +7,7 @@
         
         <div class="form-group">
             <label class="required">단위 <span class="required-mark">*</span></label>
-            <select v-model="selectedUnit" @change="handleUnitChange" :class="{ 'error': !selectedUnit }">
+            <select v-model="selectedUnit" @change="handleUnitChange" :class="{ 'error': !selectedUnit }" :disabled="!props.isRegisterMode">
             <option value="">{{ t("common.select") }}</option>
             <option value="METRIC">Metric</option>
             <option value="IMPERIAL">Imperial</option>
@@ -20,6 +20,7 @@
             :value="processStore.processDetail.processType || ''" 
             @change="handleProcessTypeChange"
             :key="`processType-${filteredProcessTypeOptions.length}`"
+            :disabled="!props.isRegisterMode"
           >
             <option value="">{{ t("common.select") }}</option>
             <option v-for="option in filteredProcessTypeOptions" :key="option.value" :value="option.value">
@@ -34,6 +35,7 @@
             :value="processStore.processDetail.subCategory || ''" 
             @change="handleSubCategoryChange"
             :key="`subCategory-${processStore.searchSubCategoryOptions.length}`"
+            :disabled="!props.isRegisterMode"
           >
             <option value="">{{ t("common.select") }}</option>
             <option v-for="option in processStore.searchSubCategoryOptions" :key="option.value" :value="option.value">
@@ -48,6 +50,7 @@
              :value="processStore.processDetail.processName || ''" 
              @change="handleProcessNameChange"
              :key="`processName-${processStore.searchProcessNameOptions.length}`"
+             :disabled="!props.isRegisterMode"
            >
              <option value="">{{ t("common.select") }}</option>
              <option v-for="option in processStore.searchProcessNameOptions" :key="option.value" :value="option.value">
@@ -103,7 +106,7 @@
               <button @click="openFormulaModal" class="btn btn-primary">
                 {{ t("common.add") }}
               </button>
-              <button @click="handleFormulaDelete" class="btn btn-danger" :disabled="!selectedFormulaItems">
+              <button @click="handleFormulaDelete" class="btn btn-danger" :disabled="selectedFormulaItems.length === 0">
                 {{ t("common.delete") }}
               </button>
               <button @click="handleFormulaSave" class="btn btn-success">저장</button>
@@ -216,7 +219,7 @@
               <button @click="openPfdModal" class="btn btn-primary">
                 {{ t("common.add") }}
               </button>
-              <button @click="handlePfdDelete" class="btn btn-danger" :disabled="!selectedPfdItems">
+              <button @click="handlePfdDelete" class="btn btn-danger" :disabled="selectedPfdItems.length === 0">
                 {{ t("common.delete") }}
               </button>
               <button @click="handlePfdSave" class="btn btn-success">저장</button>
@@ -322,7 +325,7 @@
               <button 
                 class="btn btn-danger" 
                 @click="deleteSelectedMappingPidItems"
-                :disabled="!selectedMappingPidItems"
+                :disabled="selectedMappingPidItems.length === 0"
               >
                 삭제
               </button>
@@ -471,14 +474,6 @@
               <h4>P&ID Components</h4>
             </div>
             <div class="tab-actions">
-              <button 
-                class="btn btn-danger" 
-                @click="deletePidComponentRow"
-                :disabled="selectedPidComponentItems.length === 0"
-                title="선택된 행을 삭제합니다"
-              >
-                삭제
-              </button>
               <button @click="handlePidComponentSave" class="btn btn-success">저장</button>
               <button @click="closePidComponentSection" class="btn btn-secondary">닫기</button>
             </div>
@@ -777,6 +772,10 @@ const showPidComponentSection = ref(false);
 const selectedPidForComponent = ref<any>(null);
 const pidComponentDrawingId = ref<string>(''); // P&ID Components용 drawing_id 저장
 
+// 변경사항 추적용 초기 상태 저장
+const initialFormulaList = ref<any[]>([]);
+const initialPidComponentList = ref<any[]>([]);
+
 // 기본정보 등록 완료 상태 (공정 등록 모드에서만 사용)
 const isBasicInfoRegistered = ref(false);
 
@@ -803,7 +802,7 @@ const formulaColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "registeredFormula", title: "등록 계산식", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: false },
-  { key: "component", title: "컴포넌트", sortable: false },
+  { key: "component", title: "컴포넌트", sortable: false, hidden: true },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
   { key: "process_dependencies", title: "Process Dependencies", sortable: false, hidden: true }
 ];
@@ -863,6 +862,35 @@ const pidComponentColumns: TableColumn[] = [
 
 const formatDate = (date: Date): string => {
   return date.toISOString().split('T')[0];
+};
+
+// 날짜를 YYYY-MM-DD 포맷으로 변환하는 헬퍼 함수
+const formatDateString = (dateValue: string | Date | undefined | null): string => {
+  if (!dateValue) return '';
+  
+  // 이미 YYYY-MM-DD 포맷인 경우
+  if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // Date 객체인 경우
+  if (dateValue instanceof Date) {
+    return formatDate(dateValue);
+  }
+  
+  // ISO 문자열인 경우
+  if (typeof dateValue === 'string') {
+    try {
+      const date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        return formatDate(date);
+      }
+    } catch (e) {
+      console.warn('날짜 파싱 실패:', dateValue);
+    }
+  }
+  
+  return '';
 };
 
 // Svg 파일명 가져오는 함수
@@ -2106,6 +2134,10 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
         
         // 로드된 데이터를 기반으로 select 박스 옵션들 자동 생성
         await generateSelectOptionsFromLoadedData();
+        
+        // 초기 상태 저장 (깊은 복사)
+        initialPidComponentList.value = JSON.parse(JSON.stringify(pidComponentList.value));
+        console.log('✅ P&ID Components 초기 상태 저장 완료');
       }
     } catch (error) {
       console.log('=== P&ID 컴포넌트 API 호출 에러 ===');
@@ -2117,6 +2149,7 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
       });
       console.log('=== P&ID 컴포넌트 API 호출 에러 끝 ===');
       pidComponentList.value = [];
+      initialPidComponentList.value = []; // 초기 상태도 초기화
     }
   } else {
   }
@@ -2375,17 +2408,130 @@ const handleProcessManagementClick = (item: any, index: number) => {
 };
 
 
+// 변경사항 확인 함수들
+const hasFormulaChanges = () => {
+  return JSON.stringify(initialFormulaList.value) !== JSON.stringify(processStore.formulaList);
+};
+
+const hasPfdChanges = () => {
+  if (!processStore.initialPfdList || !processStore.pfdList) {
+    console.log('hasPfdChanges: initialPfdList 또는 pfdList가 없습니다');
+    return false;
+  }
+  
+  console.log('hasPfdChanges 체크:', {
+    initialCount: processStore.initialPfdList.length,
+    currentCount: processStore.pfdList.length
+  });
+  
+  // drawing_id 기준으로 비교 (id는 저장 후 변경될 수 있음)
+  const initialDrawingIds = processStore.initialPfdList
+    .filter(item => item.drawing_id && !item.drawing_id.startsWith('temp_'))
+    .map(item => item.drawing_id)
+    .sort();
+  const currentDrawingIds = processStore.pfdList
+    .filter(item => item.drawing_id && !item.drawing_id.startsWith('temp_'))
+    .map(item => item.drawing_id)
+    .sort();
+  
+  // 임시 ID (저장되지 않은 항목) 개수 확인
+  const initialTempCount = processStore.initialPfdList
+    .filter(item => !item.drawing_id || item.drawing_id.startsWith('temp_')).length;
+  const currentTempCount = processStore.pfdList
+    .filter(item => !item.drawing_id || item.drawing_id.startsWith('temp_')).length;
+  
+  console.log('hasPfdChanges 상세:', {
+    initialTempCount,
+    currentTempCount,
+    initialDrawingIds: initialDrawingIds.length,
+    currentDrawingIds: currentDrawingIds.length
+  });
+  
+  // 임시 항목이 추가되었는지 확인
+  if (currentTempCount > initialTempCount) {
+    console.log('임시 항목이 추가됨');
+    return true;
+  }
+  
+  // 저장된 항목 수가 변경되었는지 확인
+  if (initialDrawingIds.length !== currentDrawingIds.length) {
+    console.log('저장된 항목 수가 변경됨');
+    return true;
+  }
+  
+  // 각 항목의 주요 필드가 변경되었는지 확인 (drawing_id 기준)
+  for (const currentItem of processStore.pfdList) {
+    if (!currentItem.drawing_id || currentItem.drawing_id.startsWith('temp_')) continue;
+    
+    const initialItem = processStore.initialPfdList.find(item => item.drawing_id === currentItem.drawing_id);
+    if (!initialItem) {
+      console.log('새로운 drawing_id 추가됨:', currentItem.drawing_id);
+      return true; // 새로운 drawing_id 추가됨
+    }
+    
+    // 파일명이 변경되었는지 확인
+    if (currentItem.pfdFileName !== initialItem.pfdFileName ||
+        currentItem.svgFileName !== initialItem.svgFileName) {
+      console.log('파일명 변경됨');
+      return true;
+    }
+  }
+  
+  console.log('hasPfdChanges: 변경사항 없음');
+  return false;
+};
+
+const hasMappingPidChanges = () => {
+  const currentList = mappingPidList.value.map(item => ({
+    id: item.id,
+    drawing_id: item.drawing_id,
+    pidFileName: item.pidFileName,
+    excelFileName: item.excelFileName,
+    svgFileName: item.svgFileName,
+  }));
+  const initialList = initialMappingPidList.value.map(item => ({
+    id: item.id,
+    drawing_id: item.drawing_id,
+    pidFileName: item.pidFileName,
+    excelFileName: item.excelFileName,
+    svgFileName: item.svgFileName,
+  }));
+  return JSON.stringify(initialList) !== JSON.stringify(currentList);
+};
+
+const hasPidComponentChanges = () => {
+  const currentList = pidComponentList.value.map(item => ({
+    pid_id: item.pid_id,
+    category: item.category,
+    middleCategory: item.middleCategory,
+    smallCategory: item.smallCategory,
+    equipmentType: item.equipmentType,
+    standard_quantity: item.standard_quantity,
+    spare_quantity: item.spare_quantity,
+  }));
+  return JSON.stringify(initialPidComponentList.value) !== JSON.stringify(currentList);
+};
+
 // 컴포넌트 섹션 닫기
 
 // P&ID 컴포넌트 섹션 닫기
 const closePidComponentSection = () => {
   console.log('P&ID 컴포넌트 섹션 닫기 버튼 클릭');
+  
+  // 변경사항 확인
+  if (hasPidComponentChanges()) {
+    if (!confirm('수정사항이 있습니다. 창을 닫으시겠습니까?')) {
+      return;
+    }
+  }
+  
   showPidComponentSection.value = false;
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
   currentDrawingId.value = ''; // drawing_id 초기화
   pidComponentDrawingId.value = ''; // P&ID Components용 drawing_id 초기화
   deletedPidComponentIds.value = []; // 삭제 목록 초기화
+  initialPidComponentList.value = []; // 초기 상태 초기화
   console.log('P&ID 컴포넌트 섹션 닫기 완료');
 };
 
@@ -4041,9 +4187,21 @@ const selectSvgFileForPid = (item: any) => {
     svgDrawingId: item.svg_drawing_id
   });
   
-  // 두 개의 참조 모두 설정하여 호환성 보장
-  currentPfdItemForSvg.value = item;
-  currentPidItemForSvg.value = item;
+  // mappingPidList에서 최신 item 찾기
+  const currentItem = mappingPidList.value.find(i => i.id === item.id || i.drawing_id === item.drawing_id);
+  if (currentItem) {
+    // 두 개의 참조 모두 설정하여 호환성 보장
+    currentPfdItemForSvg.value = currentItem;
+    currentPidItemForSvg.value = currentItem;
+  } else {
+    currentPfdItemForSvg.value = item;
+    currentPidItemForSvg.value = item;
+  }
+  
+  // 파일 input 초기화 (연속 클릭 가능하도록)
+  if (svgFileInput.value) {
+    svgFileInput.value.value = '';
+  }
   
   console.log('SVG 파일 선택 대상 설정 완료:', {
     currentPfdItemForSvg: currentPfdItemForSvg.value?.id,
@@ -6917,6 +7075,13 @@ const openMappingPidModal = async (pfdItem: any) => {
 
 // P&ID 목록 메인화면 닫기
 const closePidListInMain = () => {
+  // 변경사항 확인 (P&ID와 공정카드 모두 확인)
+  if (hasMappingPidChanges() || hasPfdChanges()) {
+    if (!confirm('수정사항이 있습니다. 창을 닫으시겠습니까?')) {
+      return;
+    }
+  }
+  
   showPidListInMain.value = false;
   currentPfdItemForMapping.value = null;
   mappingPidList.value = [];
@@ -6929,6 +7094,7 @@ const closePidListInMain = () => {
   pidComponentList.value = [];
   selectedPidComponentItems.value = [];
   currentDrawingId.value = ''; // drawing_id 초기화
+  initialPidComponentList.value = []; // 초기 상태 초기화
 };
 
 // P&ID 매핑 폼 초기화 함수
@@ -7045,11 +7211,26 @@ const refreshPfdData = async () => {
           }
         }
         
+        // 등록일자 디버깅 로그
+        console.log('서버 응답 PFD 아이템 (refreshPfdData):', {
+          index: index + 1,
+          registrationDate: item.registrationDate,
+          created_at: item.created_at,
+          uploaded_at: item.uploaded_at,
+          전체아이템: item
+        });
+        
+        // 등록일자 포맷팅 (YYYY-MM-DD)
+        const registrationDateValue = item.registrationDate || item.created_at || item.uploaded_at;
+        const formattedRegistrationDate = registrationDateValue 
+          ? formatDateString(registrationDateValue) 
+          : formatDate(new Date());
+        
         return {
           id: `pfd_${index + 1}`,
           no: index + 1,
           pfdFileName: item.current_file?.file_name || item.pfdFileName || '',
-          registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
+          registrationDate: formattedRegistrationDate,
           mappingPidList: '',
           remarks: item.remarks || '',
           drawing_id: drawingId,
@@ -8242,9 +8423,21 @@ const selectPidFile = (item: any) => {
     pidFileName: item.pidFileName
   });
   
-  // 두 개의 참조 모두 설정하여 호환성 보장
-  currentPfdItemForMapping.value = item;
-  currentPidItemForMapping.value = item;
+  // mappingPidList에서 최신 item 찾기
+  const currentItem = mappingPidList.value.find(i => i.id === item.id);
+  if (currentItem) {
+    // 두 개의 참조 모두 설정하여 호환성 보장
+    currentPfdItemForMapping.value = currentItem;
+    currentPidItemForMapping.value = currentItem;
+  } else {
+    currentPfdItemForMapping.value = item;
+    currentPidItemForMapping.value = item;
+  }
+  
+  // 파일 input 초기화 (연속 클릭 가능하도록)
+  if (pidFileInput.value) {
+    pidFileInput.value.value = '';
+  }
   
   console.log('P&ID 파일 선택 대상 설정 완료:', {
     currentPfdItemForMapping: currentPfdItemForMapping.value?.id,
@@ -8261,7 +8454,19 @@ const selectExcelFile = (item: any) => {
     return;
   }
   
-  currentPfdItemForMapping.value = item;
+  // mappingPidList에서 최신 item 찾기
+  const currentItem = mappingPidList.value.find(i => i.id === item.id || i.drawing_id === item.drawing_id);
+  if (currentItem) {
+    currentPfdItemForMapping.value = currentItem;
+  } else {
+    currentPfdItemForMapping.value = item;
+  }
+  
+  // 파일 input 초기화 (연속 클릭 가능하도록)
+  if (excelFileInput.value) {
+    excelFileInput.value.value = '';
+  }
+  
   excelFileInput.value?.click();
 };
 
@@ -8518,7 +8723,13 @@ const deleteSelectedMappingPidItems = () => {
 };
 
 // 컴포넌트 외부에서 사용할 수 있는 메서드들
-defineExpose({ t, handleUpdate });
+defineExpose({ 
+  t, 
+  handleUpdate,
+  hasPfdChanges,
+  hasMappingPidChanges,
+  hasPidComponentChanges
+});
 
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
@@ -8793,11 +9004,26 @@ onMounted(async () => {
             const drawingId = item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
             console.log(`onMounted PFD 아이템 ${index + 1} - 최종 drawing_id:`, drawingId);
             
+            // 등록일자 디버깅 로그
+            console.log('서버 응답 PFD 아이템 (onMounted):', {
+              index: index + 1,
+              registrationDate: item.registrationDate,
+              created_at: item.created_at,
+              uploaded_at: item.uploaded_at,
+              전체아이템: item
+            });
+            
+            // 등록일자 포맷팅 (YYYY-MM-DD)
+            const registrationDateValue = item.registrationDate || item.created_at || item.uploaded_at;
+            const formattedRegistrationDate = registrationDateValue 
+              ? formatDateString(registrationDateValue) 
+              : formatDate(new Date());
+            
             return {
               id: `pfd_${index + 1}`,
               no: index + 1,
               pfdFileName: item.current_file?.file_name || item.pfdFileName || '',
-              registrationDate: item.registrationDate || item.created_at || item.uploaded_at || formatDate(new Date()),
+              registrationDate: formattedRegistrationDate,
               mappingPidList: '',
               remarks: item.remarks || '',
               drawing_id: drawingId,

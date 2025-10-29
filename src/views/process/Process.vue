@@ -1113,6 +1113,19 @@ const closeDetailModal = async () => {
   console.log("=== closeDetailModal 함수 호출 시작 ===");
 
   try {
+    // 변경사항 확인
+    if (processDetailRef.value) {
+      const hasPfdChanges = processDetailRef.value.hasPfdChanges?.() || false;
+      const hasMappingPidChanges = processDetailRef.value.hasMappingPidChanges?.() || false;
+      const hasPidComponentChanges = processDetailRef.value.hasPidComponentChanges?.() || false;
+      
+      if (hasPfdChanges || hasMappingPidChanges || hasPidComponentChanges) {
+        if (!confirm('수정사항이 있습니다. 창을 닫으시겠습니까?')) {
+          return;
+        }
+      }
+    }
+    
     console.log("모달 닫기 시작");
     isDetailModalOpen.value = false;
     selectedProcessId.value = undefined;
@@ -1178,9 +1191,10 @@ const handleSelectionChange = (items: ProcessItem[]) => {
 };
 
 // 단위 변경 핸들러
-const handleUnitChange = () => {
+const handleUnitChange = async () => {
   console.log("단위 변경:", selectedUnit.value);
-  // 단위 변경 시 필요한 로직 추가
+  // 단위 변경 시 재조회 수행
+  await handleSearch();
 };
 
 // 검색 옵션 변경 핸들러
@@ -1234,6 +1248,9 @@ const handleSearchProcessTypeChange = async (event: Event) => {
       console.log("공정구분 변경: 선택되지 않음");
     }
   }
+  
+  // 공정구분 변경 시 재조회 수행
+  await handleSearch();
 };
 
 // 중분류 변경 핸들러
@@ -1265,10 +1282,13 @@ const handleSubCategoryChange = async (event: Event) => {
     // 새로운 중분류에 맞는 공정명 옵션 로드
     await handleProcessNameCodeSearch();
   }
+  
+  // 중분류 변경 시 재조회 수행
+  await handleSearch();
 };
 
 // 공정명 변경 핸들러
-const handleProcessNameChange = (event: Event) => {
+const handleProcessNameChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value || null;
 
@@ -1276,6 +1296,9 @@ const handleProcessNameChange = (event: Event) => {
   processStore.setSearchProcessName(selectedValue);
 
   console.log("공정명 변경:", selectedValue);
+  
+  // 공정명 변경 시 재조회 수행
+  await handleSearch();
 };
 
 // 등록 모달 공정구분 변경 핸들러

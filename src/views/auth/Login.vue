@@ -24,24 +24,20 @@
         <div class="form-group">
           <input
             id="username"
+            ref="usernameRef"
             v-model="loginForm.username"
             type="text"
             :placeholder="t('placeholder.loginUsername')"
-            @invalid="handleInvalid($event, 'username')"
-            @input="($event.target as HTMLInputElement).setCustomValidity('')"
-            required
           />
         </div>
 
         <div class="form-group">
           <input
             id="password"
+            ref="passwordRef"
             v-model="loginForm.password"
             type="password"
             :placeholder="t('placeholder.loginPassword')"
-            @invalid="handleInvalid($event, 'password')"
-            @input="($event.target as HTMLInputElement).setCustomValidity('')"
-            required
           />
         </div>
         <div class="form-options">
@@ -77,6 +73,8 @@ const selectedLang = ref(
   localStorage.getItem("wai_lang") || locale.value || "ko"
 );
 const langSelectRef = ref();
+const usernameRef = ref<HTMLInputElement>();
+const passwordRef = ref<HTMLInputElement>();
 
 const loadSavedUsername = () => {
   const savedUsername = localStorage.getItem("rememberedUsername");
@@ -99,21 +97,19 @@ const changeLang = () => {
   localStorage.setItem("wai_lang", selectedLang.value);
 };
 
-const handleInvalid = (event: Event, fieldType: string) => {
-  const input = event.target as HTMLInputElement;
-
-  if (input.validity.valueMissing) {
-    if (fieldType === "username") {
-      input.setCustomValidity(t("validation.usernameRequired"));
-    } else if (fieldType === "password") {
-      input.setCustomValidity(t("validation.passwordRequired"));
-    }
-  } else {
-    input.setCustomValidity("");
-  }
-};
-
 const handleLogin = async () => {
+  // 입력값 검증
+  if (!loginForm.value.username) {
+    alert(t("validation.usernameRequired"));
+    usernameRef.value?.focus();
+    return;
+  }
+  if (!loginForm.value.password) {
+    alert(t("validation.passwordRequired"));
+    passwordRef.value?.focus();
+    return;
+  }
+
   try {
     // 기존 토큰이 있다면 먼저 삭제
     if (authStore.isLoggedIn) {

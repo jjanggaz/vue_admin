@@ -98,14 +98,14 @@ const sectionTabs = {
       to: "/project/project",
     },
     {
-      name: "ProjectApp",
-      label: t("tabs.project.projectApp"),
-      to: "/project/projectApp",
+      name: "ApprovalPending",
+      label: t("tabs.project.approvalPending"),
+      to: "/project/approvalPending",
     },
     {
-      name: "ProjectItem",
-      label: t("tabs.project.projectItem"),
-      to: "/project/projectItem",
+      name: "RecommendedProject",
+      label: t("tabs.project.recommendedProject"),
+      to: "/project/recommendedProject",
     },
   ],
   machine: [
@@ -204,7 +204,8 @@ const currentPageTitle = computed<string>(() => {
     return t("pageTitles.machineManagement");
   if (currentPath.startsWith("/user")) return t("pageTitles.userManagement");
   if (currentPath.startsWith("/code")) return t("pageTitles.codeManagement");
-  if (currentPath.startsWith("/vendors")) return t("pageTitles.vendorsManagement");
+  if (currentPath.startsWith("/vendors"))
+    return t("pageTitles.vendorsManagement");
 
   return t("pageTitles.default");
 });

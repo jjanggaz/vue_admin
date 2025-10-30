@@ -19,12 +19,8 @@
       :selectable="true"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
-    >
-      <template #cell-action="{ item }">
-        <button class="btn-approve" :title="t('project.approve')">✔️</button>
-        <button class="btn-reject" :title="t('project.reject')">❌</button>
-      </template>
-    </DataTable>
+    />
+
     <div class="pagination-container">
       <Pagination
         :current-page="currentPage"
@@ -53,7 +49,7 @@ interface ApprovalItem {
   process: string;
   createdAt: string;
   country: string;
-  detail: string;
+  status: string;
 }
 
 const tableColumns: TableColumn[] = [
@@ -107,12 +103,11 @@ const tableColumns: TableColumn[] = [
     sortable: true,
   },
   {
-    key: "detail",
-    title: t("columns.project.detail"),
+    key: "status",
+    title: "상태",
     width: "100px",
-    sortable: false,
+    sortable: true,
   },
-  { key: "action", title: t("common.action"), width: "80px", sortable: false },
 ];
 
 const approvalList = ref<ApprovalItem[]>([]);
@@ -173,7 +168,7 @@ const loadData = () => {
       process: "텍스트",
       createdAt: "텍스트",
       country: "텍스트",
-      detail: "텍스트",
+      status: "승인대기",
     },
     {
       id: "999",
@@ -185,7 +180,7 @@ const loadData = () => {
       process: "텍스트",
       createdAt: "텍스트",
       country: "텍스트",
-      detail: "텍스트",
+      status: "승인대기",
     },
   ];
 };
@@ -208,26 +203,5 @@ onMounted(() => {
 .btns {
   display: flex;
   gap: 0.5rem;
-}
-.btn-approve {
-  background: #e6f4ea;
-  border: 1px solid #6fcf97;
-  color: #219653;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  margin-right: 4px;
-}
-.btn-reject {
-  background: #fbeaea;
-  border: 1px solid #eb5757;
-  color: #eb5757;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  font-size: 1.1rem;
-  cursor: pointer;
 }
 </style>

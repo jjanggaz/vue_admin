@@ -1040,8 +1040,8 @@
     },
     "project": {
       "project": "프로젝트",
-      "projectApp": "승인대기",
-      "projectItem": "항목관리"
+      "approvalPending": "승인대기",
+      "recommendedProject": "추천 프로젝트"
     },
     "machine": {
       "structure": "구조물",

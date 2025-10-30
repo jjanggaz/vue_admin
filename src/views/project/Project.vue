@@ -131,6 +131,12 @@ const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
 
 const tableColumns: TableColumn[] = [
   {
+    key: "no",
+    title: "순번",
+    width: "80px",
+    sortable: false,
+  },
+  {
     key: "project_name",
     title: "프로젝트명",
     width: "180px",
@@ -190,6 +196,7 @@ const tableColumns: TableColumn[] = [
     title: "상세정보",
     width: "100px",
     sortable: false,
+    hidden: true,
   },
 ];
 
@@ -199,7 +206,15 @@ const searchQueryInput = ref("");
 const loading = computed(() => projectStore.loading);
 const currentPage = computed(() => projectStore.currentPage);
 const totalPages = computed(() => projectStore.totalPages);
-const paginatedProjectList = computed(() => projectStore.paginatedProjectList);
+const paginatedProjectList = computed(() => {
+  const pageSize = projectStore.pageSize;
+  const startIndex = (currentPage.value - 1) * pageSize;
+
+  return projectStore.paginatedProjectList.map((item, index) => ({
+    ...item,
+    no: startIndex + index + 1,
+  }));
+});
 
 const handlePageChange = async (page: number) => {
   try {

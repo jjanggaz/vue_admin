@@ -1044,8 +1044,8 @@
     },
     "project": {
       "project": "Project",
-      "projectApp": "Approval Pending",
-      "projectItem": "Item Management"
+      "approvalPending": "Approval Pending",
+      "recommendedProject": "Recommended Project"
     },
     "machine": {
       "structure": "Structure",

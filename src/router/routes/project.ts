@@ -1,8 +1,9 @@
 // 프로젝트 관리 페이지
 const ProjectManagement = () => import("@/views/project/ProjectManagement.vue");
 const Project = () => import("@/views/project/Project.vue");
-const ProjectApp = () => import("@/views/project/ProjectApp.vue");
-const ProjectItem = () => import("@/views/project/ProjectItem.vue");
+const ApprovalPending = () => import("@/views/project/ApprovalPending.vue");
+const RecommendedProject = () =>
+  import("@/views/project/RecommendedProject.vue");
 
 export const projectRoute = {
   path: "/project",
@@ -28,26 +29,26 @@ export const projectRoute = {
       },
     },
     {
-      path: "projectApp",
-      name: "ProjectApp",
-      component: ProjectApp,
+      path: "approvalPending",
+      name: "ApprovalPending",
+      component: ApprovalPending,
       meta: {
-        titleKey: "tabs.project.projectApp",
+        titleKey: "tabs.project.approvalPending",
         breadcrumbKeys: [
           "pageTitles.projectManagement",
-          "tabs.project.projectApp",
+          "tabs.project.approvalPending",
         ],
       },
     },
     {
-      path: "projectItem",
-      name: "ProjectItem",
-      component: ProjectItem,
+      path: "recommendedProject",
+      name: "RecommendedProject",
+      component: RecommendedProject,
       meta: {
-        titleKey: "tabs.project.projectItem",
+        titleKey: "tabs.project.recommendedProject",
         breadcrumbKeys: [
           "pageTitles.projectManagement",
-          "tabs.project.projectItem",
+          "tabs.project.recommendedProject",
         ],
       },
     },

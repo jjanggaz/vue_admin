@@ -386,7 +386,7 @@
                   <input type="checkbox" v-model="item.is_active" />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -451,7 +451,7 @@
                   <input type="checkbox" v-model="item.is_active" />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -654,7 +654,7 @@
                   <input type="checkbox" v-model="item.is_active" />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -719,7 +719,7 @@
                   <input type="checkbox" v-model="item.is_active" />
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" />
+                  <input type="checkbox" v-model="item.is_required" disabled />
                 </template>
               </DataTable>
             </div>
@@ -1268,7 +1268,7 @@ const gridColumns: TableColumn[] = [
   { key: "item", title: t("columns.inflow.item") },
   { key: "influent", title: t("columns.inflow.influent") },
   { key: "unit", title: t("columns.inflow.unit") },
-  { key: "is_active", title: t("columns.inflow.active") },
+  { key: "is_active", title: t("columns.inflow.active"), hidden: true },
   { key: "is_required", title: t("columns.inflow.isRequired") },
   { key: "remarks", title: t("columns.inflow.remarks") },
 ];

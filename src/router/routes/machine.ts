@@ -81,10 +81,10 @@ export const machineRoute = {
       name: "MachineCodeManagement",
       component: MachineCodeManagement,
       meta: {
-        titleKey: "tabs.machine.machineCodeManagement",
+        titleKey: "tabs.machine.3dAsset",
         breadcrumbKeys: [
           "pageTitles.machineManagement",
-          "tabs.machine.machineCodeManagement",
+          "tabs.machine.3dAsset",
         ],
       },
     },

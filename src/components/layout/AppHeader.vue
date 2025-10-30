@@ -136,7 +136,7 @@ const sectionTabs = {
     },
     {
       name: "MachineCodeManagement",
-      label: t("tabs.machine.machineCodeManagement"),
+      label: t("tabs.machine.3dAsset"),
       to: "/machine/codeMng",
     },
   ],

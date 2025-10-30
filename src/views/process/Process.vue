@@ -1118,8 +1118,9 @@ const closeDetailModal = async () => {
       const hasPfdChanges = processDetailRef.value.hasPfdChanges?.() || false;
       const hasMappingPidChanges = processDetailRef.value.hasMappingPidChanges?.() || false;
       const hasPidComponentChanges = processDetailRef.value.hasPidComponentChanges?.() || false;
+      const hasFormulaChanges = processDetailRef.value.hasFormulaChanges?.() || false;
       
-      if (hasPfdChanges || hasMappingPidChanges || hasPidComponentChanges) {
+      if (hasPfdChanges || hasMappingPidChanges || hasPidComponentChanges || hasFormulaChanges) {
         if (!confirm('수정사항이 있습니다. 창을 닫으시겠습니까?')) {
           return;
         }

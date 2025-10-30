@@ -1048,7 +1048,7 @@
       "pipe": "배관 자재",
       "electrical": "전기 자재",
       "measurement": "계측기",
-      "machineCodeManagement": "코드관리",
+      "3dAsset": "3D Asset",
       "cost": "단가 관리",
       "vendors": "공급업체"
     },

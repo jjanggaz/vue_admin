@@ -1052,7 +1052,7 @@
       "pipe": "Pipe Materials",
       "electrical": "Electrical Materials",
       "measurement": "Measurement",
-      "machineCodeManagement": "Code Management",
+      "3dAsset": "3D Asset",
       "cost": "Cost Management"
     },
     "user": {

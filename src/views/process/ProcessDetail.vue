@@ -2410,7 +2410,62 @@ const handleProcessManagementClick = (item: any, index: number) => {
 
 // 변경사항 확인 함수들
 const hasFormulaChanges = () => {
-  return JSON.stringify(initialFormulaList.value) !== JSON.stringify(processStore.formulaList);
+  // initialFormulaList나 formulaList가 없으면 변경사항 없음
+  if (!processStore.initialFormulaList || !processStore.formulaList) {
+    return false;
+  }
+  
+  // 삭제된 행 감지
+  const deletedRows = processStore.initialFormulaList.filter(initialItem => {
+    if (!initialItem.formula_id) return false;
+    return !processStore.formulaList.some(currentItem => 
+      currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
+    );
+  });
+  
+  // 추가된 행 감지
+  const addedRows = processStore.formulaList.filter(currentItem => {
+    // 새로 추가된 행은 id가 'formula_'로 시작하고 formula_id가 없는 경우
+    if (currentItem.id.startsWith('formula_') && !currentItem.formula_id) {
+      return true;
+    }
+    
+    // isSaved가 false인 행은 새로 추가된 행으로 간주
+    if (currentItem.isSaved === false) {
+      return true;
+    }
+    
+    // 기존 행이지만 formula_id가 있고 initialFormulaList에 없는 경우
+    if (!currentItem.formula_id) return false;
+    return !processStore.initialFormulaList.some(initialItem => 
+      initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
+    );
+  });
+  
+  // 삭제나 추가가 있으면 변경사항 있음
+  if (deletedRows.length > 0 || addedRows.length > 0) {
+    return true;
+  }
+  
+  // 수정된 행 감지 (formula_id가 있는 기존 행의 내용 변경)
+  for (const currentItem of processStore.formulaList) {
+    if (!currentItem.formula_id || currentItem.formula_id.startsWith('temp_')) continue;
+    
+    const initialItem = processStore.initialFormulaList.find(item => 
+      item.formula_id === currentItem.formula_id
+    );
+    
+    if (initialItem) {
+      // 주요 필드 변경 확인
+      if (currentItem.registeredFormula !== initialItem.registeredFormula ||
+          currentItem.formula_code !== initialItem.formula_code ||
+          (currentItem as any)._file !== undefined) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
 };
 
 const hasPfdChanges = () => {
@@ -8728,7 +8783,8 @@ defineExpose({
   handleUpdate,
   hasPfdChanges,
   hasMappingPidChanges,
-  hasPidComponentChanges
+  hasPidComponentChanges,
+  hasFormulaChanges
 });
 
 // 컴포넌트 마운트 시 실행

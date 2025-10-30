@@ -152,7 +152,7 @@ export const useProcessStore = defineStore("process", () => {
   const loading = ref(false);
   const currentPage = ref(1);
   const totalPages = ref(1);
-  const pageSize = ref(10);
+  const pageSize = ref(20);
   const totalCount = ref(0);
 
   // 검색 관련 상태

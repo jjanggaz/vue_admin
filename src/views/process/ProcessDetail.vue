@@ -172,6 +172,7 @@
           :columns="formulaColumns"
           :data="processStore.formulaList"
           :selectable="false"
+          :max-height="formulaTableMaxHeight"
         >
           <template #cell-select="{ item, index }">
             <input
@@ -182,7 +183,7 @@
               @change="handleFormulaSelectionChange"
             />
           </template>
-          <template #cell-registeredFormula="{ item, index }">
+          <template #cell-file_name="{ item, index }">
             <div class="formula-name-container">
               <div class="file-selection-group">
                 <input
@@ -200,7 +201,7 @@
                   {{ t("common.selectFile") }}
                 </button>
                 <span class="selected-file">
-                  {{ item.registeredFormula || t("common.noFile") }}
+                  {{ item.file_name || t("common.noFile") }}
                   <button
                     v-if="item.formula_id"
                     @click="downloadFormulaFromList(item)"
@@ -307,6 +308,8 @@
             :columns="pfdColumns"
             :data="processStore.pfdList"
             :selectable="false"
+            :max-height="pfdTableMaxHeight"
+            :sticky-header="pfdTableMaxHeight !== 'auto'"
           >
             <template #cell-select="{ item, index }">
               <input
@@ -434,6 +437,8 @@
           :columns="mappingPidColumns"
           :data="mappingPidList"
           :selectable="false"
+          :max-height="pidTableMaxHeight"
+          :sticky-header="pidTableMaxHeight !== 'auto'"
         >
           <template #cell-select="{ item, index }">
             <input
@@ -633,6 +638,8 @@
         :columns="pidComponentColumns"
         :data="pidComponentList"
         :selectable="false"
+        :max-height="pidComponentTableMaxHeight"
+        :sticky-header="pidComponentTableMaxHeight !== 'auto'"
       >
         <template #cell-select="{ item, index }">
           <input
@@ -774,7 +781,6 @@
       </div>
     </div>
   </div>
-
   <!-- 공정카드 파일 첨부 모달 -->
   <div v-if="showPfdModal" class="modal-overlay" @click="closePfdModal">
     <div class="modal-content" @click.stop>
@@ -960,11 +966,25 @@ const hasProcessSymbolFile = computed(() => {
   );
 });
 
+// 그리드 스크롤 높이: 10건 초과 시 스크롤 적용
+const formulaTableMaxHeight = computed(() =>
+  processStore.formulaList.length > 10 ? "420px" : "auto"
+);
+const pfdTableMaxHeight = computed(() =>
+  processStore.pfdList.length > 10 ? "420px" : "auto"
+);
+const pidTableMaxHeight = computed(() =>
+  mappingPidList.value.length > 10 ? "420px" : "auto"
+);
+const pidComponentTableMaxHeight = computed(() =>
+  pidComponentList.value.length > 10 ? "420px" : "auto"
+);
+
 // 컬럼 정의
 const formulaColumns: TableColumn[] = [
   { key: "select", title: "선택", sortable: false },
   { key: "no", title: "No.", sortable: false },
-  { key: "registeredFormula", title: "등록 계산식", sortable: false },
+  { key: "file_name", title: "등록 계산식", sortable: false },
   { key: "registrationDate", title: "등록일자", sortable: false },
   { key: "component", title: "컴포넌트", sortable: false, hidden: true },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
@@ -1543,7 +1563,6 @@ const handleProcessTypeChange = async (event: Event) => {
     );
   }
 };
-
 const handleSubCategoryChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value || null;
@@ -1577,7 +1596,6 @@ const handleSubCategoryChange = async (event: Event) => {
     );
   }
 };
-
 const handleProcessNameChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
   const selectedValue = target.value;
@@ -1950,9 +1968,23 @@ const handleFormulaSelectionChange = () => {
   }
 };
 
-// 컴포넌트 버튼 클릭 핸들러
-
 // P&ID 컴포넌트 버튼 클릭 핸들러
+const isPidRowSaved = (item: any): boolean => {
+  if (!item) return false;
+  // 1) drawing_id 존재 여부
+  if (!item.drawing_id) return false;
+  // 2) 임시 drawing_id 여부
+  if (typeof item.drawing_id === 'string' && item.drawing_id.startsWith('temp_pid_drawing_')) return false;
+  // 3) 파일 존재 여부 (pidFileName 또는 업로드된 pidFile 중 하나)
+  if (!item.pidFileName && !(item as any).pidFile) return false;
+  // 4) isSaved 플래그가 있으면 그 값 사용
+  if (Object.prototype.hasOwnProperty.call(item, 'isSaved')) {
+    return !!item.isSaved;
+  }
+  // 위 조건 통과 시 저장된 것으로 간주
+  return true;
+};
+
 const openPidComponentModal = async (item: any) => {
   console.log("=== P&ID 컴포넌트 모달 열기 ===");
   console.log("전달받은 item:", item);
@@ -2087,7 +2119,6 @@ const parseComponentHierarchy = (hierarchyString: string) => {
   console.log("=== component_hierachy 파싱 끝 ===");
   return result;
 };
-
 // 로드된 데이터를 기반으로 select 박스 옵션들 자동 생성 함수
 const generateSelectOptionsFromLoadedData = async () => {
   console.log("=== 로드된 데이터 기반 select 옵션 자동 생성 시작 ===");
@@ -2376,7 +2407,6 @@ const generateSelectOptionsFromLoadedData = async () => {
 
   console.log("=== 로드된 데이터 기반 select 옵션 자동 생성 완료 ===");
 };
-
 // P&ID 컴포넌트 데이터 로드 내부 함수
 const loadPidComponentDataInternal = async (pidItem: any) => {
   // drawing_id가 있는 경우에만 API 호출
@@ -2867,7 +2897,7 @@ const hasFormulaChanges = () => {
     if (initialItem) {
       // 주요 필드 변경 확인
       if (
-        currentItem.registeredFormula !== initialItem.registeredFormula ||
+        currentItem.file_name !== initialItem.file_name ||
         currentItem.formula_code !== initialItem.formula_code ||
         (currentItem as any)._file !== undefined
       ) {
@@ -2878,7 +2908,6 @@ const hasFormulaChanges = () => {
 
   return false;
 };
-
 const hasPfdChanges = () => {
   if (!processStore.initialPfdList || !processStore.pfdList) {
     console.log("hasPfdChanges: initialPfdList 또는 pfdList가 없습니다");
@@ -3011,32 +3040,6 @@ const closePidComponentSection = () => {
   console.log("P&ID 컴포넌트 섹션 닫기 완료");
 };
 
-// P&ID row가 저장된 상태인지 확인하는 함수
-const isPidRowSaved = (item: any) => {
-  // 1. drawing_id가 없으면 저장되지 않은 상태
-  if (!item.drawing_id) {
-    return false;
-  }
-
-  // 2. drawing_id가 임시 ID로 시작하면 저장되지 않은 상태
-  if (item.drawing_id.startsWith("temp_pid_drawing_")) {
-    return false;
-  }
-
-  // 3. P&ID 파일이 없으면 저장되지 않은 상태로 간주
-  if (!item.pidFileName && !(item as any).pidFile) {
-    return false;
-  }
-
-  // 4. isSaved 플래그가 있다면 해당 값 사용
-  if (item.hasOwnProperty("isSaved")) {
-    return item.isSaved;
-  }
-
-  // 5. 위 조건들을 모두 통과하면 저장된 상태로 간주
-  return true;
-};
-
 // P&ID 컴포넌트 선택 변경 핸들러
 const handlePidComponentSelectionChange = () => {
   // v-model로 자동으로 selectedPidComponentItems가 업데이트됨
@@ -3061,17 +3064,6 @@ const handlePidComponentSelectionChange = () => {
     pidComponentList.value.map((item) => item.component_id)
   );
 };
-
-// P&ID 컴포넌트 전체 선택/해제 (DataTable의 내장 기능 사용)
-// const handleSelectAllPidComponent = (event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   if (target.checked) {
-//     selectedPidComponentItems.value = [...pidComponentList.value];
-//   } else {
-//     selectedPidComponentItems.value = [];
-//   }
-//   console.log('P&ID 컴포넌트 전체 선택 상태:', target.checked);
-// };
 
 // P&ID 컴포넌트 행 삭제
 const deletePidComponentRow = () => {
@@ -3199,7 +3191,6 @@ const getEquipmentTypeLabel = (equipmentTypeCode: string) => {
   // 매핑되는 코드가 없는 경우 공백으로 표시
   return option ? option.label : "";
 };
-
 // P&ID 컴포넌트 삭제 API
 const deletePidComponentAPI = async (componentId: string) => {
   try {
@@ -3661,7 +3652,6 @@ const handlePidComponentSave = async () => {
     alert(`P&ID 컴포넌트 저장 실패: ${error.message}`);
   }
 };
-
 // 공정심볼 다운로드 함수
 const downloadProcessSymbol = async () => {
   try {
@@ -4001,7 +3991,6 @@ const downloadFormula = async (formulaId: string, fileName?: string) => {
     alert("계산식 다운로드에 실패했습니다: " + (error.message || error));
   }
 };
-
 // 공정카드 다운로드 함수
 const downloadPfd = async (drawingId: string) => {
   try {
@@ -4462,7 +4451,6 @@ const downloadExcel = async (drawingId: string) => {
     alert(`Excel 파일 다운로드에 실패했습니다: ${error.message}`);
   }
 };
-
 // P&ID SVG 도면 다운로드 함수
 const downloadPidSvg = async (pidItem: any) => {
   try {
@@ -4802,7 +4790,6 @@ const selectFormulaFile = (item: any) => {
     inputElement.click();
   }
 };
-
 // 계산식 파일 변경 핸들러 (계산식 그리드용)
 const handleFormulaFileChange = (item: any, event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -5185,7 +5172,6 @@ const handleSvgFileSelected = (event: Event) => {
     );
   }
 };
-
 // P&ID 그리드 저장 시 Excel 파일 업로드 함수
 const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
   try {
@@ -5560,13 +5546,11 @@ const handleExcelFileDeleteForPid = async (pidItem: any) => {
     alert(`Excel 파일 삭제 실패: ${error.message || error}`);
   }
 };
-
 // P&ID 그리드에서 Svg 파일 변경 시 즉시 처리 함수 (사용 안함 - 저장 버튼 클릭 시에만 처리)
 // const handleSvgFileChangeForPid = async (pidItem: any, svgFile: File) => {
 //   // 이 함수는 중복 호출을 방지하기 위해 비활성화됨
 //   // P&ID 그리드에서는 저장 버튼 클릭 시 handleSvgFileUploadForPid만 호출됨
 // };
-
 // P&ID 그리드 저장 시 Svg 도면 파일 업로드 함수
 const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
   try {
@@ -5924,7 +5908,6 @@ const handleSvgFileDeleteForPid = async (pidItem: any) => {
     alert(`Svg 도면 삭제 실패: ${error.message || error}`);
   }
 };
-
 // Svg 파일 다운로드
 const downloadSvg = async (drawingId: string) => {
   try {
@@ -6052,7 +6035,6 @@ const handlePfdSave = async () => {
     alert(`공정카드 저장 실패: ${error.message}`);
   }
 };
-
 // PFD 변경사항 처리 함수
 const processPfdChanges = async (processId: string) => {
   console.log("=== PFD 변경사항 처리 시작 ===");
@@ -6485,7 +6467,6 @@ const processPfdChanges = async (processId: string) => {
         throw error;
       }
     }
-
     // 수정된 행 처리 (Svg 파일 변경)
     if (modifiedRows.length > 0) {
       try {
@@ -6812,7 +6793,6 @@ const handleFormulaDelete = () => {
 
   console.log("계산식 그리드에서 삭제 완료");
 };
-
 // 계산식 저장 핸들러
 const handleFormulaSave = async () => {
   try {
@@ -6873,7 +6853,6 @@ const handleFormulaSave = async () => {
     alert(`계산식 저장 실패: ${error.message}`);
   }
 };
-
 // 계산식 변경사항 처리 함수
 const processFormulaChanges = async (processId: string) => {
   console.log("=== 계산식 변경사항 처리 시작 ===");
@@ -7551,7 +7530,6 @@ const createNewProcess = async () => {
     throw error;
   }
 };
-
 // 기본 정보만 저장하는 함수
 const saveBasicProcessInfo = async (processId: string) => {
   try {
@@ -8330,7 +8308,6 @@ const handleUpdate = async () => {
     alert(`공정 수정 실패: ${error.message}`);
   }
 };
-
 // P&ID 매핑 모달 관련 함수들
 const openMappingPidModal = async (pfdItem: any) => {
   console.log("P&ID 목록 표시:", pfdItem);
@@ -8610,7 +8587,7 @@ const refreshFormulaData = async () => {
           return {
             id: `existing_formula_${item.id || index}`,
             no: (index + 1).toString(),
-            registeredFormula: item.formula_name || "NONE",
+            file_name: item.file_name || "NONE",
             formula_code: item.formula_code || "",
             registrationDate:
               item.created_at ||
@@ -8619,7 +8596,6 @@ const refreshFormulaData = async () => {
             infoOverview: item.formula_scope || "",
             remarks: item.output_type || "",
             formula_id: item.formula_id || item.id,
-            file_name: item.file_name || null,
             process_dependencies: item.process_dependencies || null,
             _originalData: item, // 원본 데이터 보존
           };
@@ -8640,7 +8616,6 @@ const refreshFormulaData = async () => {
     console.error("계산식 데이터 새로고침 실패:", error);
   }
 };
-
 const confirmMappingPid = async () => {
   try {
     console.log("P&ID 매핑 확인:", mappingPidList.value);
@@ -8982,7 +8957,6 @@ const confirmMappingPid = async () => {
     if (deletedRows.length > 0 && validMappings.length > 0) {
       // 삭제와 저장이 모두 수행됨 - 메시지는 저장 완료 후에 표시
     }
-
     // 3. 저장이 필요한 경우 (새 데이터가 있는 경우만)
     if (validMappings.length > 0) {
       console.log("새 데이터 저장 시작 - 항목 수:", validMappings.length);
@@ -9687,7 +9661,6 @@ const confirmMappingPid = async () => {
     alert(`P&ID 매핑 저장 실패: ${error.message}`);
   }
 };
-
 const loadMappingPidList = async (pfdItem: any) => {
   try {
     console.log("=== P&ID 매핑 목록 로드 시작 ===");
@@ -10405,7 +10378,6 @@ defineExpose({
   hasPidComponentChanges,
   hasFormulaChanges,
 });
-
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
   try {
@@ -11204,7 +11176,6 @@ watch(
   margin: 0;
   color: #333;
 }
-
 .tab-actions {
   display: flex;
   gap: 10px;

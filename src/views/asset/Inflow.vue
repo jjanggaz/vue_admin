@@ -1880,16 +1880,6 @@ const createNewTab = async () => {
       });
     });
 
-    // 파일명 변경 함수 (flow_type_code + 원본파일명)
-    const renameFile = (
-      file: File | null,
-      flowTypeCode: string | undefined
-    ): File | undefined => {
-      if (!file || !flowTypeCode) return undefined;
-      const newFileName = `${flowTypeCode}_${file.name}`;
-      return new File([file], newFileName, { type: file.type });
-    };
-
     // 유입종류와 파라미터를 한 번에 등록
     const requestData = {
       waterFlowTypeData: {
@@ -1905,8 +1895,8 @@ const createNewTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
-      metricFile: renameFile(metricFile.value, selectedInputType.value), // Metric 계산식 파일 (파일명 변경)
-      imperialFile: renameFile(imperialFile.value, selectedInputType.value), // Imperial 계산식 파일 (파일명 변경)
+      metricFile: metricFile.value || undefined, // Metric 계산식 파일 (파일명 변경)
+      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일 (파일명 변경)
     };
 
     const response = await inflowStore.createWaterFlowType(requestData);
@@ -2068,16 +2058,6 @@ const updateTab = async () => {
           }))
       : undefined;
 
-    // 파일명 변경 함수 (flow_type_code + 원본파일명)
-    const renameFile = (
-      file: File | null,
-      flowTypeCode: string | undefined
-    ): File | undefined => {
-      if (!file || !flowTypeCode) return undefined;
-      const newFileName = `${flowTypeCode}_${file.name}`;
-      return new File([file], newFileName, { type: file.type });
-    };
-
     // 유입종류 수정
     const requestData = {
       waterFlowTypeData: {
@@ -2094,8 +2074,8 @@ const updateTab = async () => {
         imperial_parameters: imperialParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
-      metricFile: renameFile(metricFile.value, currentTab.flow_type_code), // Metric 계산식 파일 (파일명 변경)
-      imperialFile: renameFile(imperialFile.value, currentTab.flow_type_code), // Imperial 계산식 파일 (파일명 변경)
+      metricFile: metricFile.value || undefined, // Metric 계산식 파일 (파일명 변경)
+      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일 (파일명 변경)
     };
 
     const response = await inflowStore.updateWaterFlowType(

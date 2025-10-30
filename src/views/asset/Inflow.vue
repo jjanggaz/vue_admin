@@ -823,7 +823,7 @@ onMounted(async () => {
 // 유입 종류 공통코드 로드
 const loadInputTypes = async () => {
   try {
-    await inflowStore.fetchCommonCodes("INPUT_TYPE", "IN_TYPE", true);
+    await inflowStore.fetchCommonCodes("INP_OUTP", "IN_TYPE", true);
   } catch (error) {
     console.error("유입 종류 공통코드 로드 실패:", error);
   }

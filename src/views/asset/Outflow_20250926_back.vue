@@ -697,7 +697,7 @@ onMounted(async () => {
 // 유출 종류 공통코드 로드
 const loadOutputTypes = async () => {
   try {
-    await outflowStore.fetchCommonCodes("OUTPUT_TYPE", "OUT_TYPE", true);
+    await outflowStore.fetchCommonCodes("INP_OUTP", "OUT_TYPE", true);
   } catch (error) {
     console.error("유출 종류 공통코드 로드 실패:", error);
   }

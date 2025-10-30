@@ -12,6 +12,7 @@ export interface CodeItem {
   code_order: string;
   is_active: boolean;
   description: string;
+  is_leaf: boolean;
 }
 
 export interface CodeGroup {
@@ -36,6 +37,7 @@ export interface CodeCreateRequest {
   code_value_en: string;
   code_order: string;
   is_active: boolean;
+  is_leaf: boolean;
   parent_key: string;
   code_level: string;
   description: string;
@@ -46,6 +48,7 @@ export interface CodeUpdateRequest {
   code_value_en: string;
   code_order: string;
   is_active: boolean;
+  is_leaf: boolean;
   description: string;
 }
 

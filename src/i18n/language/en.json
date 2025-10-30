@@ -201,6 +201,7 @@
       "description": "Description",
       "codeDescription": "Code Description",
       "usageStatus": "Usage Status",
+      "isLeaf": "Leaf Node",
       "majorCategory": "Major Category",
       "mediumCategory": "Medium Category",
       "minorCategory": "Minor Category"

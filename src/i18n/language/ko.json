@@ -201,6 +201,7 @@
       "description": "설명",
       "codeDescription": "코드설명",
       "usageStatus": "사용여부",
+      "isLeaf": "최하위 노드",
       "majorCategory": "대분류",
       "mediumCategory": "중분류",
       "minorCategory": "소분류"

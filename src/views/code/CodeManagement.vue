@@ -10,7 +10,10 @@
           <select
             v-model="searchCodeGroupInput"
             class="filter-select"
-            @change="handleCodeGroupChange"
+            @change="
+              handleCodeGroupChange();
+              handleSearch();
+            "
           >
             <option value="">{{ t("common.selectAll") }}</option>
             <option
@@ -30,7 +33,10 @@
           <select
             v-model="searchCategory1Input"
             class="filter-select"
-            @change="handleCategory1Change"
+            @change="
+              handleCategory1Change();
+              handleSearch();
+            "
             :disabled="uniqueCategories1.length === 0"
           >
             <option value="">
@@ -55,7 +61,10 @@
           <select
             v-model="searchCategory2Input"
             class="filter-select"
-            @change="handleCategory2Change"
+            @change="
+              handleCategory2Change();
+              handleSearch();
+            "
             :disabled="uniqueCategories2.length === 0"
           >
             <option value="">
@@ -80,6 +89,7 @@
           <select
             v-model="searchCategory3Input"
             class="filter-select"
+            @change="handleSearch()"
             :disabled="uniqueCategories3.length === 0"
           >
             <option value="">
@@ -142,8 +152,8 @@
           :data="codeList"
           :loading="loading"
           :selectable="true"
-          :selection-mode="'single'"
-          :show-select-all="false"
+          :selection-mode="'multiple'"
+          :show-select-all="true"
           row-key="code_id"
           :select-header-text="t('common.selectColumn')"
           :selected-items="selectedItems"
@@ -261,6 +271,13 @@
                 <option :value="false">미사용</option>
               </select>
             </dd>
+            <dt>{{ t("columns.code.isLeaf") }}</dt>
+            <dd>
+              <select v-model="newCode.is_leaf" class="filter-select">
+                <option :value="true">Y</option>
+                <option :value="false">N</option>
+              </select>
+            </dd>
             <dt>{{ t("columns.code.codeDescription") }}</dt>
             <dd>
               <input
@@ -359,6 +376,13 @@
               <select v-model="newCode.is_active" class="filter-select">
                 <option :value="true">사용</option>
                 <option :value="false">미사용</option>
+              </select>
+            </dd>
+            <dt>{{ t("columns.code.isLeaf") }}</dt>
+            <dd>
+              <select v-model="newCode.is_leaf" class="filter-select">
+                <option :value="true">Y</option>
+                <option :value="false">N</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.codeDescription") }}</dt>
@@ -576,6 +600,7 @@ const newCode = ref<CodeItem>({
   code_value_en: "",
   code_order: "",
   is_active: true,
+  is_leaf: false,
   parent_key: "",
   code_level: "",
   description: "",
@@ -639,6 +664,13 @@ const tableColumns: TableColumn[] = [
     width: "100px",
     sortable: true,
     formatter: (value: boolean) => (value ? "사용" : "미사용"),
+  },
+  {
+    key: "is_leaf",
+    title: t("columns.code.isLeaf"),
+    width: "100px",
+    sortable: true,
+    formatter: (value: boolean) => (value ? "Y" : "N"),
   },
   {
     key: "description",
@@ -715,6 +747,9 @@ const handleCategory2Change = async () => {
 
 // 데이터 로드 함수
 const loadData = async () => {
+  // 체크된 row 모두 해제
+  selectedItems.value = [];
+
   const queryParams: CodeQueryParams = {};
 
   // 검색 조건 설정
@@ -770,8 +805,7 @@ const loadData = async () => {
 // totalCount는 API 응답의 result.response.total로 설정됨
 
 const handleSelectionChange = (selected: CodeItem[]) => {
-  // 단일 선택 보장
-  selectedItems.value = selected.slice(0, 1);
+  selectedItems.value = selected;
   console.log("selectedItems.value :", selectedItems.value);
 };
 
@@ -899,6 +933,7 @@ const handleSingleRegist = () => {
     code_value_en: "",
     code_order: "1",
     is_active: true,
+    is_leaf: false,
     parent_key: parentKey,
     code_level: codeLevel,
     description: "",
@@ -1005,6 +1040,7 @@ const updateCode = async () => {
         code_value_en: newCode.value.code_value_en,
         code_order: newCode.value.code_order,
         is_active: newCode.value.is_active,
+        is_leaf: newCode.value.is_leaf,
         description: newCode.value.description,
       };
 
@@ -1029,6 +1065,7 @@ const updateCode = async () => {
         code_value_en: newCode.value.code_value_en,
         code_order: newCode.value.code_order,
         is_active: newCode.value.is_active,
+        is_leaf: newCode.value.is_leaf,
         parent_key: newCode.value.parent_key,
         code_level: newCode.value.code_level,
         description: newCode.value.description,
@@ -1060,6 +1097,7 @@ const updateCode = async () => {
       code_value_en: "",
       code_order: "1",
       is_active: true,
+      is_leaf: false,
       parent_key: "",
       code_level: "",
       description: "",
@@ -1084,27 +1122,52 @@ const handleDelete = async () => {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
-  if (confirm(t("messages.confirm.deleteItem"))) {
+
+  const deleteCount = selectedItems.value.length;
+  const confirmMessage =
+    deleteCount === 1
+      ? t("messages.confirm.deleteItem")
+      : `${deleteCount}개의 항목을 삭제하시겠습니까?`;
+
+  if (confirm(confirmMessage)) {
     console.log("삭제할 항목:", selectedItems.value);
 
     try {
-      const code_id = selectedItems.value[0].code_id;
+      let successCount = 0;
+      let failCount = 0;
 
-      const response = await codeStore.deleteCode(code_id);
-      console.log("삭제 응답:", response);
+      // 선택된 모든 항목을 반복문으로 삭제
+      for (const item of selectedItems.value) {
+        try {
+          const response = await codeStore.deleteCode(item.code_id);
+          console.log(`삭제 성공 (${item.code_id}):`, response);
 
-      // 성공 시 로컬 데이터에서 제거
-      codeStore.removeLocalCode(code_id);
+          // 성공 시 로컬 데이터에서 제거
+          codeStore.removeLocalCode(item.code_id);
+          successCount++;
+        } catch (error) {
+          console.error(`삭제 실패 (${item.code_id}):`, error);
+          failCount++;
+        }
+      }
 
       selectedItems.value = [];
-      alert(t("messages.success.deleted"));
+
+      // 결과 메시지
+      if (failCount === 0) {
+        alert(t("messages.success.deleted"));
+      } else if (successCount === 0) {
+        alert(t("messages.error.deleteFailed"));
+      } else {
+        alert(`${successCount}개 삭제 성공, ${failCount}개 삭제 실패`);
+      }
 
       // 모든 selectbox 데이터 refresh
       await refreshAllSelectBoxes();
 
-      console.log("삭제 성공 - 모든 selectbox 데이터 refresh 완료");
+      console.log("삭제 완료 - 모든 selectbox 데이터 refresh 완료");
     } catch (error: unknown) {
-      console.error("삭제 실패:", error);
+      console.error("삭제 처리 실패:", error);
       const errorMessage =
         (error as Error)?.message || t("messages.error.deleteFailed");
       alert(errorMessage);

@@ -8,7 +8,12 @@
           <div class="filter-group">
             <div class="filter-item">
               <label for="unit">{{ t("common.unit") }}</label>
-              <select id="unit" v-model="selectedUnit" class="form-select">
+              <select
+                id="unit"
+                v-model="selectedUnit"
+                class="form-select"
+                @change="handleSearch"
+              >
                 <option value="">{{ t("common.select") }}</option>
                 <option
                   v-for="unit in machineStore.unitSystems"
@@ -75,7 +80,10 @@
                     detailSearch.headerMachineCategoryOptions.length === 0
                   "
                   class="form-select"
-                  @change="handleHeaderMachineSubCategoryChange"
+                  @change="
+                    handleHeaderMachineSubCategoryChange();
+                    handleSearch();
+                  "
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -93,7 +101,10 @@
                   v-model="detailSearch.headerMachineCategory"
                   :disabled="detailSearch.machineCategoryOptions.length === 0"
                   class="form-select"
-                  @change="handleHeaderMachineCategoryChange"
+                  @change="
+                    handleHeaderMachineCategoryChange();
+                    handleSearch();
+                  "
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -438,11 +449,20 @@
           <!-- 단가 슬롯 -->
           <template #cell-unit_price="{ item }">
             {{
-              item.output_values?.unit_price_kr?.value
-                ? `${item.output_values.unit_price_kr.value.toLocaleString()} ${
-                    item.output_values.unit_price_kr.unit_symbol || ""
-                  }`
-                : "-"
+              (() => {
+                if (!item.output_values) return "-";
+                const unitPriceKey = Object.keys(item.output_values).find(
+                  (key) => key.startsWith("unit_price")
+                );
+                if (unitPriceKey && item.output_values[unitPriceKey]?.value) {
+                  return `${item.output_values[
+                    unitPriceKey
+                  ].value.toLocaleString()} ${
+                    item.output_values[unitPriceKey].unit_symbol || ""
+                  }`;
+                }
+                return "-";
+              })()
             }}
           </template>
 
@@ -973,24 +993,24 @@ const specVerticalData = computed(() => {
   if (item.output_values) {
     Object.values(item.output_values).forEach((field: any) => {
       // 수정 모드이거나 값이 있는 경우 표시
-      if (
-        isDetailEditMode.value ||
-        (field.value !== null &&
-          field.value !== undefined &&
-          field.value !== "")
-      ) {
-        data.push({
-          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? field.value
-            : typeof field.value === "number"
-            ? field.value.toLocaleString()
-            : field.value,
-          editable: true,
-          fieldType: typeof field.value === "number" ? "number" : "input",
-          originalType: typeof field.value,
-        });
-      }
+      // if (
+      //   isDetailEditMode.value ||
+      //   (field.value !== null &&
+      //     field.value !== undefined &&
+      //     field.value !== "")
+      // ) {
+      data.push({
+        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+        value: isDetailEditMode.value
+          ? field.value
+          : typeof field.value === "number"
+          ? field.value.toLocaleString()
+          : field.value,
+        editable: true,
+        fieldType: typeof field.value === "number" ? "number" : "input",
+        originalType: typeof field.value,
+      });
+      // }
     });
   }
 
@@ -998,24 +1018,24 @@ const specVerticalData = computed(() => {
   if (item.search_criteria) {
     Object.values(item.search_criteria).forEach((field: any) => {
       // 수정 모드이거나 값이 있는 경우 표시
-      if (
-        isDetailEditMode.value ||
-        (field.value !== null &&
-          field.value !== undefined &&
-          field.value !== "")
-      ) {
-        data.push({
-          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? field.value
-            : typeof field.value === "number"
-            ? field.value.toLocaleString()
-            : field.value,
-          editable: true,
-          fieldType: typeof field.value === "number" ? "number" : "input",
-          originalType: typeof field.value,
-        });
-      }
+      // if (
+      //   isDetailEditMode.value ||
+      //   (field.value !== null &&
+      //     field.value !== undefined &&
+      //     field.value !== "")
+      // ) {
+      data.push({
+        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+        value: isDetailEditMode.value
+          ? field.value
+          : typeof field.value === "number"
+          ? field.value.toLocaleString()
+          : field.value,
+        editable: true,
+        fieldType: typeof field.value === "number" ? "number" : "input",
+        originalType: typeof field.value,
+      });
+      // }
     });
   }
 
@@ -1986,6 +2006,9 @@ const handleMachineCategoryChange = async () => {
     console.error(e);
     detailSearch.value.headerMachineCategoryOptions = [];
   }
+
+  // 기계 대분류 변경 시 자동 검색
+  await handleSearch();
 };
 
 // 상세검색 관련 함수들

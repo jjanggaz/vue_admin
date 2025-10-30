@@ -5,7 +5,12 @@
       <div class="filter-group">
         <div class="filter-item">
           <label for="unit">{{ t("common.unit") }}</label>
-          <select id="unit" v-model="selectedUnit" class="form-select">
+          <select
+            id="unit"
+            v-model="selectedUnit"
+            class="form-select"
+            @change="handleSearch"
+          >
             <option value="">{{ t("common.select") }}</option>
             <option
               v-for="unit in structureStore.unitSystems"
@@ -44,6 +49,7 @@
             id="structureTypeDetail"
             v-model="selectedStructureTypeDetail"
             class="form-select"
+            @change="handleSearch"
           >
             <option value="">{{ t("common.select") }}</option>
             <option
@@ -361,6 +367,12 @@ const handlePageChange = async (page: number) => {
 
 // 검색 처리 (Machine.vue 패턴 적용)
 const handleSearch = async () => {
+  // structureType이 선택되었는데 structureTypeDetail이 선택되지 않은 경우
+  if (selectedStructureType.value && !selectedStructureTypeDetail.value) {
+    alert(t("messages.warning.selectStructureMachineName"));
+    return;
+  }
+
   selectedItems.value = []; // 체크된 row 초기화
   currentPage.value = 1;
   await loadData();

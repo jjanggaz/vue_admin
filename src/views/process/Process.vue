@@ -17,7 +17,7 @@
                 @change="handleUnitChange"
               >
                 <option value="METRIC">Metric</option>
-                <option value="IMPERIAL">Imperial</option>
+                <option value="USCS">Uscs</option>
               </select>
             </div>
           </div>
@@ -186,7 +186,7 @@
                 }}</label>
                 <select v-model="registForm.unit" class="form-select">
                   <option value="metric">Metric</option>
-                  <option value="imperial">Imperial</option>
+                  <option value="uscs">Uscs</option>
                 </select>
               </div>
             </div>
@@ -1116,17 +1116,25 @@ const closeDetailModal = async () => {
     // 변경사항 확인
     if (processDetailRef.value) {
       const hasPfdChanges = processDetailRef.value.hasPfdChanges?.() || false;
-      const hasMappingPidChanges = processDetailRef.value.hasMappingPidChanges?.() || false;
-      const hasPidComponentChanges = processDetailRef.value.hasPidComponentChanges?.() || false;
-      const hasFormulaChanges = processDetailRef.value.hasFormulaChanges?.() || false;
-      
-      if (hasPfdChanges || hasMappingPidChanges || hasPidComponentChanges || hasFormulaChanges) {
-        if (!confirm('수정사항이 있습니다. 창을 닫으시겠습니까?')) {
+      const hasMappingPidChanges =
+        processDetailRef.value.hasMappingPidChanges?.() || false;
+      const hasPidComponentChanges =
+        processDetailRef.value.hasPidComponentChanges?.() || false;
+      const hasFormulaChanges =
+        processDetailRef.value.hasFormulaChanges?.() || false;
+
+      if (
+        hasPfdChanges ||
+        hasMappingPidChanges ||
+        hasPidComponentChanges ||
+        hasFormulaChanges
+      ) {
+        if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
           return;
         }
       }
     }
-    
+
     console.log("모달 닫기 시작");
     isDetailModalOpen.value = false;
     selectedProcessId.value = undefined;
@@ -1249,7 +1257,7 @@ const handleSearchProcessTypeChange = async (event: Event) => {
       console.log("공정구분 변경: 선택되지 않음");
     }
   }
-  
+
   // 공정구분 변경 시 재조회 수행
   await handleSearch();
 };
@@ -1283,7 +1291,7 @@ const handleSubCategoryChange = async (event: Event) => {
     // 새로운 중분류에 맞는 공정명 옵션 로드
     await handleProcessNameCodeSearch();
   }
-  
+
   // 중분류 변경 시 재조회 수행
   await handleSearch();
 };
@@ -1297,7 +1305,7 @@ const handleProcessNameChange = async (event: Event) => {
   processStore.setSearchProcessName(selectedValue);
 
   console.log("공정명 변경:", selectedValue);
-  
+
   // 공정명 변경 시 재조회 수행
   await handleSearch();
 };

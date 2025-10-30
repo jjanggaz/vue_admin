@@ -67,14 +67,14 @@ export interface WaterFlowTypeParameter {
 // 새로운 API 응답 구조를 위한 인터페이스
 export interface WaterFlowTypeParametersResponse {
   metric: WaterFlowTypeParameter[];
-  imperial: WaterFlowTypeParameter[];
+  uscs: WaterFlowTypeParameter[];
   metric_formulas?: {
     data: {
       formulas: FormulaData[];
     };
     status: string;
   };
-  imperial_formulas?: {
+  uscs_formulas?: {
     data: {
       formulas: FormulaData[];
     };
@@ -107,7 +107,7 @@ export interface WaterFlowTypeParameterFormData {
   max_value?: number;
   parameter_unit?: string;
   remarks?: string;
-  unit_system_code: "METRIC" | "IMPERIAL";
+  unit_system_code: "METRIC" | "USCS";
   unit_id?: string;
 }
 
@@ -121,7 +121,7 @@ export interface WaterFlowTypeParameterCreateRequest {
     max_value?: number;
     parameter_unit?: string;
     remarks?: string;
-    unit_system_code: "METRIC" | "IMPERIAL";
+    unit_system_code: "METRIC" | "USCS";
     unit_id?: string;
   }>;
 }
@@ -144,7 +144,7 @@ export interface WaterFlowTypeFormData {
     parameter_unit?: string;
     remarks?: string;
   }>;
-  imperial_parameters?: Array<{
+  uscs_parameters?: Array<{
     parameter_name: string;
     is_required?: boolean;
     default_value?: number;
@@ -223,7 +223,7 @@ export interface WaterFlowTypeParameterResponse {
   parameter_unit: string;
   remarks: string;
   is_active: boolean;
-  unit_system_code: string; // METRIC 또는 IMPERIAL
+  unit_system_code: string; // METRIC 또는 USCS
 }
 
 export interface WaterFlowTypeParameterListResponse {
@@ -246,7 +246,7 @@ export const useInflowStore = defineStore("inflow", {
     waterFlowTypes: [] as WaterFlowType[], // 유입종류 목록
     waterFlowTypeParameters: {
       metric: [],
-      imperial: [],
+      uscs: [],
     } as WaterFlowTypeParametersResponse, // 유입종류별 파라미터 목록
     waterQualityParameters: [] as WaterQualityParameter[], // 수질 파라미터 목록
     commonCodes: [] as CommonCode[], // 공통코드 목록
@@ -322,13 +322,13 @@ export const useInflowStore = defineStore("inflow", {
       try {
         // flowDirection 유효성 검사
         if (!flowDirection || flowDirection.trim() === "") {
-          this.waterFlowTypeParameters = { metric: [], imperial: [] };
+          this.waterFlowTypeParameters = { metric: [], uscs: [] };
           return { items: [], total: 0 };
         }
 
         // flowTypeCode 유효성 검사
         if (!flowTypeCode || flowTypeCode.trim() === "") {
-          this.waterFlowTypeParameters = { metric: [], imperial: [] };
+          this.waterFlowTypeParameters = { metric: [], uscs: [] };
           return { items: [], total: 0 };
         }
 
@@ -353,10 +353,10 @@ export const useInflowStore = defineStore("inflow", {
 
         // API 응답 처리
         if (response.response && response.response.items) {
-          // 새로운 구조: response.items.metric, response.items.imperial
+          // 새로운 구조: response.items.metric, response.items.uscs
           this.waterFlowTypeParameters = response.response.items;
         } else {
-          this.waterFlowTypeParameters = { metric: [], imperial: [] };
+          this.waterFlowTypeParameters = { metric: [], uscs: [] };
         }
 
         return response.response;
@@ -366,7 +366,7 @@ export const useInflowStore = defineStore("inflow", {
           error instanceof Error
             ? error.message
             : "유입종류 파라미터 조회에 실패했습니다.";
-        this.waterFlowTypeParameters = { metric: [], imperial: [] };
+        this.waterFlowTypeParameters = { metric: [], uscs: [] };
         throw error;
       } finally {
         this.loading = false;
@@ -467,7 +467,7 @@ export const useInflowStore = defineStore("inflow", {
       waterFlowTypeData: WaterFlowTypeFormData;
       symbolFile?: File;
       metricFile?: File;
-      imperialFile?: File;
+      uscsFile?: File;
     }) {
       this.loading = true;
       this.error = null;
@@ -496,9 +496,9 @@ export const useInflowStore = defineStore("inflow", {
           formData.append("metricFile", requestData.metricFile);
         }
 
-        // Imperial 계산식 파일이 있으면 imperialFile로 추가
-        if (requestData.imperialFile) {
-          formData.append("imperialFile", requestData.imperialFile);
+        // Uscs 계산식 파일이 있으면 uscsFile로 추가
+        if (requestData.uscsFile) {
+          formData.append("uscsFile", requestData.uscsFile);
         }
 
         const response = await request("/api/inflow/create", undefined, {
@@ -563,7 +563,7 @@ export const useInflowStore = defineStore("inflow", {
         waterFlowTypeData: Partial<WaterFlowTypeFormData>;
         symbolFile?: File;
         metricFile?: File;
-        imperialFile?: File;
+        uscsFile?: File;
       }
     ) {
       this.loading = true;
@@ -593,9 +593,9 @@ export const useInflowStore = defineStore("inflow", {
           formData.append("metricFile", requestData.metricFile);
         }
 
-        // Imperial 계산식 파일이 있으면 imperialFile로 추가
-        if (requestData.imperialFile) {
-          formData.append("imperialFile", requestData.imperialFile);
+        // Uscs 계산식 파일이 있으면 uscsFile로 추가
+        if (requestData.uscsFile) {
+          formData.append("uscsFile", requestData.uscsFile);
         }
 
         const response = await request(
@@ -813,7 +813,7 @@ export const useInflowStore = defineStore("inflow", {
     // 상태 초기화
     resetState() {
       this.waterFlowTypes = [];
-      this.waterFlowTypeParameters = { metric: [], imperial: [] };
+      this.waterFlowTypeParameters = { metric: [], uscs: [] };
       this.waterQualityParameters = [];
       this.commonCodes = [];
       this.loading = false;

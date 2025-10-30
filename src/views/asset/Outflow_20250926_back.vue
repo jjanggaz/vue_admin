@@ -102,14 +102,14 @@
             </div>
           </div>
 
-          <div class="tab-content-imperial">
+          <div class="tab-content-uscs">
             <div class="section-header">
-              <h3>Imperial</h3>
+              <h3>Uscs</h3>
             </div>
             <div v-if="activeTab >= 0" class="content">
               <DataTable
                 :columns="gridColumns"
-                :data="currentImperialGridData"
+                :data="currentUscsGridData"
                 maxHeight="300px"
                 :stickyHeader="true"
               >
@@ -300,16 +300,14 @@
               </DataTable>
             </div>
 
-            <div class="modal-tab-content-imperial">
+            <div class="modal-tab-content-uscs">
               <div class="section-header">
-                <h3>Imperial</h3>
+                <h3>Uscs</h3>
               </div>
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  imperialFileData.length > 0
-                    ? imperialFileData
-                    : currentImperialGridData
+                  uscsFileData.length > 0 ? uscsFileData : currentUscsGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -535,21 +533,21 @@
               </DataTable>
             </div>
 
-            <div class="modal-tab-content-imperial">
+            <div class="modal-tab-content-uscs">
               <div class="section-header">
-                <h3>Imperial</h3>
+                <h3>Uscs</h3>
               </div>
 
               <div class="action-bar">
                 <div class="btns">
-                  <button class="btn btn-reset" @click="resetModalImperialRows">
+                  <button class="btn btn-reset" @click="resetModalUscsRows">
                     {{ t("common.reset") }}
                   </button>
                   <button
                     class="btn btn-add"
-                    @click="addModalImperialRow"
+                    @click="addModalUscsRow"
                     :disabled="
-                      imperialFileData.length >=
+                      uscsFileData.length >=
                       outflowStore.waterQualityParameters.length
                     "
                   >
@@ -561,9 +559,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  imperialFileData.length > 0
-                    ? imperialFileData
-                    : currentImperialGridData
+                  uscsFileData.length > 0 ? uscsFileData : currentUscsGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -800,7 +796,7 @@ const loadWaterFlowTypeParameters = async (
     // 조회된 파라미터를 그리드 데이터로 변환
     if (outflowStore.waterFlowTypeParameters) {
       const metricParams: GridRow[] = [];
-      const imperialParams: GridRow[] = [];
+      const uscsParams: GridRow[] = [];
 
       // Metric 파라미터 처리
       if (
@@ -824,12 +820,12 @@ const loadWaterFlowTypeParameters = async (
         });
       }
 
-      // Imperial 파라미터 처리
+      // Uscs 파라미터 처리
       if (
-        outflowStore.waterFlowTypeParameters.imperial &&
-        Array.isArray(outflowStore.waterFlowTypeParameters.imperial)
+        outflowStore.waterFlowTypeParameters.uscs &&
+        Array.isArray(outflowStore.waterFlowTypeParameters.uscs)
       ) {
-        outflowStore.waterFlowTypeParameters.imperial.forEach((param) => {
+        outflowStore.waterFlowTypeParameters.uscs.forEach((param) => {
           const gridRow: GridRow = {
             id: 0, // 임시 ID, 나중에 재정렬
             mapping_id: param.mapping_id || "",
@@ -842,7 +838,7 @@ const loadWaterFlowTypeParameters = async (
             is_required: param.is_required,
             remarks: param.remarks || "",
           };
-          imperialParams.push(gridRow);
+          uscsParams.push(gridRow);
         });
       }
 
@@ -851,17 +847,17 @@ const loadWaterFlowTypeParameters = async (
         item.id = index + 1;
       });
 
-      imperialParams.forEach((item, index) => {
+      uscsParams.forEach((item, index) => {
         item.id = index + 1;
       });
 
-      // Metric과 Imperial 데이터를 각각 저장
+      // Metric과 Uscs 데이터를 각각 저장
       metricTabGridData.value[activeTab.value] = metricParams;
-      imperialTabGridData.value[activeTab.value] = imperialParams;
+      uscsTabGridData.value[activeTab.value] = uscsParams;
     } else {
       // 파라미터가 없으면 빈 배열
       metricTabGridData.value[activeTab.value] = [];
-      imperialTabGridData.value[activeTab.value] = [];
+      uscsTabGridData.value[activeTab.value] = [];
     }
   } catch (error) {
     console.error("파라미터 데이터 로드 실패:", error);
@@ -927,9 +923,9 @@ const newTabName = ref("");
 
 // 파일 선택 관련 상태
 const metricFileData = ref<GridRow[]>([]);
-const imperialFileData = ref<GridRow[]>([]);
+const uscsFileData = ref<GridRow[]>([]);
 const metricFileName = ref<string>("");
-const imperialFileName = ref<string>("");
+const uscsFileName = ref<string>("");
 
 const gridColumns: TableColumn[] = [
   { key: "id", title: t("columns.outflow.no"), width: "80px" },
@@ -1012,14 +1008,14 @@ const tabGridData = ref<{ [key: number]: GridRow[] }>({});
 // Metric용 데이터
 const metricTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
-// Imperial용 데이터
-const imperialTabGridData = ref<{ [key: number]: GridRow[] }>({});
+// Uscs용 데이터
+const uscsTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
-// 각 탭별 데이터 복사본을 Metric/Imperial용으로 초기화
+// 각 탭별 데이터 복사본을 Metric/Uscs용으로 초기화
 Object.keys(tabGridData.value).forEach((key) => {
   const tabKey = parseInt(key);
   metricTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
-  imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
+  uscsTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
 
 // 모달용 Metric 데이터 추가 함수
@@ -1078,12 +1074,12 @@ const addModalMetricRow = () => {
   });
 };
 
-// 모달용 Imperial 데이터 추가 함수
-const addModalImperialRow = () => {
+// 모달용 Uscs 데이터 추가 함수
+const addModalUscsRow = () => {
   const currentData =
-    imperialFileData.value.length > 0
-      ? imperialFileData.value
-      : currentImperialGridData.value;
+    uscsFileData.value.length > 0
+      ? uscsFileData.value
+      : currentUscsGridData.value;
 
   // waterQualityParameters 개수만큼만 추가 가능
   if (currentData.length >= outflowStore.waterQualityParameters.length) {
@@ -1109,23 +1105,23 @@ const addModalImperialRow = () => {
     remarks: "",
   };
 
-  if (imperialFileData.value.length > 0) {
-    imperialFileData.value = [...imperialFileData.value, newRow];
+  if (uscsFileData.value.length > 0) {
+    uscsFileData.value = [...uscsFileData.value, newRow];
   } else {
-    imperialFileData.value = [...currentImperialGridData.value, newRow];
+    uscsFileData.value = [...currentUscsGridData.value, newRow];
   }
 
   // 새로 추가된 행이 보이도록 스크롤 조정
   nextTick(() => {
-    const modalImperialTable = document.querySelector(
-      ".modal-tab-content-imperial .data-table-container.with-scroll"
+    const modalUscsTable = document.querySelector(
+      ".modal-tab-content-uscs .data-table-container.with-scroll"
     );
-    if (modalImperialTable) {
-      modalImperialTable.scrollTop = modalImperialTable.scrollHeight;
+    if (modalUscsTable) {
+      modalUscsTable.scrollTop = modalUscsTable.scrollHeight;
     } else {
       // fallback: 일반적인 스크롤 컨테이너 찾기
       const scrollContainer = document.querySelector(
-        ".modal-tab-content-imperial .data-table-container"
+        ".modal-tab-content-uscs .data-table-container"
       );
       if (scrollContainer) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -1144,13 +1140,13 @@ const resetModalMetricRows = () => {
   }
 };
 
-// 모달용 Imperial 데이터 초기화 함수
-const resetModalImperialRows = () => {
+// 모달용 Uscs 데이터 초기화 함수
+const resetModalUscsRows = () => {
   // 현재 탭의 원본 데이터로 초기화
-  if (imperialTabGridData.value[activeTab.value]) {
-    imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
+  if (uscsTabGridData.value[activeTab.value]) {
+    uscsFileData.value = [...uscsTabGridData.value[activeTab.value]];
   } else {
-    imperialFileData.value = [];
+    uscsFileData.value = [];
   }
 };
 
@@ -1164,7 +1160,7 @@ const getAvailableParameters = (isMetric: boolean, isModal: boolean) => {
   }
 
   // 모달에서는 현재 선택된 파라미터들을 제외
-  const currentData = isMetric ? metricFileData.value : imperialFileData.value;
+  const currentData = isMetric ? metricFileData.value : uscsFileData.value;
   const selectedCodes = currentData
     .filter((item) => item.parameter_code && item.parameter_code !== "")
     .map((item) => item.parameter_code);
@@ -1193,10 +1189,10 @@ const onParameterSelect = (
     const targetData = isModal
       ? isMetric
         ? metricFileData.value
-        : imperialFileData.value
+        : uscsFileData.value
       : isMetric
       ? metricTabGridData.value[activeTab.value]
-      : imperialTabGridData.value[activeTab.value];
+      : uscsTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
       targetData[rowIndex].parameter_id = selectedParameter.parameter_id || "";
@@ -1217,9 +1213,9 @@ const currentMetricGridData = computed(() => {
   return metricTabGridData.value[activeTab.value] || [];
 });
 
-// Imperial 탭 데이터
-const currentImperialGridData = computed(() => {
-  return imperialTabGridData.value[activeTab.value] || [];
+// Uscs 탭 데이터
+const currentUscsGridData = computed(() => {
+  return uscsTabGridData.value[activeTab.value] || [];
 });
 
 // 모달 관련 함수
@@ -1244,7 +1240,7 @@ const openModal = async () => {
 
       // Metric용 데이터 생성
       const metricData: GridRow[] = [];
-      const imperialData: GridRow[] = [];
+      const uscsData: GridRow[] = [];
 
       outflowStore.waterQualityParameters.forEach((param, index) => {
         // Metric 데이터
@@ -1262,20 +1258,20 @@ const openModal = async () => {
         };
         metricData.push(metricRow);
 
-        // Imperial 데이터 (동일한 구조로 생성)
-        const imperialRow: GridRow = {
+        // Uscs 데이터 (동일한 구조로 생성)
+        const uscsRow: GridRow = {
           id: index + 1,
           mapping_id: "", // 새로 생성되는 데이터이므로 빈 값
           parameter_id: param.parameter_id || "", // parameter_id 추가
           parameter_name: param.parameter_name,
           parameter_code: param.parameter_code,
           effluent: 0, // 기본값
-          unit: param.default_unit || "mg/L", // 실제로는 Imperial 단위로 변환해야 함
+          unit: param.default_unit || "mg/L", // 실제로는 Uscs 단위로 변환해야 함
           is_active: true,
           is_required: false,
           remarks: param.description || "",
         };
-        imperialData.push(imperialRow);
+        uscsData.push(uscsRow);
       });
 
       // 모달용 파일 데이터에 설정 (기존 파일 데이터가 없으면)
@@ -1283,8 +1279,8 @@ const openModal = async () => {
         metricFileData.value = metricData;
       }
 
-      if (imperialFileData.value.length === 0) {
-        imperialFileData.value = imperialData;
+      if (uscsFileData.value.length === 0) {
+        uscsFileData.value = uscsData;
       }
     }
   } catch (error) {
@@ -1304,9 +1300,9 @@ const closeModal = () => {
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   metricFileData.value = [];
-  imperialFileData.value = [];
+  uscsFileData.value = [];
   metricFileName.value = "";
-  imperialFileName.value = "";
+  uscsFileName.value = "";
 };
 
 const openCodeManagementModal = () => {
@@ -1383,12 +1379,12 @@ const openUpdateModal = async () => {
     }
   }
 
-  // 현재 탭의 Metric과 Imperial 데이터를 수정 폼에 복사
+  // 현재 탭의 Metric과 Uscs 데이터를 수정 폼에 복사
   if (metricTabGridData.value[activeTab.value]) {
     metricFileData.value = [...metricTabGridData.value[activeTab.value]];
   }
-  if (imperialTabGridData.value[activeTab.value]) {
-    imperialFileData.value = [...imperialTabGridData.value[activeTab.value]];
+  if (uscsTabGridData.value[activeTab.value]) {
+    uscsFileData.value = [...uscsTabGridData.value[activeTab.value]];
   }
 
   // 모달 열기
@@ -1416,9 +1412,9 @@ const closeUpdateModal = () => {
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   metricFileData.value = [];
-  imperialFileData.value = [];
+  uscsFileData.value = [];
   metricFileName.value = "";
-  imperialFileName.value = "";
+  uscsFileName.value = "";
 };
 
 const updateTab = async () => {
@@ -1454,10 +1450,10 @@ const updateTab = async () => {
             }))
         : undefined;
 
-    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
-    const imperialParameters =
-      imperialFileData.value.length > 0
-        ? imperialFileData.value
+    // Uscs 파라미터 데이터 준비 (선택된 파라미터만)
+    const uscsParameters =
+      uscsFileData.value.length > 0
+        ? uscsFileData.value
             .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
             .map((item) => ({
               flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
@@ -1485,7 +1481,7 @@ const updateTab = async () => {
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
         metric_parameters: metricParameters,
-        imperial_parameters: imperialParameters,
+        uscs_parameters: uscsParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
     };
@@ -1569,12 +1565,12 @@ const createNewTab = async () => {
       });
     });
 
-    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
-    console.log("원본 imperialFileData:", imperialFileData.value);
+    // Uscs 파라미터 데이터 준비 (선택된 파라미터만)
+    console.log("원본 uscsFileData:", uscsFileData.value);
 
-    const imperialParameters =
-      imperialFileData.value.length > 0
-        ? imperialFileData.value
+    const uscsParameters =
+      uscsFileData.value.length > 0
+        ? uscsFileData.value
             .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
             .map((item) => ({
               parameter_code: item.parameter_code, // 저장된 parameter_code 사용
@@ -1587,9 +1583,9 @@ const createNewTab = async () => {
             }))
         : undefined;
 
-    console.log("등록할 Imperial 파라미터:", imperialParameters);
-    imperialParameters?.forEach((param, index) => {
-      console.log(`Imperial 파라미터 ${index + 1}:`, {
+    console.log("등록할 Uscs 파라미터:", uscsParameters);
+    uscsParameters?.forEach((param, index) => {
+      console.log(`Uscs 파라미터 ${index + 1}:`, {
         parameter_code: param.parameter_code,
         parameter_name: param.parameter_name,
         is_active: param.is_active,
@@ -1611,7 +1607,7 @@ const createNewTab = async () => {
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
         metric_parameters: metricParameters,
-        imperial_parameters: imperialParameters,
+        uscs_parameters: uscsParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
     };
@@ -1625,9 +1621,9 @@ const createNewTab = async () => {
     uploadForm.value.title = "";
     selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
     metricFileData.value = [];
-    imperialFileData.value = [];
+    uscsFileData.value = [];
     metricFileName.value = "";
-    imperialFileName.value = "";
+    uscsFileName.value = "";
 
     closeModal();
 
@@ -1684,8 +1680,8 @@ const onTabClick = async (index: number) => {
   if (!metricTabGridData.value[index]) {
     metricTabGridData.value[index] = [];
   }
-  if (!imperialTabGridData.value[index]) {
-    imperialTabGridData.value[index] = [];
+  if (!uscsTabGridData.value[index]) {
+    uscsTabGridData.value[index] = [];
   }
 
   // 선택된 탭의 유입종류 코드로 파라미터 조회
@@ -1756,9 +1752,9 @@ onBeforeUnmount(() => {
     }
 
     .tab-content-metric,
-    .tab-content-imperial,
+    .tab-content-uscs,
     .modal-tab-content-metric,
-    .modal-tab-content-imperial {
+    .modal-tab-content-uscs {
       flex: 1;
       background: white;
       border-radius: $border-radius-md;
@@ -1811,7 +1807,7 @@ onBeforeUnmount(() => {
 
     // 모달 내부에서는 배경색과 그림자 제거
     .modal-tab-content-metric,
-    .modal-tab-content-imperial {
+    .modal-tab-content-uscs {
       background: transparent;
       box-shadow: none;
       // border: 1px solid $border-color;

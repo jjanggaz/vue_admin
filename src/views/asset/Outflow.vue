@@ -137,14 +137,14 @@
             </div>
           </div>
 
-          <div class="tab-content-imperial">
+          <div class="tab-content-uscs">
             <div class="section-header">
-              <h3>Imperial</h3>
+              <h3>Uscs</h3>
             </div>
             <div v-if="activeTab >= 0" class="content">
               <DataTable
                 :columns="gridColumns"
-                :data="currentImperialGridData"
+                :data="currentUscsGridData"
                 maxHeight="300px"
                 :stickyHeader="true"
               >
@@ -188,7 +188,7 @@
                   <h4>{{ t("outflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-add" @click="deleteImperialFormula">
+                  <button class="btn btn-add" @click="deleteUscsFormula">
                     {{ t("outflow.delete") }}
                   </button>
                 </div>
@@ -196,14 +196,14 @@
 
               <DataTable
                 :columns="gridColumns2"
-                :data="currentImperialGridData2"
+                :data="currentUscsGridData2"
                 maxHeight="300px"
                 :stickyHeader="true"
                 :selectable="true"
                 selectionMode="single"
                 :showSelectAll="false"
-                :selectedItems="selectedImperialFormula"
-                @selection-change="onImperialFormulaSelectionChange"
+                :selectedItems="selectedUscsFormula"
+                @selection-change="onUscsFormulaSelectionChange"
               >
                 <template #cell-formula="{ value, item }">
                   <a
@@ -391,17 +391,17 @@
               </DataTable>
             </div>
 
-            <div class="modal-tab-content-imperial">
+            <div class="modal-tab-content-uscs">
               <div class="section-header">
-                <h3>Imperial</h3>
+                <h3>Uscs</h3>
               </div>
               <dl class="column-regist">
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
-                  <div class="file-upload-row" id="imperialFileUpload">
+                  <div class="file-upload-row" id="uscsFileUpload">
                     <input
                       type="text"
-                      :value="imperialFileName || ''"
+                      :value="uscsFileName || ''"
                       :placeholder="t('placeholder.selectFile')"
                       readonly
                       class="file-name-input"
@@ -410,7 +410,7 @@
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
-                        @change="handleImperialFileUpload"
+                        @change="handleUscsFileUpload"
                         accept=".py"
                         style="display: none"
                       />
@@ -421,11 +421,7 @@
 
               <DataTable
                 :columns="gridColumns"
-                :data="
-                  imperialFileData.length > 0
-                    ? imperialFileData
-                    : currentGridData
-                "
+                :data="uscsFileData.length > 0 ? uscsFileData : currentGridData"
                 maxHeight="300px"
                 :stickyHeader="true"
               >
@@ -670,17 +666,17 @@
               </DataTable>
             </div>
 
-            <div class="modal-tab-content-imperial">
+            <div class="modal-tab-content-uscs">
               <div class="section-header">
-                <h3>Imperial</h3>
+                <h3>Uscs</h3>
               </div>
               <dl class="column-regist">
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
-                  <div class="file-upload-row" id="updateImperialFileUpload">
+                  <div class="file-upload-row" id="updateUscsFileUpload">
                     <input
                       type="text"
-                      :value="updateImperialFileName || ''"
+                      :value="updateUscsFileName || ''"
                       :placeholder="t('placeholder.selectFile')"
                       readonly
                       class="file-name-input"
@@ -689,7 +685,7 @@
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
-                        @change="handleUpdateImperialFileUpload"
+                        @change="handleUpdateUscsFileUpload"
                         accept=".py"
                         style="display: none"
                       />
@@ -701,9 +697,9 @@
               <DataTable
                 :columns="gridColumns"
                 :data="
-                  isUpdateImperialFileAttached
-                    ? updateImperialFileData
-                    : currentImperialGridData
+                  isUpdateUscsFileAttached
+                    ? updateUscsFileData
+                    : currentUscsGridData
                 "
                 maxHeight="300px"
                 :stickyHeader="true"
@@ -938,7 +934,7 @@ const canScrollRight = ref(false);
 const tabsContainer = ref<HTMLElement | null>(null);
 const resizeObserver = ref<ResizeObserver | null>(null);
 const selectedMetricFormulaId = ref<string | null>(null);
-const selectedImperialFormulaId = ref<string | null>(null);
+const selectedUscsFormulaId = ref<string | null>(null);
 const handleResize = () => {
   nextTick(() => updateScrollButtons());
 };
@@ -952,12 +948,12 @@ const onMetricFormulaSelectionChange = (selectedItems: GridRow2[]) => {
   }
 };
 
-// Imperial 계산식 선택 변경 핸들러
-const onImperialFormulaSelectionChange = (selectedItems: GridRow2[]) => {
+// Uscs 계산식 선택 변경 핸들러
+const onUscsFormulaSelectionChange = (selectedItems: GridRow2[]) => {
   if (selectedItems.length > 0) {
-    selectedImperialFormulaId.value = selectedItems[0].formula_id;
+    selectedUscsFormulaId.value = selectedItems[0].formula_id;
   } else {
-    selectedImperialFormulaId.value = null;
+    selectedUscsFormulaId.value = null;
   }
 };
 
@@ -1007,25 +1003,25 @@ const deleteMetricFormula = async () => {
   }
 };
 
-// Imperial 계산식 삭제 함수
-const deleteImperialFormula = async () => {
-  if (!selectedImperialFormulaId.value) {
+// Uscs 계산식 삭제 함수
+const deleteUscsFormula = async () => {
+  if (!selectedUscsFormulaId.value) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   // 선택된 항목이 최신 항목인지 확인
-  const selectedItem = currentImperialGridData2.value.find(
-    (item) => item.formula_id === selectedImperialFormulaId.value
+  const selectedItem = currentUscsGridData2.value.find(
+    (item) => item.formula_id === selectedUscsFormulaId.value
   );
   if (selectedItem?.isLatest) {
     alert(t("messages.warning.cannotDeleteLatestFormula"));
     return;
   }
 
-  if (confirm(t("messages.confirm.deleteImperialFormula"))) {
+  if (confirm(t("messages.confirm.deleteUscsFormula"))) {
     try {
-      await outflowStore.deleteFormula(selectedImperialFormulaId.value);
+      await outflowStore.deleteFormula(selectedUscsFormulaId.value);
 
       // 삭제 성공 시 현재 탭의 데이터 다시 로드
       const currentTab = tabs.value[activeTab.value];
@@ -1037,11 +1033,11 @@ const deleteImperialFormula = async () => {
       }
 
       // 선택 초기화
-      selectedImperialFormulaId.value = null;
+      selectedUscsFormulaId.value = null;
 
-      alert(t("messages.success.imperialFormulaDeleteSuccess"));
+      alert(t("messages.success.uscsFormulaDeleteSuccess"));
     } catch (error) {
-      console.error("Imperial 계산식 삭제 실패:", error);
+      console.error("Uscs 계산식 삭제 실패:", error);
       const errorMessage = translateMessage(
         error && typeof error === "object" && "message" in error
           ? (error as { message: string }).message
@@ -1069,7 +1065,7 @@ const loadWaterFlowTypeParameters = async (
     // 조회된 파라미터를 그리드 데이터로 변환
     if (outflowStore.waterFlowTypeParameters) {
       const metricParams: GridRow[] = [];
-      const imperialParams: GridRow[] = [];
+      const uscsParams: GridRow[] = [];
 
       // Metric 파라미터 처리
       if (
@@ -1093,12 +1089,12 @@ const loadWaterFlowTypeParameters = async (
         });
       }
 
-      // Imperial 파라미터 처리
+      // Uscs 파라미터 처리
       if (
-        outflowStore.waterFlowTypeParameters.imperial &&
-        Array.isArray(outflowStore.waterFlowTypeParameters.imperial)
+        outflowStore.waterFlowTypeParameters.uscs &&
+        Array.isArray(outflowStore.waterFlowTypeParameters.uscs)
       ) {
-        outflowStore.waterFlowTypeParameters.imperial.forEach((param) => {
+        outflowStore.waterFlowTypeParameters.uscs.forEach((param) => {
           const gridRow: GridRow = {
             id: 0, // 임시 ID, 나중에 재정렬
             mapping_id: param.mapping_id || "",
@@ -1111,7 +1107,7 @@ const loadWaterFlowTypeParameters = async (
             is_required: param.is_required,
             remarks: param.remarks || "",
           };
-          imperialParams.push(gridRow);
+          uscsParams.push(gridRow);
         });
       }
 
@@ -1120,13 +1116,13 @@ const loadWaterFlowTypeParameters = async (
         item.id = index + 1;
       });
 
-      imperialParams.forEach((item, index) => {
+      uscsParams.forEach((item, index) => {
         item.id = index + 1;
       });
 
-      // Metric과 Imperial 데이터를 각각 저장
+      // Metric과 Uscs 데이터를 각각 저장
       metricTabGridData.value[activeTab.value] = metricParams;
-      imperialTabGridData.value[activeTab.value] = imperialParams;
+      uscsTabGridData.value[activeTab.value] = uscsParams;
 
       // Metric 계산식 데이터 처리
       if (
@@ -1168,16 +1164,15 @@ const loadWaterFlowTypeParameters = async (
         tabGridData2.value[activeTab.value] = [];
       }
 
-      // Imperial 계산식 데이터 처리
+      // Uscs 계산식 데이터 처리
       if (
-        outflowStore.waterFlowTypeParameters.imperial_formulas?.data
-          ?.formulas &&
+        outflowStore.waterFlowTypeParameters.uscs_formulas?.data?.formulas &&
         Array.isArray(
-          outflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas
+          outflowStore.waterFlowTypeParameters.uscs_formulas.data.formulas
         )
       ) {
         const formulas =
-          outflowStore.waterFlowTypeParameters.imperial_formulas.data.formulas;
+          outflowStore.waterFlowTypeParameters.uscs_formulas.data.formulas;
 
         // created_at 기준으로 정렬하여 가장 최근 항목 찾기
         const sortedFormulas = [...formulas].sort(
@@ -1186,7 +1181,7 @@ const loadWaterFlowTypeParameters = async (
         );
         const latestCreatedAt = sortedFormulas[0]?.created_at;
 
-        const imperialFormulas: GridRow2[] = formulas.map((formula, index) => ({
+        const uscsFormulas: GridRow2[] = formulas.map((formula, index) => ({
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
@@ -1204,14 +1199,14 @@ const loadWaterFlowTypeParameters = async (
           created_at: formula.created_at, // 원본 created_at
           isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
         }));
-        imperialTabGridData2.value[activeTab.value] = imperialFormulas;
+        uscsTabGridData2.value[activeTab.value] = uscsFormulas;
       } else {
-        imperialTabGridData2.value[activeTab.value] = [];
+        uscsTabGridData2.value[activeTab.value] = [];
       }
     } else {
       // 파라미터가 없으면 빈 배열
       metricTabGridData.value[activeTab.value] = [];
-      imperialTabGridData.value[activeTab.value] = [];
+      uscsTabGridData.value[activeTab.value] = [];
     }
   } catch (error) {
     console.error("파라미터 데이터 로드 실패:", error);
@@ -1277,21 +1272,21 @@ const newTabName = ref("");
 
 // 파일 선택 관련 상태
 const metricFileData = ref<GridRow[]>([]);
-const imperialFileData = ref<GridRow[]>([]);
+const uscsFileData = ref<GridRow[]>([]);
 const metricFileName = ref<string>("");
-const imperialFileName = ref<string>("");
+const uscsFileName = ref<string>("");
 const metricFile = ref<File | null>(null);
-const imperialFile = ref<File | null>(null);
+const uscsFile = ref<File | null>(null);
 
 // 수정 모달용 별도 데이터
 const updateMetricFileData = ref<GridRow[]>([]);
-const updateImperialFileData = ref<GridRow[]>([]);
+const updateUscsFileData = ref<GridRow[]>([]);
 const updateMetricFileName = ref<string>("");
-const updateImperialFileName = ref<string>("");
+const updateUscsFileName = ref<string>("");
 const updateMetricFile = ref<File | null>(null);
-const updateImperialFile = ref<File | null>(null);
+const updateUscsFile = ref<File | null>(null);
 const isUpdateMetricFileAttached = ref<boolean>(false);
-const isUpdateImperialFileAttached = ref<boolean>(false);
+const isUpdateUscsFileAttached = ref<boolean>(false);
 
 const gridColumns: TableColumn[] = [
   { key: "id", title: t("columns.outflow.no"), width: "80px" },
@@ -1513,8 +1508,8 @@ const handleUpdateMetricFileUpload = async (event: Event) => {
   }
 };
 
-// Imperial 파일 업로드 핸들러
-const handleImperialFileUpload = async (event: Event) => {
+// Uscs 파일 업로드 핸들러
+const handleUscsFileUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
@@ -1525,14 +1520,14 @@ const handleImperialFileUpload = async (event: Event) => {
       return;
     }
 
-    imperialFileName.value = file.name;
-    imperialFile.value = file; // 파일 저장
+    uscsFileName.value = file.name;
+    uscsFile.value = file; // 파일 저장
 
     try {
       // FormData 생성하여 API 호출
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("unit_system", "IMPERIAL");
+      formData.append("unit_system", "USCS");
 
       // API 호출하여 계산식 추출
       const response = await outflowStore.extractFormula(formData);
@@ -1575,24 +1570,24 @@ const handleImperialFileUpload = async (event: Event) => {
           }
         });
 
-        imperialFileData.value = extractedData;
-        console.log("Imperial 계산식 추출 완료:", extractedData);
+        uscsFileData.value = extractedData;
+        console.log("Uscs 계산식 추출 완료:", extractedData);
       } else {
         // API 응답이 없으면 빈 배열로 설정
-        imperialFileData.value = [];
+        uscsFileData.value = [];
         console.log("API 응답이 없어서 빈 배열로 설정");
       }
     } catch (error) {
       console.error("계산식 추출 에러:", error);
       // API 실패 시 빈 배열로 설정
-      imperialFileData.value = [];
+      uscsFileData.value = [];
       alert(t("messages.warning.fileReadError"));
     }
   }
 };
 
-// 수정 모달용 Imperial 파일 업로드 핸들러
-const handleUpdateImperialFileUpload = async (event: Event) => {
+// 수정 모달용 Uscs 파일 업로드 핸들러
+const handleUpdateUscsFileUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
@@ -1603,18 +1598,18 @@ const handleUpdateImperialFileUpload = async (event: Event) => {
       return;
     }
 
-    updateImperialFileName.value = file.name;
-    updateImperialFile.value = file; // 파일 저장
+    updateUscsFileName.value = file.name;
+    updateUscsFile.value = file; // 파일 저장
 
     // 파일 첨부 시 즉시 그리드 초기화 및 플래그 설정
-    updateImperialFileData.value = [];
-    isUpdateImperialFileAttached.value = true;
+    updateUscsFileData.value = [];
+    isUpdateUscsFileAttached.value = true;
 
     try {
       // FormData 생성하여 API 호출
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("unit_system", "IMPERIAL");
+      formData.append("unit_system", "USCS");
 
       // API 호출하여 계산식 추출
       const response = await outflowStore.extractFormula(formData);
@@ -1657,8 +1652,8 @@ const handleUpdateImperialFileUpload = async (event: Event) => {
           }
         });
 
-        updateImperialFileData.value = extractedData;
-        console.log("수정 모달 Imperial 계산식 추출 완료:", extractedData);
+        updateUscsFileData.value = extractedData;
+        console.log("수정 모달 Uscs 계산식 추출 완료:", extractedData);
       } else {
         // input_parameters가 없어도 이미 빈 배열로 초기화됨
         console.log("input_parameters가 없어서 빈 배열 유지");
@@ -1699,19 +1694,19 @@ const tabGridData = ref<{ [key: number]: GridRow[] }>({});
 // Metric용 데이터
 const metricTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
-// Imperial용 데이터
-const imperialTabGridData = ref<{ [key: number]: GridRow[] }>({});
+// Uscs용 데이터
+const uscsTabGridData = ref<{ [key: number]: GridRow[] }>({});
 
-// Imperial 계산식용 데이터
-const imperialTabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
+// Uscs 계산식용 데이터
+const uscsTabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
 
 const tabGridData2 = ref<{ [key: number]: GridRow2[] }>({});
 
-// 각 탭별 데이터 복사본을 Metric/Imperial용으로 초기화
+// 각 탭별 데이터 복사본을 Metric/Uscs용으로 초기화
 Object.keys(tabGridData.value).forEach((key) => {
   const tabKey = parseInt(key);
   metricTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
-  imperialTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
+  uscsTabGridData.value[tabKey] = [...tabGridData.value[tabKey]];
 });
 
 // 수질 파라미터 선택 시 처리 함수
@@ -1733,10 +1728,10 @@ const onParameterSelect = (
     const targetData = isModal
       ? isMetric
         ? metricFileData.value
-        : imperialFileData.value
+        : uscsFileData.value
       : isMetric
       ? metricTabGridData.value[activeTab.value]
-      : imperialTabGridData.value[activeTab.value];
+      : uscsTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
       targetData[rowIndex].parameter_id = selectedParameter.parameter_id || "";
@@ -1757,9 +1752,9 @@ const currentMetricGridData = computed(() => {
   return metricTabGridData.value[activeTab.value] || [];
 });
 
-// Imperial 탭 데이터
-const currentImperialGridData = computed(() => {
-  return imperialTabGridData.value[activeTab.value] || [];
+// Uscs 탭 데이터
+const currentUscsGridData = computed(() => {
+  return uscsTabGridData.value[activeTab.value] || [];
 });
 
 // 기본 탭 데이터 (Inflow.vue와 동일하게)
@@ -1771,9 +1766,9 @@ const currentGridData2 = computed(() => {
   return tabGridData2.value[activeTab.value] || [];
 });
 
-// Imperial 계산식 데이터
-const currentImperialGridData2 = computed(() => {
-  return imperialTabGridData2.value[activeTab.value] || [];
+// Uscs 계산식 데이터
+const currentUscsGridData2 = computed(() => {
+  return uscsTabGridData2.value[activeTab.value] || [];
 });
 
 // 선택된 Metric 계산식
@@ -1785,11 +1780,11 @@ const selectedMetricFormula = computed(() => {
   return formula ? [formula] : [];
 });
 
-// 선택된 Imperial 계산식
-const selectedImperialFormula = computed(() => {
-  if (!selectedImperialFormulaId.value) return [];
-  const formula = currentImperialGridData2.value.find(
-    (item) => item.formula_id === selectedImperialFormulaId.value
+// 선택된 Uscs 계산식
+const selectedUscsFormula = computed(() => {
+  if (!selectedUscsFormulaId.value) return [];
+  const formula = currentUscsGridData2.value.find(
+    (item) => item.formula_id === selectedUscsFormulaId.value
   );
   return formula ? [formula] : [];
 });
@@ -1813,10 +1808,10 @@ const onUpdateParameterSelect = (
     const targetData = isModal
       ? isMetric
         ? updateMetricFileData.value
-        : updateImperialFileData.value
+        : updateUscsFileData.value
       : isMetric
       ? metricTabGridData.value[activeTab.value]
-      : imperialTabGridData.value[activeTab.value];
+      : uscsTabGridData.value[activeTab.value];
 
     if (targetData && targetData[rowIndex]) {
       targetData[rowIndex].parameter_id = selectedParameter.parameter_id || "";
@@ -1849,11 +1844,11 @@ const closeModal = () => {
   selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   metricFileData.value = [];
-  imperialFileData.value = [];
+  uscsFileData.value = [];
   metricFileName.value = "";
-  imperialFileName.value = "";
+  uscsFileName.value = "";
   metricFile.value = null;
-  imperialFile.value = null;
+  uscsFile.value = null;
 };
 
 const openCodeManagementModal = () => {
@@ -1933,19 +1928,17 @@ const openUpdateModal = async () => {
     }
   }
 
-  // 현재 탭의 Metric과 Imperial 데이터를 수정 폼에 복사
+  // 현재 탭의 Metric과 Uscs 데이터를 수정 폼에 복사
   if (metricTabGridData.value[activeTab.value]) {
     updateMetricFileData.value = [...metricTabGridData.value[activeTab.value]];
   }
-  if (imperialTabGridData.value[activeTab.value]) {
-    updateImperialFileData.value = [
-      ...imperialTabGridData.value[activeTab.value],
-    ];
+  if (uscsTabGridData.value[activeTab.value]) {
+    updateUscsFileData.value = [...uscsTabGridData.value[activeTab.value]];
   }
 
   // 파일 첨부 플래그 초기화
   isUpdateMetricFileAttached.value = false;
-  isUpdateImperialFileAttached.value = false;
+  isUpdateUscsFileAttached.value = false;
 
   // 모달 열기
   isUpdateModalOpen.value = true;
@@ -2010,13 +2003,13 @@ const closeUpdateModal = () => {
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
   isExistingSymbol.value = false; // 기존 심볼 플래그 초기화
   updateMetricFileData.value = [];
-  updateImperialFileData.value = [];
+  updateUscsFileData.value = [];
   updateMetricFileName.value = "";
-  updateImperialFileName.value = "";
+  updateUscsFileName.value = "";
   updateMetricFile.value = null;
-  updateImperialFile.value = null;
+  updateUscsFile.value = null;
   isUpdateMetricFileAttached.value = false;
-  isUpdateImperialFileAttached.value = false;
+  isUpdateUscsFileAttached.value = false;
 };
 
 const updateTab = async () => {
@@ -2066,10 +2059,10 @@ const updateTab = async () => {
           }))
       : undefined;
 
-    // Imperial 파라미터 데이터 준비
-    // 파일이 첨부되었으면 updateImperialFileData 사용, 아니면 currentImperialGridData 사용
-    const imperialParameters = isUpdateImperialFileAttached.value
-      ? updateImperialFileData.value
+    // Uscs 파라미터 데이터 준비
+    // 파일이 첨부되었으면 updateUscsFileData 사용, 아니면 currentUscsGridData 사용
+    const uscsParameters = isUpdateUscsFileAttached.value
+      ? updateUscsFileData.value
           .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
           .map((item) => ({
             flow_type_id: currentTab.flow_type_id, // flow_type_id 추가
@@ -2082,8 +2075,8 @@ const updateTab = async () => {
             parameter_unit: item.unit,
             remarks: item.remarks || undefined,
           }))
-      : currentImperialGridData.value.length > 0
-      ? currentImperialGridData.value
+      : currentUscsGridData.value.length > 0
+      ? currentUscsGridData.value
           .filter((item) => item.parameter_code && item.parameter_code !== "")
           .map((item) => ({
             flow_type_id: currentTab.flow_type_id,
@@ -2111,11 +2104,11 @@ const updateTab = async () => {
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
         metric_parameters: metricParameters,
-        imperial_parameters: imperialParameters,
+        uscs_parameters: uscsParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
       metricFile: updateMetricFile.value || undefined, // Metric 계산식 파일 (파일명 변경)
-      imperialFile: updateImperialFile.value || undefined, // Imperial 계산식 파일 (파일명 변경)
+      uscsFile: updateUscsFile.value || undefined, // Uscs 계산식 파일 (파일명 변경)
     };
 
     // 수정 API 호출
@@ -2197,12 +2190,12 @@ const createNewTab = async () => {
       });
     });
 
-    // Imperial 파라미터 데이터 준비 (선택된 파라미터만)
-    console.log("원본 imperialFileData:", imperialFileData.value);
+    // Uscs 파라미터 데이터 준비 (선택된 파라미터만)
+    console.log("원본 uscsFileData:", uscsFileData.value);
 
-    const imperialParameters =
-      imperialFileData.value.length > 0
-        ? imperialFileData.value
+    const uscsParameters =
+      uscsFileData.value.length > 0
+        ? uscsFileData.value
             .filter((item) => item.parameter_code && item.parameter_code !== "") // 선택된 파라미터만 필터링
             .map((item) => ({
               parameter_code: item.parameter_code, // 저장된 parameter_code 사용
@@ -2215,9 +2208,9 @@ const createNewTab = async () => {
             }))
         : undefined;
 
-    console.log("등록할 Imperial 파라미터:", imperialParameters);
-    imperialParameters?.forEach((param, index) => {
-      console.log(`Imperial 파라미터 ${index + 1}:`, {
+    console.log("등록할 Uscs 파라미터:", uscsParameters);
+    uscsParameters?.forEach((param, index) => {
+      console.log(`Uscs 파라미터 ${index + 1}:`, {
         parameter_code: param.parameter_code,
         parameter_name: param.parameter_name,
         is_active: param.is_active,
@@ -2240,11 +2233,11 @@ const createNewTab = async () => {
         is_active: true,
         is_required: true,
         metric_parameters: metricParameters,
-        imperial_parameters: imperialParameters,
+        uscs_parameters: uscsParameters,
       },
       symbolFile: uploadForm.value.file || undefined, // 파일첨부
       metricFile: metricFile.value || undefined, // Metric 계산식 파일 (파일명 변경)
-      imperialFile: imperialFile.value || undefined, // Imperial 계산식 파일 (파일명 변경)
+      uscsFile: uscsFile.value || undefined, // Uscs 계산식 파일 (파일명 변경)
     };
 
     const response = await outflowStore.createWaterFlowType(requestData);
@@ -2256,11 +2249,11 @@ const createNewTab = async () => {
     uploadForm.value.title = "";
     selectedColor.value = "#3b82f6"; // 심볼 색상 초기화
     metricFileData.value = [];
-    imperialFileData.value = [];
+    uscsFileData.value = [];
     metricFileName.value = "";
-    imperialFileName.value = "";
+    uscsFileName.value = "";
     metricFile.value = null;
-    imperialFile.value = null;
+    uscsFile.value = null;
 
     closeModal();
 
@@ -2317,11 +2310,11 @@ const onTabClick = async (index: number) => {
   if (!metricTabGridData.value[index]) {
     metricTabGridData.value[index] = [];
   }
-  if (!imperialTabGridData.value[index]) {
-    imperialTabGridData.value[index] = [];
+  if (!uscsTabGridData.value[index]) {
+    uscsTabGridData.value[index] = [];
   }
-  if (!imperialTabGridData2.value[index]) {
-    imperialTabGridData2.value[index] = [];
+  if (!uscsTabGridData2.value[index]) {
+    uscsTabGridData2.value[index] = [];
   }
 
   // 선택된 탭의 유출종류 코드로 파라미터 조회
@@ -2411,9 +2404,9 @@ onBeforeUnmount(() => {
     }
 
     .tab-content-metric,
-    .tab-content-imperial,
+    .tab-content-uscs,
     .modal-tab-content-metric,
-    .modal-tab-content-imperial {
+    .modal-tab-content-uscs {
       flex: 1;
       background: white;
       border-radius: $border-radius-md;
@@ -2464,7 +2457,7 @@ onBeforeUnmount(() => {
 
     // 모달 내부에서는 배경색과 그림자 제거
     .modal-tab-content-metric,
-    .modal-tab-content-imperial {
+    .modal-tab-content-uscs {
       background: transparent;
       box-shadow: none;
       // border: 1px solid $border-color;

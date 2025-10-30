@@ -1384,7 +1384,7 @@ const handleMetricFileUpload = async (event: Event) => {
               influent: paramData.value || 0,
               unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
               is_active: true,
-              is_required: false,
+              is_required: !!paramData.is_required,
               remarks: paramData.description || "",
             };
             extractedData.push(gridRow);
@@ -1464,7 +1464,7 @@ const handleUscsFileUpload = async (event: Event) => {
               influent: paramData.value || 0,
               unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
               is_active: true,
-              is_required: false,
+              is_required: !!paramData.is_required,
               remarks: paramData.description || "",
             };
             extractedData.push(gridRow);
@@ -1884,7 +1884,6 @@ const createNewTab = async () => {
         description: uploadForm.value.title || undefined,
         symbol_color: selectedColor.value, // 심볼 색상 추가
         is_active: true,
-        is_required: true,
         metric_parameters: metricParameters,
         uscs_parameters: uscsParameters,
       },

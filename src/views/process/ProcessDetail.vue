@@ -28,12 +28,12 @@
             <select
               :value="processStore.processDetail.processType || ''"
               @change="handleProcessTypeChange"
-              :key="`processType-${filteredProcessTypeOptions.length}`"
+              :key="`processType-${(filteredProcessTypeOptions?.length || 0)}`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in filteredProcessTypeOptions"
+                v-for="option in (filteredProcessTypeOptions || [])"
                 :key="option.value"
                 :value="option.value"
               >
@@ -50,12 +50,12 @@
             <select
               :value="processStore.processDetail.subCategory || ''"
               @change="handleSubCategoryChange"
-              :key="`subCategory-${processStore.searchSubCategoryOptions.length}`"
+              :key="`subCategory-${(processStore.searchSubCategoryOptions?.length || 0)}`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in processStore.searchSubCategoryOptions"
+                v-for="option in (processStore.searchSubCategoryOptions || [])"
                 :key="option.value"
                 :value="option.value"
               >
@@ -72,12 +72,12 @@
             <select
               :value="processStore.processDetail.processName || ''"
               @change="handleProcessNameChange"
-              :key="`processName-${processStore.searchProcessNameOptions.length}`"
+              :key="`processName-${(processStore.searchProcessNameOptions?.length || 0)}`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in processStore.searchProcessNameOptions"
+                v-for="option in (processStore.searchProcessNameOptions || [])"
                 :key="option.value"
                 :value="option.value"
               >
@@ -147,7 +147,7 @@
             <button
               @click="handleFormulaDelete"
               class="btn btn-danger"
-              :disabled="selectedFormulaItems.length === 0"
+              :disabled="!selectedFormulaItems"
             >
               {{ t("common.delete") }}
             </button>
@@ -170,9 +170,10 @@
         <DataTable
           v-if="!props.isRegisterMode || isBasicInfoRegistered"
           :columns="formulaColumns"
-          :data="processStore.formulaList"
+          :data="processStore.formulaList || []"
           :selectable="false"
           :max-height="formulaTableMaxHeight"
+          :key="formulaTableKey"
         >
           <template #cell-select="{ item, index }">
             <input
@@ -201,7 +202,7 @@
                   {{ t("common.selectFile") }}
                 </button>
                 <span class="selected-file">
-                  {{ item.file_name || t("common.noFile") }}
+                  {{ item.file_name || (item as any)?._file?.name || t("common.noFile") }}
                   <button
                     v-if="item.formula_id"
                     @click="downloadFormulaFromList(item)"
@@ -280,7 +281,7 @@
               <button
                 @click="handlePfdDelete"
                 class="btn btn-danger"
-                :disabled="selectedPfdItems.length === 0"
+                :disabled="!selectedPfdItems"
               >
                 {{ t("common.delete") }}
               </button>
@@ -306,7 +307,7 @@
               (props.isRegisterMode && isBasicInfoRegistered)
             "
             :columns="pfdColumns"
-            :data="processStore.pfdList"
+            :data="processStore.pfdList || []"
             :selectable="false"
             :max-height="pfdTableMaxHeight"
             :sticky-header="pfdTableMaxHeight !== 'auto'"
@@ -420,7 +421,7 @@
             <button
               class="btn btn-danger"
               @click="deleteSelectedMappingPidItems"
-              :disabled="selectedMappingPidItems.length === 0"
+              :disabled="!selectedMappingPidItems"
             >
               삭제
             </button>
@@ -435,7 +436,7 @@
 
         <DataTable
           :columns="mappingPidColumns"
-          :data="mappingPidList"
+          :data="mappingPidList || []"
           :selectable="false"
           :max-height="pidTableMaxHeight"
           :sticky-header="pidTableMaxHeight !== 'auto'"
@@ -636,7 +637,7 @@
 
       <DataTable
         :columns="pidComponentColumns"
-        :data="pidComponentList"
+        :data="pidComponentList || []"
         :selectable="false"
         :max-height="pidComponentTableMaxHeight"
         :sticky-header="pidComponentTableMaxHeight !== 'auto'"
@@ -966,18 +967,33 @@ const hasProcessSymbolFile = computed(() => {
   );
 });
 
+// 렌더 키 (계산식 그리드 강제 리렌더용)
+const formulaTableKey = ref(0);
+
 // 그리드 스크롤 높이: 10건 초과 시 스크롤 적용
 const formulaTableMaxHeight = computed(() =>
-  processStore.formulaList.length > 10 ? "420px" : "auto"
+  ((Array.isArray(processStore.formulaList)
+    ? processStore.formulaList.length
+    : (processStore.formulaList as any)?.length || 0) > 10)
+    ? "420px"
+    : "auto"
 );
 const pfdTableMaxHeight = computed(() =>
-  processStore.pfdList.length > 10 ? "420px" : "auto"
+  ((Array.isArray(processStore.pfdList)
+    ? processStore.pfdList.length
+    : (processStore.pfdList as any)?.length || 0) > 10)
+    ? "420px"
+    : "auto"
 );
 const pidTableMaxHeight = computed(() =>
-  mappingPidList.value.length > 10 ? "420px" : "auto"
+  (((mappingPidList as any)?.value?.length || (mappingPidList as any)?.length || 0) > 10)
+    ? "420px"
+    : "auto"
 );
 const pidComponentTableMaxHeight = computed(() =>
-  pidComponentList.value.length > 10 ? "420px" : "auto"
+  (((pidComponentList as any)?.value?.length || (pidComponentList as any)?.length || 0) > 10)
+    ? "420px"
+    : "auto"
 );
 
 // 컬럼 정의
@@ -4809,24 +4825,40 @@ const handleFormulaFileChange = (item: any, event: Event) => {
       return;
     }
 
-    // processStore.formulaList에서 해당 항목을 찾아서 업데이트
-    const itemIndex = processStore.formulaList.findIndex(
+    // 즉시 슬롯 항목 반영 (임시 표시)
+    (item as any).file_name = file.name;
+
+    // processStore.formulaList에서 해당 항목을 찾아서 업데이트 (id -> formula_id -> 객체 참조)
+    let itemIndex = processStore.formulaList.findIndex(
       (formulaItem) => formulaItem.id === item.id
     );
-    if (itemIndex !== -1) {
-      processStore.formulaList[itemIndex].registeredFormula = file.name.replace(
-        ".py",
-        ""
-      );
-      (processStore.formulaList[itemIndex] as any)._file = file;
-      processStore.formulaList[
-        itemIndex
-      ].formula_id = `temp_formula_${Date.now()}`;
-      console.log(
-        "계산식 파일이 processStore.formulaList에 업데이트됨:",
-        file.name
+    if (itemIndex === -1 && (item as any).formula_id) {
+      itemIndex = processStore.formulaList.findIndex(
+        (formulaItem) => (formulaItem as any).formula_id === (item as any).formula_id
       );
     }
+    if (itemIndex === -1) {
+      itemIndex = processStore.formulaList.findIndex((formulaItem) => formulaItem === item);
+    }
+
+    if (itemIndex !== -1) {
+      const row = processStore.formulaList[itemIndex] as any;
+      // 표시 컬럼(file_name)에 파일명 저장
+      row.file_name = file.name;
+      // 하위 호환: 기존 필드도 유지 갱신
+      row.registeredFormula = file.name.replace(".py", "");
+      row._file = file;
+      row.isSaved = false;
+      if (!row.formula_id) row.formula_id = `temp_formula_${Date.now()}`;
+      // 반응성 갱신 보장
+      processStore.setFormulaList([...processStore.formulaList]);
+    } else {
+      // id 매칭 실패 시에도 전체 리스트 재할당로 리렌더 유도
+      processStore.setFormulaList([...processStore.formulaList]);
+    }
+
+    // 그리드 강제 리렌더
+    formulaTableKey.value++;
 
     console.log("계산식 파일 선택 완료:", file.name);
   }
@@ -6790,6 +6822,10 @@ const handleFormulaDelete = () => {
   );
   processStore.setFormulaList(updatedList);
   selectedFormulaItems.value = null;
+  // 반응성 플러시 후 강제 리렌더 유도
+  Promise.resolve().then(() => {
+    formulaTableKey.value++;
+  });
 
   console.log("계산식 그리드에서 삭제 완료");
 };
@@ -6842,6 +6878,9 @@ const handleFormulaSave = async () => {
       // 계산식 그리드 새로고침
       await refreshFormulaData();
       console.log("계산식 그리드 새로고침 완료");
+
+      // 렌더 강제 갱신
+      formulaTableKey.value++;
 
       alert("계산식 저장이 완료되었습니다.");
     } else {

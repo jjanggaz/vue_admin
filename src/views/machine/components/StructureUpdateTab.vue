@@ -156,9 +156,9 @@
       :selection-mode="'single'"
       :select-header-text="t('common.selectColumn')"
       :show-select-all="false"
-      :selected-items="selectedEditModeRows"
+      :selected-items="selectedItems"
       row-key="formula_id"
-      @selection-change="handleEditModeSelectionChange"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-file_name="{ value, item }">
         <a
@@ -321,13 +321,11 @@ const editModeColumns: TableColumn[] = [
 
 // 수정 모드용 데이터 (구조물 공식 검색 결과 기준)
 const editModeRows = ref<Array<Record<string, unknown>>>([]);
-const selectedEditModeRows = ref<Array<Record<string, unknown>>>([]);
+const selectedItems = ref<Array<Record<string, unknown>>>([]);
 
 // 선택 변경 핸들러
-const handleEditModeSelectionChange = (
-  selected: Array<Record<string, unknown>>
-) => {
-  selectedEditModeRows.value = selected;
+const handleSelectionChange = (selected: Array<Record<string, unknown>>) => {
+  selectedItems.value = selected;
 };
 
 // 수정 모드에서는 구조물 대분류/타입 변경 불가 (비활성 상태)
@@ -351,13 +349,13 @@ const onDeleteSelectedEditMode = () => {
   if (!validateBasicSelections()) return;
 
   // 선택된 항목이 있는지 확인
-  if (selectedEditModeRows.value.length === 0) {
+  if (selectedItems.value.length === 0) {
     alert(t("messages.warning.noItemToDelete"));
     return;
   }
 
   // 선택된 항목 사용
-  const selectedItem = selectedEditModeRows.value[0];
+  const selectedItem = selectedItems.value[0];
   const formulaName = selectedItem.formula_name as string;
 
   if (confirm(t("messages.confirm.deleteFormula", { name: formulaName }))) {
@@ -368,7 +366,7 @@ const onDeleteSelectedEditMode = () => {
 const handleDeleteFormula = async () => {
   try {
     // 선택된 항목 사용
-    const selectedItem = selectedEditModeRows.value[0];
+    const selectedItem = selectedItems.value[0];
     const formulaId = selectedItem.formula_id as string;
 
     if (!props.selectedItem?.structure_id || !formulaId) {

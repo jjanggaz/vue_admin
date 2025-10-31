@@ -16,8 +16,14 @@
                 class="form-select"
                 @change="handleUnitChange"
               >
-                <option value="METRIC">Metric</option>
-                <option value="USCS">Uscs</option>
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="unit in unitSystems"
+                  :key="unit.unit_system_id"
+                  :value="unit.system_code"
+                >
+                  {{ unit.system_name }}
+                </option>
               </select>
             </div>
           </div>
@@ -185,8 +191,14 @@
                   t("codeManagement.categories.unit")
                 }}</label>
                 <select v-model="registForm.unit" class="form-select">
-                  <option value="metric">Metric</option>
-                  <option value="uscs">Uscs</option>
+                  <option value="">{{ t("common.select") }}</option>
+                  <option
+                    v-for="unit in unitSystems"
+                    :key="unit.unit_system_id"
+                    :value="unit.system_code"
+                  >
+                    {{ unit.system_name }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -556,6 +568,32 @@ const isComponentMounted = ref(false);
 // 단위 선택
 const selectedUnit = ref<string>("METRIC");
 
+// 단위 시스템 옵션 (Pipe.vue 패턴 참조, 추후 API에서 로드하도록 변경 가능)
+const unitSystems = ref<
+  Array<{
+    unit_system_id: string;
+    system_name: string;
+    system_code: string;
+    description: string;
+    is_active: boolean;
+  }>
+>([
+  {
+    unit_system_id: "1",
+    system_name: "Metric",
+    system_code: "METRIC",
+    description: "Metric System",
+    is_active: true,
+  },
+  {
+    unit_system_id: "2",
+    system_name: "Uscs",
+    system_code: "USCS",
+    description: "US Customary System",
+    is_active: true,
+  },
+]);
+
 // 등록 폼 데이터
 const registForm = ref<RegistForm>({
   processType: null,
@@ -569,7 +607,7 @@ const registForm = ref<RegistForm>({
   pidFile: null,
   pfdFile: null,
   excelFile: null,
-  unit: "metric",
+  unit: "METRIC",
 });
 
 // 파일 업로드 그리드 관련 상태
@@ -637,7 +675,7 @@ const closeRegistModal = () => {
     pidFile: null,
     pfdFile: null,
     excelFile: null,
-    unit: "metric",
+    unit: "METRIC",
   };
 
   // 파일 입력 초기화

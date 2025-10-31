@@ -15,8 +15,13 @@
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
-              <option value="METRIC">Metric</option>
-              <option value="USCS">Uscs</option>
+              <option
+                v-for="unit in unitSystems"
+                :key="unit.unit_system_id"
+                :value="unit.system_code"
+              >
+                {{ unit.system_name }}
+              </option>
             </select>
           </div>
 
@@ -987,6 +992,32 @@ const excelFileInput = ref<HTMLInputElement>();
 
 // 단위 선택
 const selectedUnit = ref("");
+
+// 단위 시스템 옵션 (Pipe.vue 패턴 참조, 추후 API에서 로드하도록 변경 가능)
+const unitSystems = ref<
+  Array<{
+    unit_system_id: string;
+    system_name: string;
+    system_code: string;
+    description: string;
+    is_active: boolean;
+  }>
+>([
+  {
+    unit_system_id: "1",
+    system_name: "Metric",
+    system_code: "METRIC",
+    description: "Metric System",
+    is_active: true,
+  },
+  {
+    unit_system_id: "2",
+    system_name: "Uscs",
+    system_code: "USCS",
+    description: "US Customary System",
+    is_active: true,
+  },
+]);
 
 // 필수 입력 검증을 위한 computed 속성들
 const hasProcessSymbolFile = computed(() => {

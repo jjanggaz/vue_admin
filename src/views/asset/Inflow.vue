@@ -734,7 +734,7 @@
             @click="updateTab"
             :disabled="isUpdating"
           >
-            {{ isUpdating ? t("common.processing") : t("common.update") }}
+            {{ isUpdating ? t("common.processing") : t("common.save") }}
           </button>
         </div>
       </div>
@@ -886,7 +886,6 @@ interface GridRow2 {
   formula: string; // formula_name 표시
   uploadDate: string; // created_at을 YYYY-MM-DD 형태로 변환
   created_at: string; // 원본 created_at (비교용)
-  isLatest: boolean; // 가장 최근 업로드된 항목인지 여부
 }
 
 interface UploadForm {
@@ -945,15 +944,6 @@ const deleteMetricFormula = async () => {
     return;
   }
 
-  // 선택된 항목이 최신 항목인지 확인
-  const selectedItem = currentGridData2.value.find(
-    (item) => item.formula_id === selectedMetricFormulaId.value
-  );
-  if (selectedItem?.isLatest) {
-    alert(t("messages.warning.cannotDeleteLatestFormula"));
-    return;
-  }
-
   if (confirm(t("messages.confirm.deleteMetricFormula"))) {
     try {
       await inflowStore.deleteFormula(selectedMetricFormulaId.value);
@@ -988,15 +978,6 @@ const deleteMetricFormula = async () => {
 const deleteUscsFormula = async () => {
   if (!selectedUscsFormulaId.value) {
     alert(t("messages.warning.pleaseSelectItemToDelete"));
-    return;
-  }
-
-  // 선택된 항목이 최신 항목인지 확인
-  const selectedItem = currentUscsGridData2.value.find(
-    (item) => item.formula_id === selectedUscsFormulaId.value
-  );
-  if (selectedItem?.isLatest) {
-    alert(t("messages.warning.cannotDeleteLatestFormula"));
     return;
   }
 
@@ -1115,13 +1096,6 @@ const loadWaterFlowTypeParameters = async (
         const formulas =
           inflowStore.waterFlowTypeParameters.metric_formulas.data.formulas;
 
-        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
-        const sortedFormulas = [...formulas].sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        const latestCreatedAt = sortedFormulas[0]?.created_at;
-
         const metricFormulas: GridRow2[] = formulas.map((formula, index) => ({
           id: index + 1, // 순번
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
@@ -1138,7 +1112,6 @@ const loadWaterFlowTypeParameters = async (
             })
             .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
-          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
         }));
         tabGridData2.value[activeTab.value] = metricFormulas;
       } else {
@@ -1154,13 +1127,6 @@ const loadWaterFlowTypeParameters = async (
       ) {
         const formulas =
           inflowStore.waterFlowTypeParameters.uscs_formulas.data.formulas;
-
-        // created_at 기준으로 정렬하여 가장 최근 항목 찾기
-        const sortedFormulas = [...formulas].sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        const latestCreatedAt = sortedFormulas[0]?.created_at;
 
         const uscsFormulas: GridRow2[] = formulas.map((formula, index) => ({
           id: index + 1, // 순번
@@ -1178,7 +1144,6 @@ const loadWaterFlowTypeParameters = async (
             })
             .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
-          isLatest: formula.created_at === latestCreatedAt, // 가장 최근 항목인지 여부
         }));
         uscsTabGridData2.value[activeTab.value] = uscsFormulas;
       } else {

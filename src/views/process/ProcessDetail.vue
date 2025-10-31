@@ -147,7 +147,7 @@
             <button
               @click="handleFormulaDelete"
               class="btn btn-danger"
-              :disabled="!selectedFormulaItems"
+              :disabled="!selectedFormulaItems || (Array.isArray(selectedFormulaItems) && selectedFormulaItems.length === 0)"
             >
               {{ t("common.delete") }}
             </button>
@@ -224,6 +224,9 @@
               컴포넌트
             </button>
           </template>
+          <template #cell-registrationDate="{ item }">
+            {{ formatDateTime(item.registrationDate) }}
+          </template>
         </DataTable>
 
         <!-- Components 목록 섹션 -->
@@ -281,7 +284,7 @@
               <button
                 @click="handlePfdDelete"
                 class="btn btn-danger"
-                :disabled="!selectedPfdItems"
+                :disabled="selectedPfdItems.length === 0"
               >
                 {{ t("common.delete") }}
               </button>
@@ -421,7 +424,7 @@
             <button
               class="btn btn-danger"
               @click="deleteSelectedMappingPidItems"
-              :disabled="!selectedMappingPidItems"
+              :disabled="!selectedMappingPidItems || (Array.isArray(selectedMappingPidItems) && selectedMappingPidItems.length === 0)"
             >
               삭제
             </button>
@@ -1017,7 +1020,14 @@ const pfdColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "pfdFileName", title: "공정카드 파일", sortable: false },
   { key: "svgFile", title: "Svg 파일", sortable: false },
-  { key: "registrationDate", title: "등록일자", sortable: false },
+  { 
+    key: "registrationDate", 
+    title: "등록일자", 
+    sortable: false,
+    formatter: (value: any, item: any) => {
+      return item?.registrationDate || item?.created_at || value || '-';
+    }
+  },
   { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
   { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true },
 ];
@@ -1117,18 +1127,60 @@ const formatDateString = (
   return "";
 };
 
+// 날짜를 YYYY-MM-DD HH:MI 형식으로 변환하는 헬퍼 함수
+const formatDateTime = (
+  dateValue: string | Date | undefined | null
+): string => {
+  if (!dateValue) {
+    return "";
+  }
+
+  // 이미 "YYYY-MM-DD HH:MI" 형식인 경우 그대로 반환
+  if (typeof dateValue === "string") {
+    const trimmedValue = dateValue.trim();
+    
+    // 이미 포맷된 형식 체크 (YYYY-MM-DD HH:MI 또는 YYYY-MM-DD HH:MM)
+    const alreadyFormattedPattern = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
+    if (alreadyFormattedPattern.test(trimmedValue)) {
+      return trimmedValue;
+    }
+    
+    // 문자열이 비어있으면 빈 문자열 반환
+    if (trimmedValue === "") {
+      return "";
+    }
+  }
+
+  let date: Date;
+  
+  if (dateValue instanceof Date) {
+    date = dateValue;
+  } else if (typeof dateValue === "string") {
+    try {
+      date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        return "";
+      }
+    } catch (e) {
+      return "";
+    }
+  } else {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
 // Svg 파일명 가져오는 함수
 const getSvgFileName = (item: any): string => {
-  console.log("getSvgFileName 호출:", {
-    svgFileName: item.svgFileName,
-    symbol_id: item.symbol_id,
-    pfdFileName: item.pfdFileName,
-    symbol_uri: item.symbol_uri,
-  });
-
   // 1. svgFileName이 있으면 사용
   if (item.svgFileName) {
-    console.log("svgFileName 사용:", item.svgFileName);
     return item.svgFileName;
   }
 
@@ -1146,7 +1198,6 @@ const getSvgFileName = (item: any): string => {
         const fileName = pathname.split("/").pop(); // 마지막 경로 세그먼트를 파일명으로 사용
 
         if (fileName && fileName.trim() !== "") {
-          console.log("symbol_uri 절대 URL에서 파일명 추출:", fileName);
           return fileName;
         }
       } else {
@@ -1156,7 +1207,6 @@ const getSvgFileName = (item: any): string => {
         if (lastSlashIndex !== -1) {
           const fileName = uri.substring(lastSlashIndex + 1);
           if (fileName && fileName.trim() !== "") {
-            console.log("symbol_uri 상대 경로에서 파일명 추출:", fileName);
             return fileName;
           }
         }
@@ -1170,7 +1220,6 @@ const getSvgFileName = (item: any): string => {
       if (lastSlashIndex !== -1) {
         const fileName = uri.substring(lastSlashIndex + 1);
         if (fileName && fileName.trim() !== "") {
-          console.log("symbol_uri 문자열에서 파일명 추출:", fileName);
           return fileName;
         }
       }
@@ -1182,20 +1231,15 @@ const getSvgFileName = (item: any): string => {
     const pfdFileName = item.pfdFileName;
     // 확장자 제거 후 .svg 추가
     const baseName = pfdFileName.replace(/\.[^/.]+$/, "");
-    const result = `${baseName}.svg`;
-    console.log("pfdFileName에서 svg 파일명 생성:", result);
-    return result;
+    return `${baseName}.svg`;
   }
 
   // 4. symbol_id만 있고 pfdFileName이 없으면 기본 파일명 생성
   if (item.symbol_id) {
-    const result = `svg_file_${item.symbol_id.substring(0, 8)}.svg`;
-    console.log("symbol_id에서 svg 파일명 생성:", result);
-    return result;
+    return `svg_file_${item.symbol_id.substring(0, 8)}.svg`;
   }
 
   // 5. 모두 없으면 '선택된 파일 없음'
-  console.log("파일명 없음 - 기본값 반환");
   return t("common.noFile");
 };
 
@@ -1262,12 +1306,16 @@ const searchPfdDrawingAPI = async (processId: string) => {
 
         const drawingId = item.drawing_id || item.id;
 
+        // 등록일자: API 응답의 created_at 찾기 (다양한 위치 확인)
+        const registrationDate = item.created_at 
+          || item.current_file?.created_at 
+          || null;
+
         return {
           id: `pfd-${index + 1}`,
           no: index + 1,
           pfdFileName: fileName,
-          registrationDate:
-            item.created_at || item.uploaded_at || formatDate(new Date()),
+          registrationDate: registrationDate,
           mappingPidList: "보기",
           remarks: item.remarks || "",
           drawing_id: drawingId,
@@ -3018,18 +3066,30 @@ const hasMappingPidChanges = () => {
 };
 
 const hasPidComponentChanges = () => {
-  const currentList = pidComponentList.value.map((item) => ({
-    pid_id: item.pid_id,
-    category: item.category,
-    middleCategory: item.middleCategory,
-    smallCategory: item.smallCategory,
-    equipmentType: item.equipmentType,
-    standard_quantity: item.standard_quantity,
-    spare_quantity: item.spare_quantity,
-  }));
+  // 빈 배열 체크
+  const initial = initialPidComponentList.value || [];
+  const current = pidComponentList.value || [];
+  
+  if (initial.length === 0 && current.length === 0) {
+    return false;
+  }
+
+  // 데이터 정규화 함수
+  const normalize = (list: any[]) =>
+    list.map((item) => ({
+      pid_id: item.pid_id ?? null,
+      category: item.category ?? null,
+      middleCategory: item.middleCategory ?? null,
+      smallCategory: item.smallCategory ?? null,
+      equipmentType: item.equipmentType ?? null,
+      standard_quantity: Number(item.standard_quantity ?? 0),
+    }));
+
+  const normalizedInitial = normalize(initial);
+  const normalizedCurrent = normalize(current);
+
   return (
-    JSON.stringify(initialPidComponentList.value) !==
-    JSON.stringify(currentList)
+    JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedCurrent)
   );
 };
 
@@ -8516,15 +8576,11 @@ const refreshPfdData = async () => {
       processId = props.processId || (route.params.id as string);
     }
 
-    console.log("PFD 데이터 새로고침 시작...");
-
     const pfdDrawingsData = await searchPfdDrawingAPI(processId);
 
     if (pfdDrawingsData && Array.isArray(pfdDrawingsData)) {
       const pfdItems = await Promise.all(
         pfdDrawingsData.map(async (item: any, index: number) => {
-          console.log(`새로고침 PFD 아이템 ${index + 1}:`, item);
-
           const drawingId =
             item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
 
@@ -8561,27 +8617,17 @@ const refreshPfdData = async () => {
             }
           }
 
-          // 등록일자 디버깅 로그
-          console.log("서버 응답 PFD 아이템 (refreshPfdData):", {
-            index: index + 1,
-            registrationDate: item.registrationDate,
-            created_at: item.created_at,
-            uploaded_at: item.uploaded_at,
-            전체아이템: item,
-          });
-
-          // 등록일자 포맷팅 (YYYY-MM-DD)
-          const registrationDateValue =
-            item.registrationDate || item.created_at || item.uploaded_at;
-          const formattedRegistrationDate = registrationDateValue
-            ? formatDateString(registrationDateValue)
-            : formatDate(new Date());
+          // 등록일자: 기존 registrationDate가 있으면 사용, 없으면 API 응답의 created_at 사용
+          const registrationDate = item.registrationDate 
+            || item.created_at 
+            || item.current_file?.created_at 
+            || null;
 
           return {
             id: `pfd_${index + 1}`,
             no: index + 1,
             pfdFileName: item.current_file?.file_name || item.pfdFileName || "",
-            registrationDate: formattedRegistrationDate,
+            registrationDate: registrationDate,
             mappingPidList: "",
             remarks: item.remarks || "",
             drawing_id: drawingId,
@@ -8595,10 +8641,7 @@ const refreshPfdData = async () => {
       processStore.setPfdList(pfdItems);
       const initialPfdData = JSON.parse(JSON.stringify(pfdItems));
       processStore.setInitialPfdList(initialPfdData);
-
-      console.log("PFD 데이터 새로고침 완료:", pfdItems.length, "개");
     } else {
-      console.log("PFD 데이터가 없습니다.");
       processStore.setPfdList([]);
       processStore.setInitialPfdList([]);
     }
@@ -10736,51 +10779,25 @@ onMounted(async () => {
 
       // PFD 도면 검색 API 호출하여 데이터 로드
       try {
-        console.log("PFD 도면 검색 API 호출 시작...");
         const pfdDrawingsData = await searchPfdDrawingAPI(processId);
 
         if (pfdDrawingsData && Array.isArray(pfdDrawingsData)) {
           const pfdItems = pfdDrawingsData.map((item: any, index: number) => {
-            console.log(`onMounted PFD 아이템 ${index + 1}:`, item);
-            console.log(
-              `onMounted PFD 아이템 ${index + 1} - pfdFileName:`,
-              item.pfdFileName
-            );
-            console.log(
-              `onMounted PFD 아이템 ${index + 1} - drawing_id:`,
-              item.drawing_id
-            );
-            console.log(`onMounted PFD 아이템 ${index + 1} - id:`, item.id);
-
             const drawingId =
               item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
-            console.log(
-              `onMounted PFD 아이템 ${index + 1} - 최종 drawing_id:`,
-              drawingId
-            );
 
-            // 등록일자 디버깅 로그
-            console.log("서버 응답 PFD 아이템 (onMounted):", {
-              index: index + 1,
-              registrationDate: item.registrationDate,
-              created_at: item.created_at,
-              uploaded_at: item.uploaded_at,
-              전체아이템: item,
-            });
-
-            // 등록일자 포맷팅 (YYYY-MM-DD)
-            const registrationDateValue =
-              item.registrationDate || item.created_at || item.uploaded_at;
-            const formattedRegistrationDate = registrationDateValue
-              ? formatDateString(registrationDateValue)
-              : formatDate(new Date());
+            // 등록일자: 기존 registrationDate가 있으면 사용, 없으면 API 응답의 created_at 사용
+            const registrationDate = item.registrationDate 
+              || item.created_at 
+              || item.current_file?.created_at 
+              || null;
 
             return {
               id: `pfd_${index + 1}`,
               no: index + 1,
               pfdFileName:
                 item.current_file?.file_name || item.pfdFileName || "",
-              registrationDate: formattedRegistrationDate,
+              registrationDate: registrationDate,
               mappingPidList: "",
               remarks: item.remarks || "",
               drawing_id: drawingId,
@@ -10792,10 +10809,7 @@ onMounted(async () => {
           processStore.setPfdList(pfdItems);
           const initialPfdData = JSON.parse(JSON.stringify(pfdItems));
           processStore.setInitialPfdList(initialPfdData);
-
-          console.log("PFD 데이터 로드 완료:", pfdItems.length, "개");
         } else {
-          console.log("PFD 데이터가 없습니다.");
           processStore.setPfdList([]);
           processStore.setInitialPfdList([]);
         }
@@ -10805,7 +10819,6 @@ onMounted(async () => {
         processStore.setInitialPfdList([]);
       }
 
-      console.log("ProcessDetail 컴포넌트 초기화 완료");
     } else {
       console.warn("processId가 없습니다.");
     }

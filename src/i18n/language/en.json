@@ -1375,7 +1375,8 @@
       "noStructureInfo": "No structure information to update.",
       "structureUpdateSuccess": "Structure updated successfully.",
       "structureUpdateFail": "Structure update failed. Please try again.",
-      "excelTemplateDownloadFailed": "Excel template download failed."
+      "excelTemplateDownloadFailed": "Excel template download failed.",
+      "invalidFormulaFileNameFormat": "Only English characters allowed, no spaces, within 100 characters, special characters \"_ - ()\" only."
     },
     "info": {}
   },

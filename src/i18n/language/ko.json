@@ -1371,7 +1371,8 @@
       "noStructureInfo": "수정할 구조물 정보가 없습니다.",
       "structureUpdateSuccess": "구조물이 성공적으로 수정되었습니다.",
       "structureUpdateFail": "구조물 수정에 실패했습니다. 다시 시도해주세요.",
-      "excelTemplateDownloadFailed": "Excel 템플릿 다운로드에 실패했습니다."
+      "excelTemplateDownloadFailed": "Excel 템플릿 다운로드에 실패했습니다.",
+      "invalidFormulaFileNameFormat": "영문만 사용, 공백 불가, 100자 이내, 특수 기호는 \"_ - ()\"만 허용합니다."
     },
     "info": {}
   },

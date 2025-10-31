@@ -401,16 +401,35 @@ const handleFormulaFileChange = (e: Event) => {
       return;
     }
 
+    // 파일명 validation (확장자 제외)
+    const fileNameWithoutExt = file.name.substring(
+      0,
+      file.name.lastIndexOf(".")
+    );
+
+    // 100자 이내 체크
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      return;
+    }
+
+    // 영문, 공백, 특수기호 체크 (영문, 숫자, _, -, (, ) 허용)
+    const validFileNamePattern = /^[a-zA-Z0-9_\-\\(\\)]+$/;
+    if (!validFileNamePattern.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      formulaFileName.value = "";
+      formulaFile.value = null;
+      return;
+    }
+
     // 선택된 equipment_type 결정 (4Depth 우선, 없으면 3Depth)
     const equipmentType = selectedFourthDept.value || selectedThirdDept.value;
 
     if (equipmentType) {
-      // 파일명에서 확장자를 제외한 이름 추출
-      const fileNameWithoutExt = file.name.substring(
-        0,
-        file.name.lastIndexOf(".")
-      );
-
       // 파일명의 마지막에 equipmentType이 있는지 확인
       if (fileNameWithoutExt.endsWith(equipmentType)) {
         // 파일명의 마지막에 equipmentType이 있으면 첨부 허용

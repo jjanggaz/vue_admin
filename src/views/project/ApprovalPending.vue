@@ -1,15 +1,17 @@
 <template>
   <div class="project-management">
     <div class="action-bar">
-      <div></div>
-      <div class="btns">
-        <button
-          class="btn btn-primary btn-delete"
-          @click="handleDelete"
-          :disabled="selectedItems.length === 0"
-        >
-          {{ t("common.delete") }}
-        </button>
+      <div class="search-bar">
+        <div class="group-form">
+          <label for="approval-search" class="label-search">{{ t("common.search") }}</label>
+          <div class="form-item">
+            <input id="approval-search" type="text" v-model="searchValue" @keyup.enter="handleSearch" />
+          </div>
+          <button class="btn-search" @click="handleSearch">{{ t("common.search") }}</button>
+          <span v-if="approvalList.length > 0" class="blink-alert">
+            승인요청이 {{ approvalList.length }}건 있습니다
+          </span>
+        </div>
       </div>
     </div>
     <DataTable
@@ -115,6 +117,7 @@ const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const selectedItems = ref<ApprovalItem[]>([]);
+const searchValue = ref("");
 
 const totalCountComputed = computed(() => approvalList.value.length);
 const totalPagesComputed = computed(
@@ -136,24 +139,11 @@ const handlePageChange = (page: number) => {
   selectedItems.value = [];
 };
 
-const handleDelete = () => {
-  if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.pleaseSelectItemToDelete"));
-    return;
-  }
-  if (
-    confirm(
-      t("messages.confirm.deleteItems", { count: selectedItems.value.length })
-    )
-  ) {
-    const selectedIds = selectedItems.value.map((item) => item.id);
-    approvalList.value = approvalList.value.filter(
-      (item) => !selectedIds.includes(item.id)
-    );
-    selectedItems.value = [];
-    alert(t("messages.success.deleted"));
-  }
+const handleSearch = () => {
+  // TODO: 승인대기 검색 로직 연동 시 구현
 };
+
+// 삭제 버튼 UI 제거로 핸들러 미사용
 
 // 샘플 데이터 로드 함수
 const loadData = () => {
@@ -199,6 +189,33 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+}
+.group-form {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+.label-search {
+  margin-right: 0.5rem;
+}
+.form-item {
+  margin-right: 0.5rem;
+}
+.btn-search {
+  margin-left: 0.5rem;
+}
+.blink-alert {
+  margin-left: 0.5rem;
+  color: #e74c3c;
+  font-weight: 700;
+  animation: blink 1s step-start infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
 }
 .btns {
   display: flex;

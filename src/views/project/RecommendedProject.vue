@@ -203,13 +203,7 @@ const handlePageChange = (page: number) => {
   cursor: pointer;
 }
 .btn-search {
-  background: $primary-color;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1.2rem;
-  font-size: 1rem;
-  cursor: pointer;
+  margin-left: 0.5rem;
 }
 .input-cell {
   width: 100%;

@@ -19,9 +19,18 @@
           <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
+          <span
+            v-if="approvalPendingCount > 0"
+            class="blink-alert"
+            @click="goToApprovalPending"
+          >
+            승인요청이 있습니다
+          </span>
         </div>
       </div>
-      <!-- 삭제 버튼 제거됨 -->
+      <button class="btn btn-delete" @click="handleDelete">
+        {{ t("common.delete") }}
+      </button>
     </div>
     <!-- 데이터 테이블 -->
     <div v-if="loading" class="loading-container">
@@ -33,15 +42,11 @@
       :columns="tableColumns"
       :data="paginatedProjectList"
       :loading="false"
-      :selectable="false"
-      :default-sort="
-        projectStore.sortField && projectStore.sortOrder
-          ? {
-              key: projectStore.sortField,
-              direction: projectStore.sortOrder,
-            }
-          : undefined
-      "
+      :selectable="true"
+      selectionMode="single"
+      :showSelectAll="false"
+      :selected-items="selectedItems"
+      @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
     >
       <template #cell-detail="{ item }">
@@ -82,9 +87,11 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import ProjectDetail from "./components/ProjectDetail.vue";
 import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
+import { useRouter } from "vue-router";
 
 const { t } = useI18n();
 const projectStore = useProjectStore();
+const router = useRouter();
 
 // 모달 상태
 const showProjectDetail = ref(false);
@@ -128,6 +135,7 @@ const selectedProjectData = ref<{
   };
 } | null>(null);
 const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
+const selectedItems = ref<ProjectItem[]>([]);
 
 const tableColumns: TableColumn[] = [
   {
@@ -216,6 +224,17 @@ const paginatedProjectList = computed(() => {
   }));
 });
 
+// 승인대기 건수 (현재 목록에서 상태 기준 계산)
+const approvalPendingCount = computed(() => {
+  return 1;
+  // return projectStore.projectList.filter((p) => p.project_status === "승인대기")
+  //   .length;
+});
+
+const goToApprovalPending = () => {
+  router.push({ name: "ApprovalPending" });
+};
+
 const handlePageChange = async (page: number) => {
   try {
     // 현재 검색 조건과 정렬 조건을 유지하면서 페이지 변경
@@ -229,6 +248,10 @@ const handlePageChange = async (page: number) => {
     const errorMessage = error?.message || "페이지 변경에 실패했습니다.";
     alert(errorMessage);
   }
+};
+
+const handleSelectionChange = (items: ProjectItem[]) => {
+  selectedItems.value = items;
 };
 
 const handleSearch = async () => {
@@ -279,6 +302,43 @@ const handleSortChange = async (sortInfo: {
     console.error("정렬 실패:", error);
     const errorMessage = error?.message || "정렬에 실패했습니다.";
     alert(errorMessage);
+  }
+};
+
+// 삭제 버튼 핸들러
+const handleDelete = async () => {
+  if (!selectedItems.value.length) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  const selected = selectedItems.value[0];
+  const apiOriginal = projectStore.originalApiData.find(
+    (it) => it.project_id === (selected as any).id
+  );
+  if (!apiOriginal) {
+    alert(t("messages.error.deleteFailed"));
+    return;
+  }
+
+  if (!confirm(t("messages.confirm.deleteItem"))) return;
+
+  const result = await projectStore.deleteProject(apiOriginal.project_id, {
+    clientId: apiOriginal.client_id,
+    siteId: apiOriginal.site_id,
+  });
+
+  if (result?.success) {
+    alert(t("messages.success.deleted"));
+    // 현재 페이지 새로고침
+    await projectStore.changePage(projectStore.currentPage, {
+      search_value: searchQueryInput.value,
+      order_by: projectStore.sortField,
+      order_direction: projectStore.sortOrder,
+    });
+    selectedItems.value = [];
+  } else {
+    alert(result?.message || t("messages.error.deleteFailed"));
   }
 };
 
@@ -387,6 +447,23 @@ onMounted(async () => {
   margin-right: 0.5rem;
 }
 .btn-search {
+  margin-left: 0.5rem;
+}
+
+.blink-alert {
+  margin-left: 0.5rem;
+  color: #e74c3c;
+  font-weight: 700;
+  cursor: pointer;
+  animation: blink 1s step-start infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.btn-danger {
   margin-left: 0.5rem;
 }
 

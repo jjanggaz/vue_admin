@@ -224,6 +224,22 @@ export const useProjectStore = defineStore("project", () => {
     sortOrder.value = "asc";
   };
 
+  // 프로젝트 삭제
+  const deleteProject = async (
+    projectId: string,
+    params: { clientId: string; siteId: string }
+  ) => {
+    const res = await request(`/api/project/delete/${projectId}`, undefined, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clientId: params.clientId,
+        siteId: params.siteId,
+      }),
+    });
+    return res;
+  };
+
   return {
     // 상태
     projectList,
@@ -246,5 +262,6 @@ export const useProjectStore = defineStore("project", () => {
     handleSearch,
     changePage,
     resetState,
+    deleteProject,
   };
 });

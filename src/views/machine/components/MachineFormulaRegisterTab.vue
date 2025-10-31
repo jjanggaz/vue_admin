@@ -159,12 +159,6 @@ const listColumns: TableColumn[] = [
     width: "120px",
     sortable: false,
   },
-  {
-    key: "version",
-    title: t("common.formulaVersion"),
-    width: "120px",
-    sortable: false,
-  },
   { key: "unit", title: t("common.unit"), width: "100px", sortable: false },
   {
     key: "createdAt",
@@ -226,8 +220,14 @@ const setFormulaListData = (response: any) => {
   console.log("formulas:", formulas);
   console.log("equipmentType:", equipmentType);
 
-  // formulas 배열을 listRows로 변환
-  listRows.value = formulas.map((formula: any, index: number) => ({
+  // 생성일자 기준 내림차순 정렬 후 listRows로 변환
+  const sortedFormulas = [...formulas].sort((a: any, b: any) => {
+    const aDate = new Date(a.uploaded_at || 0).getTime();
+    const bDate = new Date(b.uploaded_at || 0).getTime();
+    return bDate - aDate;
+  });
+
+  listRows.value = sortedFormulas.map((formula: any, index: number) => ({
     no: index + 1,
     type: equipmentType?.code_value || formula.ownership_code_key || "-",
     fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장

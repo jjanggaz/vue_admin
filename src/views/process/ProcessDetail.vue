@@ -10692,11 +10692,31 @@ onMounted(async () => {
                   });
                 }
               }
+
+              if (!matchedOption) {
+                // 4. process_code로 비교 (더 정확한 매칭)
+                if (processStore.processDetail.processCode) {
+                  matchedOption = processStore.searchProcessNameOptions.find(
+                    (option) =>
+                      option.value === processStore.processDetail.processCode
+                  );
+                  if (matchedOption) {
+                    console.log("process_code로 매칭된 옵션:", matchedOption);
+                    processStore.setProcessDetail({
+                      processName: matchedOption.value,
+                    });
+                  }
+                }
+              }
             }
 
             if (!matchedOption) {
-              // 일치하는 값이 없는 경우 '-- 선택 --'으로 설정
-              processStore.setProcessDetail({ processName: "" });
+              console.warn("공정명 옵션에 일치하는 값이 없습니다:", {
+                processName: processStore.processDetail.processName,
+                processCode: processStore.processDetail.processCode,
+                optionsCount: processStore.searchProcessNameOptions.length,
+              });
+              // 일치하는 값이 없는 경우 빈 값으로 설정하지 않고 그대로 유지
             }
           }
         }
@@ -11074,6 +11094,79 @@ watch(
     }
   },
   { immediate: false }
+);
+
+// 공정명 옵션이 로드된 후 값 자동 설정
+watch(
+  () => processStore.searchProcessNameOptions,
+  async (newOptions, oldOptions) => {
+    // 옵션이 로드되고, processName이 있는데 select box에 반영되지 않은 경우
+    if (
+      newOptions &&
+      newOptions.length > 0 &&
+      processStore.processDetail.processName &&
+      !props.isRegisterMode
+    ) {
+      await nextTick();
+
+      // 현재 공정명 값이 옵션에 존재하는지 확인
+      let matchedOption = null;
+
+      // 1. 정확한 값 비교
+      matchedOption = newOptions.find(
+        (option) =>
+          option.value === processStore.processDetail.processName
+      );
+
+      if (!matchedOption) {
+        // 2. 문자열 변환 후 비교
+        matchedOption = newOptions.find(
+          (option) =>
+            String(option.value) ===
+            String(processStore.processDetail.processName)
+        );
+
+        if (!matchedOption) {
+          // 3. 라벨로 비교
+          matchedOption = newOptions.find(
+            (option) =>
+              option.label === processStore.processDetail.processName
+          );
+
+          if (matchedOption) {
+            console.log("공정명 옵션 watch: 라벨로 매칭된 옵션:", matchedOption);
+            // 라벨이 일치하면 value로 업데이트
+            processStore.setProcessDetail({
+              processName: matchedOption.value,
+            });
+          }
+        }
+      }
+
+      // 4. process_code로 비교 (더 정확한 매칭)
+      if (!matchedOption && processStore.processDetail.processCode) {
+        matchedOption = newOptions.find(
+          (option) =>
+            option.value === processStore.processDetail.processCode
+        );
+        if (matchedOption) {
+          console.log("공정명 옵션 watch: process_code로 매칭된 옵션:", matchedOption);
+        }
+      }
+
+      // 매칭된 옵션이 있고, 현재 값이 다르면 업데이트
+      if (matchedOption && matchedOption.value !== processStore.processDetail.processName) {
+        console.log("공정명 옵션 watch: 값 업데이트", {
+          현재값: processStore.processDetail.processName,
+          새값: matchedOption.value,
+        });
+        processStore.setProcessDetail({
+          processName: matchedOption.value,
+        });
+      }
+    }
+  },
+  { deep: true }
 );
 </script>
 

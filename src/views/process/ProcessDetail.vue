@@ -103,19 +103,41 @@
               >
                 {{ t("common.selectFile") }}
               </button>
-              <span class="selected-file">{{
-                getSelectedFilesText("processSymbol") ||
-                getProcessSymbolFileName() ||
-                t("common.noFile")
-              }}</span>
-              <button
-                v-if="processStore.processDetail.symbolId"
-                @click="downloadProcessSymbol"
-                class="btn btn-sm btn-outline-primary download-btn"
-                title="공정심볼 다운로드"
-              >
-                <i class="fas fa-download"></i>
-              </button>
+              <span class="selected-file">
+                <div style="position: relative; display: inline-block;">
+                  <span
+                    v-if="!processStore.processSymbolPreviewUrl"
+                    style="color: #6b7280; font-size: 14px; font-style: italic; display: block; padding: 40px 10px; text-align: center;"
+                  >
+                    {{ t("common.noFile") }}
+                  </span>
+                  <img
+                    v-else
+                    :src="processStore.processSymbolPreviewUrl"
+                    alt="공정심볼 미리보기"
+                    style="max-width: 100px; max-height: 100px; vertical-align: middle; display: block;"
+                  />
+                  <button
+                    v-if="(processStore.processDetail.symbolId && processStore.processDetail.symbolId !== '00000000-0000-0000-0000-000000000000') || processStore.processSymbolPreviewUrl"
+                    @click="handleDeleteProcessSymbol"
+                    title="심볼 삭제"
+                    style="position: absolute; top: 0; right: 0; width: 20px; height: 20px; border-radius: 0; border: none; background-color: rgba(0, 0, 0, 0.5); color: white; font-size: 18px; font-weight: normal; font-family: Arial, sans-serif; line-height: 1; text-align: center; cursor: pointer; transition: background-color 0.2s; z-index: 10; padding: 1px 0 0 0; margin: 0;"
+                    @mouseover="$event.target.style.backgroundColor='rgba(0,0,0,0.7)'"
+                    @mouseout="$event.target.style.backgroundColor='rgba(0,0,0,0.5)'"
+                  >
+                    ×
+                  </button>
+                </div>
+                <button
+                  v-if="processStore.processDetail.symbolId && processStore.processDetail.symbolId !== '00000000-0000-0000-0000-000000000000'"
+                  @click="downloadProcessSymbol"
+                  class="btn btn-sm btn-outline-primary download-btn"
+                  title="공정심볼 다운로드"
+                  style="margin-left: 10px; vertical-align: middle;"
+                >
+                  <i class="fas fa-download"></i>
+                </button>
+              </span>
             </div>
           </div>
         </div>
@@ -127,6 +149,11 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- 파일명 규칙 안내 -->
+    <div style="color: red; padding: 10px 15px; margin-bottom: 15px; text-align: center;">
+      ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만 허용합니다.
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -1068,12 +1095,12 @@ const pidComponentColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false, width: "50px" },
   { key: "pid_id", title: "POC IN", sortable: false, width: "80px" },
   { key: "category", title: "구분", sortable: false, width: "100px" },
+  { key: "smallCategory", title: "대분류", sortable: false, width: "120px" },
   { key: "middleCategory", title: "중분류", sortable: false, width: "120px" },
-  { key: "smallCategory", title: "소분류", sortable: false, width: "120px" },
-  { key: "equipmentType", title: "장비유형", sortable: false, width: "250px" },
+  { key: "equipmentType", title: "유형", sortable: false, width: "250px" },
   {
     key: "standard_quantity",
-    title: "수량(상용)",
+    title: "총수량",
     sortable: false,
     width: "80px",
   },
@@ -1082,6 +1109,7 @@ const pidComponentColumns: TableColumn[] = [
     title: "수량(예비)",
     sortable: false,
     width: "80px",
+    hidden: true,
   },
 ];
 
@@ -1678,29 +1706,13 @@ const handleFileChange = async (key: string, event: Event) => {
     const file = target.files[0];
 
     if (key === "processSymbol") {
-      if (!file.name.toLowerCase().endsWith(".svg")) {
-        alert("SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.");
+      const success = processStore.handleProcessSymbolFileChange(file);
+      if (!success) {
         target.value = "";
         return;
       }
-    }
-
-    processStore.setSelectedFile(key, file);
-
-    if (key === "processSymbol") {
-      if (!processStore.processDetail.originalProcessSymbol) {
-        const currentSymbol = processStore.processDetail.processSymbol;
-        const currentSymbolId = processStore.processDetail.symbolId;
-
-        processStore.setProcessDetail({
-          originalProcessSymbol: currentSymbol,
-          originalSymbolId: currentSymbolId,
-        });
-      }
-
-      // 경로 제외 파일명만 저장
-      const fileName = file.name.split("/").pop() || file.name;
-      processStore.setProcessDetail({ processSymbol: fileName });
+    } else {
+      processStore.setSelectedFile(key, file);
     }
   }
 };
@@ -3728,84 +3740,44 @@ const handlePidComponentSave = async () => {
     alert(`P&ID 컴포넌트 저장 실패: ${error.message}`);
   }
 };
-// 공정심볼 다운로드 함수
+// 공정심볼 다운로드 함수 (store 함수 래퍼)
 const downloadProcessSymbol = async () => {
-  try {
-    const symbolId = processStore.processDetail.symbolId;
+  await processStore.downloadProcessSymbol(getProcessSymbolFileName);
+};
 
-    if (!symbolId) {
-      alert("다운로드할 공정심볼이 없습니다.");
-      return;
-    }
+// 공정심볼 삭제 핸들러 (화면에서만 제거, 실제 삭제는 저장 시 처리)
+const handleDeleteProcessSymbol = () => {
+  const symbolId = processStore.processDetail.symbolId;
+  const hasSelectedFile = processStore.selectedFiles["processSymbol"];
+  
+  // 삭제할 심볼이 없는 경우
+  if (!hasSelectedFile && (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000")) {
+    alert("삭제할 공정심볼이 없습니다.");
+    return;
+  }
 
-    // API 호출하여 파일 다운로드
-    const response = await fetch(`/api/process/symbol/download/${symbolId}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        system_code: import.meta.env.VITE_SYSTEM_CODE,
-        user_Id: localStorage.getItem("authUserId") || "",
-        wai_lang: localStorage.getItem("wai_lang") || "ko",
-      },
+  // 미리보기 URL 해제
+  processStore.clearProcessSymbolPreview();
+  
+  // 선택된 파일 제거
+  const updatedSelectedFiles = { ...processStore.selectedFiles };
+  delete updatedSelectedFiles["processSymbol"];
+  processStore.setSelectedFiles(updatedSelectedFiles);
+  
+  // processDetail에서 심볼 표시 정보 초기화
+  // originalSymbolId와 originalProcessSymbol은 유지하여 저장 시 삭제 감지
+  if (symbolId && symbolId !== "00000000-0000-0000-0000-000000000000") {
+    // 서버에 저장된 심볼 삭제 표시 (화면에서만 제거, originalSymbolId는 유지하여 저장 시 DELETE API 호출)
+    processStore.setProcessDetail({
+      processSymbol: "",
+      symbolId: "00000000-0000-0000-0000-000000000000", // 화면 표시용으로 빈 UUID 설정
+      // originalSymbolId와 originalProcessSymbol은 유지하여 저장 시 삭제 감지
     });
-
-    if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
-    }
-
-    // 화면에 표시된 파일명 사용
-    let fileName = "process_symbol.svg"; // 기본값
-
-    // 선택된 파일이 있는 경우 (새로 선택한 파일)
-    if (processStore.selectedFiles["processSymbol"]) {
-      const selectedFileName = processStore.selectedFiles["processSymbol"].name;
-      fileName = selectedFileName.split("/").pop() || selectedFileName;
-    } else {
-      // 기존 파일명 사용 (화면에 표시된 파일명)
-      const displayedFileName = getProcessSymbolFileName();
-      if (displayedFileName && displayedFileName.trim() !== "") {
-        fileName = displayedFileName;
-      }
-    }
-
-    // 응답을 JSON으로 파싱
-    const responseData = await response.json();
-
-    // response_body에서 SVG 내용 추출
-    let svgContent = "";
-    if (responseData.success && responseData.response_body) {
-      svgContent = responseData.response_body;
-    } else {
-      throw new Error("SVG 내용을 찾을 수 없습니다.");
-    }
-
-    // SVG 유효성 검사
-    if (
-      !svgContent.trim().startsWith("<svg") &&
-      !svgContent.trim().startsWith("<?xml")
-    ) {
-      throw new Error("유효하지 않은 SVG 형식입니다.");
-    }
-
-    // Blob으로 변환하여 다운로드
-    const blob = new Blob([svgContent], {
-      type: "image/svg+xml",
+  } else {
+    // 새로 선택한 파일만 취소
+    processStore.setProcessDetail({
+      processSymbol: "",
     });
-
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("공정심볼 다운로드 실패:", error);
-    alert("공정심볼 다운로드에 실패했습니다: " + (error.message || error));
   }
 };
 
@@ -7641,6 +7613,18 @@ const saveBasicProcessInfo = async (processId: string) => {
     const hasProcessSymbolChanged =
       symbolFile !== undefined && symbolFile !== null;
 
+    // 심볼 파일 삭제 여부 확인
+    const originalSymbolId = processStore.processDetail.originalSymbolId;
+    const currentSymbolId = processStore.processDetail.symbolId;
+    const currentProcessSymbol = processStore.processDetail.processSymbol;
+    
+    // 기존에 심볼 파일이 있었고, 새로운 파일이 선택되지 않았으며, 현재 심볼이 비어있는 경우 삭제로 판단
+    const isSymbolDeleted = 
+      originalSymbolId && 
+      originalSymbolId !== "00000000-0000-0000-0000-000000000000" &&
+      !hasProcessSymbolChanged &&
+      (!currentProcessSymbol || currentProcessSymbol.trim() === "");
+
     if (hasProcessSymbolChanged) {
       hasAnyChanges = true;
       console.log("공정심볼 파일 변경 감지됨:", symbolFile.name);
@@ -7651,6 +7635,9 @@ const saveBasicProcessInfo = async (processId: string) => {
       });
 
       console.log("processDetail에 siteFile 설정:", symbolFile.name);
+    } else if (isSymbolDeleted) {
+      hasAnyChanges = true;
+      console.log("공정심볼 파일 삭제 감지됨:", originalSymbolId);
     } else {
       console.log("공정심볼 파일 변경 없음");
     }
@@ -7734,6 +7721,18 @@ const saveBasicProcessInfo = async (processId: string) => {
           console.log("업데이트 성공 후 파일 상태 초기화 완료");
         }
         console.log("기본 정보 업데이트 완료");
+        
+        // 공정심볼 파일 저장 후 process_master 정보 새로고침
+        await processStore.searchProcessById(processId);
+        // 새로고침된 symbolId로 미리보기 다시 로드
+        const newSymbolId = processStore.processDetail.symbolId;
+        if (newSymbolId && newSymbolId !== "00000000-0000-0000-0000-000000000000") {
+          await processStore.loadProcessSymbolPreview();
+        } else {
+          // symbolId가 없거나 빈 UUID인 경우 미리보기 URL 해제
+          processStore.clearProcessSymbolPreview();
+        }
+        
         alert("기본 정보가 저장되었습니다.");
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
@@ -7743,6 +7742,20 @@ const saveBasicProcessInfo = async (processId: string) => {
       // 공정심볼 파일이 없는 경우 기본 정보만 저장
       try {
         console.log("기본 정보만 저장 시작");
+
+        // 심볼 파일 삭제 처리
+        if (isSymbolDeleted && originalSymbolId) {
+          console.log("공정심볼 파일 삭제 API 호출:", originalSymbolId);
+          try {
+            // DELETE API 호출
+            await processStore.deleteProcessSymbol(originalSymbolId);
+            console.log("공정심볼 파일 삭제 성공");
+          } catch (deleteError: any) {
+            console.error("공정심볼 파일 삭제 실패:", deleteError);
+            // 삭제 실패해도 계속 진행 (경고만 표시)
+            alert(`공정심볼 파일 삭제에 실패했습니다: ${deleteError.message || deleteError}`);
+          }
+        }
 
         // processName을 label 값으로 변환하여 저장
         const processDetailForSave = { ...processStore.processDetail };
@@ -7757,8 +7770,25 @@ const saveBasicProcessInfo = async (processId: string) => {
         // 공정심볼파일이 변경되지 않은 경우 siteFile 제거
         delete processDetailForSave.siteFile;
 
+        // 심볼 파일이 삭제된 경우 symbolId를 빈 UUID로 설정
+        if (isSymbolDeleted) {
+          processDetailForSave.symbolId = "00000000-0000-0000-0000-000000000000";
+          processDetailForSave.processSymbol = "";
+        }
+
         await processStore.updateProcess(processId, processDetailForSave);
         console.log("기본 정보 업데이트 완료");
+
+        // 심볼 파일이 삭제된 경우 미리보기 URL 해제
+        if (isSymbolDeleted) {
+          processStore.clearProcessSymbolPreview();
+          // processDetail에서도 symbolId 업데이트
+          processStore.setProcessDetail({
+            symbolId: "00000000-0000-0000-0000-000000000000",
+            processSymbol: "",
+          });
+        }
+
         alert("기본 정보가 저장되었습니다.");
 
         // 기본 정보 저장 후 공정카드 데이터 로드
@@ -10586,6 +10616,12 @@ onMounted(async () => {
 
       if (processStore.processDetail.unit_system_code) {
         selectedUnit.value = processStore.processDetail.unit_system_code;
+      }
+
+      // symbolId가 있으면 공정심볼 미리보기 로드 (빈 UUID 제외)
+      const symbolId = processStore.processDetail.symbolId;
+      if (symbolId && symbolId !== "00000000-0000-0000-0000-000000000000") {
+        await processStore.loadProcessSymbolPreview();
       }
 
       // 드롭다운 옵션 상태 확인

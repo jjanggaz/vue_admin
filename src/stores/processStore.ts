@@ -232,6 +232,9 @@ export const useProcessStore = defineStore("process", () => {
   const showFormulaModal = ref(false);
   const selectedFormulaFiles = ref<File[]>([]);
 
+  // 공정심볼 관련 상태
+  const processSymbolPreviewUrl = ref<string | null>(null);
+
   // computed
   const filteredProcessList = computed(() => {
     return processList.value;
@@ -1456,7 +1459,8 @@ export const useProcessStore = defineStore("process", () => {
         formData.append('process_description', processData.description || '');
         formData.append('siteFile', processData.siteFile);
         
-        if (processData.symbolId) {
+        // symbol_id가 있는 경우 추가 (빈 UUID 포함)
+        if (processData.symbolId !== undefined && processData.symbolId !== null) {
           formData.append('symbol_id', processData.symbolId);
         }
         
@@ -1484,8 +1488,8 @@ export const useProcessStore = defineStore("process", () => {
         process_description: processData.description || "",   // 공정 설명
       };
       
-      // symbol_id가 유효한 값인 경우에만 추가
-      if (processData.symbolId && processData.symbolId.trim() !== "") {
+      // symbol_id가 있는 경우 추가 (빈 UUID 포함)
+      if (processData.symbolId !== undefined && processData.symbolId !== null) {
         updateData.symbol_id = processData.symbolId;
       }
       
@@ -1581,6 +1585,217 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
+  // 공정심볼 미리보기 URL 생성 함수
+  const loadProcessSymbolPreview = async (): Promise<string | null> => {
+    try {
+      const symbolId = processDetail.value.symbolId;
+
+      if (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000") {
+        return null;
+      }
+
+      // 기존 URL이 있으면 해제
+      if (processSymbolPreviewUrl.value) {
+        window.URL.revokeObjectURL(processSymbolPreviewUrl.value);
+        processSymbolPreviewUrl.value = null;
+      }
+
+      // API 호출하여 SVG 내용 가져오기
+      const response = await fetch(`/api/process/symbol/download/${symbolId}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          system_code: import.meta.env.VITE_SYSTEM_CODE,
+          user_Id: localStorage.getItem("authUserId") || "",
+          wai_lang: localStorage.getItem("wai_lang") || "ko",
+        },
+      });
+
+      if (!response.ok) {
+        console.warn("공정심볼 미리보기 로드 실패:", response.status);
+        return null;
+      }
+
+      // 응답을 JSON으로 파싱
+      const responseData = await response.json();
+
+      // response_body에서 SVG 내용 추출
+      let svgContent = "";
+      if (responseData.success && responseData.response_body) {
+        svgContent = responseData.response_body;
+      } else {
+        return null;
+      }
+
+      // SVG 유효성 검사
+      if (
+        !svgContent.trim().startsWith("<svg") &&
+        !svgContent.trim().startsWith("<?xml")
+      ) {
+        return null;
+      }
+
+      // Blob으로 변환하여 URL 생성
+      const blob = new Blob([svgContent], {
+        type: "image/svg+xml",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      processSymbolPreviewUrl.value = url;
+      return url;
+    } catch (error) {
+      console.error("공정심볼 미리보기 로드 실패:", error);
+      return null;
+    }
+  };
+
+  // 공정심볼 다운로드 함수
+  const downloadProcessSymbol = async (getProcessSymbolFileName?: () => string) => {
+    try {
+      const symbolId = processDetail.value.symbolId;
+
+      if (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000") {
+        alert("다운로드할 공정심볼이 없습니다.");
+        return;
+      }
+
+      // API 호출하여 파일 다운로드
+      const response = await fetch(`/api/process/symbol/download/${symbolId}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          system_code: import.meta.env.VITE_SYSTEM_CODE,
+          user_Id: localStorage.getItem("authUserId") || "",
+          wai_lang: localStorage.getItem("wai_lang") || "ko",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `다운로드 실패: ${response.status} ${response.statusText}`
+        );
+      }
+
+      // 화면에 표시된 파일명 사용
+      let fileName = "process_symbol.svg"; // 기본값
+
+      // 선택된 파일이 있는 경우 (새로 선택한 파일)
+      if (selectedFiles.value["processSymbol"]) {
+        const selectedFileName = selectedFiles.value["processSymbol"].name;
+        fileName = selectedFileName.split("/").pop() || selectedFileName;
+      } else if (getProcessSymbolFileName) {
+        // 기존 파일명 사용 (화면에 표시된 파일명)
+        const displayedFileName = getProcessSymbolFileName();
+        if (displayedFileName && displayedFileName.trim() !== "") {
+          fileName = displayedFileName;
+        }
+      }
+
+      // 응답을 JSON으로 파싱
+      const responseData = await response.json();
+
+      // response_body에서 SVG 내용 추출
+      let svgContent = "";
+      if (responseData.success && responseData.response_body) {
+        svgContent = responseData.response_body;
+      } else {
+        throw new Error("SVG 내용을 찾을 수 없습니다.");
+      }
+
+      // SVG 유효성 검사
+      if (
+        !svgContent.trim().startsWith("<svg") &&
+        !svgContent.trim().startsWith("<?xml")
+      ) {
+        throw new Error("유효하지 않은 SVG 형식입니다.");
+      }
+
+      // Blob으로 변환하여 다운로드
+      const blob = new Blob([svgContent], {
+        type: "image/svg+xml",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("공정심볼 다운로드 실패:", error);
+      alert("공정심볼 다운로드에 실패했습니다: " + (error.message || error));
+    }
+  };
+
+  // 공정심볼 파일 선택 처리 함수
+  const handleProcessSymbolFileChange = (file: File) => {
+    // SVG 파일 검증
+    if (!file.name.toLowerCase().endsWith(".svg")) {
+      alert("SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.");
+      return false;
+    }
+
+    // 기존 미리보기 URL이 있으면 해제
+    if (processSymbolPreviewUrl.value) {
+      window.URL.revokeObjectURL(processSymbolPreviewUrl.value);
+      processSymbolPreviewUrl.value = null;
+    }
+
+    // 선택한 파일을 미리보기로 표시
+    const url = window.URL.createObjectURL(file);
+    processSymbolPreviewUrl.value = url;
+
+    // 파일 저장
+    setSelectedFile("processSymbol", file);
+
+    // 원본 정보 저장 (변경 감지용)
+    if (!processDetail.value.originalProcessSymbol) {
+      const currentSymbol = processDetail.value.processSymbol;
+      const currentSymbolId = processDetail.value.symbolId;
+
+      setProcessDetail({
+        originalProcessSymbol: currentSymbol,
+        originalSymbolId: currentSymbolId,
+      });
+    }
+
+    // 경로 제외 파일명만 저장
+    const fileName = file.name.split("/").pop() || file.name;
+    setProcessDetail({ processSymbol: fileName });
+
+    return true;
+  };
+
+  // 공정심볼 삭제 함수
+  const deleteProcessSymbol = async (symbolId: string) => {
+    try {
+      setLoading(true);
+      const result = await request(`/api/process/symbol/${symbolId}`, undefined, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return result;
+    } catch (error) {
+      console.error("공정심볼 삭제 실패:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 공정심볼 미리보기 URL 해제 함수
+  const clearProcessSymbolPreview = () => {
+    if (processSymbolPreviewUrl.value) {
+      window.URL.revokeObjectURL(processSymbolPreviewUrl.value);
+      processSymbolPreviewUrl.value = null;
+    }
+  };
+
   // 초기화
   const resetState = () => {
     processList.value = [];
@@ -1629,6 +1844,7 @@ export const useProcessStore = defineStore("process", () => {
     // 공정심볼 관련 상태 초기화
     processDetail.value.originalProcessSymbol = "";
     processDetail.value.originalSymbolId = null;
+    clearProcessSymbolPreview();
   };
 
   return {
@@ -1675,6 +1891,7 @@ export const useProcessStore = defineStore("process", () => {
     selectedFiles,
     showFormulaModal,
     selectedFormulaFiles,
+    processSymbolPreviewUrl,
 
     // computed
     filteredProcessList,
@@ -1704,6 +1921,11 @@ export const useProcessStore = defineStore("process", () => {
     createProcess,
     updateProcess,
     saveFormulaFiles,
+    loadProcessSymbolPreview,
+    downloadProcessSymbol,
+    handleProcessSymbolFileChange,
+    deleteProcessSymbol,
+    clearProcessSymbolPreview,
     resetState,
 
     // ProcessDetail.vue에서 이동한 액션들

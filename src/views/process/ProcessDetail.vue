@@ -10524,6 +10524,9 @@ defineExpose({
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
   try {
+    // 팝업이 열릴 때 항상 이전 공정심볼 미리보기 초기화
+    processStore.clearProcessSymbolPreview();
+
     let processId: string | null = null;
 
     if (!props.isRegisterMode) {
@@ -10612,6 +10615,7 @@ onMounted(async () => {
 
       // 공정심볼 관련 상태 초기화
       processStore.setSelectedFiles({}); // 선택된 파일들 초기화
+      processStore.clearProcessSymbolPreview(); // 미리보기 초기화
       if (processSymbolInput.value) {
         processSymbolInput.value.value = ""; // 파일 입력 필드 초기화
       }
@@ -10653,6 +10657,9 @@ onMounted(async () => {
       const symbolId = processStore.processDetail.symbolId;
       if (symbolId && symbolId !== "00000000-0000-0000-0000-000000000000") {
         await processStore.loadProcessSymbolPreview();
+      } else {
+        // symbolId가 없거나 빈 UUID인 경우 미리보기 명시적으로 초기화
+        processStore.clearProcessSymbolPreview();
       }
 
       // 드롭다운 옵션 상태 확인

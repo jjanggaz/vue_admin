@@ -1,325 +1,209 @@
 <template>
   <div class="project-management">
-    <div class="tabs-action-bar">
-      <div class="tabs-wrapper">
-        <button
-          v-for="(tab, idx) in tabs"
-          :key="tab"
-          :class="['tab', { active: activeTab === idx }]"
-          @click="activeTab = idx"
-        >
-          {{ tab }}
-        </button>
+    <div class="action-bar">
+      <div class="search-bar">
+        <div class="group-form">
+          <label for="recommended-search" class="label-search">
+            {{ t("common.search") }}
+          </label>
+          <div class="form-item">
+            <input
+              type="text"
+              id="recommended-search"
+              class="input search-input"
+              v-model="searchQuery"
+              placeholder="검색 조건 입력"
+              @keyup.enter="onSearch"
+            />
+          </div>
+          <button class="btn-search" @click="onSearch">
+            {{ t("common.search") }}
+          </button>
+        </div>
       </div>
-      <button
-        class="btn-delete"
-        v-if="activeTab === 0"
-        @click="deleteSelected('project')"
-        :disabled="selectedProject.length === 0"
-      >
-        {{ t("common.delete") }}
-      </button>
-      <button
-        class="btn-delete"
-        v-else-if="activeTab === 1"
-        @click="deleteSelected('client')"
-        :disabled="selectedClient.length === 0"
-      >
-        {{ t("common.delete") }}
-      </button>
-      <button
-        class="btn-delete"
-        v-else
-        @click="deleteSelected('etc')"
-        :disabled="selectedEtc.length === 0"
-      >
-        {{ t("common.delete") }}
-      </button>
     </div>
-    <div v-if="activeTab === 0">
-      <DataTable
-        :columns="projectColumns"
-        :data="projectRows"
-        :selectable="true"
-        :selected-items="selectedProject"
-        @selection-change="(val) => (selectedProject = val)"
-      >
-        <template #cell-detail="{ item }">
-          <input
-            class="input-cell"
-            :placeholder="t('placeholder.projectDetail')"
-            v-model="item.detail"
-          />
-        </template>
-        <template #cell-inputType="{ item }">
-          <select v-model="item.inputType">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-required="{ item }">
-          <select v-model="item.required">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-visible="{ item }">
-          <select v-model="item.visible">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-edit="{ item }">
-          <button class="btn-edit">✏️</button>
-        </template>
-      </DataTable>
-    </div>
-    <div v-else-if="activeTab === 1">
-      <DataTable
-        :columns="clientColumns"
-        :data="clientRows"
-        :selectable="true"
-        :selected-items="selectedClient"
-        @selection-change="(val) => (selectedClient = val)"
-      >
-        <template #cell-detail="{ item }">
-          <input
-            class="input-cell"
-            :placeholder="t('placeholder.projectDetail')"
-            v-model="item.detail"
-          />
-        </template>
-        <template #cell-inputType="{ item }">
-          <select v-model="item.inputType">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-required="{ item }">
-          <select v-model="item.required">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-edit="{ item }">
-          <button class="btn-edit">✏️</button>
-        </template>
-      </DataTable>
-    </div>
-    <div v-else>
-      <DataTable
-        :columns="etcColumns"
-        :data="etcRows"
-        :selectable="true"
-        :selected-items="selectedEtc"
-        @selection-change="(val) => (selectedEtc = val)"
-      >
-        <template #cell-detail="{ item }">
-          <input
-            class="input-cell"
-            :placeholder="t('placeholder.projectDetail')"
-            v-model="item.detail"
-          />
-        </template>
-        <template #cell-inputType="{ item }">
-          <select v-model="item.inputType">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-required="{ item }">
-          <select v-model="item.required">
-            <option>{{ t("common.select") }}</option>
-          </select>
-        </template>
-        <template #cell-edit="{ item }">
-          <button class="btn-edit">✏️</button>
-        </template>
-      </DataTable>
+    <DataTable
+      :columns="projectColumns"
+      :data="paginatedRows"
+      :selectable="false"
+    >
+      <template #cell-recommended="{ item }">
+        <input
+          type="checkbox"
+          :checked="item.recommended"
+          @change="onToggleRecommended($event, item)"
+        />
+      </template>
+    </DataTable>
+    <div class="pagination-container">
+      <div class="total-count">
+        {{ t("common.totalCount", { count: totalCount }) }}
+      </div>
+      <Pagination
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @page-change="handlePageChange"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import Pagination from "@/components/common/Pagination.vue";
 const { t } = useI18n();
-const tabs = [
-  t("project.tabs.projectInfo"),
-  t("project.tabs.clientInfo"),
-  t("project.tabs.etc"),
-];
-const activeTab = ref(0);
+const searchQuery = ref("");
+const onSearch = () => {
+  // TODO: 검색 기능 연동 시 API 호출 또는 필터링 구현
+  // 현재는 UI만 구성
+};
+
+const onToggleRecommended = (e: Event, row: ItemRow) => {
+  const checkbox = e.target as HTMLInputElement;
+  const nextValue = checkbox.checked;
+
+  if (nextValue) {
+    if (!confirm("추천을 설정하시겠습니까?")) {
+      checkbox.checked = row.recommended; // 취소 시 원상복구
+      return;
+    } else {
+      alert("추천을 설정했습니다.");
+    }
+  } else {
+    if (!confirm("추천을 해제하시겠습니까?")) {
+      checkbox.checked = row.recommended; // 취소 시 원상복구
+      return;
+    } else {
+      alert("추천을 해제했습니다.");
+    }
+  }
+
+  row.recommended = nextValue;
+};
 
 interface ItemRow {
   id: string;
-  detail: string;
-  inputType: string;
-  required: string;
-  visible?: string;
+  no?: number;
+  project_name: string;
+  client_name: string;
+  contact_person: string;
+  inflow_type: string;
+  site_capacity: string | number;
+  solution: string;
+  created_at: string;
+  country_code: string;
+  recommended: boolean;
 }
 
 const projectColumns: TableColumn[] = [
-  { key: "id", title: t("columns.project.id"), width: "60px" },
-  { key: "detail", title: t("columns.project.detailItem") },
-  { key: "inputType", title: t("columns.project.inputType") },
-  { key: "required", title: t("columns.project.required") },
-  { key: "visible", title: t("columns.project.visible") },
-  { key: "edit", title: t("common.edit"), width: "60px" },
-];
-const clientColumns: TableColumn[] = [
-  { key: "id", title: t("columns.project.id"), width: "60px" },
-  { key: "detail", title: t("columns.project.detailItem") },
-  { key: "inputType", title: t("columns.project.inputType") },
-  { key: "required", title: t("columns.project.required") },
-  { key: "edit", title: t("common.edit"), width: "60px" },
-];
-const etcColumns: TableColumn[] = [
-  { key: "id", title: t("columns.project.id"), width: "60px" },
-  { key: "detail", title: t("columns.project.detailItem") },
-  { key: "inputType", title: t("columns.project.inputType") },
-  { key: "required", title: t("columns.project.required") },
-  { key: "edit", title: t("common.edit"), width: "60px" },
+  { key: "no", title: "순번", width: "50px" },
+  { key: "project_name", title: "프로젝트명", width: "200px" },
+  { key: "client_name", title: "고객사", width: "150px" },
+  { key: "contact_person", title: "설계 담당자", width: "100px" },
+  { key: "inflow_type", title: "유입종류", width: "120px" },
+  { key: "site_capacity", title: "시설용량", width: "100px" },
+  { key: "solution", title: "솔루션", width: "150px" },
+  { key: "created_at", title: "생성일", width: "100px" },
+  { key: "country_code", title: "국가", width: "50px" },
+  { key: "recommended", title: "추천여부", width: "50px" },
 ];
 
 const projectRows = ref<ItemRow[]>([
-  { id: "1", detail: "", inputType: "", required: "", visible: "" },
-  { id: "2", detail: "", inputType: "", required: "", visible: "" },
-  { id: "3", detail: "", inputType: "", required: "", visible: "" },
-  { id: "4", detail: "", inputType: "", required: "", visible: "" },
-  { id: "5", detail: "", inputType: "", required: "", visible: "" },
-  { id: "6", detail: "", inputType: "", required: "", visible: "" },
-  { id: "7", detail: "", inputType: "", required: "", visible: "" },
-  { id: "8", detail: "", inputType: "", required: "", visible: "" },
-  { id: "9", detail: "", inputType: "", required: "", visible: "" },
-  { id: "10", detail: "", inputType: "", required: "", visible: "" },
-  { id: "11", detail: "", inputType: "", required: "", visible: "" },
-  { id: "12", detail: "", inputType: "", required: "", visible: "" },
-  { id: "13", detail: "", inputType: "", required: "", visible: "" },
-  { id: "14", detail: "", inputType: "", required: "", visible: "" },
-  { id: "15", detail: "", inputType: "", required: "", visible: "" },
-  { id: "16", detail: "", inputType: "", required: "", visible: "" },
-  { id: "17", detail: "", inputType: "", required: "", visible: "" },
-]);
-const clientRows = ref<ItemRow[]>([
-  { id: "1", detail: "", inputType: "", required: "", visible: "" },
-  { id: "2", detail: "", inputType: "", required: "", visible: "" },
-  { id: "3", detail: "", inputType: "", required: "", visible: "" },
-  { id: "4", detail: "", inputType: "", required: "", visible: "" },
-  { id: "5", detail: "", inputType: "", required: "", visible: "" },
-  { id: "6", detail: "", inputType: "", required: "", visible: "" },
-  { id: "7", detail: "", inputType: "", required: "", visible: "" },
-  { id: "8", detail: "", inputType: "", required: "", visible: "" },
-  { id: "9", detail: "", inputType: "", required: "", visible: "" },
-  { id: "10", detail: "", inputType: "", required: "", visible: "" },
-  { id: "11", detail: "", inputType: "", required: "", visible: "" },
-  { id: "12", detail: "", inputType: "", required: "", visible: "" },
-  { id: "13", detail: "", inputType: "", required: "", visible: "" },
-  { id: "14", detail: "", inputType: "", required: "", visible: "" },
-  { id: "15", detail: "", inputType: "", required: "", visible: "" },
-  { id: "16", detail: "", inputType: "", required: "", visible: "" },
-  { id: "17", detail: "", inputType: "", required: "", visible: "" },
-]);
-const etcRows = ref<ItemRow[]>([
-  { id: "1", detail: "", inputType: "", required: "", visible: "" },
-  { id: "2", detail: "", inputType: "", required: "", visible: "" },
-  { id: "3", detail: "", inputType: "", required: "", visible: "" },
-  { id: "4", detail: "", inputType: "", required: "", visible: "" },
-  { id: "5", detail: "", inputType: "", required: "", visible: "" },
-  { id: "6", detail: "", inputType: "", required: "", visible: "" },
-  { id: "7", detail: "", inputType: "", required: "", visible: "" },
-  { id: "8", detail: "", inputType: "", required: "", visible: "" },
-  { id: "9", detail: "", inputType: "", required: "", visible: "" },
-  { id: "10", detail: "", inputType: "", required: "", visible: "" },
-  { id: "11", detail: "", inputType: "", required: "", visible: "" },
-  { id: "12", detail: "", inputType: "", required: "", visible: "" },
-  { id: "13", detail: "", inputType: "", required: "", visible: "" },
-  { id: "14", detail: "", inputType: "", required: "", visible: "" },
-  { id: "15", detail: "", inputType: "", required: "", visible: "" },
-  { id: "16", detail: "", inputType: "", required: "", visible: "" },
-  { id: "17", detail: "", inputType: "", required: "", visible: "" },
+  {
+    id: "1",
+    project_name: "프로젝트 A",
+    client_name: "고객사 A",
+    contact_person: "홍길동",
+    inflow_type: "생활하수",
+    site_capacity: 1000,
+    solution: "솔루션1",
+    created_at: "2025-01-01",
+    country_code: "KR",
+    recommended: false,
+  },
+  {
+    id: "2",
+    project_name: "프로젝트 B",
+    client_name: "고객사 B",
+    contact_person: "김영희",
+    inflow_type: "산업폐수",
+    site_capacity: 2000,
+    solution: "솔루션2",
+    created_at: "2025-01-05",
+    country_code: "KR",
+    recommended: true,
+  },
 ]);
 
-const selectedProject = ref<ItemRow[]>([]);
-const selectedClient = ref<ItemRow[]>([]);
-const selectedEtc = ref<ItemRow[]>([]);
+// 선택 컬럼 제거로 선택 상태 관리 불필요
 
-function deleteSelected(type: "project" | "client" | "etc") {
-  if (type === "project") {
-    if (!selectedProject.value.length) return;
-    if (
-      !confirm(
-        t("messages.confirm.deleteItems", {
-          count: selectedProject.value.length,
-        })
-      )
-    )
-      return;
-    projectRows.value = projectRows.value.filter(
-      (row) => !selectedProject.value.includes(row)
-    );
-    selectedProject.value = [];
-  } else if (type === "client") {
-    if (!selectedClient.value.length) return;
-    if (
-      !confirm(
-        t("messages.confirm.deleteItems", {
-          count: selectedClient.value.length,
-        })
-      )
-    )
-      return;
-    clientRows.value = clientRows.value.filter(
-      (row) => !selectedClient.value.includes(row)
-    );
-    selectedClient.value = [];
-  } else {
-    if (!selectedEtc.value.length) return;
-    if (
-      !confirm(
-        t("messages.confirm.deleteItems", { count: selectedEtc.value.length })
-      )
-    )
-      return;
-    etcRows.value = etcRows.value.filter(
-      (row) => !selectedEtc.value.includes(row)
-    );
-    selectedEtc.value = [];
-  }
-}
+// Pagination state (local)
+const currentPage = ref(1);
+const pageSize = 10;
+const totalCount = computed(() => projectRows.value.length);
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalCount.value / pageSize))
+);
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return projectRows.value.slice(start, start + pageSize).map((row, idx) => ({
+    ...row,
+    no: start + idx + 1,
+  }));
+});
+
+const handlePageChange = (page: number) => {
+  if (page < 1 || page > totalPages.value) return;
+  currentPage.value = page;
+};
 </script>
 
 <style scoped lang="scss">
 .project-management {
   padding: $spacing-lg;
 }
-.tabs-action-bar {
+.action-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.search-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
 }
-.tabs-wrapper {
+.group-form {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  margin-right: 1rem;
 }
-.tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: border 0.2s, color 0.2s;
+.label-search {
+  margin-right: 0.5rem;
 }
-.tab.active {
-  color: #1a73e8;
-  border-bottom: 2px solid #1a73e8;
-  font-weight: bold;
+.form-item {
+  margin-right: 0.5rem;
+}
+.search-input {
+  max-width: 320px;
 }
 .action-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-bottom: 0.5rem;
 }
 .btn-delete {
   background: #3a3d4b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.btn-search {
+  background: $primary-color;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -341,5 +225,21 @@ function deleteSelected(type: "project" | "client" | "etc") {
   height: 32px;
   font-size: 1.1rem;
   cursor: pointer;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+  position: relative;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 </style>

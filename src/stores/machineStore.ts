@@ -664,6 +664,7 @@ export const useMachineStore = defineStore("machine", () => {
   const createFormula = async (params: {
     python_file: File;
     formula_id?: string;
+    equipment_type?: string;
   }) => {
     loading.value = true;
     error.value = null;
@@ -673,6 +674,9 @@ export const useMachineStore = defineStore("machine", () => {
       formData.append("python_file", params.python_file);
       if (params.formula_id) {
         formData.append("formula_id", params.formula_id);
+      }
+      if (params.equipment_type) {
+        formData.append("equipment_type", params.equipment_type);
       }
 
       const response = await request("/api/machine/create/formula", undefined, {

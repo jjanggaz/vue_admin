@@ -426,32 +426,8 @@ const handleFormulaFileChange = (e: Event) => {
       return;
     }
 
-    // 선택된 equipment_type 결정 (4Depth 우선, 없으면 3Depth)
-    const equipmentType = selectedFourthDept.value || selectedThirdDept.value;
-
-    if (equipmentType) {
-      // 파일명의 마지막에 equipmentType이 있는지 확인
-      if (fileNameWithoutExt.endsWith(equipmentType)) {
-        // 파일명의 마지막에 equipmentType이 있으면 첨부 허용
-        formulaFileName.value = file.name;
-        formulaFile.value = file;
-      } else {
-        // 파일명의 마지막에 equipmentType이 없으면 경고 및 첨부 취소
-        alert(
-          t("messages.warning.invalidFormulaFileName", {
-            equipmentType: equipmentType,
-          })
-        );
-        input.value = ""; // 파일 선택 초기화
-        formulaFileName.value = "";
-        formulaFile.value = null;
-        return;
-      }
-    } else {
-      // equipment_type이 선택되지 않은 경우 원본 파일명 사용
-      formulaFileName.value = file.name;
-      formulaFile.value = file;
-    }
+    formulaFileName.value = file.name;
+    formulaFile.value = file;
   } else {
     formulaFileName.value = "";
     formulaFile.value = null;
@@ -491,8 +467,14 @@ const handleRegister = async () => {
     });
 
     // API 호출 (파일은 이미 첨부 시점에 변경됨)
-    const params: { python_file: File; formula_id?: string } = {
+    const equipmentType = selectedFourthDept.value || selectedThirdDept.value;
+    const params: {
+      python_file: File;
+      formula_id?: string;
+      equipment_type?: string;
+    } = {
       python_file: formulaFile.value,
+      equipment_type: equipmentType || undefined,
     };
 
     const response = await machineStore.createFormula(params);

@@ -411,6 +411,7 @@
     "provider": "Provider",
     "manufacturer": "Manufacturer",
     "symbol": "Symbol",
+    "deleteSymbol": "Delete symbol",
     "thumbnail": "Thumbnail",
     "modelThumbnailSection": "Model Thumbnail",
     "noModelThumbnail": "No Model Thumbnail",

@@ -583,7 +583,7 @@
                   v-if="symbolImageContent && isExistingSymbol"
                   class="delete-symbol-btn"
                   @click="handleDeleteSymbol"
-                  title="심볼 삭제"
+                  :title="t('common.deleteSymbol')"
                 >
                   ×
                 </button>

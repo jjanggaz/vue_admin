@@ -411,6 +411,7 @@
     "provider": "제공처",
     "manufacturer": "제조사",
     "symbol": "심볼",
+    "deleteSymbol": "심볼 삭제",
     "thumbnail": "썸네일",
     "modelThumbnailSection": "모델 썸네일",
     "noModelThumbnail": "모델 썸네일 없음",

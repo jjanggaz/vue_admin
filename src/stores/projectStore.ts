@@ -26,6 +26,10 @@ interface ApiProjectItem {
   is_active: boolean | null;
   owner_id: string;
   project_status: string;
+  project_status_info?: {
+    code_key?: string;
+    code_value?: string;
+  };
   description: string | null;
   created_at: string;
   project_code: string;
@@ -105,7 +109,7 @@ export const useProjectStore = defineStore("project", () => {
       solution: "", // 솔루션은 아직 정의되지 않아 빈값으로 설정
       created_at: item.created_at || "",
       country_code: item.country_code || "",
-      project_status: item.project_status || "",
+      project_status: item.project_status_info?.code_value || "",
       start_date: item.start_date || "",
       end_date: item.end_date || "",
     }));

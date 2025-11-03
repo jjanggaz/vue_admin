@@ -41,7 +41,7 @@ const baseRoutes: RouteRecordRaw[] = [
   },
   {
     path: "/",
-    redirect: "/dashboard",
+    redirect: "/code",
   },
   {
     path: "/dashboard",

@@ -349,7 +349,7 @@ const onDeleteSelectedEditMode = () => {
 
   // 선택된 항목이 있는지 확인
   if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.noItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 

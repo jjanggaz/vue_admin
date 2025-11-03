@@ -795,8 +795,9 @@ const loadData = async () => {
     console.log("totalPages.value :", totalPages.value);
   } catch (error: unknown) {
     console.error("데이터 로드 실패:", error);
-    const errorMessage =
-      (error as Error)?.message || "데이터 로드에 실패했습니다.";
+    const errorMessage = (error as Error)?.message
+      ? t((error as Error).message)
+      : "데이터 로드에 실패했습니다.";
     alert(errorMessage);
   }
 };
@@ -873,8 +874,9 @@ const handleModalSave = async (data: CodeCreateRequest[]) => {
     await refreshAllSelectBoxes();
   } catch (error: unknown) {
     console.error("코드 저장 실패:", error);
-    const errorMessage =
-      (error as Error)?.message || t("messages.error.saveFailed");
+    const errorMessage = (error as Error)?.message
+      ? t((error as Error).message)
+      : t("messages.error.saveFailed");
     alert(errorMessage);
   }
 };
@@ -1110,8 +1112,9 @@ const updateCode = async () => {
     console.log("등록 성공 - 모든 selectbox 데이터 refresh 완료");
   } catch (error: unknown) {
     console.error("코드 저장 실패:", error);
-    const errorMessage =
-      (error as Error)?.message || t("messages.error.saveFailed");
+    const errorMessage = (error as Error)?.message
+      ? t((error as Error).message)
+      : t("messages.error.saveFailed");
     alert(errorMessage);
   }
 };
@@ -1168,8 +1171,9 @@ const handleDelete = async () => {
       console.log("삭제 완료 - 모든 selectbox 데이터 refresh 완료");
     } catch (error: unknown) {
       console.error("삭제 처리 실패:", error);
-      const errorMessage =
-        (error as Error)?.message || t("messages.error.deleteFailed");
+      const errorMessage = (error as Error)?.message
+        ? t((error as Error).message)
+        : t("messages.error.deleteFailed");
       alert(errorMessage);
     }
   }

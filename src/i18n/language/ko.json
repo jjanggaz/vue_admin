@@ -1369,7 +1369,7 @@
       "dtdxFileOnly": ".dtdx 파일만 업로드할 수 있습니다.",
       "imageExtensionOnly": "이미지 확장자만 업로드할 수 있습니다. (png, jpg, jpeg, gif)",
       "rvtFileOnly": ".rvt 파일만 업로드할 수 있습니다.",
-      "selectFormulaFile": "3D 구조물 계산식 파일을 선택해주세요.",
+      "selectFormulaFile": "계산식 파일을 선택해주세요.",
       "selectDtdFile": "3D 구조물 DTD모델 파일을 선택해주세요.",
       "selectThumbnailFile": "모델 썸네일 파일을 선택해주세요.",
       "noStructureInfo": "수정할 구조물 정보가 없습니다.",

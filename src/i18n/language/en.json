@@ -1373,7 +1373,7 @@
       "dtdxFileOnly": "Only .dtdx files can be uploaded.",
       "imageExtensionOnly": "Only image extensions can be uploaded. (png, jpg, jpeg, gif)",
       "rvtFileOnly": "Only .rvt files can be uploaded.",
-      "selectFormulaFile": "Please select a 3D structure formula file.",
+      "selectFormulaFile": "Please select a formula file.",
       "selectDtdFile": "Please select a 3D structure DTD model file.",
       "selectThumbnailFile": "Please select a model thumbnail file.",
       "noStructureInfo": "No structure information to update.",

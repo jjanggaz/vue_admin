@@ -64,6 +64,7 @@ export interface ProjectListParams {
   search_value?: string;
   order_by?: string;
   order_direction?: "asc" | "desc" | "";
+  project_status?: string;
 }
 
 export const useProjectStore = defineStore("project", () => {
@@ -74,6 +75,7 @@ export const useProjectStore = defineStore("project", () => {
   const currentPage = ref(1);
   const pageSize = ref(10);
   const totalCount = ref(0);
+  const approvalCount = ref(0);
   const searchQuery = ref("");
   const sortField = ref<string>("");
   const sortOrder = ref<"asc" | "desc">("asc");
@@ -114,13 +116,18 @@ export const useProjectStore = defineStore("project", () => {
     try {
       loading.value = true;
 
-      const requestBody = {
+      const requestBody: any = {
         page: params.page || 1,
         pageSize: params.pageSize || pageSize.value,
         search_value: params.search_value || "",
         order_by: params.order_by || "",
         order_direction: params.order_direction || "asc",
       };
+
+      // project_status가 있으면 추가 (선택적 파라미터)
+      if (params.project_status !== undefined) {
+        requestBody.project_status = params.project_status;
+      }
 
       const response = await request(`/api/project/list`, undefined, {
         method: "POST",
@@ -136,6 +143,7 @@ export const useProjectStore = defineStore("project", () => {
         projectList.value = transformApiData(apiItems);
         originalApiData.value = apiItems; // 원본 API 데이터 저장
         totalCount.value = response.response.total || 0;
+        approvalCount.value = response.response.approvalCount || 0;
 
         if (params.page) currentPage.value = params.page;
         if (params.pageSize) pageSize.value = params.pageSize;
@@ -162,12 +170,14 @@ export const useProjectStore = defineStore("project", () => {
         console.warn("API 응답이 성공이 아니거나 데이터가 없음:", response);
         projectList.value = [];
         totalCount.value = 0;
+        approvalCount.value = 0;
       }
     } catch (error) {
       console.error("프로젝트 목록 조회 실패:", error);
       // 에러 발생 시 빈 배열로 초기화
       projectList.value = [];
       totalCount.value = 0;
+      approvalCount.value = 0;
     } finally {
       loading.value = false;
     }
@@ -202,6 +212,7 @@ export const useProjectStore = defineStore("project", () => {
       search_value?: string;
       order_by?: string;
       order_direction?: "asc" | "desc";
+      project_status?: string;
     }
   ) => {
     await fetchProjectList({
@@ -210,6 +221,7 @@ export const useProjectStore = defineStore("project", () => {
       search_value: searchParams?.search_value ?? searchQuery.value,
       order_by: searchParams?.order_by ?? sortField.value,
       order_direction: searchParams?.order_direction ?? sortOrder.value,
+      project_status: searchParams?.project_status,
     });
   };
 
@@ -219,6 +231,7 @@ export const useProjectStore = defineStore("project", () => {
     loading.value = false;
     currentPage.value = 1;
     totalCount.value = 0;
+    approvalCount.value = 0;
     searchQuery.value = "";
     sortField.value = "";
     sortOrder.value = "asc";
@@ -248,6 +261,7 @@ export const useProjectStore = defineStore("project", () => {
     currentPage,
     pageSize,
     totalCount,
+    approvalCount,
     searchQuery,
     sortField,
     sortOrder,

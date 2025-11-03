@@ -470,28 +470,19 @@
             }}
           </template>
 
+          <!-- 중분류 슬롯 -->
+          <template #cell-middle_category="{ item }">
+            {{ item.hierarchy_info?.middle_category_name || item.hierarchy_info?.middle_category || "-" }}
+          </template>
+
+          <!-- 배관유형 슬롯 -->
+          <template #cell-pipe_type="{ item }">
+            {{ item.equipment_type || "-" }}
+          </template>
+
           <!-- 업체명 슬롯 -->
           <template #cell-vendor_name="{ item }">
             {{ item.vendor_info?.vendor_name || "-" }}
-          </template>
-
-          <!-- 재질 슬롯 -->
-          <template #cell-material="{ item }">
-            {{ item.specifications?.material?.value || "-" }}
-          </template>
-
-          <!-- 규격 슬롯 -->
-          <template #cell-specification="{ item }">
-            {{ item.specifications?.specification?.value || item.specifications?.standard?.value || "-" }}
-          </template>
-
-          <!-- 압력 슬롯 -->
-          <template #cell-pressure="{ item }">
-            {{
-              item.specifications?.pressure?.value
-                ? `${item.specifications.pressure.value} ${item.specifications.pressure.unit_symbol || ""}`
-                : "-"
-            }}
           </template>
 
           <!-- 상세정보 액션 슬롯 -->
@@ -908,7 +899,19 @@ const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.pipe.no"), width: "60px", sortable: false },
   {
     key: "equipment_type_name",
-    title: t("columns.pipe.materialType"),
+    title: t("columns.pipe.majorCategory"),
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "middle_category",
+    title: t("columns.pipe.middleCategory"),
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "pipe_type",
+    title: t("columns.pipe.pipeType"),
     width: "120px",
     sortable: false,
   },
@@ -919,27 +922,15 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "equipment_name",
-    title: t("columns.pipe.name"),
+    key: "vendor_name",
+    title: t("columns.pipe.company"),
     width: "150px",
     sortable: false,
   },
   {
-    key: "material",
-    title: t("pipe.material"),
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "specification",
-    title: t("pipe.specification"),
-    width: "100px",
-    sortable: false,
-  },
-  {
-    key: "pressure",
-    title: t("pipe.pressure"),
-    width: "100px",
+    key: "equipment_name",
+    title: t("columns.pipe.name"),
+    width: "150px",
     sortable: false,
   },
   {

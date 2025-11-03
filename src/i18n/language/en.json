@@ -352,10 +352,13 @@
       "capacity": "Capacity",
       "model": "Model",
       "formula": "Formula",
-      "company": "Manufacturer",
+      "company": "Company Name",
       "details": "Details",
       "unitPrice": "Unit Price",
-      "code": "Pipe Code"
+      "code": "Pipe Code",
+      "majorCategory": "Major Category",
+      "middleCategory": "Middle Category",
+      "pipeType": "Pipe Type"
     }
   },
   "header": {

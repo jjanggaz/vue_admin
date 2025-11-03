@@ -352,10 +352,13 @@
       "capacity": "용량",
       "model": "모델명",
       "formula": "계산식",
-      "company": "제조사",
+      "company": "업체명",
       "details": "상세정보",
       "unitPrice": "단가",
-      "code": "배관코드"
+      "code": "배관코드",
+      "majorCategory": "대분류",
+      "middleCategory": "중분류",
+      "pipeType": "배관유형"
     }
   },
   "header": {

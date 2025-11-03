@@ -253,7 +253,7 @@ export const useInflowStore = defineStore("inflow", {
     loading: false,
     totalCount: 0,
     page: 1,
-    page_size: 10,
+    page_size: 20,
     hasMore: false,
     error: null as string | null,
   }),
@@ -287,7 +287,7 @@ export const useInflowStore = defineStore("inflow", {
           this.waterFlowTypes = response.response.items;
           this.totalCount = response.response.total || 0;
           this.page = response.response.page || 1;
-          this.page_size = response.response.page_size || 10;
+          this.page_size = response.response.page_size || 20;
           this.hasMore =
             (response.response.page || 1) <
             (response.response.total_pages || 1);
@@ -295,7 +295,7 @@ export const useInflowStore = defineStore("inflow", {
           this.waterFlowTypes = [];
           this.totalCount = 0;
           this.page = 1;
-          this.page_size = 10;
+          this.page_size = 20;
           this.hasMore = false;
         }
       } catch (error) {
@@ -827,7 +827,7 @@ export const useInflowStore = defineStore("inflow", {
       this.loading = false;
       this.totalCount = 0;
       this.page = 1;
-      this.page_size = 10;
+      this.page_size = 20;
       this.hasMore = false;
       this.error = null;
     },

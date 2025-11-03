@@ -80,7 +80,7 @@ export const useRoleStore = defineStore("role", {
     loading: false,
     totalCount: 0,
     page: 1,
-    page_size: 10,
+    page_size: 20,
     hasMore: false,
     error: null as string | null,
   }),
@@ -129,7 +129,7 @@ export const useRoleStore = defineStore("role", {
           this.roles = [];
           this.totalCount = 0;
           this.page = 1;
-          this.page_size = 10;
+          this.page_size = 20;
           this.hasMore = false;
         }
 
@@ -327,7 +327,7 @@ export const useRoleStore = defineStore("role", {
       this.loading = false;
       this.totalCount = 0;
       this.page = 1;
-      this.page_size = 10;
+      this.page_size = 20;
       this.hasMore = false;
       this.error = null;
     },

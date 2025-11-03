@@ -49,7 +49,7 @@
                 @keyup.enter="handleSearch"
                 class="form-input"
               />
-              <button class="btn-detail-search" @click="toggleDetailSearch">
+              <button class="btn-detail-search" @click="toggleDetailSearch" style="display: none;">
                 {{ t("common.detailCondition") }}
                 <span class="arrow-icon">{{
                   isDetailSearchOpen ? "▲" : "▼"

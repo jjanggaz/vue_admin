@@ -8730,6 +8730,7 @@ const refreshFormulaData = async () => {
           return {
             id: `existing_formula_${item.id || index}`,
             no: (index + 1).toString(),
+            registeredFormula: item.formula_name || item.name || "",
             file_name: item.file_name || "NONE",
             formula_code: item.formula_code || "",
             registrationDate:
@@ -8740,6 +8741,8 @@ const refreshFormulaData = async () => {
             remarks: item.output_type || "",
             formula_id: item.formula_id || item.id,
             process_dependencies: item.process_dependencies || null,
+            _file: undefined,
+            isSaved: true, // 새로고침한 데이터는 저장된 상태
             _originalData: item, // 원본 데이터 보존
           };
         }

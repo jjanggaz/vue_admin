@@ -185,10 +185,10 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
-  // ✅ 이미 로그인된 사용자가 로그인 페이지 접근 시 → 대시보드로
+  // ✅ 이미 로그인된 사용자가 로그인 페이지 접근 시 → 코드관리 페이지로
   if (to.path === "/login" && isLoggedIn) {
-    console.log("이미 로그인된 사용자가 로그인 페이지 접근 → 대시보드로 >> ");
-    return next("/dashboard");
+    console.log("이미 로그인된 사용자가 로그인 페이지 접근 → 코드관리 페이지로 >> ");
+    return next("/code");
   }
 
   // ✅ 문제 없으면 통과

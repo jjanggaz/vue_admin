@@ -127,7 +127,7 @@ const handleLogin = async () => {
     } else {
       localStorage.removeItem("rememberedUsername");
     }
-    router.push("/dashboard");
+    router.push("/code");
   } catch (error: any) {
     // 백엔드 에러 응답 구조에 맞게 처리
     console.log("로그인 에러 객체:", error);

@@ -309,12 +309,11 @@ const editModeColumns: TableColumn[] = [
   {
     key: "formula_name",
     title: t("columns.machine.structureTypeDetail"),
-    width: "140px",
+    width: "100px",
   },
   { key: "file_name", title: t("common.formulaFile"), width: "200px" },
-  { key: "formula_version", title: t("common.formulaVersion"), width: "120px" },
   { key: "unit_system_code", title: t("common.unit"), width: "100px" },
-  { key: "uploaded_at", title: t("common.creationDate"), width: "120px" },
+  { key: "uploaded_at", title: t("common.creationDate"), width: "150px" },
 ];
 
 // 등록용 데이터 제거

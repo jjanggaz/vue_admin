@@ -33,12 +33,8 @@
       </button>
     </div>
     <!-- 데이터 테이블 -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner">데이터를 불러오는 중...</div>
-    </div>
     <DataTable
       ref="dataTableRef"
-      v-else
       :columns="tableColumns"
       :data="paginatedProjectList"
       :loading="false"
@@ -211,7 +207,6 @@ const tableColumns: TableColumn[] = [
 const searchQueryInput = ref("");
 
 // store에서 상태 가져오기 (computed로 반응성 보장)
-const loading = computed(() => projectStore.loading);
 const currentPage = computed(() => projectStore.currentPage);
 const totalPages = computed(() => projectStore.totalPages);
 const paginatedProjectList = computed(() => {
@@ -465,19 +460,6 @@ onMounted(async () => {
 
 .btn-danger {
   margin-left: 0.5rem;
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 200px;
-}
-
-.loading-spinner {
-  color: #666;
-  font-size: 1.1rem;
 }
 
 .pagination-container {

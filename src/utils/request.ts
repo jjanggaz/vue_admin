@@ -1,11 +1,19 @@
 import { refreshAccessToken } from "./tokenManager";
+import { useLoadingStore } from "@/stores/loadingStore";
 
 export const request = async (
   path: string,
   params?: Record<string, string | number> | Record<string, string | number>[],
   options: RequestInit = { method: "GET" }
 ) => {
+  const loadingStore = useLoadingStore();
+  const isLoginApi = path.includes("/api/main/login");
+
   try {
+    // 로그인 API 제외하고 로딩바 표시
+    if (!isLoginApi) {
+      loadingStore.setLoading(true);
+    }
     // 프록시 사용 시에는 상대 경로로 호출
     const url = new URL(path, window.location.origin);
 
@@ -109,6 +117,10 @@ export const request = async (
 
         // 성공 시 표준화된 응답 형식으로 반환
         const successData = await retryRes.json();
+        // 로딩바 숨김
+        if (!isLoginApi) {
+          loadingStore.setLoading(false);
+        }
         return {
           success: true,
           status: retryRes.status,
@@ -174,11 +186,19 @@ export const request = async (
         }"}`,
       };
       console.log(`${res.status} 에러 - 최종 errorResponse:`, errorResponse);
+      // 로딩바 숨김
+      if (!isLoginApi) {
+        loadingStore.setLoading(false);
+      }
       throw errorResponse;
     }
 
     // 성공 시 표준화된 응답 형식으로 반환
     const successData = await res.json();
+    // 로딩바 숨김
+    if (!isLoginApi) {
+      loadingStore.setLoading(false);
+    }
     return {
       success: true,
       status: res.status,
@@ -186,6 +206,10 @@ export const request = async (
       response: successData.response || successData,
     };
   } catch (e) {
+    // 에러 발생 시에도 로딩바 숨김
+    if (!isLoginApi) {
+      loadingStore.setLoading(false);
+    }
     if (e instanceof Error) {
       console.error(e.message);
       // Error 객체인 경우 백엔드 응답 구조로 변환

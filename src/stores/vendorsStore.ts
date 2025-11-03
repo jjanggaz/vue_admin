@@ -96,7 +96,7 @@ export const useVendorsStore = defineStore("vendors", () => {
   const error = ref<string | null>(null);
   const totalCount = ref(0);
   const currentPage = ref(1);
-  const pageSize = ref(10);
+  const pageSize = ref(20);
   const totalPages = ref(1);
   const searchQuery = ref("");
   const detailVendor = ref<VendorItem | null>(null);
@@ -174,7 +174,7 @@ export const useVendorsStore = defineStore("vendors", () => {
         console.log("페이징 정보 저장 (fetchVendorList):", {
           total: totalCount.value,
           page: currentPage.value,
-          pageSize: pageSize.value, // 항상 10
+          pageSize: pageSize.value, // 항상 20
           totalPages: totalPages.value,
           vendorListLength: vendorList.value.length,
         });
@@ -569,7 +569,7 @@ export const useVendorsStore = defineStore("vendors", () => {
         console.log("페이징 정보 저장 (loadVendorData):", {
           total: totalCount.value,
           page: currentPage.value,
-          pageSize: pageSize.value, // 항상 10
+          pageSize: pageSize.value, // 항상 20
           totalPages: totalPages.value,
           vendorListLength: vendorList.value.length,
         });
@@ -663,7 +663,7 @@ export const useVendorsStore = defineStore("vendors", () => {
     error.value = null;
     totalCount.value = 0;
     currentPage.value = 1;
-    pageSize.value = 10;
+    pageSize.value = 20;
     totalPages.value = 1;
     searchQuery.value = "";
     detailVendor.value = null;

@@ -73,7 +73,7 @@ export const useProjectStore = defineStore("project", () => {
   const originalApiData = ref<ApiProjectItem[]>([]); // 원본 API 응답 데이터 저장
   const loading = ref(false);
   const currentPage = ref(1);
-  const pageSize = ref(10);
+  const pageSize = ref(20);
   const totalCount = ref(0);
   const approvalCount = ref(0);
   const searchQuery = ref("");

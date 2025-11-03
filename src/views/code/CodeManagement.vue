@@ -453,7 +453,7 @@ const {
 
 const currentPage = ref(1);
 const totalPages = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(20);
 const sortColumn = ref<string | null>(null);
 const sortOrder = ref<"asc" | "desc" | null>(null);
 const searchCodeGroupInput = ref("");

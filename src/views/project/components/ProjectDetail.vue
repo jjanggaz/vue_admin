@@ -406,7 +406,7 @@ const outputActiveTab = ref(0);
 const designcondActiveTab = ref(1); // 0: 수리 조건, 1: 콘크리트 구조물 설정
 
 // 페이징 상태 관리
-const pageSize = ref(10);
+const pageSize = ref(20);
 
 // 3D 레이아웃 정보 탭 - 하위 탭 페이징
 const layout3dCurrentPage = ref(1);

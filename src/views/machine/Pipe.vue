@@ -984,7 +984,7 @@ const priceHistoryColumns: TableColumn[] = [
 const machineList = ref<MachineItem[]>([]);
 const loading = ref(false);
 const currentPage = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(20);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 // 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거

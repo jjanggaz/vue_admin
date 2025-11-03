@@ -520,13 +520,14 @@ const handleDelete = async () => {
 
   const selectedItem = selectedItems.value[0];
   const formulaId = selectedItem.formulaId;
+  const formulaName = selectedItem.fileName;
 
   if (!formulaId) {
     alert(t("messages.warning.noFormulaIdToDelete"));
     return;
   }
 
-  if (!confirm(t("messages.confirm.deleteItem"))) {
+  if (!confirm(t("messages.confirm.deleteFormula", { name: formulaName }))) {
     return;
   }
 

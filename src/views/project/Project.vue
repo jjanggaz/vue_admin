@@ -219,11 +219,9 @@ const paginatedProjectList = computed(() => {
   }));
 });
 
-// 승인대기 건수 (현재 목록에서 상태 기준 계산)
+// 승인대기 건수 (서버에서 반환된 approvalCount 사용)
 const approvalPendingCount = computed(() => {
-  return 1;
-  // return projectStore.projectList.filter((p) => p.project_status === "승인대기")
-  //   .length;
+  return projectStore.approvalCount || 0;
 });
 
 const goToApprovalPending = () => {

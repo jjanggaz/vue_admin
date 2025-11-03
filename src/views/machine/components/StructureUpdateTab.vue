@@ -349,13 +349,15 @@ const onDeleteSelectedEditMode = () => {
 
   // 선택된 항목이 있는지 확인
   if (selectedItems.value.length === 0) {
-    alert(t("messages.warning.noItemToDelete"));
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
     return;
   }
 
   // 선택된 항목 사용
   const selectedItem = selectedItems.value[0];
-  const formulaName = selectedItem.formula_name as string;
+  const formulaName = selectedItem.file_name as string;
+
+  console.log(selectedItem);
 
   if (confirm(t("messages.confirm.deleteFormula", { name: formulaName }))) {
     handleDeleteFormula();
@@ -410,6 +412,25 @@ const handleFormulaFileChange = (e: Event) => {
       input.value = "";
       return;
     }
+
+    // 파일명에서 확장자를 제거한 이름 부분 검증
+    const fileNameWithoutExt = file.name.replace(/\.py$/i, "");
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-()]+$/;
+
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      return;
+    }
+
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      return;
+    }
+
     formulaFileName.value = file.name;
   }
 };

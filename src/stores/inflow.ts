@@ -781,21 +781,29 @@ export const useInflowStore = defineStore("inflow", {
     },
 
     // 계산식 삭제
-    async deleteFormula(formulaId: string) {
+    async deleteFormula(
+      formulaId: string,
+      last_formula?: boolean,
+      unit_system_code?: "METRIC" | "USCS",
+      flow_type_id?: string
+    ) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await request(
-          `/api/inflow/formula/${formulaId}`,
-          undefined,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const url = `/api/inflow/formula/${formulaId}`;
+
+        const response = await request(url, undefined, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            last_formula: !!last_formula,
+            unit_system_code,
+            flow_type_id,
+          }),
+        });
 
         return response;
       } catch (error) {

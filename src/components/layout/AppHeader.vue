@@ -77,11 +77,11 @@ const sectionTabs = {
   asset: [
     { name: "Inflow", label: t("tabs.asset.inflow"), to: "/asset/inflow" },
     { name: "Outflow", label: t("tabs.asset.outflow"), to: "/asset/outflow" },
-    {
-      name: "RecommendedProcess",
-      label: t("tabs.asset.recommendedProcess"),
-      to: "/asset/recommended",
-    },
+    // {
+    //   name: "RecommendedProcess",
+    //   label: t("tabs.asset.recommendedProcess"),
+    //   to: "/asset/recommended",
+    // },
   ],
   process: [
     {

@@ -47,12 +47,12 @@
             <button class="btn btn-update" @click="openUpdateModal">
               {{ t("outflow.update") }}
             </button>
-            <button
+            <!-- <button
               class="btn btn-code-management"
               @click="openCodeManagementModal"
             >
               {{ t("outflow.codeManagement") }}
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -905,6 +905,8 @@ interface GridRow2 {
   formula: string; // formula_name 표시
   uploadDate: string; // created_at을 YYYY-MM-DD 형태로 변환
   created_at: string; // 원본 created_at (비교용)
+  unit_system_code: "METRIC" | "USCS"; // 단위 시스템
+  flow_type_id: string; // 플로우 타입 ID
 }
 
 interface UploadForm {
@@ -965,7 +967,25 @@ const deleteMetricFormula = async () => {
 
   if (confirm(t("messages.confirm.deleteMetricFormula"))) {
     try {
-      await outflowStore.deleteFormula(selectedMetricFormulaId.value);
+      // 최신 created_at 여부 판단
+      const list = currentGridData2.value;
+      const selected = list.find(
+        (it) => it.formula_id === selectedMetricFormulaId.value
+      );
+      const maxCreatedAt = list.reduce((max, it) => {
+        const t = new Date(it.created_at).getTime();
+        return t > max ? t : max;
+      }, 0);
+      const isLast = selected
+        ? new Date(selected.created_at).getTime() === maxCreatedAt
+        : false;
+
+      await outflowStore.deleteFormula(
+        selectedMetricFormulaId.value,
+        isLast,
+        selected?.unit_system_code,
+        selected?.flow_type_id
+      );
 
       // 삭제 성공 시 현재 탭의 데이터 다시 로드
       const currentTab = tabs.value[activeTab.value];
@@ -1002,7 +1022,25 @@ const deleteUscsFormula = async () => {
 
   if (confirm(t("messages.confirm.deleteUscsFormula"))) {
     try {
-      await outflowStore.deleteFormula(selectedUscsFormulaId.value);
+      // 최신 created_at 여부 판단
+      const list = currentUscsGridData2.value;
+      const selected = list.find(
+        (it) => it.formula_id === selectedUscsFormulaId.value
+      );
+      const maxCreatedAt = list.reduce((max, it) => {
+        const t = new Date(it.created_at).getTime();
+        return t > max ? t : max;
+      }, 0);
+      const isLast = selected
+        ? new Date(selected.created_at).getTime() === maxCreatedAt
+        : false;
+
+      await outflowStore.deleteFormula(
+        selectedUscsFormulaId.value,
+        isLast,
+        selected?.unit_system_code,
+        selected?.flow_type_id
+      );
 
       // 삭제 성공 시 현재 탭의 데이터 다시 로드
       const currentTab = tabs.value[activeTab.value];
@@ -1131,6 +1169,8 @@ const loadWaterFlowTypeParameters = async (
             })
             .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
+          unit_system_code: formula.unit_system_code as "METRIC" | "USCS",
+          flow_type_id: formula.flow_type_id,
         }));
         tabGridData2.value[activeTab.value] = metricFormulas;
       } else {
@@ -1163,6 +1203,8 @@ const loadWaterFlowTypeParameters = async (
             })
             .replace(",", ""), // YYYY-MM-DD HH:mm 형태로 변환 (24시간)
           created_at: formula.created_at, // 원본 created_at
+          unit_system_code: formula.unit_system_code as "METRIC" | "USCS",
+          flow_type_id: formula.flow_type_id,
         }));
         uscsTabGridData2.value[activeTab.value] = uscsFormulas;
       } else {

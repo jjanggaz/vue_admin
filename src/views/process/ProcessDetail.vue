@@ -216,6 +216,9 @@
               @change="handleFormulaSelectionChange"
             />
           </template>
+          <template #cell-no="{ item, index }">
+            <span>{{ (processStore.formulaList?.length || 0) - index }}</span>
+          </template>
           <template #cell-file_name="{ item, index }">
             <div class="formula-name-container">
               <div class="file-selection-group">
@@ -355,6 +358,9 @@
                 v-model="selectedPfdItems"
                 @change="handlePfdSelectionChange"
               />
+            </template>
+            <template #cell-no="{ item, index }">
+              <span>{{ (processStore.pfdList?.length || 0) - index }}</span>
             </template>
             <template #cell-pfdFileName="{ item, index }">
               <div class="pfd-filename-container">

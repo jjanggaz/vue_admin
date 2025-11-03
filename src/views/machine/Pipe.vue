@@ -438,11 +438,19 @@
           <!-- 단가 슬롯 -->
           <template #cell-unit_price="{ item }">
             {{
-              item.output_values?.unit_price_kr?.value
-                ? `${item.output_values.unit_price_kr.value.toLocaleString()} ${
-                    item.output_values.unit_price_kr.unit_symbol || ""
-                  }`
-                : "-"
+              (() => {
+                if (!item.output_values) return "-";
+                const unitPriceKey = Object.keys(item.output_values).find(
+                  (key) => key.startsWith("unit_price")
+                );
+                if (unitPriceKey && item.output_values[unitPriceKey]?.value) {
+                  const unitPriceField = item.output_values[unitPriceKey];
+                  return `${unitPriceField.value.toLocaleString()} ${
+                    unitPriceField.unit_symbol || ""
+                  }`;
+                }
+                return "-";
+              })()
             }}
           </template>
 
@@ -470,14 +478,24 @@
             }}
           </template>
 
+          <!-- 대분류 슬롯 (equipment_type_name은 full_hierarchy에서 파싱) -->
+          <template #cell-equipment_type_name="{ item }">
+            {{ getMajorCategory(item) }}
+          </template>
+
           <!-- 중분류 슬롯 -->
           <template #cell-middle_category="{ item }">
-            {{ item.hierarchy_info?.middle_category_name || item.hierarchy_info?.middle_category || "-" }}
+            {{ getMiddleCategory(item) }}
           </template>
 
           <!-- 배관유형 슬롯 -->
           <template #cell-pipe_type="{ item }">
-            {{ item.equipment_type || "-" }}
+            {{ getPipeType(item) }}
+          </template>
+
+          <!-- 배관코드 슬롯 (줄바꿈 지원) -->
+          <template #cell-equipment_code="{ item }">
+            <span style="word-break: break-word; white-space: normal; line-height: 1.4; display: inline-block; max-width: 100%;">{{ item.equipment_code || "-" }}</span>
           </template>
 
           <!-- 업체명 슬롯 -->
@@ -918,7 +936,7 @@ const tableColumns: TableColumn[] = [
   {
     key: "equipment_code",
     title: t("columns.pipe.pcId"),
-    width: "120px",
+    width: "180px",
     sortable: false,
   },
   {
@@ -984,7 +1002,7 @@ const priceHistoryColumns: TableColumn[] = [
 const machineList = ref<MachineItem[]>([]);
 const loading = ref(false);
 const currentPage = ref(1);
-const pageSize = ref(20);
+const pageSize = ref(10);
 const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 // 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거
@@ -1034,6 +1052,68 @@ const registerZipTableColumns: TableColumn[] = [
   { key: "result", title: t("common.result"), width: "10%", sortable: false },
   { key: "remarks", title: t("common.remarks"), width: "25%", sortable: false },
 ];
+
+// full_hierarchy 파싱 함수
+const parseHierarchy = (fullHierarchy?: string) => {
+  if (!fullHierarchy) {
+    return {
+      majorCategory: null, // 레벨2 (대분류)
+      middleCategory: null, // 레벨3 (중분류)
+      pipeType: null, // 레벨4 (배관유형)
+    };
+  }
+
+  // "|"로 레벨 구분
+  const levels = fullHierarchy.split("|").map((level) => level.trim());
+
+  const parseLevel = (levelStr: string) => {
+    // "(레벨N) 코드 / 한국어명 / 영어명" 형식에서 한국어명 추출
+    const match = levelStr.match(/\(레벨\d+\)\s+[^/]+\s+\/\s+([^/]+)\s*\/?/);
+    return match ? match[1].trim() : null;
+  };
+
+  return {
+    majorCategory: levels.length > 1 ? parseLevel(levels[1]) : null, // 레벨2
+    middleCategory: levels.length > 2 ? parseLevel(levels[2]) : null, // 레벨3
+    pipeType: levels.length > 3 ? parseLevel(levels[3]) : null, // 레벨4
+  };
+};
+
+// hierarchy_info에서 값을 가져오는 헬퍼 함수들
+const getMajorCategory = (item: MachineItem): string => {
+  const hierarchyInfo = item.hierarchy_info as { full_hierarchy?: string } | undefined;
+  if (hierarchyInfo?.full_hierarchy) {
+    const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
+    if (parsed.majorCategory) return parsed.majorCategory;
+  }
+  return item.equipment_type_name || "-";
+};
+
+const getMiddleCategory = (item: MachineItem): string => {
+  const hierarchyInfo = item.hierarchy_info as {
+    full_hierarchy?: string;
+    middle_category_name?: string;
+    middle_category?: string;
+  } | undefined;
+  if (hierarchyInfo?.full_hierarchy) {
+    const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
+    if (parsed.middleCategory) return parsed.middleCategory;
+  }
+  return (
+    hierarchyInfo?.middle_category_name ||
+    hierarchyInfo?.middle_category ||
+    "-"
+  );
+};
+
+const getPipeType = (item: MachineItem): string => {
+  const hierarchyInfo = item.hierarchy_info as { full_hierarchy?: string } | undefined;
+  if (hierarchyInfo?.full_hierarchy) {
+    const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
+    if (parsed.pipeType) return parsed.pipeType;
+  }
+  return item.equipment_type || "-";
+};
 
 // 썸네일 MIME 타입 추정 헬퍼
 const getImageMimeType = (info: any): string => {
@@ -1162,12 +1242,12 @@ const specVerticalData = computed(() => {
   if (item.output_values) {
     Object.values(item.output_values).forEach((field: any) => {
       if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_code
+        const displayValue = field.unit_symbol
           ? `${
               typeof field.value === "number"
                 ? field.value.toLocaleString()
                 : field.value
-            } ${field.unit_code}`
+            } ${field.unit_symbol}`
           : typeof field.value === "number"
           ? field.value.toLocaleString()
           : field.value;

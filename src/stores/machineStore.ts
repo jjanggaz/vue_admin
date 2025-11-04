@@ -719,6 +719,38 @@ export const useMachineStore = defineStore("machine", () => {
     }
   };
 
+  // 가격 이력 생성
+  const createPriceHistory = async (params: {
+    equipment_id: string;
+    equipment_code: string;
+    price_type?: string;
+    price_unit_code?: string;
+    price_unit_symbol?: string;
+    price_value?: any;
+  }) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/machine/price/history", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+      });
+
+      return response;
+    } catch (err) {
+      console.error("가격 이력 생성 실패:", err);
+      error.value =
+        err instanceof Error ? err.message : "가격 이력 생성에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // 상태
     langCodes,
@@ -752,5 +784,6 @@ export const useMachineStore = defineStore("machine", () => {
     searchFormula,
     createFormula,
     deleteFormula,
+    createPriceHistory,
   };
 });

@@ -991,27 +991,54 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
-    Object.values(item.output_values).forEach((field: any) => {
-      // 수정 모드이거나 값이 있는 경우 표시
-      // if (
-      //   isDetailEditMode.value ||
-      //   (field.value !== null &&
-      //     field.value !== undefined &&
-      //     field.value !== "")
-      // ) {
-      data.push({
-        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-        value: isDetailEditMode.value
-          ? field.value
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value,
-        editable: true,
-        fieldType: typeof field.value === "number" ? "number" : "input",
-        originalType: typeof field.value,
-      });
-      // }
-    });
+    Object.entries(item.output_values).forEach(
+      ([key, field]: [string, any]) => {
+        // 수정 모드이거나 값이 있는 경우 표시
+        // if (
+        //   isDetailEditMode.value ||
+        //   (field.value !== null &&
+        //     field.value !== undefined &&
+        //     field.value !== "")
+        // ) {
+        // 원본 값과 현재 값 비교
+        let isChanged = false;
+        if (isDetailEditMode.value && originalItemData.value) {
+          const originalValue =
+            originalItemData.value.output_values?.[key]?.value;
+          const currentValue = editData.value.output_values?.[key]?.value;
+          // 값 비교 (숫자와 문자열 모두 고려)
+          if (originalValue !== currentValue) {
+            // null, undefined, 빈 문자열을 모두 동일하게 처리
+            const normalizedOriginal =
+              originalValue == null || originalValue === ""
+                ? null
+                : originalValue;
+            const normalizedCurrent =
+              currentValue == null || currentValue === "" ? null : currentValue;
+            isChanged = normalizedOriginal !== normalizedCurrent;
+          }
+        }
+
+        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
+        const displayValue = isDetailEditMode.value
+          ? editData.value.output_values?.[key]?.value ?? field.value
+          : field.value;
+
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: isDetailEditMode.value
+            ? displayValue
+            : typeof displayValue === "number"
+            ? displayValue.toLocaleString()
+            : displayValue,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
+          isChanged: isChanged, // 변경 여부 추가
+        });
+        // }
+      }
+    );
   }
 
   // 3. search_criteria 동적 추가
@@ -1124,9 +1151,7 @@ const handleSelectionChange = (selected: MachineItem[]) => {
 
 // 행 클릭 (RoleManagement.vue 패턴 적용)
 const handleRowClick = (row: MachineItem) => {
-  console.log("행 클릭된 데이터:", row); // 디버깅용 로그
   selectedItems.value = [row];
-  console.log("선택된 아이템:", selectedItems.value); // 디버깅용 로그
 };
 
 // 페이지 변경 (RoleManagement.vue 패턴 적용)
@@ -1348,9 +1373,6 @@ const saveDetailChanges = async () => {
   try {
     const item = detailItemData.value;
 
-    console.log("현재 editData:", editData.value);
-    console.log("현재 detailItemData:", item);
-
     // 업데이트 파라미터 준비
     const updateParams: any = {
       equipment_type: item.equipment_type,
@@ -1369,8 +1391,6 @@ const saveDetailChanges = async () => {
       updateParams.specifications = editData.value.specifications;
     }
 
-    console.log("업데이트 파라미터:", updateParams);
-
     // 새로 추가된 파일들 확인
     if (file3d.value?.files?.[0]) {
       updateParams.dtd_model_file = file3d.value.files[0];
@@ -1385,8 +1405,6 @@ const saveDetailChanges = async () => {
       updateParams.symbol_file = fileSymbol.value.files[0];
     }
 
-    console.log("업데이트 파라미터:", updateParams);
-
     // API 호출
     const response = await machineStore.updateMachine(
       item.equipment_id,
@@ -1396,6 +1414,49 @@ const saveDetailChanges = async () => {
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
+
+      // output_values의 변경된 항목만 로그 출력 및 가격 이력 생성
+      if (originalItemData.value && originalItemData.value.output_values) {
+        for (const [key, originalField] of Object.entries(
+          originalItemData.value.output_values
+        )) {
+          const originalValue = (originalField as any)?.value;
+          const currentValue = editData.value.output_values?.[key]?.value;
+
+          // 값 비교 (null, undefined, 빈 문자열을 모두 동일하게 처리)
+          const normalizedOriginal =
+            originalValue == null || originalValue === ""
+              ? null
+              : originalValue;
+          const normalizedCurrent =
+            currentValue == null || currentValue === "" ? null : currentValue;
+
+          const isChanged = normalizedOriginal !== normalizedCurrent;
+
+          if (isChanged) {
+            // 가격 이력 생성 API 호출
+            try {
+              const currentField =
+                editData.value.output_values?.[key] || originalField;
+              await machineStore.createPriceHistory({
+                equipment_id: item.equipment_id,
+                equipment_code: item.equipment_code,
+                price_type: (currentField as any)?.key?.toUpperCase() || "",
+                price_unit_code:
+                  (currentField as any)?.unit_code ||
+                  (originalField as any)?.unit_code,
+                price_unit_symbol:
+                  (currentField as any)?.unit_symbol ||
+                  (originalField as any)?.unit_symbol,
+                price_value: currentValue,
+              });
+            } catch (error) {
+              console.error(`가격 이력 생성 실패 (${key}):`, error);
+            }
+          }
+        }
+      }
+
       alert(t("messages.success.saved"));
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
@@ -1487,26 +1548,21 @@ const handleFileSelect = (type: string, event: Event) => {
         }
         break;
     }
-    console.log(`${type} 파일 선택됨:`, file.name);
   }
 };
 
 // 그리드에서 필드 변경 처리
 const handleFieldChange = (fieldName: string, value: string) => {
-  console.log(`필드 변경: ${fieldName} = ${value}`);
-
   const isEnglish = locale.value === "en";
 
   // editData에 반영
   // 제조사 필드 확인 (columns.machine.company)
   if (fieldName === t("columns.machine.company")) {
     editData.value.vendor_id = value;
-    console.log("vendor_id 업데이트:", value);
   }
   // 모델명 필드 확인 (columns.machine.model)
   else if (fieldName === t("columns.machine.model")) {
     editData.value.modelNumber = value;
-    console.log("modelNumber 업데이트:", value);
   }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
   else {
@@ -1531,7 +1587,6 @@ const handleFieldChange = (fieldName: string, value: string) => {
           editData.value.output_values[key].value =
             !isNaN(numValue) && value !== "" ? numValue : value;
         }
-        console.log(`output_values.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -1553,7 +1608,6 @@ const handleFieldChange = (fieldName: string, value: string) => {
           editData.value.search_criteria[key].value =
             !isNaN(numValue) && value !== "" ? numValue : value;
         }
-        console.log(`search_criteria.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -1575,7 +1629,6 @@ const handleFieldChange = (fieldName: string, value: string) => {
           editData.value.specifications[key].value =
             !isNaN(numValue) && value !== "" ? numValue : value;
         }
-        console.log(`specifications.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -1590,8 +1643,6 @@ const fileThumbnail = ref<HTMLInputElement>();
 
 // 그리드에서 파일 첨부 처리
 const handleFileAttach = (fieldName: string) => {
-  console.log(`파일 첨부 요청: ${fieldName}`);
-
   switch (fieldName) {
     case "3D":
       if (file3d.value) {
@@ -1620,8 +1671,6 @@ const handleFileAttach = (fieldName: string) => {
 
 // 그리드에서 파일 첨부 취소 처리
 const handleFileRemove = (fieldName: string) => {
-  console.log(`파일 첨부 취소 요청: ${fieldName}`);
-
   switch (fieldName) {
     case "3D":
       editData.value.model3dFile = "";
@@ -1674,8 +1723,6 @@ const handleFileRemove = (fieldName: string) => {
 
 // 파일 다운로드 핸들러
 const handleFileDownload = (fieldName: string) => {
-  console.log(`파일 다운로드 요청: ${fieldName}`);
-
   if (!detailItemData.value) return;
 
   const item = detailItemData.value;
@@ -1761,8 +1808,6 @@ const loadData = async () => {
       const searchCriteria: any = {};
       const specifications: any = {};
 
-      console.log("상세검색 데이터:", detailSearch.value);
-
       // search_criteria에 해당하는 필드들 처리
       const searchCriteriaFields = [
         "max_capacity",
@@ -1806,8 +1851,6 @@ const loadData = async () => {
         const value =
           detailSearch.value[field as keyof typeof detailSearch.value];
         if (value && value !== "") {
-          console.log(`search_criteria 필드 추가: ${field} = ${value}`);
-
           const unitCode = getUnitCodeForField(field, false);
 
           // 단위가 붙은 필드명을 기본 필드명으로 변환
@@ -1859,9 +1902,6 @@ const loadData = async () => {
 
       // powerKw1은 search_criteria의 power_kW로 매핑
       if (detailSearch.value.powerKw1 && detailSearch.value.powerKw1 !== "") {
-        console.log(
-          `search_criteria 필드 추가: power_kW = ${detailSearch.value.powerKw1}`
-        );
         const unitCode = getUnitCodeForField("power_kW", false);
         if (unitCode) {
           searchCriteria["power"] = {
@@ -1880,7 +1920,6 @@ const loadData = async () => {
         const value =
           detailSearch.value[field as keyof typeof detailSearch.value];
         if (value && value !== "") {
-          console.log(`specifications 필드 추가: ${field} = ${value}`);
           const unitCode = getUnitCodeForField(field, true);
 
           // 단위가 붙은 필드명을 기본 필드명으로 변환
@@ -1906,9 +1945,6 @@ const loadData = async () => {
 
       // powerKw2는 specifications의 power_kW로 매핑
       if (detailSearch.value.powerKw2 && detailSearch.value.powerKw2 !== "") {
-        console.log(
-          `specifications 필드 추가: power_kW = ${detailSearch.value.powerKw2}`
-        );
         const unitCode = getUnitCodeForField("power_kW", true);
         if (unitCode) {
           specifications["power"] = {
@@ -1922,9 +1958,6 @@ const loadData = async () => {
         }
       }
 
-      console.log("생성된 searchCriteria:", searchCriteria);
-      console.log("생성된 specifications:", specifications);
-
       // 파라미터가 있는 경우에만 추가
       if (Object.keys(searchCriteria).length > 0) {
         searchParams.search_criteria = searchCriteria;
@@ -1933,8 +1966,6 @@ const loadData = async () => {
         searchParams.specifications = specifications;
       }
     }
-
-    console.log("검색 파라미터:", searchParams);
 
     // API 호출로 기계 검색 리스트 조회
     await machineStore.fetchSearchList(searchParams);
@@ -2075,8 +2106,6 @@ const hideAllCustomFields = () => {
 };
 
 const showFieldsByAvailableCriteria = (availableCriteria: any[]) => {
-  console.log("showFieldsByAvailableCriteria 호출됨:", availableCriteria);
-
   const fieldMapping: { [key: string]: string } = {
     dia_mm: "dia_mm_item",
     height_mm: "height_mm_item",
@@ -2185,13 +2214,6 @@ const handleHeaderMachineCategoryChange = async () => {
         search_criteria: fieldsMetadata.search_criteria || [],
         specifications: fieldsMetadata.specifications || [],
       };
-
-      // 디버깅을 위한 로그
-      console.log(
-        "API 응답 - search_criteria:",
-        fieldsMetadata.search_criteria
-      );
-      console.log("API 응답 - specifications:", fieldsMetadata.specifications);
     }
 
     if (fieldsMetadata?.search_criteria) {
@@ -2201,8 +2223,6 @@ const handleHeaderMachineCategoryChange = async () => {
     if (fieldsMetadata?.specifications) {
       showFieldsBySpecifications(fieldsMetadata.specifications);
     }
-
-    console.log("res 응답:", fieldsMetadata);
   } catch (e) {
     console.error(e);
   }
@@ -2256,8 +2276,6 @@ const handleHeaderMachineSubCategoryChange = async () => {
       if (fieldsMetadata?.specifications) {
         showFieldsBySpecifications(fieldsMetadata.specifications);
       }
-
-      console.log("searchType 응답:", fieldsMetadata);
     }
   } catch (e) {
     console.error(e);

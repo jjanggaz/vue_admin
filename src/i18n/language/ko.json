@@ -1011,7 +1011,7 @@
     "diameter_mm": "관경",
     "dia_phi_mm": "직경",
     "other": "기타",
-    "materialType": "자재유형"
+    "materialType": "배관 대분류"
   },
   "pageTitles": {
     "dashboard": "대시보드",

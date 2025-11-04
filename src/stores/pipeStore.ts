@@ -563,13 +563,17 @@ export const usePipeStore = defineStore("pipe", () => {
     equipmentId: string,
     params: {
       equipment_type?: string;
+      equipment_code?: string;
       vendor_id?: string;
       model_number?: string;
+      is_active?: boolean;
+      description?: string;
       output_values?: Record<string, any>;
       search_criteria?: Record<string, any>;
       specifications?: Record<string, any>;
       dtd_model_file?: File;
       thumbnail_file?: File;
+      revit_model_file?: File;
       rvt_model_file?: File;
       symbol_file?: File;
     }
@@ -580,24 +584,30 @@ export const usePipeStore = defineStore("pipe", () => {
     try {
       const formData = new FormData();
 
-      // updateParams 객체 생성
-      const updateParams: any = {};
-      if (params.equipment_type) {
-        updateParams.equipment_type = params.equipment_type;
+      // updateParams 객체 생성 (필수 필드 포함)
+      const updateParams: any = {
+        equipment_type: params.equipment_type || "",
+        equipment_code: params.equipment_code || "",
+        vendor_id: params.vendor_id || "",
+        model_number: params.model_number || "",
+      };
+
+      // is_active와 description 추가
+      if (params.is_active !== undefined && params.is_active !== null) {
+        updateParams.is_active = params.is_active;
       }
-      if (params.vendor_id) {
-        updateParams.vendor_id = params.vendor_id;
+      if (params.description !== undefined && params.description !== null && params.description !== "") {
+        updateParams.description = params.description;
       }
-      if (params.model_number) {
-        updateParams.model_number = params.model_number;
-      }
-      if (params.output_values) {
+
+      // output_values, search_criteria, specifications 추가 (빈 객체가 아닐 때만)
+      if (params.output_values && Object.keys(params.output_values).length > 0) {
         updateParams.output_values = params.output_values;
       }
-      if (params.search_criteria) {
+      if (params.search_criteria && Object.keys(params.search_criteria).length > 0) {
         updateParams.search_criteria = params.search_criteria;
       }
-      if (params.specifications) {
+      if (params.specifications && Object.keys(params.specifications).length > 0) {
         updateParams.specifications = params.specifications;
       }
 
@@ -610,6 +620,9 @@ export const usePipeStore = defineStore("pipe", () => {
       }
       if (params.thumbnail_file) {
         formData.append("thumbnail_file", params.thumbnail_file);
+      }
+      if (params.revit_model_file) {
+        formData.append("revit_model_file", params.revit_model_file);
       }
       if (params.rvt_model_file) {
         formData.append("rvt_model_file", params.rvt_model_file);

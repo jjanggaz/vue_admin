@@ -693,15 +693,36 @@
           <!-- 등록 폼 -->
           <div class="pipe-register-form">
             <!-- 상단 검색/필터 영역 -->
-            <div class="filter-bar">
-              <div class="group-form inline">
-                <span class="label required"
+            <div class="filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; overflow: hidden;">
+              <div class="group-form inline" style="flex-shrink: 0; gap: 4px;">
+                <span class="label required" style="min-width: auto; white-space: nowrap;"
+                  >⊙ {{ t("common.unit") }}</span
+                >
+                <select
+                  class="input select-md"
+                  v-model="registerSelectedUnit"
+                  :disabled="registerIsRegistered"
+                  style="max-width: 70px; width: 70px; flex-shrink: 0;"
+                >
+                  <option value="">{{ t("common.select") }}</option>
+                  <option
+                    v-for="unit in pipeStore.unitSystems"
+                    :key="unit.unit_system_id"
+                    :value="unit.system_code"
+                  >
+                    {{ unit.system_name }}
+                  </option>
+                </select>
+              </div>
+              <div class="group-form inline" style="flex-shrink: 0; gap: 4px;">
+                <span class="label required" style="min-width: auto; white-space: nowrap;"
                   >⊙ {{ t("pipe.materialType") }}</span
                 >
                 <select
                   class="input select-md"
                   v-model="registerSelectedPipeName"
                   :disabled="registerIsRegistered"
+                  style="max-width: 80px; width: 80px; flex-shrink: 0;"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -712,16 +733,17 @@
                     {{ pipe.code_value }}
                   </option>
                 </select>
-            </div>
-              <div class="group-form inline">
-                <span class="label required">⊙ {{ t("common.excelUpload") }}</span>
-                <div class="file-upload-group">
+              </div>
+              <div class="group-form inline" style="flex: 1; min-width: 0; gap: 6px;">
+                <span class="label required" style="min-width: auto; white-space: nowrap;">⊙ {{ t("common.excelUpload") }}</span>
+                <div class="file-upload-group" style="display: flex; gap: 6px; flex: 1; min-width: 0;">
                   <input
                     type="text"
                     class="input file-name-input"
                     :value="registerExcelFileName"
                     readonly
                     :placeholder="t('placeholder.selectFile')"
+                    style="flex: 1; min-width: 0; width: 0;"
                   />
                   <input
                     type="file"
@@ -734,12 +756,13 @@
                     type="button"
                     class="btn-file"
                     @click="registerExcelFileInput?.click()"
+                    style="flex-shrink: 0; white-space: nowrap;"
                   >
                     {{ t("common.selectFile") }}
                   </button>
-          </div>
+                </div>
               </div>
-              <div class="group-form inline right-align">
+              <div class="group-form inline right-align" style="flex-shrink: 0; gap: 6px;">
                 <button
                   type="button"
                   class="btn-outline"
@@ -752,13 +775,13 @@
                   class="btn-register"
                   @click="handlePipeRegister"
                 >
-                  {{ t("common.machineRegister") }}
+                  {{ t("common.pipeRegistration") }}
                 </button>
               </div>
             </div>
 
             <!-- 리스트 테이블 -->
-            <div class="section-header">
+            <div class="section-header" style="display: none;">
               <div class="section-title">⊙ {{ t("common.pipeUpload") }}</div>
               <div class="section-actions">
                 <div class="file-upload-group">
@@ -946,8 +969,8 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "equipment_name",
-    title: t("columns.pipe.name"),
+    key: "model_number",
+    title: t("columns.pipe.model"),
     width: "150px",
     sortable: false,
   },
@@ -1016,6 +1039,7 @@ const isThumbnailLoading = ref(false);
 
 // 등록 팝업 관련 변수들
 const registerIsRegistered = ref(false);
+const registerSelectedUnit = ref("");
 const registerSelectedPipeName = ref("");
 const registerExcelFileInput = ref<HTMLInputElement | null>(null);
 const registerExcelFileName = ref<string>("");
@@ -1161,6 +1185,7 @@ const isDetailEditMode = ref(false);
 // 편집 모드 데이터
 const editData = ref<{
   equipmentType: string;
+  equipmentCode: string;
   vendor_id: string;
   modelNumber: string;
   model3dFile: string;
@@ -1174,6 +1199,7 @@ const editData = ref<{
   specifications: Record<string, any>;
 }>({
   equipmentType: "",
+  equipmentCode: "",
   vendor_id: "",
   modelNumber: "",
   model3dFile: "",
@@ -1207,7 +1233,12 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.pipe.code"),
-    value: item.equipment_code || "-",
+    value: isDetailEditMode.value 
+      ? (detailItemData.value ? (detailItemData.value as any).equipment_code || "" : "")
+      : item.equipment_code || "-",
+    editable: true,
+    fieldType: "input",
+    maxLength: 60, // 최대 60 바이트
   });
   data.push({
     columnName: t("columns.pipe.company"),
@@ -1834,6 +1865,7 @@ const toggleEditMode = () => {
     // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화
     editData.value = {
       equipmentType: detailItemData.value.equipment_type || "",
+      equipmentCode: detailItemData.value.equipment_code || "",
       vendor_id: detailItemData.value.vendor_id || "",
       modelNumber: detailItemData.value.model_number || "",
       model3dFile: "",
@@ -1898,6 +1930,7 @@ const cancelEditMode = () => {
   // editData 초기화
   editData.value = {
     equipmentType: "",
+    equipmentCode: "",
     vendor_id: "",
     modelNumber: "",
     model3dFile: "",
@@ -1917,15 +1950,76 @@ const cancelEditMode = () => {
 const saveDetailChanges = async () => {
   if (!detailItemData.value) return;
 
-  try {
-    // 여기에 저장 로직을 추가할 수 있습니다
-    // 예: API 호출로 데이터 업데이트
-    console.log("저장할 데이터:", detailItemData.value);
-    console.log("편집된 데이터:", editData.value);
+  // 업체명 필수 검증
+  if (!editData.value.vendor_id) {
+    alert(t("messages.warning.selectManufacturer"));
+    return;
+  }
 
-    // 저장 성공 후 편집 모드 종료
-    isDetailEditMode.value = false;
-    alert(t("messages.success.saved"));
+  try {
+    const item = detailItemData.value;
+
+    // 업데이트 파라미터 준비 (Machine.vue와 동일한 형식)
+    const updateParams: any = {
+      equipment_type: item.equipment_type,
+      equipment_code: editData.value.equipmentCode || item.equipment_code || "",
+      vendor_id: editData.value.vendor_id,
+      model_number: editData.value.modelNumber,
+    };
+
+    // is_active와 description 추가
+    if (editData.value.is_active !== undefined) {
+      updateParams.is_active = editData.value.is_active;
+    }
+    if (editData.value.description !== undefined) {
+      updateParams.description = editData.value.description;
+    }
+
+    // output_values, search_criteria, specifications 추가
+    if (Object.keys(editData.value.output_values).length > 0) {
+      updateParams.output_values = editData.value.output_values;
+    }
+    if (Object.keys(editData.value.search_criteria).length > 0) {
+      updateParams.search_criteria = editData.value.search_criteria;
+    }
+    if (Object.keys(editData.value.specifications).length > 0) {
+      updateParams.specifications = editData.value.specifications;
+    }
+
+    console.log("업데이트 파라미터:", updateParams);
+
+    // 새로 추가된 파일들 확인
+    if (file3d.value?.files?.[0]) {
+      updateParams.dtd_model_file = file3d.value.files[0];
+    }
+    if (fileThumbnail.value?.files?.[0]) {
+      updateParams.thumbnail_file = fileThumbnail.value.files[0];
+    }
+    if (fileRevit.value?.files?.[0]) {
+      updateParams.revit_model_file = fileRevit.value.files[0];
+    }
+    if (fileSymbol.value?.files?.[0]) {
+      updateParams.symbol_file = fileSymbol.value.files[0];
+    }
+
+    console.log("최종 업데이트 파라미터 (파일 포함):", updateParams);
+
+    // API 호출
+    const response = await pipeStore.updatePipe(
+      item.equipment_id,
+      updateParams
+    );
+
+    if (response?.success) {
+      // 저장 성공 후 편집 모드 종료
+      isDetailEditMode.value = false;
+      alert(t("messages.success.saved"));
+
+      // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
+      await loadData();
+    } else {
+      throw new Error(response?.message || "저장에 실패했습니다.");
+    }
   } catch (error) {
     console.error("저장 중 오류 발생:", error);
     alert(t("messages.error.saveFailed"));
@@ -1983,14 +2077,22 @@ const handleFileSelect = (type: string, event: Event) => {
         editData.value.symbolFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).symbol_url = file.name;
+          if (!(detailItemData.value as any).symbol_file_info) {
+            (detailItemData.value as any).symbol_file_info = {};
+          }
+          (detailItemData.value as any).symbol_file_info.original_filename =
+            file.name;
         }
         break;
       case "thumbnail":
         editData.value.thumbnailFile = file.name;
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).thumbnail_url = file.name;
+          if (!(detailItemData.value as any).thumbnail_file_info) {
+            (detailItemData.value as any).thumbnail_file_info = {};
+          }
+          (detailItemData.value as any).thumbnail_file_info.original_filename =
+            file.name;
         }
         break;
     }
@@ -2005,8 +2107,36 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
   const isEnglish = locale.value === "en";
 
   // editData에 반영
+  // 배관코드 필드 확인 (columns.pipe.code)
+  if (fieldName === t("columns.pipe.code")) {
+    // 60바이트 제한 적용
+    const strValue = String(value);
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(strValue);
+    if (bytes.length > 60) {
+      // 60바이트를 초과하면 잘라냄
+      let truncated = "";
+      for (let i = 0; i < strValue.length; i++) {
+        const test = truncated + strValue[i];
+        if (encoder.encode(test).length > 60) {
+          break;
+        }
+        truncated = test;
+      }
+      editData.value.equipmentCode = truncated;
+      if (detailItemData.value) {
+        detailItemData.value.equipment_code = truncated;
+      }
+      alert("배관코드는 최대 60바이트까지 입력 가능합니다.");
+    } else {
+      editData.value.equipmentCode = strValue;
+      if (detailItemData.value) {
+        detailItemData.value.equipment_code = strValue;
+      }
+    }
+  }
   // 제조사 필드 확인 (columns.pipe.company)
-  if (fieldName === t("columns.pipe.company")) {
+  else if (fieldName === t("columns.pipe.company")) {
     editData.value.vendor_id = String(value);
     if (detailItemData.value) {
       detailItemData.value.vendor_id = String(value);
@@ -2198,7 +2328,8 @@ const handleFileRemove = (fieldName: string) => {
     case t("common.symbol"):
       editData.value.symbolFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).symbol_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).symbol_file_info = null;
       }
       // 파일 input 초기화
       if (fileSymbol.value) {
@@ -2208,7 +2339,8 @@ const handleFileRemove = (fieldName: string) => {
     case t("common.thumbnail"):
       editData.value.thumbnailFile = "";
       if (detailItemData.value) {
-        (detailItemData.value as any).thumbnail_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).thumbnail_file_info = null;
       }
       // 파일 input 초기화
       if (fileThumbnail.value) {
@@ -2247,9 +2379,7 @@ const handleFileDownload = (fieldName: string) => {
 
   // download_url이 있으면 다운로드
   if (fileInfo?.download_url) {
-    const downloadUrl = `${process.env.VITE_API_BASE_URL || ''}${
-      fileInfo.download_url
-    }`;
+    const downloadUrl = fileInfo.download_url;
 
     const link = document.createElement("a");
     link.href = downloadUrl;

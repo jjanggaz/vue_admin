@@ -346,7 +346,7 @@
     "pipe": {
       "no": "순번",
       "pcId": "배관코드",
-      "name": "배관명",
+      "name": "모델명",
       "type": "배관유형",
       "materialType": "자재유형",
       "capacity": "용량",

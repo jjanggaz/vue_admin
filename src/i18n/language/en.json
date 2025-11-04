@@ -346,7 +346,7 @@
     "pipe": {
       "no": "No",
       "pcId": "Pipe Code",
-      "name": "Pipe Name",
+      "name": "Model Name",
       "type": "Pipe Type",
       "materialType": "Material Type",
       "capacity": "Capacity",

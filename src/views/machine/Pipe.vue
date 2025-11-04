@@ -1115,40 +1115,7 @@ const getPipeType = (item: MachineItem): string => {
   return item.equipment_type || "-";
 };
 
-// 썸네일 MIME 타입 추정 헬퍼
-const getImageMimeType = (info: any): string => {
-  const fallback = "image/png";
-  const mime = info?.mime_type || info?.content_type;
-  if (typeof mime === "string" && mime.startsWith("image/")) return mime;
-  const name: string | undefined = info?.original_filename || info?.file_name;
-  if (name) {
-    const ext = name.split(".").pop()?.toLowerCase();
-    switch (ext) {
-      case "jpg":
-      case "jpeg":
-        return "image/jpeg";
-      case "png":
-        return "image/png";
-      case "gif":
-        return "image/gif";
-      case "webp":
-        return "image/webp";
-      case "svg":
-        return "image/svg+xml";
-    }
-  }
-  return fallback;
-};
 
-// base64 패딩 보정
-const normalizeBase64 = (b64: string): string => {
-  const s = b64.trim();
-  const pad = s.length % 4;
-  if (pad === 2) return s + "==";
-  if (pad === 3) return s + "=";
-  if (pad === 1) return s.slice(0, -1); // 잘못된 끝 문자 제거
-  return s;
-};
 
 // 상세검색 관련 변수들
 const isDetailSearchOpen = ref(false);
@@ -1192,14 +1159,32 @@ const detailSearch = ref({
 const isDetailEditMode = ref(false);
 
 // 편집 모드 데이터
-const editData = ref({
+const editData = ref<{
+  equipmentType: string;
+  vendor_id: string;
+  modelNumber: string;
+  model3dFile: string;
+  revitFile: string;
+  symbolFile: string;
+  thumbnailFile: string;
+  is_active: boolean;
+  description: string;
+  output_values: Record<string, any>;
+  search_criteria: Record<string, any>;
+  specifications: Record<string, any>;
+}>({
   equipmentType: "",
-  manufacturer: "",
+  vendor_id: "",
   modelNumber: "",
   model3dFile: "",
   revitFile: "",
   symbolFile: "",
   thumbnailFile: "",
+  is_active: true,
+  description: "",
+  output_values: {},
+  search_criteria: {},
+  specifications: {},
 });
 
 // 원본 데이터 백업 (취소 시 복원용)
@@ -1226,14 +1211,14 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.pipe.company"),
-    value: item.vendor_id || "-",
+    value: isDetailEditMode.value ? item.vendor_id || "" : item.vendor_id || "-",
     editable: true,
     fieldType: "select",
     options: manufacturers.value,
   });
   data.push({
     columnName: t("columns.pipe.model"),
-    value: item.model_number || "-",
+    value: isDetailEditMode.value ? item.model_number || "" : item.model_number || "-",
     editable: true,
     fieldType: "input",
   });
@@ -1241,74 +1226,113 @@ const specVerticalData = computed(() => {
   // 2. output_values 동적 추가
   if (item.output_values) {
     Object.values(item.output_values).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_symbol
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_symbol}`
+      // 수정 모드이거나 값이 있는 경우 표시
+      // if (
+      //   isDetailEditMode.value ||
+      //   (field.value !== null &&
+      //     field.value !== undefined &&
+      //     field.value !== "")
+      // ) {
+      data.push({
+        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+        value: isDetailEditMode.value
+          ? field.value
           : typeof field.value === "number"
           ? field.value.toLocaleString()
-          : field.value;
-        data.push({
-          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
-        });
-      }
+          : field.value,
+        editable: true,
+        fieldType: typeof field.value === "number" ? "number" : "input",
+        originalType: typeof field.value,
+      });
+      // }
     });
   }
 
   // 3. search_criteria 동적 추가
   if (item.search_criteria) {
     Object.values(item.search_criteria).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_symbol
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_symbol}`
+      // 수정 모드이거나 값이 있는 경우 표시
+      // if (
+      //   isDetailEditMode.value ||
+      //   (field.value !== null &&
+      //     field.value !== undefined &&
+      //     field.value !== "")
+      // ) {
+      data.push({
+        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+        value: isDetailEditMode.value
+          ? field.value
           : typeof field.value === "number"
           ? field.value.toLocaleString()
-          : field.value;
-        data.push({
-          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
-        });
-      }
+          : field.value,
+        editable: true,
+        fieldType: typeof field.value === "number" ? "number" : "input",
+        originalType: typeof field.value,
+      });
+      // }
     });
   }
 
   // 4. specifications 동적 추가
   if (item.specifications) {
     Object.values(item.specifications).forEach((field: any) => {
-      if (field.value !== null && field.value !== undefined) {
-        const displayValue = field.unit_symbol
-          ? `${
-              typeof field.value === "number"
-                ? field.value.toLocaleString()
-                : field.value
-            } ${field.unit_symbol}`
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value;
+      // 수정 모드이거나 값이 있는 경우 표시
+      if (
+        isDetailEditMode.value ||
+        (field.value !== null &&
+          field.value !== undefined &&
+          field.value !== "")
+      ) {
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: displayValue,
+          value: isDetailEditMode.value
+            ? field.value
+            : typeof field.value === "number"
+            ? field.value.toLocaleString()
+            : field.value,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
         });
       }
     });
   }
 
-  // 5. 파일 필드 (3D, 썸네일, Revit, 심볼, 계산식)
+  // 5. 사용여부 (is_active) 필드 추가
   data.push({
-    columnName: "3D",
-    value: (item as any).model_file_info?.original_filename || "-",
-    filePath: (item as any).model_file_info?.download_url,
+    columnName: isEnglish ? "Usage Status" : "사용여부",
+    value: isDetailEditMode.value
+      ? item.is_active !== undefined ? item.is_active : true
+      : item.is_active !== undefined
+      ? item.is_active
+        ? isEnglish
+          ? "Used"
+          : "사용"
+        : isEnglish
+        ? "Not Used"
+        : "미사용"
+      : "-",
     editable: true,
-    fieldType: "file",
+    fieldType: "select",
+    options: [
+      { value: true, label: isEnglish ? "Used" : "사용" },
+      { value: false, label: isEnglish ? "Not Used" : "미사용" },
+    ],
+    originalType: "boolean",
   });
+
+  // 6. 장비설명 (description) 필드 추가
+  data.push({
+    columnName: isEnglish ? "Equipment Description" : "장비설명",
+    value: isDetailEditMode.value
+      ? item.description || ""
+      : item.description || "-",
+    editable: true,
+    fieldType: "textarea",
+    originalType: "string",
+  });
+
+  // 7. 파일 필드 (썸네일, 심볼)
   data.push({
     columnName: t("common.thumbnail"),
     value: (item as any).thumbnail_file_info?.original_filename || "-",
@@ -1317,23 +1341,9 @@ const specVerticalData = computed(() => {
     fieldType: "file",
   });
   data.push({
-    columnName: "Revit",
-    value: (item as any).rvt_file_info?.original_filename || "-",
-    filePath: (item as any).rvt_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
     columnName: t("common.symbol"),
     value: (item as any).symbol_file_info?.original_filename || "-",
     filePath: (item as any).symbol_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
-    columnName: t("columns.pipe.formula"),
-    value: (item as any).formula_url || "-",
-    filePath: (item as any).formula_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
@@ -1795,74 +1805,17 @@ const openDetailPanel = async (item: MachineItem) => {
       }
     }
 
-    // 기계 파일 상세 정보 조회
-    const fileParams = {
-      model_file_id: item.model_file_id,
-      rvt_file_id: item.rvt_file_id,
-      symbol_id: item.symbol_id,
-      thumbnail_id: item.thumbnail_id,
-      formula_id: item.formula_id,
-    };
-    const fileResponse = await pipeStore.fetchPipeDetailFiles(
-      item.equipment_id,
-      fileParams
-    );
-
-    // 썸네일 이미지 데이터 처리
-    const thumbInfo = fileResponse?.response?.data?.thumbnail_file;
-    if (thumbInfo?.data) {
-      const raw = thumbInfo.data as unknown;
-      const mimeType = getImageMimeType(thumbInfo);
-
-      // 1) base64 문자열
-      if (typeof raw === "string") {
-        // 이미 data URL이면 그대로 사용
-        if (raw.startsWith("data:")) {
-          thumbnailImageUrl.value = raw;
-        } else {
-          // 순수 base64를 안전하게 Blob으로 변환 후 표시
-          try {
-            const b64 = normalizeBase64(raw);
-            const byteString = atob(b64);
-            const len = byteString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) bytes[i] = byteString.charCodeAt(i);
-            const blob = new Blob([bytes], { type: mimeType });
-            thumbnailImageUrl.value = URL.createObjectURL(blob);
-          } catch {
-            // 디코딩 실패 시 표시 초기화
-            thumbnailImageUrl.value = "";
-          }
-        }
-      }
-      // 2) ArrayBuffer
-      else if (raw instanceof ArrayBuffer) {
-        const blob = new Blob([raw], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      }
-      // 3) Uint8Array (또는 TypedArray 유사)
-      else if (raw instanceof Uint8Array) {
-        const ab = raw.buffer.slice(
-          raw.byteOffset,
-          raw.byteOffset + raw.byteLength
-        ) as ArrayBuffer; // 명시적으로 ArrayBuffer로 단언
-        const blob = new Blob([ab], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      }
-      // 4) number[] (백엔드가 숫자 배열을 보내는 경우 대비)
-      else if (Array.isArray(raw)) {
-        const u8 = new Uint8Array(raw as number[]);
-        const blob = new Blob([u8], { type: mimeType });
-        thumbnailImageUrl.value = URL.createObjectURL(blob);
-      } else {
-        // 알 수 없는 포맷: 표시 초기화
-        thumbnailImageUrl.value = "";
-      }
+    // 썸네일 이미지 URL 처리 - download_url 사용
+    const thumbnailInfo = (item as any).thumbnail_file_info;
+    if (thumbnailInfo?.download_url) {
+      isThumbnailLoading.value = true;
+      thumbnailImageUrl.value = thumbnailInfo.download_url;
     } else {
       thumbnailImageUrl.value = "";
     }
   } catch (error) {
     console.error("상세 정보 조회 실패:", error);
+    isThumbnailLoading.value = false;
   }
 };
 const closeDetailPanel = () => {
@@ -1872,14 +1825,58 @@ const closeDetailPanel = () => {
   isDetailEditMode.value = false;
 
   // 썸네일 이미지 URL 및 로딩 상태 초기화
-  if (thumbnailImageUrl.value && thumbnailImageUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(thumbnailImageUrl.value);
-  }
   thumbnailImageUrl.value = "";
   isThumbnailLoading.value = false;
 };
 
 const toggleEditMode = () => {
+  if (!isDetailEditMode.value && detailItemData.value) {
+    // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화
+    editData.value = {
+      equipmentType: detailItemData.value.equipment_type || "",
+      vendor_id: detailItemData.value.vendor_id || "",
+      modelNumber: detailItemData.value.model_number || "",
+      model3dFile: "",
+      revitFile: "",
+      symbolFile: "",
+      thumbnailFile: "",
+      is_active: detailItemData.value.is_active || true,
+      description: detailItemData.value.description || "",
+      output_values: {},
+      search_criteria: {},
+      specifications: {},
+    };
+
+    // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
+    const item = detailItemData.value;
+
+    if (item.output_values) {
+      Object.entries(item.output_values).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.output_values[key] = { ...field };
+        }
+      );
+    }
+
+    if (item.search_criteria) {
+      Object.entries(item.search_criteria).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.search_criteria[key] = { ...field };
+        }
+      );
+    }
+
+    if (item.specifications) {
+      Object.entries(item.specifications).forEach(
+        ([key, field]: [string, any]) => {
+          // 전체 필드 객체를 복사하되, value만 editData에서 관리
+          editData.value.specifications[key] = { ...field };
+        }
+      );
+    }
+  }
   isDetailEditMode.value = !isDetailEditMode.value;
 };
 
@@ -1901,12 +1898,17 @@ const cancelEditMode = () => {
   // editData 초기화
   editData.value = {
     equipmentType: "",
-    manufacturer: "",
+    vendor_id: "",
     modelNumber: "",
     model3dFile: "",
     revitFile: "",
     symbolFile: "",
     thumbnailFile: "",
+    is_active: true,
+    description: "",
+    output_values: {},
+    search_criteria: {},
+    specifications: {},
   };
 
   isDetailEditMode.value = false;
@@ -1997,17 +1999,138 @@ const handleFileSelect = (type: string, event: Event) => {
 };
 
 // 그리드에서 필드 변경 처리
-const handleFieldChange = (fieldName: string, value: string) => {
+const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
   console.log(`필드 변경: ${fieldName} = ${value}`);
 
+  const isEnglish = locale.value === "en";
+
   // editData에 반영
-  switch (fieldName) {
-    case t("common.manufacturer"):
-      editData.value.manufacturer = value;
-      break;
-    case t("common.modelName"):
-      editData.value.modelNumber = value;
-      break;
+  // 제조사 필드 확인 (columns.pipe.company)
+  if (fieldName === t("columns.pipe.company")) {
+    editData.value.vendor_id = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.vendor_id = String(value);
+    }
+    console.log("vendor_id 업데이트:", value);
+  }
+  // 모델명 필드 확인 (columns.pipe.model)
+  else if (fieldName === t("columns.pipe.model")) {
+    editData.value.modelNumber = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.model_number = String(value);
+    }
+    console.log("modelNumber 업데이트:", value);
+  }
+  // 사용여부 필드 확인
+  else if (fieldName === (isEnglish ? "Usage Status" : "사용여부")) {
+    // value는 문자열이거나 실제 boolean 값일 수 있음
+    let boolValue = false;
+    if (typeof value === "boolean") {
+      boolValue = value;
+    } else {
+      const strValue = String(value);
+      boolValue = strValue === "true" || strValue === "사용" || strValue === "Used";
+    }
+    editData.value.is_active = boolValue;
+    if (detailItemData.value) {
+      detailItemData.value.is_active = boolValue;
+    }
+    console.log("is_active 업데이트:", boolValue);
+  }
+  // 장비설명 필드 확인
+  else if (fieldName === (isEnglish ? "Equipment Description" : "장비설명")) {
+    editData.value.description = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.description = String(value);
+    }
+    console.log("description 업데이트:", value);
+  }
+  // 동적 필드 처리 (output_values, search_criteria, specifications)
+  else {
+    // detailItemData에서 해당 필드 찾기
+    const item = detailItemData.value;
+    if (!item) return;
+
+    // output_values에서 찾기
+    if (item.output_values) {
+      const outputField = Object.entries(item.output_values).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (outputField) {
+        const [key] = outputField;
+                        // 객체 구조를 유지하면서 value만 업데이트
+                if (editData.value.output_values[key]) {
+                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+                  const strValue = String(value);
+                  const numValue = Number(strValue);
+                  editData.value.output_values[key].value =
+                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+                  // detailItemData도 업데이트
+                  if (item.output_values[key]) {
+                    item.output_values[key].value = editData.value.output_values[key].value;
+                  }
+                }
+        console.log(`output_values.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // search_criteria에서 찾기
+    if (item.search_criteria) {
+      const searchField = Object.entries(item.search_criteria).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (searchField) {
+        const [key] = searchField;
+                        // 객체 구조를 유지하면서 value만 업데이트
+                if (editData.value.search_criteria[key]) {
+                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+                  const strValue = String(value);
+                  const numValue = Number(strValue);
+                  editData.value.search_criteria[key].value =
+                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+                  // detailItemData도 업데이트
+                  if (item.search_criteria[key]) {
+                    item.search_criteria[key].value = editData.value.search_criteria[key].value;
+                  }
+                }
+        console.log(`search_criteria.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // specifications에서 찾기
+    if (item.specifications) {
+      const specField = Object.entries(item.specifications).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (specField) {
+        const [key] = specField;
+                        // 객체 구조를 유지하면서 value만 업데이트
+                if (editData.value.specifications[key]) {
+                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+                  const strValue = String(value);
+                  const numValue = Number(strValue);
+                  editData.value.specifications[key].value =
+                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+                  // detailItemData도 업데이트
+                  if (item.specifications[key]) {
+                    item.specifications[key].value = editData.value.specifications[key].value;
+                  }
+                }
+        console.log(`specifications.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
   }
 };
 

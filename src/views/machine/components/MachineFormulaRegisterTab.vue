@@ -228,7 +228,7 @@ const setFormulaListData = (response: any) => {
   });
 
   listRows.value = sortedFormulas.map((formula: any, index: number) => ({
-    no: index + 1,
+    no: sortedFormulas.length - index, // 순번 (역순)
     type: equipmentType?.code_value || formula.ownership_code_key || "-",
     fileName: formula.file_name || "-", // 슬롯에서 렌더링할 것이므로 파일명만 저장
     formulaScope:

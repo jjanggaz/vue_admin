@@ -284,7 +284,7 @@ onMounted(async () => {
       if (structureStore.formulaSearchResults?.length > 0) {
         editModeRows.value = structureStore.formulaSearchResults.map(
           (item: any, index: number) => ({
-            no: index + 1,
+            no: structureStore.formulaSearchResults.length - index, // 순번 (역순)
             formula_id: item.formula_id || "",
             formula_name: item.formula_name || "-",
             file_name: item.file_name || "-",

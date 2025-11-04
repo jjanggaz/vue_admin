@@ -1135,7 +1135,7 @@ const loadWaterFlowTypeParameters = async (
           inflowStore.waterFlowTypeParameters.metric_formulas.data.formulas;
 
         const metricFormulas: GridRow2[] = formulas.map((formula, index) => ({
-          id: index + 1, // 순번
+          id: formulas.length - index, // 순번 (역순)
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
           download_url: formula.download_url || "", // 다운로드 URL
@@ -1169,7 +1169,7 @@ const loadWaterFlowTypeParameters = async (
           inflowStore.waterFlowTypeParameters.uscs_formulas.data.formulas;
 
         const uscsFormulas: GridRow2[] = formulas.map((formula, index) => ({
-          id: index + 1, // 순번
+          id: formulas.length - index, // 순번 (역순)
           formula_id: formula.formula_id, // 삭제 시 사용할 formula_id
           formula: formula.formula_name,
           download_url: formula.download_url || "", // 다운로드 URL

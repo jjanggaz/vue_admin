@@ -977,14 +977,18 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.machine.company"),
-    value: item.vendor_id || "-",
+    value: isDetailEditMode.value
+      ? editData.value.vendor_id || "-"
+      : item.vendor_id || "-",
     editable: true,
     fieldType: "select",
     options: manufacturers.value,
   });
   data.push({
     columnName: t("columns.machine.model"),
-    value: item.model_number || "-",
+    value: isDetailEditMode.value
+      ? editData.value.modelNumber || "-"
+      : item.model_number || "-",
     editable: true,
     fieldType: "input",
   });
@@ -1032,7 +1036,8 @@ const specVerticalData = computed(() => {
             ? displayValue.toLocaleString()
             : displayValue,
           editable: true,
-          fieldType: typeof field.value === "number" ? "number" : "input",
+          fieldType: "number",
+          //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
           isChanged: isChanged, // 변경 여부 추가
         });
@@ -1043,52 +1048,59 @@ const specVerticalData = computed(() => {
 
   // 3. search_criteria 동적 추가
   if (item.search_criteria) {
-    Object.values(item.search_criteria).forEach((field: any) => {
-      // 수정 모드이거나 값이 있는 경우 표시
-      // if (
-      //   isDetailEditMode.value ||
-      //   (field.value !== null &&
-      //     field.value !== undefined &&
-      //     field.value !== "")
-      // ) {
-      data.push({
-        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-        value: isDetailEditMode.value
-          ? field.value
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value,
-        editable: true,
-        fieldType: typeof field.value === "number" ? "number" : "input",
-        originalType: typeof field.value,
-      });
-      // }
-    });
+    Object.entries(item.search_criteria).forEach(
+      ([key, field]: [string, any]) => {
+        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
+        const displayValue = isDetailEditMode.value
+          ? editData.value.search_criteria?.[key]?.value ?? field.value
+          : field.value;
+
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: isDetailEditMode.value
+            ? displayValue
+            : typeof displayValue === "number"
+            ? displayValue.toLocaleString()
+            : displayValue,
+          editable: true,
+          fieldType: "input",
+          //fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
+        });
+      }
+    );
   }
 
   // 4. specifications 동적 추가
   if (item.specifications) {
-    Object.values(item.specifications).forEach((field: any) => {
-      // 수정 모드이거나 값이 있는 경우 표시
-      if (
-        isDetailEditMode.value ||
-        (field.value !== null &&
-          field.value !== undefined &&
-          field.value !== "")
-      ) {
-        data.push({
-          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? field.value
-            : typeof field.value === "number"
-            ? field.value.toLocaleString()
-            : field.value,
-          editable: true,
-          fieldType: typeof field.value === "number" ? "number" : "input",
-          originalType: typeof field.value,
-        });
+    Object.entries(item.specifications).forEach(
+      ([key, field]: [string, any]) => {
+        if (
+          isDetailEditMode.value ||
+          (field.value !== null &&
+            field.value !== undefined &&
+            field.value !== "")
+        ) {
+          // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
+          const displayValue = isDetailEditMode.value
+            ? editData.value.specifications?.[key]?.value ?? field.value
+            : field.value;
+
+          data.push({
+            columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+            value: isDetailEditMode.value
+              ? displayValue
+              : typeof displayValue === "number"
+              ? displayValue.toLocaleString()
+              : displayValue,
+            editable: true,
+            fieldType: "input",
+            //fieldType: typeof field.value === "number" ? "number" : "input",
+            originalType: typeof field.value,
+          });
+        }
       }
-    });
+    );
   }
 
   // 5. 파일 필드 (3D, 썸네일, Revit, 심볼, 계산식)

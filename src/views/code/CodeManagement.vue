@@ -147,20 +147,22 @@
           </button>
         </div>
 
-        <DataTable
-          :columns="tableColumns"
-          :data="codeList"
-          :loading="loading"
-          :selectable="true"
-          :selection-mode="'multiple'"
-          :show-select-all="true"
-          row-key="code_id"
-          :select-header-text="t('common.selectColumn')"
-          :selected-items="selectedItems"
-          @selection-change="handleSelectionChange"
-          @sort-change="handleSortChange"
-          @row-click="handleRowClick"
-        />
+        <div class="table-wrapper">
+          <DataTable
+            :columns="tableColumns"
+            :data="codeList"
+            :loading="loading"
+            :selectable="true"
+            :selection-mode="'multiple'"
+            :show-select-all="true"
+            row-key="code_id"
+            :select-header-text="t('common.selectColumn')"
+            :selected-items="selectedItems"
+            @selection-change="handleSelectionChange"
+            @sort-change="handleSortChange"
+            @row-click="handleRowClick"
+          />
+        </div>
 
         <!-- Pagination -->
         <div class="pagination-container">
@@ -1201,10 +1203,8 @@ const handleEdit = () => {
 <style scoped lang="scss">
 .code-management {
   padding: 20px;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 // Top Section - Search/Filter Controls
@@ -1272,8 +1272,6 @@ const handleEdit = () => {
   display: flex;
   flex: 1;
   gap: 15px;
-  min-height: 0;
-  overflow: hidden;
 }
 
 // Left Section - Category Sidebar
@@ -1296,10 +1294,7 @@ const handleEdit = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   min-width: 0;
 }
 
@@ -1309,6 +1304,11 @@ const handleEdit = () => {
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
   justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.table-wrapper {
+  flex: 1;
 }
 
 .btn {
@@ -1355,6 +1355,7 @@ const handleEdit = () => {
   align-items: center;
   padding: 0 1rem;
   position: relative;
+  flex-shrink: 0;
 
   .total-count {
     position: absolute;

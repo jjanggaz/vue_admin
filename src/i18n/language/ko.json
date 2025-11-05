@@ -1335,6 +1335,7 @@
       "selectMachineMajorCategory": "기계 대분류를 선택해주세요.",
       "selectMachineSubCategory": "기계 중분류를 선택해주세요.",
       "selectManufacturer": "업체명을 선택해주세요.",
+      "selectUnit": "단위를 선택해주세요.",
       "selectStructureMachineName": "구조물 타입을 선택해주세요.",
       "fileSizeExceed": "파일 크기는 {size}MB를 초과할 수 없습니다.",
       "selectAllFile": "계산식, 3D DTD모델, 모델 썸네일, REVIT 파일 통합 첨부 파일을 선택해주세요.",

@@ -1640,8 +1640,13 @@ const extractRegisterZipContents = async (file: File) => {
   }
 };
 
-// 공통 검증 함수: 자재유형 필수 체크
+// 공통 검증 함수: 단위 및 자재유형 필수 체크
 const validateRegisterBasicSelections = (): boolean => {
+  if (!registerSelectedUnit.value) {
+    alert(t("messages.warning.selectUnit"));
+    return false;
+  }
+
   if (!registerSelectedPipeName.value) {
     alert(t("messages.warning.selectMachineMajorCategory"));
     return false;
@@ -2047,6 +2052,48 @@ const saveDetailChanges = async () => {
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
+
+      // output_values의 변경된 항목만 로그 출력 및 가격 이력 생성
+      if (originalItemData.value && originalItemData.value.output_values) {
+        for (const [key, originalField] of Object.entries(
+          originalItemData.value.output_values
+        )) {
+          const originalValue = (originalField as any)?.value;
+          const currentValue = editData.value.output_values?.[key]?.value;
+
+          // 값 비교 (null, undefined, 빈 문자열을 모두 동일하게 처리)
+          const normalizedOriginal =
+            originalValue == null || originalValue === ""
+              ? null
+              : originalValue;
+          const normalizedCurrent =
+            currentValue == null || currentValue === "" ? null : currentValue;
+
+          const isChanged = normalizedOriginal !== normalizedCurrent;
+
+          if (isChanged) {
+            // 가격 이력 생성 API 호출
+            try {
+              const currentField =
+                editData.value.output_values?.[key] || originalField;
+              await pipeStore.createPriceHistory({
+                equipment_id: item.equipment_id,
+                equipment_code: item.equipment_code,
+                price_type: (currentField as any)?.key?.toUpperCase() || "",
+                price_unit_code:
+                  (currentField as any)?.unit_code ||
+                  (originalField as any)?.unit_code,
+                price_unit_symbol:
+                  (currentField as any)?.unit_symbol ||
+                  (originalField as any)?.unit_symbol,
+                price_value: currentValue,
+              });
+            } catch (error) {
+              console.error(`가격 이력 생성 실패 (${key}):`, error);
+            }
+          }
+        }
+      }
       
       // 선택된 파일 객체 초기화
       selected3dFile.value = null;

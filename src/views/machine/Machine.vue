@@ -1075,30 +1075,30 @@ const specVerticalData = computed(() => {
   if (item.specifications) {
     Object.entries(item.specifications).forEach(
       ([key, field]: [string, any]) => {
-        if (
-          isDetailEditMode.value ||
-          (field.value !== null &&
-            field.value !== undefined &&
-            field.value !== "")
-        ) {
-          // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
-          const displayValue = isDetailEditMode.value
-            ? editData.value.specifications?.[key]?.value ?? field.value
-            : field.value;
+        // if (
+        //   isDetailEditMode.value ||
+        //   (field.value !== null &&
+        //     field.value !== undefined &&
+        //     field.value !== "")
+        // ) {
+        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
+        const displayValue = isDetailEditMode.value
+          ? editData.value.specifications?.[key]?.value ?? field.value
+          : field.value;
 
-          data.push({
-            columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-            value: isDetailEditMode.value
-              ? displayValue
-              : typeof displayValue === "number"
-              ? displayValue.toLocaleString()
-              : displayValue,
-            editable: true,
-            fieldType: "input",
-            //fieldType: typeof field.value === "number" ? "number" : "input",
-            originalType: typeof field.value,
-          });
-        }
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: isDetailEditMode.value
+            ? displayValue
+            : typeof displayValue === "number"
+            ? displayValue.toLocaleString()
+            : displayValue,
+          editable: true,
+          fieldType: "input",
+          //fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
+        });
+        // }
       }
     );
   }

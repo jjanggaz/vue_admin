@@ -1714,12 +1714,26 @@ const handlePipeRegister = async () => {
 
   try {
     // pipeStore의 uploadPipeExcel 함수 호출
-    await pipeStore.uploadPipeExcel(
+    const response = await pipeStore.uploadPipeExcel(
       registerSelectedPipeName.value,
       registerExcelFile.value
     );
 
-    alert(t("messages.success.machineRegistered"));
+    // API 응답에서 summary 정보 추출
+    const apiResponse = response?.response as any;
+    const summary = apiResponse?.data?.summary || apiResponse?.summary;
+
+    if (summary) {
+      const totalInserted = summary.total_inserted_rows || 0;
+      const totalFailed = summary.total_failed_rows || 0;
+      const totalUploaded = totalInserted + totalFailed;
+
+      // 등록 결과 메시지 생성
+      const resultMessage = `[등록결과]\n업로드 ${totalUploaded}건\n성공 ${totalInserted}건\n에러 ${totalFailed}건`;
+      alert(resultMessage);
+    } else {
+      alert(t("messages.success.machineRegistered"));
+    }
 
     // 성공 시 초기화
     registerExcelFileName.value = "";

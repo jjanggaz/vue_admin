@@ -622,7 +622,7 @@
                 ref="fileRevit"
                 @change="handleFileSelect('revit', $event)"
                 style="display: none"
-                accept=".rvt"
+                accept=".rfa"
               />
               <input
                 type="file"
@@ -920,7 +920,7 @@ interface MachineItem {
   symbol_id?: string;
   symbol_metadata?: Record<string, unknown>;
   pressure_unit?: string;
-  rvt_file_id?: string;
+  rfa_file_id?: string;
   is_active: boolean;
   file_name?: string;
   created_by: string;
@@ -1363,11 +1363,25 @@ const specVerticalData = computed(() => {
     originalType: "string",
   });
 
-  // 7. 파일 필드 (썸네일, 심볼)
+  // 7. 파일 필드 (3D, 썸네일, Revit, 심볼)
+  data.push({
+    columnName: "3D",
+    value: (item as any).model_file_info?.original_filename || "-",
+    filePath: (item as any).model_file_info?.download_url,
+    editable: true,
+    fieldType: "file",
+  });
   data.push({
     columnName: t("common.thumbnail"),
     value: (item as any).thumbnail_file_info?.original_filename || "-",
     filePath: (item as any).thumbnail_file_info?.download_url,
+    editable: true,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: "Revit",
+    value: (item as any).rfa_file_info?.original_filename || "-",
+    filePath: (item as any).rfa_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });
@@ -1784,7 +1798,7 @@ const handleDelete = async () => {
       for (const item of selectedItems.value) {
         const deleteParams = {
           model_file_id: item.model_file_id,
-          rvt_file_id: item.rvt_file_id,
+          rfa_file_id: item.rfa_file_id,
           symbol_id: item.symbol_id,
           thumbnail_id: item.thumbnail_id,
           formula_id: item.formula_id,
@@ -1944,6 +1958,12 @@ const cancelEditMode = () => {
     specifications: {},
   };
 
+  // 선택된 파일 객체 초기화
+  selected3dFile.value = null;
+  selectedRevitFile.value = null;
+  selectedSymbolFile.value = null;
+  selectedThumbnailFile.value = null;
+
   isDetailEditMode.value = false;
 };
 
@@ -1988,18 +2008,18 @@ const saveDetailChanges = async () => {
 
     console.log("업데이트 파라미터:", updateParams);
 
-    // 새로 추가된 파일들 확인
-    if (file3d.value?.files?.[0]) {
-      updateParams.dtd_model_file = file3d.value.files[0];
+    // 새로 추가된 파일들 확인 (저장된 File 객체 사용)
+    if (selected3dFile.value) {
+      updateParams.dtd_model_file = selected3dFile.value;
     }
-    if (fileThumbnail.value?.files?.[0]) {
-      updateParams.thumbnail_file = fileThumbnail.value.files[0];
+    if (selectedThumbnailFile.value) {
+      updateParams.thumbnail_file = selectedThumbnailFile.value;
     }
-    if (fileRevit.value?.files?.[0]) {
-      updateParams.revit_model_file = fileRevit.value.files[0];
+    if (selectedRevitFile.value) {
+      updateParams.revit_model_file = selectedRevitFile.value;
     }
-    if (fileSymbol.value?.files?.[0]) {
-      updateParams.symbol_file = fileSymbol.value.files[0];
+    if (selectedSymbolFile.value) {
+      updateParams.symbol_file = selectedSymbolFile.value;
     }
 
     console.log("최종 업데이트 파라미터 (파일 포함):", updateParams);
@@ -2013,10 +2033,18 @@ const saveDetailChanges = async () => {
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
+      
+      // 선택된 파일 객체 초기화
+      selected3dFile.value = null;
+      selectedRevitFile.value = null;
+      selectedSymbolFile.value = null;
+      selectedThumbnailFile.value = null;
+      
       alert(t("messages.success.saved"));
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
-      await loadData();
+      // 디버깅을 위해 주석 처리
+      // await loadData();
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
     }
@@ -2036,7 +2064,7 @@ const handleFileSelect = (type: string, event: Event) => {
     // 파일 확장자 validation
     const allowedExtensions = {
       "3d": [".dtdx"],
-      revit: [".rvt"],
+      revit: [".rfa"],
       symbol: [".svg"],
       thumbnail: [".jpg", ".jpeg", ".png", ".gif"],
     };
@@ -2061,20 +2089,31 @@ const handleFileSelect = (type: string, event: Event) => {
     switch (type) {
       case "3d":
         editData.value.model3dFile = file.name;
+        selected3dFile.value = file; // 파일 객체 저장
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).model_3d_url = file.name;
+          if (!(detailItemData.value as any).model_file_info) {
+            (detailItemData.value as any).model_file_info = {};
+          }
+          (detailItemData.value as any).model_file_info.original_filename =
+            file.name;
         }
         break;
       case "revit":
         editData.value.revitFile = file.name;
+        selectedRevitFile.value = file; // 파일 객체 저장
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
-          (detailItemData.value as any).revit_file_url = file.name;
+          if (!(detailItemData.value as any).rfa_file_info) {
+            (detailItemData.value as any).rfa_file_info = {};
+          }
+          (detailItemData.value as any).rfa_file_info.original_filename =
+            file.name;
         }
         break;
       case "symbol":
         editData.value.symbolFile = file.name;
+        selectedSymbolFile.value = file; // 파일 객체 저장
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
           if (!(detailItemData.value as any).symbol_file_info) {
@@ -2086,6 +2125,7 @@ const handleFileSelect = (type: string, event: Event) => {
         break;
       case "thumbnail":
         editData.value.thumbnailFile = file.name;
+        selectedThumbnailFile.value = file; // 파일 객체 저장
         // 그리드 데이터도 업데이트
         if (detailItemData.value) {
           if (!(detailItemData.value as any).thumbnail_file_info) {
@@ -2270,6 +2310,12 @@ const fileRevit = ref<HTMLInputElement>();
 const fileSymbol = ref<HTMLInputElement>();
 const fileThumbnail = ref<HTMLInputElement>();
 
+// 선택된 파일 객체 저장 (저장 시 사용)
+const selected3dFile = ref<File | null>(null);
+const selectedRevitFile = ref<File | null>(null);
+const selectedSymbolFile = ref<File | null>(null);
+const selectedThumbnailFile = ref<File | null>(null);
+
 // 그리드에서 파일 첨부 처리
 const handleFileAttach = (fieldName: string) => {
   console.log(`파일 첨부 요청: ${fieldName}`);
@@ -2307,8 +2353,10 @@ const handleFileRemove = (fieldName: string) => {
   switch (fieldName) {
     case "3D":
       editData.value.model3dFile = "";
+      selected3dFile.value = null; // 저장된 파일 객체 초기화
       if (detailItemData.value) {
-        (detailItemData.value as any).model_3d_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).model_file_info = null;
       }
       // 파일 input 초기화
       if (file3d.value) {
@@ -2317,8 +2365,10 @@ const handleFileRemove = (fieldName: string) => {
       break;
     case "Revit":
       editData.value.revitFile = "";
+      selectedRevitFile.value = null; // 저장된 파일 객체 초기화
       if (detailItemData.value) {
-        (detailItemData.value as any).revit_file_url = "";
+        // 기존 파일 정보 초기화
+        (detailItemData.value as any).rfa_file_info = null;
       }
       // 파일 input 초기화
       if (fileRevit.value) {
@@ -2327,6 +2377,7 @@ const handleFileRemove = (fieldName: string) => {
       break;
     case t("common.symbol"):
       editData.value.symbolFile = "";
+      selectedSymbolFile.value = null; // 저장된 파일 객체 초기화
       if (detailItemData.value) {
         // 기존 파일 정보 초기화
         (detailItemData.value as any).symbol_file_info = null;
@@ -2338,6 +2389,7 @@ const handleFileRemove = (fieldName: string) => {
       break;
     case t("common.thumbnail"):
       editData.value.thumbnailFile = "";
+      selectedThumbnailFile.value = null; // 저장된 파일 객체 초기화
       if (detailItemData.value) {
         // 기존 파일 정보 초기화
         (detailItemData.value as any).thumbnail_file_info = null;
@@ -2370,7 +2422,7 @@ const handleFileDownload = (fieldName: string) => {
       fileInfo = (item as any).thumbnail_file_info;
       break;
     case "Revit":
-      fileInfo = (item as any).rvt_file_info;
+      fileInfo = (item as any).rfa_file_info;
       break;
     case t("common.symbol"):
       fileInfo = (item as any).symbol_file_info;

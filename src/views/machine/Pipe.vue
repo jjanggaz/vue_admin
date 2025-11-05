@@ -2043,8 +2043,7 @@ const saveDetailChanges = async () => {
       alert(t("messages.success.saved"));
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
-      // 디버깅을 위해 주석 처리
-      // await loadData();
+      await loadData();
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
     }

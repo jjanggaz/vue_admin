@@ -765,6 +765,58 @@
         </template>
       </DataTable>
     </div>
+
+    <!-- 용량계산서 등록 섹션 -->
+    <div class="capacity-calculation-section">
+      <div class="tab-header">
+        <div class="grid-title">
+          <h4>용량계산서 등록</h4>
+        </div>
+      </div>
+      <div class="file-upload-container">
+        <div class="file-input-group">
+          <input
+            type="file"
+            ref="capacityCalculationFileInput"
+            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            @change="handleCapacityCalculationFileChange"
+            style="display: none"
+            :disabled="!hasFormulaData"
+          />
+          <input
+            type="text"
+            class="form-control"
+            :value="capacityCalculationFileName || ''"
+            placeholder="용량계산서 (EXCEL)"
+            readonly
+          />
+          <button
+            type="button"
+            @click="capacityCalculationFileInput?.click()"
+            class="file-select-btn"
+            :disabled="!hasFormulaData"
+          >
+            {{ t("common.selectFile") }}
+          </button>
+          <button
+            type="button"
+            class="file-select-btn"
+            @click="handleCapacityCalculationFileDelete"
+            :disabled="!capacityCalculationFile || !hasFormulaData"
+          >
+            삭제
+          </button>
+          <button
+            type="button"
+            class="file-select-btn"
+            @click="handleCapacityCalculationRegister"
+            :disabled="!capacityCalculationFile || !hasFormulaData"
+          >
+            등록
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 계산식 파일 첨부 모달 -->
@@ -922,6 +974,11 @@ const filteredProcessTypeOptions = computed(() => {
   );
 });
 
+// 계산식 그리드 데이터 존재 여부 확인
+const hasFormulaData = computed(() => {
+  return processStore.formulaList && processStore.formulaList.length > 0;
+});
+
 // Reactive references
 const selectedFormulaItems = ref<any[]>([]);
 const selectedPfdItems = ref<any[]>([]);
@@ -930,6 +987,9 @@ const selectedPfdFiles = ref<File[]>([]);
 const processSymbolInput = ref<HTMLInputElement | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 const pfdFileInput = ref<HTMLInputElement | null>(null);
+const capacityCalculationFileInput = ref<HTMLInputElement | null>(null);
+const capacityCalculationFile = ref<File | null>(null);
+const capacityCalculationFileName = ref<string>("");
 
 // P&ID 매핑 관련 상태
 const currentPfdItemForMapping = ref<any>(null);
@@ -2009,6 +2069,101 @@ const handlePfdFilesSelected = (event: Event) => {
     }
 
     selectedPfdFiles.value = pfdFiles;
+  }
+};
+
+// 용량계산서 파일 선택 핸들러
+const handleCapacityCalculationFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    const file = target.files[0];
+    
+    // 엑셀 파일만 필터링
+    const fileName = file.name.toLowerCase();
+    const isExcelFile =
+      fileName.endsWith(".xlsx") ||
+      fileName.endsWith(".xls") ||
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      file.type === "application/vnd.ms-excel";
+
+    if (!isExcelFile) {
+      alert("엑셀 파일(.xlsx, .xls)만 선택 가능합니다.");
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
+      capacityCalculationFile.value = null;
+      capacityCalculationFileName.value = "";
+      return;
+    }
+
+    capacityCalculationFile.value = file;
+    capacityCalculationFileName.value = file.name;
+  }
+};
+
+// 용량계산서 파일 삭제 핸들러
+const handleCapacityCalculationFileDelete = () => {
+  if (capacityCalculationFile.value || capacityCalculationFileName.value) {
+    capacityCalculationFile.value = null;
+    capacityCalculationFileName.value = "";
+    if (capacityCalculationFileInput.value) {
+      capacityCalculationFileInput.value.value = "";
+    }
+  }
+};
+
+// 용량계산서 등록 핸들러
+const handleCapacityCalculationRegister = async () => {
+  if (!capacityCalculationFile.value) {
+    alert("파일을 선택해주세요.");
+    return;
+  }
+
+  try {
+    // processId 가져오기
+    let processId = props.processId;
+    if (!processId && processStore.processDetail.process_id) {
+      processId = processStore.processDetail.process_id;
+    }
+
+    if (!processId) {
+      alert("공정 ID가 없습니다.");
+      return;
+    }
+
+    // FormData 생성
+    const formData = new FormData();
+    formData.append("capacity_calculation_file", capacityCalculationFile.value);
+
+    // API 호출 (API 엔드포인트는 백엔드에 맞게 수정 필요)
+    const response = await request(
+      `/api/process/${encodeURIComponent(processId)}/capacity-calculation`,
+      undefined,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (response?.success) {
+      alert("용량계산서가 등록되었습니다.");
+      // 파일 초기화
+      capacityCalculationFile.value = null;
+      capacityCalculationFileName.value = "";
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
+    } else {
+      throw new Error(response?.message || "용량계산서 등록에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("용량계산서 등록 실패:", error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "용량계산서 등록에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 
@@ -11349,6 +11504,12 @@ watch(
   background: #0056b3;
 }
 
+.file-select-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .selected-file {
   color: #000 !important;
   font-size: 13px;
@@ -12003,5 +12164,55 @@ watch(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 용량계산서 등록 섹션 */
+.capacity-calculation-section {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 2px solid #e9ecef;
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.file-input-group .form-control {
+  flex: 1;
+}
+
+.capacity-calculation-section .file-input-group .form-control {
+  flex: 0.5;
+}
+
+.btn-register {
+  padding: 8px 24px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-register:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-register:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>

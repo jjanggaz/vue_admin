@@ -2049,6 +2049,9 @@ const saveDetailChanges = async () => {
       updateParams
     );
 
+    // API 응답 결과 console 출력
+    console.log("상세정보 저장 API 응답:", response);
+
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
@@ -2101,7 +2104,13 @@ const saveDetailChanges = async () => {
       selectedSymbolFile.value = null;
       selectedThumbnailFile.value = null;
       
-      alert(t("messages.success.saved"));
+      // 응답에 오류 메시지가 있는 경우 경고 표시
+      const errorMessage = response?.message || response?.response?.message;
+      if (errorMessage && errorMessage.trim() !== "") {
+        alert(`경고: ${errorMessage}`);
+      } else {
+        alert(t("messages.success.saved"));
+      }
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
       await loadData();

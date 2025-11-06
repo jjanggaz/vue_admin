@@ -877,7 +877,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
@@ -3048,6 +3048,20 @@ const handleHeaderMachineSubCategoryChange = async () => {
     detailSearch.value.machineCategoryOptions = [];
   }
 };
+
+// 단위 변경 시 재조회
+watch(selectedUnit, async () => {
+  if (selectedUnit.value) {
+    currentPage.value = 1;
+    await loadData();
+  }
+});
+
+// 배관 대분류 변경 시 재조회
+watch(selectedMachineCategory, async () => {
+  currentPage.value = 1;
+  await loadData();
+});
 
 onMounted(async () => {
   await pipeStore.fetchCommonCodes("PIPE_S");

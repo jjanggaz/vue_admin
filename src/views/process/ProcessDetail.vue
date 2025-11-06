@@ -787,7 +787,7 @@
             type="text"
             class="form-control"
             :value="capacityCalculationFileName || ''"
-            placeholder="용량계산서 (EXCEL)"
+            placeholder="파일을 선택해주세요"
             readonly
           />
           <button
@@ -12190,8 +12190,13 @@ watch(
   flex: 1;
 }
 
-.capacity-calculation-section .file-input-group .form-control {
-  flex: 0.5;
+.capacity-calculation-section .file-input-group input[type="text"].form-control {
+  flex: 0.3 !important;
+  padding: 6.4px 8px !important;
+  min-height: unset !important;
+  height: calc(1.4em + 12.8px) !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
 }
 
 .btn-register {

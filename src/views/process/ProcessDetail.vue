@@ -786,10 +786,21 @@
           <input
             type="text"
             class="form-control"
-            :value="capacityCalculationFileName || ''"
+            :value="processStore.capacityCalculationFileName || processStore.processDetail.ccs_file_name || ''"
             placeholder="파일을 선택해주세요"
             readonly
           />
+          <button
+            v-if="processStore.processDetail.ccs_file_id"
+            type="button"
+            class="btn btn-sm btn-outline-primary download-btn"
+            @click="handleCapacityCalculationDownload"
+            :disabled="!hasFormulaData"
+            title="용량계산서 다운로드"
+            style="margin-left: 10px; vertical-align: middle;"
+          >
+            <i class="fas fa-download"></i>
+          </button>
           <button
             type="button"
             @click="capacityCalculationFileInput?.click()"
@@ -802,7 +813,7 @@
             type="button"
             class="file-select-btn"
             @click="handleCapacityCalculationFileDelete"
-            :disabled="!capacityCalculationFile || !hasFormulaData"
+            :disabled="(!processStore.capacityCalculationFile && !processStore.processDetail.ccs_file_name) || !hasFormulaData"
           >
             삭제
           </button>
@@ -810,7 +821,7 @@
             type="button"
             class="file-select-btn"
             @click="handleCapacityCalculationRegister"
-            :disabled="!capacityCalculationFile || !hasFormulaData"
+            :disabled="!processStore.capacityCalculationFile || !hasFormulaData"
           >
             등록
           </button>
@@ -988,8 +999,6 @@ const processSymbolInput = ref<HTMLInputElement | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 const pfdFileInput = ref<HTMLInputElement | null>(null);
 const capacityCalculationFileInput = ref<HTMLInputElement | null>(null);
-const capacityCalculationFile = ref<File | null>(null);
-const capacityCalculationFileName = ref<string>("");
 
 // P&ID 매핑 관련 상태
 const currentPfdItemForMapping = ref<any>(null);
@@ -2077,49 +2086,67 @@ const handleCapacityCalculationFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
     const file = target.files[0];
-    
-    // 엑셀 파일만 필터링
-    const fileName = file.name.toLowerCase();
-    const isExcelFile =
-      fileName.endsWith(".xlsx") ||
-      fileName.endsWith(".xls") ||
-      file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-      file.type === "application/vnd.ms-excel";
-
-    if (!isExcelFile) {
-      alert("엑셀 파일(.xlsx, .xls)만 선택 가능합니다.");
-      if (capacityCalculationFileInput.value) {
-        capacityCalculationFileInput.value.value = "";
-      }
-      capacityCalculationFile.value = null;
-      capacityCalculationFileName.value = "";
-      return;
-    }
-
-    capacityCalculationFile.value = file;
-    capacityCalculationFileName.value = file.name;
-  }
-};
-
-// 용량계산서 파일 삭제 핸들러
-const handleCapacityCalculationFileDelete = () => {
-  if (capacityCalculationFile.value || capacityCalculationFileName.value) {
-    capacityCalculationFile.value = null;
-    capacityCalculationFileName.value = "";
+    processStore.handleCapacityCalculationFileChange(file);
+    // 파일 입력 초기화
     if (capacityCalculationFileInput.value) {
       capacityCalculationFileInput.value.value = "";
     }
   }
 };
 
+// 용량계산서 파일 삭제 핸들러
+const handleCapacityCalculationFileDelete = async () => {
+  try {
+    // 새로 선택한 파일이 있는 경우 로컬 상태만 초기화
+    if (processStore.capacityCalculationFile) {
+      processStore.handleCapacityCalculationFileDelete();
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
+      return;
+    }
+
+    // 서버에 등록된 파일이 있는 경우 API 호출
+    const ccsFileName = processStore.processDetail.ccs_file_name;
+    if (ccsFileName) {
+      // processId 가져오기
+      let processId = props.processId;
+      if (!processId && processStore.processDetail.process_id) {
+        processId = processStore.processDetail.process_id;
+      }
+
+      if (!processId) {
+        alert("공정 ID가 없습니다.");
+        return;
+      }
+
+      if (confirm("용량계산서 파일을 삭제하시겠습니까?")) {
+        await processStore.deleteCapacityCalculationFile(processId, ccsFileName);
+        
+        // 삭제 성공 후 공정 상세 정보 다시 로드하여 ccs_file_id, ccs_file_name 초기화
+        await processStore.searchProcessById(processId);
+        
+        if (capacityCalculationFileInput.value) {
+          capacityCalculationFileInput.value.value = "";
+        }
+        
+        alert("용량계산서 파일이 삭제되었습니다.");
+      }
+    } else {
+      // 삭제할 파일이 없는 경우
+      processStore.handleCapacityCalculationFileDelete();
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
+    }
+  } catch (error: any) {
+    console.error("용량계산서 파일 삭제 실패:", error);
+    alert("용량계산서 파일 삭제에 실패했습니다: " + (error.message || error));
+  }
+};
+
 // 용량계산서 등록 핸들러
 const handleCapacityCalculationRegister = async () => {
-  if (!capacityCalculationFile.value) {
-    alert("파일을 선택해주세요.");
-    return;
-  }
-
   try {
     // processId 가져오기
     let processId = props.processId;
@@ -2132,38 +2159,51 @@ const handleCapacityCalculationRegister = async () => {
       return;
     }
 
-    // FormData 생성
-    const formData = new FormData();
-    formData.append("capacity_calculation_file", capacityCalculationFile.value);
-
-    // API 호출 (API 엔드포인트는 백엔드에 맞게 수정 필요)
-    const response = await request(
-      `/api/process/${encodeURIComponent(processId)}/capacity-calculation`,
-      undefined,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (response?.success) {
-      alert("용량계산서가 등록되었습니다.");
-      // 파일 초기화
-      capacityCalculationFile.value = null;
-      capacityCalculationFileName.value = "";
-      if (capacityCalculationFileInput.value) {
-        capacityCalculationFileInput.value.value = "";
-      }
-    } else {
-      throw new Error(response?.message || "용량계산서 등록에 실패했습니다.");
+    await processStore.uploadCapacityCalculationFile(processId);
+    alert("용량계산서가 등록되었습니다.");
+    
+    // 파일 입력 초기화
+    if (capacityCalculationFileInput.value) {
+      capacityCalculationFileInput.value.value = "";
+    }
+    
+    // 공정 상세 정보 다시 조회하여 ccs_file_id 업데이트
+    if (processId) {
+      await processStore.searchProcessById(processId);
     }
   } catch (error) {
-    console.error("용량계산서 등록 실패:", error);
     const errorMessage =
       error instanceof Error
         ? error.message
         : "용량계산서 등록에 실패했습니다.";
     alert(errorMessage);
+  }
+};
+
+// 용량계산서 다운로드 핸들러
+const handleCapacityCalculationDownload = async () => {
+  try {
+    // processId 가져오기
+    let processId = props.processId;
+    if (!processId && processStore.processDetail.process_id) {
+      processId = processStore.processDetail.process_id;
+    }
+
+    if (!processId) {
+      alert("공정 ID가 없습니다.");
+      return;
+    }
+
+    // ccs_file_name 가져오기
+    const ccsFileName = processStore.processDetail.ccs_file_name;
+    console.log("=== 용량계산서 다운로드 핸들러 ===");
+    console.log("processId:", processId);
+    console.log("ccs_file_name:", ccsFileName);
+    console.log("processDetail 전체:", processStore.processDetail);
+    
+    await processStore.downloadCapacityCalculationFile(processId, ccsFileName);
+  } catch (error) {
+    // 에러는 downloadCapacityCalculationFile에서 이미 처리됨
   }
 };
 
@@ -10793,6 +10833,12 @@ onMounted(async () => {
       // 공정 타입 옵션들 로드
       await processStore.loadProcessTypeCodes();
     } else if (props.processId) {
+      // 용량계산서 파일명 초기화
+      processStore.handleCapacityCalculationFileDelete();
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
+      
       // 공정 상세 정보 로드
       console.log("=== 공정 상세 정보 로드 시작 ===");
       console.log("props.processId:", props.processId);

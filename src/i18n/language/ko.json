@@ -1421,7 +1421,7 @@
       "fileSizeLimit10MB": "파일 크기는 10MB를 초과할 수 없습니다.",
       "invalidFormulaFileName": "첨부한 파일의 파일명이 해당 기계의 파일명 규칙에 맞지 않습니다. \n확인해주세요. \nex) 파일명_{equipmentType}.py",
       "invalidFileExtension": "허용되지 않는 파일 형식입니다.\\n허용된 확장자: {extensions}",
-      "thirdDepthCodeLoadFail": "3차 깊이별 공통코드 조회에 실패했습니다.",
+      "thirdDepthCodeLoadFail": "{level} 공통코드 조회에 실패했습니다.",
       "noItemToDelete": "삭제할 항목이 없습니다.",
       "noFormulaToDelete": "삭제할 공식 정보가 없습니다.",
       "formulaDeleteSuccess": "공식이 성공적으로 삭제되었습니다.",

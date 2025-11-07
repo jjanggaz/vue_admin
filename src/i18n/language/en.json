@@ -1425,7 +1425,7 @@
       "fileSizeLimit10MB": "File size cannot exceed 10MB.",
       "invalidFormulaFileName": "The file name of the attached file does not match the file name rule for this machine. \nPlease check. \nex) file_name_{equipmentType}.py",
       "invalidFileExtension": "Invalid file format.\\nAllowed extensions: {extensions}",
-      "thirdDepthCodeLoadFail": "Failed to load third depth common codes.",
+      "thirdDepthCodeLoadFail": "Failed to load {level} common codes.",
       "noItemToDelete": "No items to delete.",
       "noFormulaToDelete": "No formula information to delete.",
       "formulaDeleteSuccess": "Formula deleted successfully.",

@@ -275,8 +275,10 @@ watch(selectedMachineName, async (newValue, _oldValue) => {
         isStep1Enabled.value = false;
       }
     } catch (error) {
-      console.error("3차 깊이별 공통코드 조회 실패:", error);
-      alert(t("messages.warning.thirdDepthCodeLoadFail"));
+      console.error("공통코드 조회 실패:", error);
+      alert(
+        t("messages.warning.thirdDepthCodeLoadFail", { level: "기계대분류" })
+      );
       isStep1Enabled.value = false;
     }
   }
@@ -326,7 +328,12 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
               ];
             }
           } catch (error) {
-            console.error(`5차 깊이별 조회 실패 (${item.code_key}):`, error);
+            console.error(`공통코드 조회 실패 (${item.code_key}):`, error);
+            alert(
+              t("messages.warning.thirdDepthCodeLoadFail", {
+                level: "기계중분류",
+              })
+            );
           }
         }
 
@@ -347,7 +354,11 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
       // 계산식 검색 결과를 테이블에 표시
       setFormulaListData(formulaResponse);
     } catch (error) {
-      console.error("4차 깊이별 공통코드 조회 또는 계산식 검색 실패:", error);
+      console.error("공통코드 조회 또는 계산식 검색 실패:", error);
+
+      alert(
+        t("messages.warning.thirdDepthCodeLoadFail", { level: "기계중분류" })
+      );
       isStep2Enabled.value = false;
       listRows.value = []; // 에러 시 테이블 초기화
     }
@@ -378,6 +389,7 @@ watch(selectedFourthDept, async (newValue, _oldValue) => {
       setFormulaListData(formulaResponse);
     } catch (error) {
       console.error("계산식 검색 실패:", error);
+      alert(t("messages.error.formulaSearchFail"));
       listRows.value = []; // 에러 시 테이블 초기화
     }
   }

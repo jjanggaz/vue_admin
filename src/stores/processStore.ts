@@ -13,6 +13,7 @@ export interface ProcessItem {
   process_code: string;
   process_symbol: string;
   symbol_id?: string | null;  // 심볼 ID 추가
+  ccs_file_id?: string | null;  // 용량계산서 파일 ID 추가
   viewDetail: string | null;
 }
 
@@ -35,6 +36,8 @@ export interface ProcessDetail {
   language_code?: string | null;  // 언어 코드
   unit_system_code?: string | null;  // 단위 시스템 코드
   siteFile?: File | null;  // 공정심볼 파일 (업로드용)
+  ccs_file_id?: string | null;  // 용량계산서 파일 ID
+  ccs_file_name?: string | null;  // 용량계산서 파일명
 }
 
 // ProcessDetail.vue에서 사용하는 추가 인터페이스들
@@ -234,6 +237,10 @@ export const useProcessStore = defineStore("process", () => {
 
   // 공정심볼 관련 상태
   const processSymbolPreviewUrl = ref<string | null>(null);
+
+  // 용량계산서 관련 상태
+  const capacityCalculationFile = ref<File | null>(null);
+  const capacityCalculationFileName = ref<string>("");
 
   // computed
   const filteredProcessList = computed(() => {
@@ -533,6 +540,7 @@ export const useProcessStore = defineStore("process", () => {
               process_code: processInfo.process_code || "",
               process_symbol: processInfo.symbol_uri || "📄",
               symbol_id: processInfo.symbol_id || null,
+              ccs_file_id: processInfo.ccs_file_id || null,  // 용량계산서 파일 ID 추가
               symbol_download: (() => {
                 const value = processInfo.symbol_download || processInfo.symbol_uri;
                 // null, undefined, 빈 문자열, '{}', 'null', 빈 객체 등의 경우 null 반환
@@ -754,6 +762,8 @@ export const useProcessStore = defineStore("process", () => {
             originalSymbolId: processData.symbol_id || null,    // 원본 심볼 ID 저장
             language_code: processData.language_code || null,   // 언어 코드
             unit_system_code: processData.unit_system_code || null,  // 단위 시스템 코드
+            ccs_file_id: processData.ccs_file_id || null,  // 용량계산서 파일 ID
+            ccs_file_name: processData.ccs_file_name || null,  // 용량계산서 파일명
           });
 
 
@@ -1796,6 +1806,301 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
+  // 용량계산서 파일 선택 핸들러
+  const handleCapacityCalculationFileChange = (file: File | null) => {
+    if (!file) {
+      capacityCalculationFile.value = null;
+      capacityCalculationFileName.value = "";
+      return;
+    }
+
+    // 엑셀 파일만 필터링
+    const fileName = file.name.toLowerCase();
+    const isExcelFile =
+      fileName.endsWith(".xlsx") ||
+      fileName.endsWith(".xls") ||
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      file.type === "application/vnd.ms-excel";
+
+    if (!isExcelFile) {
+      alert("엑셀 파일(.xlsx, .xls)만 선택 가능합니다.");
+      capacityCalculationFile.value = null;
+      capacityCalculationFileName.value = "";
+      return;
+    }
+
+    capacityCalculationFile.value = file;
+    capacityCalculationFileName.value = file.name;
+  };
+
+  // 용량계산서 파일 삭제 핸들러 (로컬 상태만 초기화)
+  const handleCapacityCalculationFileDelete = () => {
+    capacityCalculationFile.value = null;
+    capacityCalculationFileName.value = "";
+  };
+
+  // 용량계산서 파일 삭제 API 호출
+  const deleteCapacityCalculationFile = async (processId: string, filename: string) => {
+    try {
+      if (!processId) {
+        throw new Error("공정 ID가 없습니다.");
+      }
+
+      if (!filename) {
+        throw new Error("파일명이 없습니다.");
+      }
+
+      // API 호출: /api/process/ccs/delete/{tableName}/{pkValue}/{filename}
+      const tableName = "process_masters";
+      const pkValue = String(processId);
+      const apiUrl = `/api/process/ccs/delete/${encodeURIComponent(tableName)}/${encodeURIComponent(pkValue)}/${encodeURIComponent(filename)}`;
+      
+      console.log("=== 용량계산서 삭제 API 호출 ===");
+      console.log("API URL:", apiUrl);
+      console.log("tableName:", tableName);
+      console.log("pkValue:", pkValue);
+      console.log("filename:", filename);
+      
+      const response = await request(
+        apiUrl,
+        undefined,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("=== 용량계산서 삭제 API 응답 ===");
+      console.log("응답 전체:", response);
+      console.log("응답 success:", response?.success);
+      console.log("응답 status:", response?.status);
+      console.log("응답 message:", response?.message);
+
+      if (response?.success) {
+        // 로컬 상태 초기화
+        capacityCalculationFile.value = null;
+        capacityCalculationFileName.value = "";
+        return response;
+      } else {
+        throw new Error(response?.message || "용량계산서 삭제에 실패했습니다.");
+      }
+    } catch (error: any) {
+      console.error("=== 용량계산서 삭제 실패 ===");
+      console.error("에러:", error);
+      throw error;
+    }
+  };
+
+  // 용량계산서 등록 API 호출
+  const uploadCapacityCalculationFile = async (processId: string) => {
+    try {
+      if (!capacityCalculationFile.value) {
+        throw new Error("파일을 선택해주세요.");
+      }
+
+      if (!processId) {
+        throw new Error("공정 ID가 없습니다.");
+      }
+
+      // FormData 생성
+      const formData = new FormData();
+      formData.append("file", capacityCalculationFile.value);
+
+      // API 호출: /api/process/ccs/upload/{tableName}/{pkValue}
+      const tableName = "process_masters";
+      const pkValue = String(processId);
+      const apiUrl = `/api/process/ccs/upload/${encodeURIComponent(tableName)}/${encodeURIComponent(pkValue)}`;
+      
+      console.log("=== 용량계산서 등록 API 호출 ===");
+      console.log("API URL:", apiUrl);
+      console.log("tableName:", tableName);
+      console.log("pkValue:", pkValue);
+      console.log("파일명:", capacityCalculationFile.value.name);
+      console.log("파일 크기:", capacityCalculationFile.value.size);
+      console.log("파일 타입:", capacityCalculationFile.value.type);
+      
+      const response = await request(
+        apiUrl,
+        undefined,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      console.log("=== 용량계산서 등록 API 응답 ===");
+      console.log("응답 전체:", response);
+      console.log("응답 success:", response?.success);
+      console.log("응답 status:", response?.status);
+      console.log("응답 message:", response?.message);
+      console.log("응답 response:", response?.response);
+
+      if (response?.success) {
+        // 파일 초기화
+        capacityCalculationFile.value = null;
+        capacityCalculationFileName.value = "";
+        return response;
+      } else {
+        throw new Error(response?.message || "용량계산서 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("=== 용량계산서 등록 실패 ===");
+      console.error("에러:", error);
+      throw error;
+    }
+  };
+
+  // 용량계산서 파일 다운로드
+  const downloadCapacityCalculationFile = async (processId: string, ccsFileName?: string) => {
+    try {
+      if (!processId) {
+        throw new Error("공정 ID가 없습니다.");
+      }
+
+      // 파일명 설정: ccs_file_name이 있으면 사용, 없으면 기본값
+      const fileName = ccsFileName || processDetail.value.ccs_file_name || "capacity_calculation.xlsx";
+      console.log("=== 용량계산서 다운로드 파일명 설정 ===");
+      console.log("ccsFileName 파라미터:", ccsFileName);
+      console.log("processDetail.value.ccs_file_name:", processDetail.value.ccs_file_name);
+      console.log("최종 파일명:", fileName);
+
+      // API 호출: /api/process/ccs/download/{tableName}/{pkValue}
+      const tableName = "process_masters";
+      const pkValue = String(processId).trim();
+      
+      const apiUrl = `/api/process/ccs/download/${encodeURIComponent(tableName)}/${encodeURIComponent(pkValue)}`;
+      console.log("용량계산서 다운로드 API 호출:", apiUrl);
+      console.log("tableName:", tableName);
+      console.log("pkValue:", pkValue);
+      
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          system_code: import.meta.env.VITE_SYSTEM_CODE,
+          user_Id: localStorage.getItem("authUserId") || "",
+          wai_lang: localStorage.getItem("wai_lang") || "ko",
+        },
+      });
+
+      console.log("용량계산서 다운로드 응답 상태:", response.status, response.statusText);
+
+      if (!response.ok) {
+        // 404 등 에러 응답 처리
+        let errorMessage = `다운로드 실패: ${response.status} ${response.statusText}`;
+        try {
+          // response를 복제하여 텍스트로 먼저 읽기
+          const responseClone = response.clone();
+          const errorText = await responseClone.text();
+          console.error("용량계산서 다운로드 에러 응답 텍스트:", errorText);
+          
+          // JSON으로 파싱 시도
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.detail || errorMessage;
+            console.error("용량계산서 다운로드 에러 응답:", errorData);
+          } catch {
+            // JSON 파싱 실패 시 원본 텍스트 사용
+            if (errorText) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (e) {
+          console.error("용량계산서 다운로드 에러 처리 실패:", e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      // 응답을 JSON으로 파싱
+      const responseData = await response.json();
+      console.log("용량계산서 다운로드 응답 데이터:", responseData);
+
+      // 응답 형식에 따라 처리
+      // 응답 형식: {files: [{download_url, original_filename, ...}]}
+      let downloadUrl: string | null = null;
+      let downloadFileName = fileName; // 기본값은 ccs_file_name
+
+      // response_body가 있는 경우 (래핑된 응답)
+      if (responseData.success && responseData.response_body) {
+        try {
+          const parsedBody = typeof responseData.response_body === 'string' 
+            ? JSON.parse(responseData.response_body) 
+            : responseData.response_body;
+          
+          console.log("파싱된 response_body:", parsedBody);
+          
+          // files 배열에서 download_url 찾기
+          if (parsedBody.files && Array.isArray(parsedBody.files) && parsedBody.files.length > 0) {
+            const fileInfo = parsedBody.files[0];
+            downloadUrl = fileInfo.download_url || null;
+            // original_filename이 있으면 사용, 없으면 ccs_file_name 사용
+            if (fileInfo.original_filename) {
+              downloadFileName = fileInfo.original_filename;
+            }
+            console.log("파일 정보:", {
+              downloadUrl,
+              original_filename: fileInfo.original_filename,
+              최종_파일명: downloadFileName
+            });
+          } else if (parsedBody.download_url) {
+            // 단일 download_url인 경우
+            downloadUrl = parsedBody.download_url;
+            if (parsedBody.original_filename) {
+              downloadFileName = parsedBody.original_filename;
+            }
+          }
+        } catch (e) {
+          console.error("response_body 파싱 실패:", e);
+        }
+      } 
+      // 직접 응답 형식인 경우 (래핑되지 않은 응답)
+      else if (responseData.files && Array.isArray(responseData.files) && responseData.files.length > 0) {
+        const fileInfo = responseData.files[0];
+        downloadUrl = fileInfo.download_url || null;
+        if (fileInfo.original_filename) {
+          downloadFileName = fileInfo.original_filename;
+        }
+        console.log("직접 응답 형식 파일 정보:", {
+          downloadUrl,
+          original_filename: fileInfo.original_filename,
+          최종_파일명: downloadFileName
+        });
+      }
+      // 단일 download_url인 경우
+      else if (responseData.download_url) {
+        downloadUrl = responseData.download_url;
+        if (responseData.original_filename) {
+          downloadFileName = responseData.original_filename;
+        }
+      }
+
+      // download_url이 있으면 링크로 다운로드
+      if (downloadUrl) {
+        console.log("다운로드 URL로 다운로드:", downloadUrl);
+        console.log("파일명:", downloadFileName);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = downloadFileName;
+        link.target = "_blank";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      // download_url이 없는 경우 에러
+      throw new Error("다운로드 URL을 찾을 수 없습니다.");
+    } catch (error: any) {
+      console.error("용량계산서 파일 다운로드 실패:", error);
+      alert("용량계산서 파일 다운로드에 실패했습니다: " + (error.message || error));
+      throw error;
+    }
+  };
+
   // 초기화
   const resetState = () => {
     processList.value = [];
@@ -1845,6 +2150,10 @@ export const useProcessStore = defineStore("process", () => {
     processDetail.value.originalProcessSymbol = "";
     processDetail.value.originalSymbolId = null;
     clearProcessSymbolPreview();
+    
+    // 용량계산서 관련 상태 초기화
+    capacityCalculationFile.value = null;
+    capacityCalculationFileName.value = "";
   };
 
   return {
@@ -1892,6 +2201,8 @@ export const useProcessStore = defineStore("process", () => {
     showFormulaModal,
     selectedFormulaFiles,
     processSymbolPreviewUrl,
+    capacityCalculationFile,
+    capacityCalculationFileName,
 
     // computed
     filteredProcessList,
@@ -1926,6 +2237,11 @@ export const useProcessStore = defineStore("process", () => {
     handleProcessSymbolFileChange,
     deleteProcessSymbol,
     clearProcessSymbolPreview,
+    handleCapacityCalculationFileChange,
+    handleCapacityCalculationFileDelete,
+    uploadCapacityCalculationFile,
+    downloadCapacityCalculationFile,
+    deleteCapacityCalculationFile,
     resetState,
 
     // ProcessDetail.vue에서 이동한 액션들

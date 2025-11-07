@@ -709,9 +709,7 @@ const handleDelete = async () => {
 
   console.log("삭제 확인 대화상자 표시");
   const confirmed = confirm(
-    t("messages.confirm.deleteItems", {
-      count: processStore.selectedItems.length,
-    })
+    "공정 삭제 시 하위의 계산식과 도면 정보가 모두 삭제됩니다.\n정말 삭제하시겠습니까?"
   );
 
   console.log("삭제 확인 결과:", confirmed);

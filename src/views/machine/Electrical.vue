@@ -1363,7 +1363,7 @@ const specVerticalData = computed(() => {
     originalType: "string",
   });
 
-  // 7. 파일 필드 (3D, 썸네일, Revit, 심볼)
+  // 7. 파일 필드 (3D, 썸네일, Revit)
   data.push({
     columnName: "3D",
     value: (item as any).model_file_info?.original_filename || "-",
@@ -1382,13 +1382,6 @@ const specVerticalData = computed(() => {
     columnName: "Revit",
     value: (item as any).rfa_file_info?.original_filename || "-",
     filePath: (item as any).rfa_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
-    columnName: t("common.symbol"),
-    value: (item as any).symbol_file_info?.original_filename || "-",
-    filePath: (item as any).symbol_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });

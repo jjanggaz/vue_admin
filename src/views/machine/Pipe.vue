@@ -503,6 +503,14 @@
             {{ item.vendor_info?.vendor_name || "-" }}
           </template>
 
+          <template #cell-fitting="{ item }">
+            {{ getAdditionalFieldValue(item, "fitting") }}
+          </template>
+
+          <template #cell-body_material="{ item }">
+            {{ getAdditionalFieldValue(item, "body_material") }}
+          </template>
+
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
             <button class="btn-view" @click.stop="openDetailPanel(item)">
@@ -886,6 +894,7 @@ import { usePipeStore } from "@/stores/pipeStore";
 
 const { t, locale } = useI18n();
 const pipeStore = usePipeStore();
+const selectedMachineCategory = ref("");
 
 interface PriceHistoryItem {
   price_value: number;
@@ -936,57 +945,80 @@ interface MachineItem {
 }
 
 // 테이블 컬럼 설정
-const tableColumns: TableColumn[] = [
-  { key: "no", title: t("columns.pipe.no"), width: "60px", sortable: false },
-  {
-    key: "equipment_type_name",
-    title: t("columns.pipe.majorCategory"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    key: "middle_category",
-    title: t("columns.pipe.middleCategory"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    key: "pipe_type",
-    title: t("columns.pipe.pipeType"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    key: "equipment_code",
-    title: t("columns.pipe.pcId"),
-    width: "180px",
-    sortable: false,
-  },
-  {
-    key: "vendor_name",
-    title: t("columns.pipe.company"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "model_number",
-    title: t("columns.pipe.model"),
-    width: "150px",
-    sortable: false,
-  },
-  {
-    key: "unit_price",
-    title: t("columns.pipe.unitPrice"),
-    width: "120px",
-    sortable: false,
-  },
-  {
-    key: "details",
-    title: t("columns.pipe.details"),
-    width: "100px",
-    sortable: false,
-  },
-];
+const tableColumns = computed<TableColumn[]>(() => {
+  const columns: TableColumn[] = [
+    { key: "no", title: t("columns.pipe.no"), width: "60px", sortable: false },
+    {
+      key: "equipment_type_name",
+      title: t("columns.pipe.majorCategory"),
+      width: "120px",
+      sortable: false,
+    },
+    {
+      key: "middle_category",
+      title: t("columns.pipe.middleCategory"),
+      width: "120px",
+      sortable: false,
+    },
+    {
+      key: "pipe_type",
+      title: t("columns.pipe.pipeType"),
+      width: "120px",
+      sortable: false,
+    },
+    {
+      key: "equipment_code",
+      title: t("columns.pipe.pcId"),
+      width: "180px",
+      sortable: false,
+    },
+    {
+      key: "vendor_name",
+      title: t("columns.pipe.company"),
+      width: "150px",
+      sortable: false,
+    },
+  ];
+
+  if (selectedMachineCategory.value === "P_DI") {
+    columns.push({
+      key: "fitting",
+      title: "피팅방식",
+      width: "150px",
+      sortable: false,
+    });
+  } else if (selectedMachineCategory.value === "P_VALV") {
+    columns.push({
+      key: "body_material",
+      title: "몸체 재질",
+      width: "150px",
+      sortable: false,
+    });
+  }
+
+  columns.push(
+    {
+      key: "model_number",
+      title: t("columns.pipe.model"),
+      width: "150px",
+      sortable: false,
+    },
+    {
+      key: "unit_price",
+      title: t("columns.pipe.unitPrice"),
+      width: "120px",
+      sortable: false,
+    },
+    {
+      key: "details",
+      title: t("columns.pipe.details"),
+      width: "100px",
+      sortable: false,
+    }
+  );
+
+  return columns;
+});
 
 // 단가이력 테이블 컬럼 설정
 const priceHistoryColumns: TableColumn[] = [
@@ -1030,7 +1062,6 @@ const selectedItems = ref<MachineItem[]>([]);
 const searchQueryInput = ref("");
 // 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거
 const selectedUnit = ref("");
-const selectedMachineCategory = ref("");
 const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
@@ -1137,6 +1168,143 @@ const getPipeType = (item: MachineItem): string => {
     if (parsed.pipeType) return parsed.pipeType;
   }
   return item.equipment_type || "-";
+};
+
+const additionalFieldDefinitions: Record<
+  string,
+  {
+    keyCandidates: string[];
+    nameKoCandidates: string[];
+    nameEnCandidates?: string[];
+  }
+> = {
+  fitting: {
+    keyCandidates: ["fitting", "fitting_code", "fittingType"],
+    nameKoCandidates: ["피팅방식", "피팅방식(코드)"],
+    nameEnCandidates: ["Fitting", "Fitting Type"],
+  },
+  body_material: {
+    keyCandidates: ["body_material", "bodyMaterial", "body_material_code"],
+    nameKoCandidates: ["몸체 재질"],
+    nameEnCandidates: ["Body Material"],
+  },
+};
+
+const formatFieldDisplayValue = (field: Record<string, unknown>): string => {
+  if (!field) {
+    return "-";
+  }
+
+  const rawValue =
+    field.value ??
+    field.display_value ??
+    field.text ??
+    field.default_value ??
+    field.value_text ??
+    field.raw_value;
+
+  if (
+    rawValue === null ||
+    rawValue === undefined ||
+    (typeof rawValue === "string" && rawValue.trim() === "")
+  ) {
+    return "-";
+  }
+
+  const valueText = Array.isArray(rawValue)
+    ? rawValue.join(", ")
+    : String(rawValue);
+
+  const unit =
+    (field.unit_symbol as string | undefined) ||
+    (field.unit as string | undefined) ||
+    (field.unit_text as string | undefined);
+
+  return unit ? `${valueText} ${unit}` : valueText;
+};
+
+const getAdditionalFieldValue = (item: MachineItem, fieldKey: string): string => {
+  const definition = additionalFieldDefinitions[fieldKey];
+  if (!definition) {
+    return "-";
+  }
+
+  const containers = [
+    item.specifications,
+    item.search_criteria,
+    item.output_values,
+  ] as Array<Record<string, unknown> | undefined>;
+
+  for (const container of containers) {
+    if (!container) continue;
+    const containerRecord = container as Record<string, unknown>;
+
+    // 1. 직접 키 매칭 시도
+    for (const candidate of definition.keyCandidates) {
+      const directField = containerRecord[candidate];
+      if (
+        directField &&
+        typeof directField === "object" &&
+        directField !== null
+      ) {
+        return formatFieldDisplayValue(directField as Record<string, unknown>);
+      }
+    }
+
+    // 2. 객체 값 순회하며 세부 속성 매칭
+    for (const value of Object.values(container)) {
+      if (typeof value !== "object" || value === null) continue;
+      const field = value as Record<string, unknown>;
+      const keyCandidate = (field.key ?? field.field_name ?? field.name) as
+        | string
+        | undefined;
+      if (
+        keyCandidate &&
+        definition.keyCandidates.some(
+          (candidate) => candidate.toLowerCase() === keyCandidate.toLowerCase()
+        )
+      ) {
+        return formatFieldDisplayValue(field);
+      }
+
+      const nameKo = field.name_kr as string | undefined;
+      if (
+        nameKo &&
+        definition.nameKoCandidates.some(
+          (candidate) => candidate.trim() === nameKo.trim()
+        )
+      ) {
+        return formatFieldDisplayValue(field);
+      }
+
+      const englishCandidates = definition.nameEnCandidates;
+      if (englishCandidates) {
+        const nameEn =
+          (field.name_en as string | undefined) ||
+          (field.key_en as string | undefined);
+        if (
+          nameEn &&
+          englishCandidates.some(
+            (candidate) => candidate.toLowerCase() === nameEn.toLowerCase()
+          )
+        ) {
+          return formatFieldDisplayValue(field);
+        }
+      }
+    }
+  }
+
+  // 3. item 자체 프로퍼티 확인 (혹시 평탄화된 데이터가 있는 경우)
+  const itemRecord = item as unknown as Record<string, unknown | undefined>;
+  const flattenedValue = definition.keyCandidates
+    .map((candidate) => itemRecord[candidate])
+    .find((val) => val !== undefined && val !== null && val !== "");
+
+  if (flattenedValue !== undefined && flattenedValue !== null) {
+    return String(flattenedValue);
+  }
+
+  return "-";
 };
 
 
@@ -1363,7 +1531,7 @@ const specVerticalData = computed(() => {
     originalType: "string",
   });
 
-  // 7. 파일 필드 (3D, 썸네일, Revit, 심볼)
+  // 7. 파일 필드 (3D, 썸네일, Revit)
   data.push({
     columnName: "3D",
     value: (item as any).model_file_info?.original_filename || "-",
@@ -1382,13 +1550,6 @@ const specVerticalData = computed(() => {
     columnName: "Revit",
     value: (item as any).rfa_file_info?.original_filename || "-",
     filePath: (item as any).rfa_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
-    columnName: t("common.symbol"),
-    value: (item as any).symbol_file_info?.original_filename || "-",
-    filePath: (item as any).symbol_file_info?.download_url,
     editable: true,
     fieldType: "file",
   });

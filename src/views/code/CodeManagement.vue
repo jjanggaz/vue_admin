@@ -1336,13 +1336,7 @@ const handleEdit = () => {
 }
 
 // Right Section - Table Section
-.table-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  min-width: 0;
-}
+
 
 .action-buttons {
   display: flex;
@@ -1392,23 +1386,6 @@ const handleEdit = () => {
       background-color: #9ca3af;
       cursor: not-allowed;
     }
-  }
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 1rem;
-  position: relative;
-  flex-shrink: 0;
-
-  .total-count {
-    position: absolute;
-    left: 1rem;
-    font-size: 0.9rem;
-    color: #374151;
-    font-weight: 500;
   }
 }
 

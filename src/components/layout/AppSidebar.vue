@@ -13,8 +13,8 @@
               <img
                 :src="menuItem.icon"
                 alt="menu icon"
-                width="16"
-                height="16"
+                width="24"
+                height="24"
               />
             </span>
             <span class="nav-text">{{ t(menuItem.titleKey) }}</span>
@@ -50,32 +50,32 @@ const codeBasedMenus = {
   },
   WEB02: {
     path: "/code",
-    icon: "/images/icons/WEB02.svg",
+    icon: "/images/icons/ico_code.svg",
     titleKey: "sidebar.code",
   },
   WEB03: {
     path: "/project",
-    icon: "/images/icons/WEB03.svg",
+    icon: "/images/icons/ico_project.svg",
     titleKey: "sidebar.project",
   },
   WEB04: {
     path: "/asset",
-    icon: "/images/icons/WEB04.svg",
+    icon: "/images/icons/ico_inflow.svg",
     titleKey: "sidebar.asset",
   },
   WEB05: {
     path: "/process",
-    icon: "/images/icons/WEB05.svg",
+    icon: "/images/icons/ico_process.svg",
     titleKey: "sidebar.process",
   },
   WEB06: {
     path: "/machine",
-    icon: "/images/icons/WEB06.svg",
+    icon: "/images/icons/ico_constType.svg",
     titleKey: "sidebar.machine",
   },
   WEB07: {
     path: "/cost",
-    icon: "/images/icons/WEB07.svg",
+    icon: "/images/icons/ico_price.svg",
     titleKey: "sidebar.cost",
   },
   WEB08: {
@@ -85,7 +85,7 @@ const codeBasedMenus = {
   },
   WEB09: {
     path: "/user",
-    icon: "/images/icons/WEB09.svg",
+    icon: "/images/icons/ico_user.svg",
     titleKey: "sidebar.user",
   },
   WEB10: {

@@ -304,6 +304,38 @@ watch(selectedThirdDept, async (newValue, _oldValue) => {
       if (response?.response && response.response.length > 0) {
         fourthDepthOptions.value = response.response;
         isStep2Enabled.value = true;
+
+        // 4차 데이터의 각 항목에 대해 5차 데이터 조회 및 merge
+        for (const item of response.response) {
+          try {
+            const fifthResponse = await machineStore.fetchThirdDepth(
+              item.code_key,
+              5
+            );
+            if (fifthResponse?.response && fifthResponse.response.length > 0) {
+              // 기존 fourthDepthOptions에 5차 데이터를 merge (중복 제거)
+              const existingKeys = new Set(
+                fourthDepthOptions.value.map((opt) => opt.code_key)
+              );
+              const newItems = fifthResponse.response.filter(
+                (fifthItem: any) => !existingKeys.has(fifthItem.code_key)
+              );
+              fourthDepthOptions.value = [
+                ...fourthDepthOptions.value,
+                ...newItems,
+              ];
+            }
+          } catch (error) {
+            console.error(`5차 깊이별 조회 실패 (${item.code_key}):`, error);
+          }
+        }
+
+        // code_key 기준으로 정렬
+        fourthDepthOptions.value.sort((a, b) => {
+          const aKey = a.code_key || "";
+          const bKey = b.code_key || "";
+          return aKey.localeCompare(bKey);
+        });
       } else {
         isStep2Enabled.value = false;
       }

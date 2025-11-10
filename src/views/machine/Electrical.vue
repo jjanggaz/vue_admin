@@ -780,8 +780,8 @@
               </div>
             </div>
 
-            <!-- 리스트 테이블 -->
-            <div class="section-header" style="display: none;">
+            <!-- 전기자재 리스트 업로드 영역 -->
+            <div class="section-header">
               <div class="section-title">⊙ {{ t("common.electricalUpload") }}</div>
               <div class="section-actions">
                 <div class="file-upload-group">
@@ -1435,7 +1435,27 @@ const handleSearch = async () => {
   await loadData();
 };
 
+const resetRegisterModalState = () => {
+  registerIsRegistered.value = false;
+  registerSelectedUnit.value = "";
+  registerSelectedElectricalName.value = "";
+  registerExcelFileName.value = "";
+  registerExcelFile.value = null;
+  if (registerExcelFileInput.value) {
+    registerExcelFileInput.value.value = "";
+  }
+  registerBulkFileName.value = "";
+  registerBulkFile.value = null;
+  if (registerBulkFileInput.value) {
+    registerBulkFileInput.value.value = "";
+  }
+  registerZipFileList.value = [];
+  registerShowZipContents.value = false;
+  registerUploadResult.value = null;
+};
+
 const openRegistModal = () => {
+  resetRegisterModalState();
   isRegistModalOpen.value = true;
 };
 

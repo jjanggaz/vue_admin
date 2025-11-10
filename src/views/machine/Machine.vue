@@ -980,7 +980,7 @@ const specVerticalData = computed(() => {
     value: isDetailEditMode.value
       ? editData.value.vendor_id || "-"
       : item.vendor_id || "-",
-    editable: true,
+    editable: false,
     fieldType: "select",
     options: manufacturers.value,
   });
@@ -989,7 +989,7 @@ const specVerticalData = computed(() => {
     value: isDetailEditMode.value
       ? editData.value.modelNumber || "-"
       : item.model_number || "-",
-    editable: true,
+    editable: false,
     fieldType: "input",
   });
 
@@ -1062,7 +1062,7 @@ const specVerticalData = computed(() => {
             : typeof displayValue === "number"
             ? displayValue.toLocaleString()
             : displayValue,
-          editable: true,
+          editable: false,
           fieldType: "input",
           //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
@@ -2327,7 +2327,7 @@ onMounted(async () => {
 
 .main-content {
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   box-sizing: border-box;
   min-width: 0;
 }

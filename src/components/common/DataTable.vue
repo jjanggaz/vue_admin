@@ -395,15 +395,17 @@ const formatCellValue = (item: any, column: TableColumn) => {
   overflow: hidden;
   box-shadow: $shadow-sm;
   border: 1px solid $border-color;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 
   &.with-scroll {
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 }
 
 .data-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
 
   th,

@@ -789,7 +789,7 @@
             </div>
 
             <!-- 계측기 리스트 업로드 영역 -->
-            <div class="section-header">
+            <div class="section-header" style="display: none;">
               <div class="section-title">⊙ {{ t("common.measurementUpload") }}</div>
               <div class="section-actions">
                 <div class="file-upload-group">
@@ -1529,29 +1529,6 @@ const specVerticalData = computed(() => {
     editable: true,
     fieldType: "textarea",
     originalType: "string",
-  });
-
-  // 7. 파일 필드 (3D, 썸네일, Revit)
-  data.push({
-    columnName: "3D",
-    value: (item as any).model_file_info?.original_filename || "-",
-    filePath: (item as any).model_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
-    columnName: t("common.thumbnail"),
-    value: (item as any).thumbnail_file_info?.original_filename || "-",
-    filePath: (item as any).thumbnail_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
-  });
-  data.push({
-    columnName: "Revit",
-    value: (item as any).rfa_file_info?.original_filename || "-",
-    filePath: (item as any).rfa_file_info?.download_url,
-    editable: true,
-    fieldType: "file",
   });
 
   return data;

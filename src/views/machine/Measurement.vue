@@ -1404,21 +1404,21 @@ const specVerticalData = computed(() => {
     value: isDetailEditMode.value 
       ? (detailItemData.value ? (detailItemData.value as any).equipment_code || "" : "")
       : item.equipment_code || "-",
-    editable: true,
+    editable: false,
     fieldType: "input",
     maxLength: 60, // 최대 60 바이트
   });
   data.push({
     columnName: t("columns.measurement.company"),
     value: isDetailEditMode.value ? item.vendor_id || "" : item.vendor_id || "-",
-    editable: true,
+    editable: false,
     fieldType: "select",
     options: manufacturers.value,
   });
   data.push({
     columnName: t("columns.measurement.model"),
     value: isDetailEditMode.value ? item.model_number || "" : item.model_number || "-",
-    editable: true,
+    editable: false,
     fieldType: "input",
   });
 
@@ -1464,7 +1464,7 @@ const specVerticalData = computed(() => {
           : typeof field.value === "number"
           ? field.value.toLocaleString()
           : field.value,
-        editable: true,
+        editable: false,
         fieldType: typeof field.value === "number" ? "number" : "input",
         originalType: typeof field.value,
       });

@@ -96,8 +96,8 @@
       :loading="loading"
       :selectable="true"
       :selected-items="selectedItems"
-      :selection-mode="'single'"
-      :show-select-all="false"
+      selection-mode="multiple"
+      :show-select-all="true"
       :select-header-text="t('common.selectColumn')"
       :row-key="'structure_id'"
       @selection-change="handleSelectionChange"
@@ -416,12 +416,22 @@ const handleDelete = async () => {
     return;
   }
 
-  const selectedItem = selectedItems.value[0];
-  const structureName = selectedItem.structure_name;
+  const confirmMessage =
+    selectedItems.value.length > 1
+      ? t("messages.confirm.deleteItems", { count: selectedItems.value.length })
+      : t("messages.confirm.deleteStructure", {
+          name: selectedItems.value[0].structure_name,
+        });
 
-  if (confirm(t("messages.confirm.deleteStructure", { name: structureName }))) {
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const selectedItem of selectedItems.value) {
     try {
-      // 삭제할 파일 ID들 수집
       const deleteParams: {
         dtdx_model_file_id?: string;
         formula_id?: string;
@@ -429,7 +439,6 @@ const handleDelete = async () => {
         thumbnail_symbol_id?: string;
       } = {};
 
-      // 각 파일의 ID가 있으면 추가
       if (selectedItem.dtdx_model?.model_file_id) {
         deleteParams.dtdx_model_file_id = selectedItem.dtdx_model.model_file_id;
       }
@@ -446,26 +455,32 @@ const handleDelete = async () => {
         deleteParams.thumbnail_symbol_id = selectedItem.thumbnail.symbol_id;
       }
 
-      // API 호출
       await structureStore.deleteStructure(
         selectedItem.structure_id,
         deleteParams
       );
 
-      // 성공 시 로컬 데이터에서 제거
       structureList.value = structureList.value.filter(
         (item) => item.structure_id !== selectedItem.structure_id
       );
-      selectedItems.value = [];
-
-      alert(t("messages.success.structureDeleteSuccess"));
-
-      // 데이터 새로고침
-      await loadData();
+      successCount += 1;
     } catch (error) {
       console.error("삭제 실패:", error);
-      alert(t("messages.error.structureDeleteFail"));
+      failCount += 1;
     }
+  }
+
+  selectedItems.value = [];
+
+  if (successCount > 0) {
+    if (failCount > 0) {
+      alert(`${successCount}건 삭제 성공, ${failCount}건 삭제 실패`);
+    } else {
+      alert(t("messages.success.structureDeleteSuccess"));
+    }
+    await loadData();
+  } else {
+    alert(t("messages.error.structureDeleteFail"));
   }
 };
 

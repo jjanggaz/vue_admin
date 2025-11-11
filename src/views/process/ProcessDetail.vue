@@ -319,7 +319,7 @@
               <button
                 @click="handlePfdDelete"
                 class="btn btn-danger"
-                :disabled="selectedPfdItems.length === 0"
+                :disabled="!selectedPfdItems"
               >
                 {{ t("common.delete") }}
               </button>
@@ -973,7 +973,7 @@ const hasFormulaData = computed(() => {
 
 // Reactive references
 const selectedFormulaItems = ref<any[]>([]);
-const selectedPfdItems = ref<any[]>([]);
+const selectedPfdItems = ref<any | null>(null);
 const selectedFormulaFiles = ref<File[]>([]);
 const selectedPfdFiles = ref<File[]>([]);
 const processSymbolInput = ref<HTMLInputElement | null>(null);

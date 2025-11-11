@@ -136,6 +136,7 @@
       :selectable="true"
       :selected-items="processStore.selectedItems"
       row-key="id"
+      :stickyHeader="true"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
     >
@@ -1548,6 +1549,29 @@ onMounted(async () => {
   padding: $spacing-lg;
 }
 
+:deep(.process-page .data-table) {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+
+  table {
+    min-width: 100%;
+  }
+}
+
+:deep(.process-page .data-table .table-header) {
+  background-color: $background-light;
+}
+
+:deep(.process-page .data-table .table-header .header-cell:hover) {
+  background-color: $background-light;
+  color: inherit;
+}
+
+:deep(.process-page .data-table .table-body tr:nth-child(even)) {
+  background-color: #f8f9fb;
+}
+
 // 공정심볼 텍스트 스타일
 .symbol-text {
   font-size: 12px;
@@ -2191,3 +2215,4 @@ onMounted(async () => {
   }
 }
 </style>
+

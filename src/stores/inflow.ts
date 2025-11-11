@@ -685,20 +685,36 @@ export const useInflowStore = defineStore("inflow", {
       }
     },
 
-    // 유입종류 삭제
-    async deleteWaterFlowType(flowTypeId: string) {
+    // 유입종류 삭제 (POST)
+    async deleteWaterFlowType(
+      flowTypeId: string,
+      payload?: {
+        flow_type_id?: string;
+        svg_symbol_id?: string | null;
+        metric_formula_ids?: string[];
+        uscs_formula_ids?: string[];
+      }
+    ) {
       this.loading = true;
       this.error = null;
 
       try {
+        const requestBody = {
+          flow_type_id: payload?.flow_type_id ?? flowTypeId,
+          svg_symbol_id: payload?.svg_symbol_id ?? null,
+          metric_formula_ids: payload?.metric_formula_ids ?? [],
+          uscs_formula_ids: payload?.uscs_formula_ids ?? [],
+        };
+
         const response = await request(
           `/api/inflow/delete/${flowTypeId}`,
           undefined,
           {
-            method: "DELETE",
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            body: JSON.stringify(requestBody),
           }
         );
 

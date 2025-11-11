@@ -47,6 +47,13 @@
             <button class="btn btn-update" @click="openUpdateModal">
               {{ t("inflow.update") }}
             </button>
+            <button
+              class="btn btn-delete"
+              @click="handleDeleteFlowType"
+              :disabled="isDeleting || tabs.length === 0"
+            >
+              {{ isDeleting ? t("common.processing") : t("common.delete") }}
+            </button>
             <!-- <button
               class="btn btn-code-management"
               @click="openCodeManagementModal"
@@ -800,6 +807,7 @@ const symbolImageContent = ref(""); // 심볼 이미지 콘텐츠
 // 로딩 상태
 const isCreating = ref(false);
 const isUpdating = ref(false);
+const isDeleting = ref(false);
 
 // 컴포넌트 마운트 시 유입종류 데이터 로드
 onMounted(async () => {
@@ -1625,10 +1633,6 @@ const openModal = () => {
   isUscsFileAttached.value = false;
 };
 
-const openCodeManagementModal = () => {
-  isCodeManagementModalOpen.value = true;
-};
-
 const closeCodeManagementModal = () => {
   isCodeManagementModalOpen.value = false;
 };
@@ -1781,6 +1785,63 @@ const handleDeleteSymbol = async () => {
       console.error("심볼 삭제 실패:", error);
       alert(t("messages.error.symbolDeleteFailed"));
     }
+  }
+};
+
+const handleDeleteFlowType = async () => {
+  if (tabs.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  const currentTab = tabs.value[activeTab.value];
+
+  if (!currentTab || !currentTab.flow_type_id) {
+    alert(t("messages.warning.pleaseSelectItemToDelete"));
+    return;
+  }
+
+  const confirmMessage = currentTab.name
+    ? `${t("messages.confirm.deleteItem")} (${currentTab.name})`
+    : t("messages.confirm.deleteItem");
+
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  isDeleting.value = true;
+  const flowType = inflowStore.waterFlowTypes.find(
+    (item) => item.flow_type_id === currentTab.flow_type_id
+  );
+  const svgSymbolId = flowType?.svg_symbol_id ?? null;
+  const metricFormulaIds = currentGridData2.value.map(
+    (formula) => formula.formula_id
+  );
+  const uscsFormulaIds = currentUscsGridData2.value.map(
+    (formula) => formula.formula_id
+  );
+
+  try {
+    await inflowStore.deleteWaterFlowType(currentTab.flow_type_id, {
+      flow_type_id: currentTab.flow_type_id,
+      svg_symbol_id: svgSymbolId,
+      metric_formula_ids: metricFormulaIds,
+      uscs_formula_ids: uscsFormulaIds,
+    });
+
+    await loadWaterFlowTypes();
+    alert(t("messages.success.deleted"));
+  } catch (error) {
+    console.error("유입종류 삭제 실패:", error);
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.deleteFailed"
+    );
+    alert(errorMessage);
+  } finally {
+    isDeleting.value = false;
   }
 };
 

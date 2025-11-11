@@ -824,6 +824,9 @@
                 </div>
               </div>
             </div>
+            <div class="model-register-warning">
+              ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만 허용합니다.
+            </div>
 
             <!-- ZIP 파일 내부 파일 목록 테이블 -->
             <div
@@ -4401,6 +4404,13 @@ $tablet: 1024px;
     align-items: center;
     gap: 0.5rem;
   }
+}
+
+.model-register-warning {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #b54708;
 }
 
 .zip-contents-section {

@@ -705,43 +705,24 @@
           />
         </template>
         <template #cell-category="{ item }">
-          <input
-            type="text"
-            :value="item.category"
-            class="form-control"
-            readonly
-            disabled
-            placeholder="구분"
-          />
-        </template>
-        <template #cell-middleCategory="{ item }">
-          <input
-            type="text"
-            :value="item.middleCategory"
-            class="form-control"
-            readonly
-            disabled
-            placeholder="중분류"
-          />
+          <span class="pid-component-text">
+            {{ item.category || "-" }}
+          </span>
         </template>
         <template #cell-smallCategory="{ item }">
-          <input
-            type="text"
-            :value="item.smallCategory"
-            class="form-control"
-            readonly
-            disabled
-            placeholder="소분류"
-          />
+          <span class="pid-component-text">
+            {{ item.smallCategory || "-" }}
+          </span>
+        </template>
+        <template #cell-middleCategory="{ item }">
+          <span class="pid-component-text">
+            {{ item.middleCategory || "-" }}
+          </span>
         </template>
         <template #cell-equipmentType="{ item }">
-          <input
-            type="text"
-            :value="item.equipmentType || ''"
-            class="form-control"
-            readonly
-            disabled
-          />
+          <span class="pid-component-text">
+            {{ item.equipmentType || "-" }}
+          </span>
         </template>
         <template #cell-standard_quantity="{ item }">
           <input
@@ -2805,10 +2786,10 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
               level4_code_key: hierarchyData.level4_code_key,
               level4_korean_name: hierarchyData.level4_korean_name,
               // P&ID Components 그리드 텍스트 박스용 매핑 (한국어 이름 사용)
-              category: hierarchyData.level1_korean_name, // 구분: 기계
-              middleCategory: hierarchyData.level2_korean_name, // 중분류: 펌프
-              smallCategory: hierarchyData.level3_korean_name, // 소분류: 수중모터펌프
-              equipmentType: hierarchyData.level4_korean_name || "", // 장비유형: 수중오수모터펌프(자동착탈식) - 파싱된 값이 없으면 공백
+              category: hierarchyData.level1_korean_name || "", // 구분: 기계
+              smallCategory: hierarchyData.level2_korean_name || "", // 대분류: 펌프
+              middleCategory: hierarchyData.level3_korean_name || "", // 중분류: 수중모터펌프
+              equipmentType: hierarchyData.level4_korean_name || "", // 유형: 수중오수모터펌프(자동탈착식)
               // POC IN 항목을 input_poc로 매핑
               input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
               // 각 행별 개별 옵션 저장

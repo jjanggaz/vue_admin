@@ -39,8 +39,8 @@
       :data="paginatedProjectList"
       :loading="false"
       :selectable="true"
-      selectionMode="single"
-      :showSelectAll="false"
+      selectionMode="multiple"
+      :showSelectAll="true"
       :selected-items="selectedItems"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
@@ -305,34 +305,64 @@ const handleDelete = async () => {
     return;
   }
 
-  const selected = selectedItems.value[0];
-  const apiOriginal = projectStore.originalApiData.find(
-    (it) => it.project_id === (selected as any).id
-  );
-  if (!apiOriginal) {
+  const targets =
+    selectedItems.value
+      .map((selected) =>
+        projectStore.originalApiData?.find(
+          (it) => it.project_id === (selected as any).id
+        )
+      )
+      .filter((item): item is NonNullable<typeof item> => Boolean(item)) ?? [];
+
+  if (!targets.length) {
     alert(t("messages.error.deleteFailed"));
     return;
   }
 
-  if (!confirm(t("messages.confirm.deleteItem"))) return;
+  const confirmMessage =
+    selectedItems.value.length > 1
+      ? t("messages.confirm.deleteItems", { count: selectedItems.value.length })
+      : t("messages.confirm.deleteItem");
+  if (!confirm(confirmMessage)) return;
 
-  const result = await projectStore.deleteProject(apiOriginal.project_id, {
-    clientId: apiOriginal.client_id,
-    siteId: apiOriginal.site_id,
-  });
+  let successCount = 0;
+  let failCount = 0;
 
-  if (result?.success) {
-    alert(t("messages.success.deleted"));
-    // 현재 페이지 새로고침
+  for (const target of targets) {
+    try {
+      const result = await projectStore.deleteProject(target.project_id, {
+        clientId: target.client_id,
+        siteId: target.site_id,
+      });
+
+      if (result?.success) {
+        successCount += 1;
+      } else {
+        failCount += 1;
+      }
+    } catch (error) {
+      console.error("프로젝트 삭제 실패:", error);
+      failCount += 1;
+    }
+  }
+
+  if (successCount > 0) {
+    if (failCount > 0) {
+      alert(`${successCount}건 삭제 성공, ${failCount}건 삭제 실패`);
+    } else {
+      alert(t("messages.success.deleted"));
+    }
+
     await projectStore.changePage(projectStore.currentPage, {
       search_value: searchQueryInput.value,
       order_by: projectStore.sortField,
       order_direction: projectStore.sortOrder,
     });
-    selectedItems.value = [];
   } else {
-    alert(result?.message || t("messages.error.deleteFailed"));
+    alert(t("messages.error.deleteFailed"));
   }
+
+  selectedItems.value = [];
 };
 
 // 상세 보기 - 모달로 열기

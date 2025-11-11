@@ -54,12 +54,12 @@
             >
               {{ isDeleting ? t("common.processing") : t("common.delete") }}
             </button>
-            <!-- <button
+            <button
               class="btn btn-code-management"
               @click="openCodeManagementModal"
             >
               {{ t("inflow.codeManagement") }}
-            </button> -->
+            </button>
           </div>
         </div>
       </div>
@@ -1631,6 +1631,10 @@ const openModal = () => {
   // 파일 첨부 플래그 초기화
   isMetricFileAttached.value = false;
   isUscsFileAttached.value = false;
+};
+
+const openCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = true;
 };
 
 const closeCodeManagementModal = () => {

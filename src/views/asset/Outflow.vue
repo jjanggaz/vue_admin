@@ -54,12 +54,12 @@
             >
               {{ isDeleting ? t("common.processing") : t("common.delete") }}
             </button>
-            <!-- <button
+            <button
               class="btn btn-code-management"
               @click="openCodeManagementModal"
             >
               {{ t("outflow.codeManagement") }}
-            </button> -->
+            </button>
           </div>
         </div>
       </div>
@@ -1845,6 +1845,10 @@ const openModal = () => {
   isModalOpen.value = true;
   newTabName.value = "";
   symbolImageContent.value = ""; // 심볼 이미지 콘텐츠 초기화
+};
+
+const openCodeManagementModal = () => {
+  isCodeManagementModalOpen.value = true;
 };
 
 const closeModal = () => {

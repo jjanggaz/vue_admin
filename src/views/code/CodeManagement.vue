@@ -532,49 +532,6 @@ const findSelectedCategories = () => {
   };
 };
 
-// 마지막 선택된 분류의 바로 상단 분류의 key를 반환하는 함수
-// 소분류 선택 -> 중분류의 key, 중분류 선택 -> 대분류의 key, 대분류 선택 -> 코드그룹의 key
-const getLastSelectedCategoryKey = (
-  selectedGroup: { key: string; value: string } | null,
-  selectedCategory1: { key: string; value: string } | null,
-  selectedCategory2: { key: string; value: string } | null,
-  selectedCategory3: { key: string; value: string } | null
-): string => {
-  if (selectedCategory3) {
-    // 소분류 선택 시 -> 중분류의 key 반환
-    return selectedCategory2?.key || "";
-  } else if (selectedCategory2) {
-    // 중분류 선택 시 -> 대분류의 key 반환
-    return selectedCategory1?.key || "";
-  } else if (selectedCategory1) {
-    // 대분류 선택 시 -> 코드그룹의 key 반환
-    return selectedGroup?.key || "";
-  } else if (selectedGroup) {
-    // 코드그룹만 선택 시 -> 코드그룹의 key 반환
-    return selectedGroup.key;
-  }
-  return "";
-};
-
-// 마지막 선택된 분류의 객체를 반환하는 함수
-const getLastSelectedCategory = (
-  selectedGroup: { key: string; value: string } | null,
-  selectedCategory1: { key: string; value: string } | null,
-  selectedCategory2: { key: string; value: string } | null,
-  selectedCategory3: { key: string; value: string } | null
-): { key: string; value: string } => {
-  if (selectedCategory3) {
-    return { key: selectedCategory3.key, value: selectedCategory3.value };
-  } else if (selectedCategory2) {
-    return { key: selectedCategory2.key, value: selectedCategory2.value };
-  } else if (selectedCategory1) {
-    return { key: selectedCategory1.key, value: selectedCategory1.value };
-  } else if (selectedGroup) {
-    return { key: selectedGroup.key, value: selectedGroup.value };
-  }
-  return { key: "", value: "" };
-};
-
 // 선택된 카테고리에 따라 code_level과 parent_key를 자동 설정하는 함수
 const getAutoCodeLevel = (
   selectedGroup: { key: string; value: string } | null,
@@ -973,17 +930,9 @@ const handleSingleRegist = () => {
   console.log("handleSingleRegist - 자동 설정된 code_level:", codeLevel);
   console.log("handleSingleRegist - 자동 설정된 parent_key:", parentKey);
 
-  // 마지막 선택된 분류의 key를 code_group에 세팅
-  const lastSelectedCategoryKey = getLastSelectedCategoryKey(
-    selectedGroup || null,
-    selectedCategory1 || null,
-    selectedCategory2 || null,
-    selectedCategory3 || null
-  );
-
   newCode.value = {
     code_id: "",
-    code_group: lastSelectedCategoryKey,
+    code_group: selectedGroup ? selectedGroup.key : "",
     code_key: "",
     code_value: "",
     code_value_en: "",
@@ -1043,17 +992,11 @@ const handleMultiRegist = () => {
   console.log("handleMultiRegist - 자동 설정된 code_level:", codeLevel);
   console.log("handleMultiRegist - 자동 설정된 parent_key:", parentKey);
 
-  // 마지막 선택된 분류의 객체를 code_group으로 세팅
-  const lastSelectedCategory = getLastSelectedCategory(
-    selectedGroup || null,
-    selectedCategory1 || null,
-    selectedCategory2 || null,
-    selectedCategory3 || null
-  );
-
   // 모달에 전달할 props 값들을 설정 (key와 value 모두 전달)
   // modalCodeGroup에는 마지막 선택된 분류를 세팅
-  modalCodeGroup.value = lastSelectedCategory;
+  modalCodeGroup.value = selectedGroup
+    ? { key: selectedGroup.key, value: selectedGroup.value }
+    : { key: "", value: "" };
   modalCategory1.value = selectedCategory1
     ? { key: selectedCategory1.key, value: selectedCategory1.value }
     : { key: "", value: "" };
@@ -1336,7 +1279,6 @@ const handleEdit = () => {
 }
 
 // Right Section - Table Section
-
 
 .action-buttons {
   display: flex;

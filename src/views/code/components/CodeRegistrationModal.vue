@@ -292,23 +292,6 @@ const parseExcelFile = (file: File) => {
       // 헤더 행 제거하고 데이터만 추출
       const dataRows = jsonData.slice(1) as any[][];
 
-      // 마지막 선택된 분류의 바로 상단 분류의 key를 code_group으로 사용
-      // 소분류 선택 -> 중분류의 key, 중분류 선택 -> 대분류의 key, 대분류 선택 -> 코드그룹의 key
-      let lastSelectedCategoryKey = "";
-      if (props.selectedCategory3?.key) {
-        // 소분류 선택 시 -> 중분류의 key 사용
-        lastSelectedCategoryKey = props.selectedCategory2?.key || "";
-      } else if (props.selectedCategory2?.key) {
-        // 중분류 선택 시 -> 대분류의 key 사용
-        lastSelectedCategoryKey = props.selectedCategory1?.key || "";
-      } else if (props.selectedCategory1?.key) {
-        // 대분류 선택 시 -> 코드그룹의 key 사용
-        lastSelectedCategoryKey = props.selectedCodeGroup?.key || "";
-      } else if (props.selectedCodeGroup?.key) {
-        // 코드그룹만 선택 시 -> 코드그룹의 key 사용
-        lastSelectedCategoryKey = props.selectedCodeGroup.key;
-      }
-
       // 데이터를 CodeCreateRequest 형태로 변환
       const parsedData: CodeCreateRequest[] = dataRows
         .filter((row) =>
@@ -322,7 +305,7 @@ const parseExcelFile = (file: File) => {
             description: String(row[3] || ""),
             parent_key: props.selectedParentKey || "",
             code_level: props.selectedCodeLevel || "",
-            code_group: lastSelectedCategoryKey,
+            code_group: props.selectedCodeGroup?.key || "",
             code_order: "1",
             is_active: true,
             is_leaf: false,

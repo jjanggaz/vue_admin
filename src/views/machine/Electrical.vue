@@ -1163,7 +1163,6 @@ const editData = ref<{
   output_values: Record<string, any>;
   search_criteria: Record<string, any>;
   specifications: Record<string, any>;
-  price_reference: string;
 }>({
   equipmentType: "",
   equipmentCode: "",
@@ -1174,7 +1173,6 @@ const editData = ref<{
   output_values: {},
   search_criteria: {},
   specifications: {},
-  price_reference: "",
 });
 
 // 원본 데이터 백업 (취소 시 복원용)
@@ -1243,52 +1241,68 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
-    const priceReferenceLabel = isEnglish ? "Unit Price Source" : "단가 출처";
-    let priceReferenceInsertIndex: number | null = null;
-    const priceReferenceRow = {
-      columnName: priceReferenceLabel,
-      value: isDetailEditMode.value
-        ? editData.value.price_reference || ""
-        : detailPriceReference.value || "-",
-      editable: true,
-      fieldType: "input",
-      originalType: "string",
-    };
+    const providerLabel = isEnglish ? "Unit Price Source" : "단가출처";
+    Object.entries(item.output_values).forEach(
+      ([key, field]: [string, any]) => {
+        // 원본 값과 현재 값 비교
+        let isChanged = false;
+        if (isDetailEditMode.value && originalItemData.value) {
+          const originalValue =
+            originalItemData.value.output_values?.[key]?.value;
+          const currentValue = editData.value.output_values?.[key]?.value;
+          // 값 비교 (숫자와 문자열 모두 고려)
+          if (originalValue !== currentValue) {
+            // null, undefined, 빈 문자열을 모두 동일하게 처리
+            const normalizedOriginal =
+              originalValue == null || originalValue === ""
+                ? null
+                : originalValue;
+            const normalizedCurrent =
+              currentValue == null || currentValue === "" ? null : currentValue;
+            isChanged = normalizedOriginal !== normalizedCurrent;
+          }
+        }
 
-    Object.values(item.output_values).forEach((field: any) => {
-      // 수정 모드이거나 값이 있는 경우 표시
-      // if (
-      //   isDetailEditMode.value ||
-      //   (field.value !== null &&
-      //     field.value !== undefined &&
-      //     field.value !== "")
-      // ) {
-      const displayName = isEnglish ? field.key || "-" : field.name_kr || "-";
-      data.push({
-        columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-        value: isDetailEditMode.value
-          ? field.value
-          : typeof field.value === "number"
-          ? field.value.toLocaleString()
-          : field.value,
-        editable: true,
-        fieldType: typeof field.value === "number" ? "number" : "input",
-        originalType: typeof field.value,
-      });
-      const isUnitPriceField =
-        (typeof field.key === "string" &&
-          field.key.toLowerCase().includes("unit_price")) ||
-        (!isEnglish && displayName === "견적가(원)");
+        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
+        const displayValue = isDetailEditMode.value
+          ? editData.value.output_values?.[key]?.value ?? field.value
+          : field.value;
 
-      if (priceReferenceInsertIndex === null && isUnitPriceField) {
-        priceReferenceInsertIndex = data.length;
+        data.push({
+          columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
+          value: isDetailEditMode.value
+            ? displayValue
+            : typeof displayValue === "number"
+            ? displayValue.toLocaleString()
+            : displayValue,
+          editable: true,
+          fieldType: typeof field.value === "number" ? "number" : "input",
+          originalType: typeof field.value,
+          isChanged: isChanged, // 변경 여부 추가
+        });
+
+        const providerColumnName = `${
+          isEnglish ? field.key || "-" : field.name_kr || "-"
+        } (${providerLabel})`;
+        const providerDisplayValue = isDetailEditMode.value
+          ? editData.value.output_values?.[key]?.price_reference ??
+            field.price_reference ??
+            ""
+          : field.price_reference || "-";
+
+        data.push({
+          columnName: providerColumnName,
+          value: providerDisplayValue,
+          editable: isDetailEditMode.value,
+          fieldType: "input",
+          originalType: "string",
+          isChanged:
+            isDetailEditMode.value &&
+            originalItemData.value?.output_values?.[key]?.price_reference !==
+              providerDisplayValue,
+        });
       }
-      // }
-    });
-
-    if (priceReferenceInsertIndex !== null) {
-      data.splice(priceReferenceInsertIndex + 1, 0, priceReferenceRow);
-    }
+    );
   }
 
   // 3. search_criteria 동적 추가
@@ -1849,7 +1863,45 @@ const openDetailPanel = async (item: MachineItem) => {
   thumbnailImageUrl.value = "";
   isThumbnailLoading.value = false;
 
-  // 원본 데이터 백업 (깊은 복사)
+  // 단가이력에서 각 필드별 최신 단가출처를 output_values에 설정
+  if (item.equipment_price_history && item.output_values) {
+    const priceHistory = item.equipment_price_history;
+    const parseTime = (value?: string) => {
+      if (!value) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
+    };
+
+    // 각 output_values 필드에 대해 해당 price_type의 최신 price_reference 찾기
+    Object.entries(item.output_values).forEach(([key, field]: [string, any]) => {
+      const priceType = (field.key || "").toUpperCase();
+      if (priceType) {
+        // 해당 price_type의 최신 이력 찾기
+        const latestHistory = priceHistory
+          .filter((h: PriceHistoryItem) => h.price_type?.toUpperCase() === priceType)
+          .reduce((latest: PriceHistoryItem | null, current: PriceHistoryItem) => {
+            if (!latest) {
+              return current;
+            }
+            return parseTime(current.price_date) > parseTime(latest.price_date)
+              ? current
+              : latest;
+          }, null);
+
+        if (latestHistory && latestHistory.price_reference && item.output_values) {
+          // output_values에 price_reference 설정
+          if (!item.output_values[key]) {
+            item.output_values[key] = {};
+          }
+          item.output_values[key].price_reference = latestHistory.price_reference;
+        }
+      }
+    });
+  }
+
+  // 원본 데이터 백업 (깊은 복사) - price_reference 설정 후 백업
   originalItemData.value = JSON.parse(JSON.stringify(item));
   detailItemData.value = item;
   detailPriceReference.value = getLatestPriceReference(
@@ -1912,7 +1964,6 @@ const toggleEditMode = () => {
       output_values: {},
       search_criteria: {},
       specifications: {},
-      price_reference: detailPriceReference.value || "",
     };
 
     // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
@@ -1976,7 +2027,6 @@ const cancelEditMode = () => {
     output_values: {},
     search_criteria: {},
     specifications: {},
-    price_reference: "",
   };
 
   isDetailEditMode.value = false;
@@ -1993,9 +2043,6 @@ const saveDetailChanges = async () => {
 
   try {
     const item = detailItemData.value;
-    const priceReferenceValue = editData.value.price_reference
-      ? editData.value.price_reference.trim()
-      : "";
 
     // 업데이트 파라미터 준비 (Machine.vue와 동일한 형식)
     const updateParams: any = {
@@ -2074,7 +2121,10 @@ const saveDetailChanges = async () => {
                   (currentField as any)?.unit_symbol ||
                   (originalField as any)?.unit_symbol,
                 price_value: currentValue,
-                price_reference: priceReferenceValue || undefined,
+                price_reference:
+                  (currentField as any)?.price_reference ??
+                  (originalField as any)?.price_reference ??
+                  "",
               });
 
               createdPriceHistoryEntries.push({
@@ -2091,7 +2141,10 @@ const saveDetailChanges = async () => {
                   (currentField as any)?.unit_code ||
                   (originalField as any)?.unit_code ||
                   "",
-                price_reference: priceReferenceValue || "",
+                price_reference:
+                  (currentField as any)?.price_reference ??
+                  (originalField as any)?.price_reference ??
+                  "",
               });
             } catch (error) {
               console.error(`가격 이력 생성 실패 (${key}):`, error);
@@ -2110,6 +2163,7 @@ const saveDetailChanges = async () => {
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
       await loadData();
+
       if (createdPriceHistoryEntries.length > 0) {
         const refreshedItem = machineList.value.find(
           (machine) => machine.equipment_id === item.equipment_id
@@ -2118,9 +2172,6 @@ const saveDetailChanges = async () => {
         if (refreshedItem) {
           detailItemData.value = refreshedItem;
           originalItemData.value = JSON.parse(JSON.stringify(refreshedItem));
-          detailPriceReference.value = getLatestPriceReference(
-            refreshedItem.equipment_price_history
-          );
         } else if (detailItemData.value) {
           detailItemData.value.equipment_price_history =
             detailItemData.value.equipment_price_history || [];
@@ -2128,17 +2179,8 @@ const saveDetailChanges = async () => {
           createdPriceHistoryEntries.forEach((entry) => {
             detailItemData.value!.equipment_price_history!.push(entry);
           });
-
-          detailPriceReference.value =
-            createdPriceHistoryEntries[
-              createdPriceHistoryEntries.length - 1
-            ].price_reference;
         }
-      } else {
-        detailPriceReference.value = priceReferenceValue;
-        editData.value.price_reference = priceReferenceValue;
       }
-      editData.value.price_reference = priceReferenceValue;
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
     }
@@ -2152,8 +2194,6 @@ const saveDetailChanges = async () => {
 
 // 그리드에서 필드 변경 처리
 const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
-  console.log(`필드 변경: ${fieldName} = ${value}`);
-
   const isEnglish = locale.value === "en";
 
   // editData에 반영
@@ -2225,20 +2265,39 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
     }
     console.log("description 업데이트:", value);
   }
-  else if (fieldName === (isEnglish ? "Unit Price Source" : "단가 출처")) {
-    const strValue = String(value);
-    editData.value.price_reference = strValue;
-    detailPriceReference.value = strValue;
-    console.log("price_reference 업데이트:", strValue);
-  }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
   else {
     // detailItemData에서 해당 필드 찾기
     const item = detailItemData.value;
     if (!item) return;
 
+    const providerSuffix = isEnglish
+      ? " (Unit Price Source)"
+      : " (단가출처)";
+
     // output_values에서 찾기
     if (item.output_values) {
+      if (fieldName.endsWith(providerSuffix)) {
+        const baseFieldName = fieldName.slice(
+          0,
+          fieldName.length - providerSuffix.length
+        );
+        const providerField = Object.entries(item.output_values).find(
+          ([_, field]: [string, any]) => {
+            const displayName = isEnglish ? field.key : field.name_kr;
+            return displayName === baseFieldName;
+          }
+        );
+        if (providerField) {
+          const [key] = providerField;
+          if (editData.value.output_values[key]) {
+            const strValue = typeof value === "string" ? value.trim() : String(value);
+            editData.value.output_values[key].price_reference = strValue;
+          }
+          return;
+        }
+      }
+
       const outputField = Object.entries(item.output_values).find(
         ([_, field]: [string, any]) => {
           const displayName = isEnglish ? field.key : field.name_kr;

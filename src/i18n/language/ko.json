@@ -451,7 +451,7 @@
     "unitPrice": "단가",
     "unitPriceDate": "단가등록일",
     "priceType": "단가유형",
-    "provider": "제공처",
+    "provider": "단가출처",
     "manufacturer": "제조사",
     "symbol": "심볼",
     "deleteSymbol": "심볼 삭제",
@@ -1045,7 +1045,11 @@
     "diffuse_area_m2": "산기면적",
     "diameter_mm": "관경",
     "dia_phi_mm": "직경",
-    "other": "기타"
+    "other": "기타",
+    "priceType": {
+      "unit": "단가",
+      "invoice": "견적가"
+    }
   },
   "pipe": {
     "pipeType": "배관종류",

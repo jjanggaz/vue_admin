@@ -451,7 +451,7 @@
     "unitPrice": "Unit Price",
     "unitPriceDate": "Unit Price Date",
     "priceType": "Price Type",
-    "provider": "Provider",
+    "provider": "Price Source",
     "manufacturer": "Manufacturer",
     "symbol": "Symbol",
     "deleteSymbol": "Delete symbol",
@@ -1050,6 +1050,10 @@
     "diameter_mm": "Diameter",
     "dia_phi_mm": "Phi Diameter",
     "other": "Other",
+    "priceType": {
+      "unit": "Unit Price",
+      "invoice": "Invoice Price"
+    },
     "materialType": "Material Type"
   },
   "pipe": {

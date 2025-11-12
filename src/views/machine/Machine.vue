@@ -649,7 +649,7 @@
 
                 <!-- 단가유형 슬롯 -->
                 <template #cell-price_type="{ item }">
-                  {{ item.price_type || "-" }}
+                  {{ formatPriceType(item.price_type) }}
                 </template>
 
                 <!-- 단위 슬롯 -->
@@ -871,6 +871,20 @@ const priceHistoryColumns: TableColumn[] = [
     sortable: false,
   },
 ];
+
+const formatPriceType = (priceType?: string | null): string => {
+  if (!priceType) {
+    return "-";
+  }
+  const normalizedType = priceType.toUpperCase();
+  if (normalizedType === "UNIT_PRICE") {
+    return t("machine.priceType.unit");
+  }
+  if (normalizedType === "INVOICE_PRICE") {
+    return t("machine.priceType.invoice");
+  }
+  return priceType;
+};
 
 const machineList = ref<MachineItem[]>([]);
 const loading = ref(false);

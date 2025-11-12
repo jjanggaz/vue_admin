@@ -986,7 +986,8 @@
     "uploadFormula": "Upload Formula",
     "register": "Register",
     "delete": "Delete",
-    "codeManagement": "Code Management"
+    "codeManagement": "Code Management",
+    "appliedFormula": "Applied Formula"
   },
   "outflow": {
     "registerNew": "Register New",
@@ -1001,7 +1002,8 @@
     "uploadFormula": "Upload Formula",
     "register": "Register",
     "delete": "Delete",
-    "codeManagement": "Code Management"
+    "codeManagement": "Code Management",
+    "appliedFormula": "Applied Formula"
   },
   "waterCode": {
     "parameterList": "Water Quality Parameter List",

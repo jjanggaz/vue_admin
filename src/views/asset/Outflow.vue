@@ -69,6 +69,10 @@
           <div class="tab-content-metric">
             <div class="section-header">
               <h3>Metric</h3>
+              <span v-if="latestMetricFormula" class="applied-formula">
+                [ {{ t("outflow.appliedFormula") }} :
+                {{ latestMetricFormula }} ]
+              </span>
             </div>
             <div v-if="activeTab >= 0" class="content">
               <DataTable
@@ -147,6 +151,9 @@
           <div class="tab-content-uscs">
             <div class="section-header">
               <h3>Uscs</h3>
+              <span v-if="latestUscsFormula" class="applied-formula">
+                [ {{ t("outflow.appliedFormula") }} : {{ latestUscsFormula }} ]
+              </span>
             </div>
             <div v-if="activeTab >= 0" class="content">
               <DataTable
@@ -1804,6 +1811,36 @@ const selectedUscsFormula = computed(() => {
   return formula ? [formula] : [];
 });
 
+// 최신 Metric 계산식
+const latestMetricFormula = computed(() => {
+  const formulas =
+    outflowStore.waterFlowTypeParameters.metric_formulas?.data?.formulas;
+  if (!formulas || !Array.isArray(formulas) || formulas.length === 0) {
+    return null;
+  }
+  // created_at 기준으로 내림차순 정렬하여 가장 최신 계산식 가져오기
+  const sortedFormulas = [...formulas].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  return sortedFormulas[0]?.formula_name || null;
+});
+
+// 최신 Uscs 계산식
+const latestUscsFormula = computed(() => {
+  const formulas =
+    outflowStore.waterFlowTypeParameters.uscs_formulas?.data?.formulas;
+  if (!formulas || !Array.isArray(formulas) || formulas.length === 0) {
+    return null;
+  }
+  // created_at 기준으로 내림차순 정렬하여 가장 최신 계산식 가져오기
+  const sortedFormulas = [...formulas].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  return sortedFormulas[0]?.formula_name || null;
+});
+
 // 수정 모달용 파라미터 선택 핸들러
 const onUpdateParameterSelect = (
   parameterCode: string,
@@ -2497,12 +2534,22 @@ onBeforeUnmount(() => {
         margin-bottom: $spacing-sm;
         padding-bottom: $spacing-sm;
         border-bottom: 2px solid $primary-color;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
 
         h3 {
           margin: 0;
           color: $primary-color;
           font-size: $font-size-lg;
           font-weight: $font-weight-bold;
+        }
+
+        .applied-formula {
+          font-size: $font-size-sm;
+          color: $text-color;
+          font-weight: $font-weight-md;
+          margin-left: $spacing-xs;
         }
 
         .tab-info {

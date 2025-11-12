@@ -982,7 +982,8 @@
     "uploadFormula": "계산식 업로드",
     "register": "등록",
     "delete": "삭제",
-    "codeManagement": "코드 관리"
+    "codeManagement": "코드 관리",
+    "appliedFormula": "적용 계산식"
   },
   "waterCode": {
     "parameterList": "수질 파라미터 목록",
@@ -1013,7 +1014,8 @@
     "uploadFormula": "계산식 업로드",
     "register": "등록",
     "delete": "삭제",
-    "codeManagement": "코드 관리"
+    "codeManagement": "코드 관리",
+    "appliedFormula": "적용 계산식"
   },
   "sidebar": {
     "dashboard": "대시보드",

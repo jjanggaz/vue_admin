@@ -1660,8 +1660,27 @@ const handleFieldChange = (fieldName: string, value: string) => {
         if (editData.value.output_values[key]) {
           // 입력값이 숫자로만 구성되어 있으면 Number로 변환
           const numValue = Number(value);
-          editData.value.output_values[key].value =
-            !isNaN(numValue) && value !== "" ? numValue : value;
+          const newValue = !isNaN(numValue) && value !== "" ? numValue : value;
+          editData.value.output_values[key].value = newValue;
+
+          // value가 원래 값으로 돌아가면 price_reference도 원래 값으로 복원
+          if (originalItemData.value?.output_values?.[key]) {
+            const originalValue =
+              originalItemData.value.output_values[key].value;
+            const normalizedOriginal =
+              originalValue == null || originalValue === ""
+                ? null
+                : originalValue;
+            const normalizedNew =
+              newValue == null || newValue === "" ? null : newValue;
+
+            // 값이 원래 값과 같으면 price_reference도 원래 값으로 복원
+            if (normalizedOriginal === normalizedNew) {
+              editData.value.output_values[key].price_reference =
+                originalItemData.value.output_values[key].price_reference ??
+                null;
+            }
+          }
         }
         return;
       }

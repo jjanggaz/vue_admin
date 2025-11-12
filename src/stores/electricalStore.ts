@@ -736,6 +736,7 @@ export const useElectricalStore = defineStore("electrical", () => {
     price_unit_code?: string;
     price_unit_symbol?: string;
     price_value?: any;
+    price_reference?: string;
   }) => {
     loading.value = true;
     error.value = null;

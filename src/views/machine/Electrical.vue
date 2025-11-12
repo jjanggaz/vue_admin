@@ -564,8 +564,8 @@
           </div>
         </div>
         <div class="detail-panel-body">
-          <!-- 모델 썸네일 이미지 영역 -->
-          <div class="model-thumbnail-section">
+          <!-- 모델 썸네일 이미지 영역 (요청에 따라 비활성화) -->
+          <div v-if="false" class="model-thumbnail-section">
             <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
               <!-- 로딩 오버레이 -->
               <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
@@ -597,40 +597,9 @@
                 :loading="false"
                 :editMode="isDetailEditMode"
                 @field-change="handleFieldChange"
-                @file-attach="handleFileAttach"
-                @file-remove="handleFileRemove"
-                @file-download="handleFileDownload"
               />
 
-              <!-- 숨겨진 파일 input들 -->
-              <input
-                type="file"
-                ref="file3d"
-                @change="handleFileSelect('3d', $event)"
-                style="display: none"
-                accept=".dtdx"
-              />
-              <input
-                type="file"
-                ref="fileThumbnail"
-                @change="handleFileSelect('thumbnail', $event)"
-                style="display: none"
-                accept=".jpg,.jpeg,.png,.gif"
-              />
-              <input
-                type="file"
-                ref="fileRevit"
-                @change="handleFileSelect('revit', $event)"
-                style="display: none"
-                accept=".rfa"
-              />
-              <input
-                type="file"
-                ref="fileSymbol"
-                @change="handleFileSelect('symbol', $event)"
-                style="display: none"
-                accept=".svg"
-              />
+              <!-- 파일 관련 기능 제거 -->
             </div>
 
             <!-- 단가이력 -->
@@ -1036,6 +1005,7 @@ const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
 const isThumbnailLoading = ref(false);
+const detailPriceReference = ref<string>("");
 
 // 등록 팝업 관련 변수들
 const registerIsRegistered = ref(false);
@@ -1188,29 +1158,23 @@ const editData = ref<{
   equipmentCode: string;
   vendor_id: string;
   modelNumber: string;
-  model3dFile: string;
-  revitFile: string;
-  symbolFile: string;
-  thumbnailFile: string;
   is_active: boolean;
   description: string;
   output_values: Record<string, any>;
   search_criteria: Record<string, any>;
   specifications: Record<string, any>;
+  price_reference: string;
 }>({
   equipmentType: "",
   equipmentCode: "",
   vendor_id: "",
   modelNumber: "",
-  model3dFile: "",
-  revitFile: "",
-  symbolFile: "",
-  thumbnailFile: "",
   is_active: true,
   description: "",
   output_values: {},
   search_criteria: {},
   specifications: {},
+  price_reference: "",
 });
 
 // 원본 데이터 백업 (취소 시 복원용)
@@ -1218,6 +1182,29 @@ const originalItemData = ref<MachineItem | null>(null);
 
 // 콤보박스 옵션들 (API로부터 동적 로드)
 const manufacturers = ref<Array<{ value: string; label: string }>>([]);
+
+const getLatestPriceReference = (history?: PriceHistoryItem[]) => {
+  if (!history || history.length === 0) {
+    return "";
+  }
+
+  const parseTime = (value?: string) => {
+    if (!value) {
+      return Number.NEGATIVE_INFINITY;
+    }
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
+  };
+
+  return history.reduce((latest, current) => {
+    if (!latest) {
+      return current;
+    }
+    return parseTime(current.price_date) > parseTime(latest.price_date)
+      ? current
+      : latest;
+  }).price_reference || "";
+};
 
 // VerticalDataTable용 사양 데이터 - 동적 생성
 const specVerticalData = computed(() => {
@@ -1256,6 +1243,18 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
+    const priceReferenceLabel = isEnglish ? "Unit Price Source" : "단가 출처";
+    let priceReferenceInsertIndex: number | null = null;
+    const priceReferenceRow = {
+      columnName: priceReferenceLabel,
+      value: isDetailEditMode.value
+        ? editData.value.price_reference || ""
+        : detailPriceReference.value || "-",
+      editable: true,
+      fieldType: "input",
+      originalType: "string",
+    };
+
     Object.values(item.output_values).forEach((field: any) => {
       // 수정 모드이거나 값이 있는 경우 표시
       // if (
@@ -1264,6 +1263,7 @@ const specVerticalData = computed(() => {
       //     field.value !== undefined &&
       //     field.value !== "")
       // ) {
+      const displayName = isEnglish ? field.key || "-" : field.name_kr || "-";
       data.push({
         columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
         value: isDetailEditMode.value
@@ -1275,8 +1275,20 @@ const specVerticalData = computed(() => {
         fieldType: typeof field.value === "number" ? "number" : "input",
         originalType: typeof field.value,
       });
+      const isUnitPriceField =
+        (typeof field.key === "string" &&
+          field.key.toLowerCase().includes("unit_price")) ||
+        (!isEnglish && displayName === "견적가(원)");
+
+      if (priceReferenceInsertIndex === null && isUnitPriceField) {
+        priceReferenceInsertIndex = data.length;
+      }
       // }
     });
+
+    if (priceReferenceInsertIndex !== null) {
+      data.splice(priceReferenceInsertIndex + 1, 0, priceReferenceRow);
+    }
   }
 
   // 3. search_criteria 동적 추가
@@ -1840,6 +1852,9 @@ const openDetailPanel = async (item: MachineItem) => {
   // 원본 데이터 백업 (깊은 복사)
   originalItemData.value = JSON.parse(JSON.stringify(item));
   detailItemData.value = item;
+  detailPriceReference.value = getLatestPriceReference(
+    item.equipment_price_history
+  );
   isDetailPanelOpen.value = true;
   isDetailEditMode.value = false;
 
@@ -1877,6 +1892,7 @@ const closeDetailPanel = () => {
   detailItemData.value = null;
   originalItemData.value = null;
   isDetailEditMode.value = false;
+  detailPriceReference.value = "";
 
   // 썸네일 이미지 URL 및 로딩 상태 초기화
   thumbnailImageUrl.value = "";
@@ -1891,20 +1907,16 @@ const toggleEditMode = () => {
       equipmentCode: detailItemData.value.equipment_code || "",
       vendor_id: detailItemData.value.vendor_id || "",
       modelNumber: detailItemData.value.model_number || "",
-      model3dFile: "",
-      revitFile: "",
-      symbolFile: "",
-      thumbnailFile: "",
       is_active: detailItemData.value.is_active || true,
       description: detailItemData.value.description || "",
       output_values: {},
       search_criteria: {},
       specifications: {},
+      price_reference: detailPriceReference.value || "",
     };
 
     // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
     const item = detailItemData.value;
-
     if (item.output_values) {
       Object.entries(item.output_values).forEach(
         ([key, field]: [string, any]) => {
@@ -1940,6 +1952,9 @@ const cancelEditMode = () => {
   if (originalItemData.value && detailItemData.value) {
     // 원본 데이터로 복원 (깊은 복사)
     detailItemData.value = JSON.parse(JSON.stringify(originalItemData.value));
+    detailPriceReference.value = getLatestPriceReference(
+      originalItemData.value.equipment_price_history
+    );
 
     // 썸네일 이미지 URL도 복원
     const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
@@ -1956,22 +1971,13 @@ const cancelEditMode = () => {
     equipmentCode: "",
     vendor_id: "",
     modelNumber: "",
-    model3dFile: "",
-    revitFile: "",
-    symbolFile: "",
-    thumbnailFile: "",
     is_active: true,
     description: "",
     output_values: {},
     search_criteria: {},
     specifications: {},
+    price_reference: "",
   };
-
-  // 선택된 파일 객체 초기화
-  selected3dFile.value = null;
-  selectedRevitFile.value = null;
-  selectedSymbolFile.value = null;
-  selectedThumbnailFile.value = null;
 
   isDetailEditMode.value = false;
 };
@@ -1987,6 +1993,9 @@ const saveDetailChanges = async () => {
 
   try {
     const item = detailItemData.value;
+    const priceReferenceValue = editData.value.price_reference
+      ? editData.value.price_reference.trim()
+      : "";
 
     // 업데이트 파라미터 준비 (Machine.vue와 동일한 형식)
     const updateParams: any = {
@@ -2017,23 +2026,6 @@ const saveDetailChanges = async () => {
 
     console.log("업데이트 파라미터:", updateParams);
 
-    // 새로 추가된 파일들 확인 (저장된 File 객체 사용)
-    if (selected3dFile.value) {
-      updateParams.dtd_model_file = selected3dFile.value;
-    }
-    if (selectedThumbnailFile.value) {
-      updateParams.thumbnail_file = selectedThumbnailFile.value;
-    }
-    if (selectedRevitFile.value) {
-      updateParams.revit_model_file = selectedRevitFile.value;
-    }
-    if (selectedSymbolFile.value) {
-      updateParams.symbol_file = selectedSymbolFile.value;
-    }
-
-    console.log("최종 업데이트 파라미터 (파일 포함):", updateParams);
-
-    // API 호출
     const response = await electricalStore.updateElectrical(
       item.equipment_id,
       updateParams
@@ -2045,6 +2037,8 @@ const saveDetailChanges = async () => {
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
+
+      const createdPriceHistoryEntries: PriceHistoryItem[] = [];
 
       // output_values의 변경된 항목만 로그 출력 및 가격 이력 생성
       if (originalItemData.value && originalItemData.value.output_values) {
@@ -2080,6 +2074,24 @@ const saveDetailChanges = async () => {
                   (currentField as any)?.unit_symbol ||
                   (originalField as any)?.unit_symbol,
                 price_value: currentValue,
+                price_reference: priceReferenceValue || undefined,
+              });
+
+              createdPriceHistoryEntries.push({
+                price_value:
+                  typeof currentValue === "number"
+                    ? currentValue
+                    : Number(currentValue) || 0,
+                price_date: new Date().toISOString(),
+                price_type:
+                  (currentField as any)?.key?.toUpperCase() ||
+                  (originalField as any)?.key?.toUpperCase() ||
+                  "",
+                price_unit_code:
+                  (currentField as any)?.unit_code ||
+                  (originalField as any)?.unit_code ||
+                  "",
+                price_reference: priceReferenceValue || "",
               });
             } catch (error) {
               console.error(`가격 이력 생성 실패 (${key}):`, error);
@@ -2088,22 +2100,45 @@ const saveDetailChanges = async () => {
         }
       }
       
-      // 선택된 파일 객체 초기화
-      selected3dFile.value = null;
-      selectedRevitFile.value = null;
-      selectedSymbolFile.value = null;
-      selectedThumbnailFile.value = null;
-      
       // 응답에 오류 메시지가 있는 경우 경고 표시
       const errorMessage = response?.message || response?.response?.message;
       if (errorMessage && errorMessage.trim() !== "") {
-        alert(`경고: ${errorMessage}`);
+        alert(errorMessage);
       } else {
         alert(t("messages.success.saved"));
       }
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
       await loadData();
+      if (createdPriceHistoryEntries.length > 0) {
+        const refreshedItem = machineList.value.find(
+          (machine) => machine.equipment_id === item.equipment_id
+        );
+
+        if (refreshedItem) {
+          detailItemData.value = refreshedItem;
+          originalItemData.value = JSON.parse(JSON.stringify(refreshedItem));
+          detailPriceReference.value = getLatestPriceReference(
+            refreshedItem.equipment_price_history
+          );
+        } else if (detailItemData.value) {
+          detailItemData.value.equipment_price_history =
+            detailItemData.value.equipment_price_history || [];
+
+          createdPriceHistoryEntries.forEach((entry) => {
+            detailItemData.value!.equipment_price_history!.push(entry);
+          });
+
+          detailPriceReference.value =
+            createdPriceHistoryEntries[
+              createdPriceHistoryEntries.length - 1
+            ].price_reference;
+        }
+      } else {
+        detailPriceReference.value = priceReferenceValue;
+        editData.value.price_reference = priceReferenceValue;
+      }
+      editData.value.price_reference = priceReferenceValue;
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
     }
@@ -2113,91 +2148,7 @@ const saveDetailChanges = async () => {
   }
 };
 
-// 파일 첨부 관련 함수들
-
-const handleFileSelect = (type: string, event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (file) {
-    // 파일 확장자 validation
-    const allowedExtensions = {
-      "3d": [".dtdx"],
-      revit: [".rfa"],
-      symbol: [".svg"],
-      thumbnail: [".jpg", ".jpeg", ".png", ".gif"],
-    };
-
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
-    const allowedExts =
-      allowedExtensions[type as keyof typeof allowedExtensions];
-
-    if (!allowedExts.includes(fileExtension)) {
-      alert(
-        `허용되지 않는 파일 형식입니다.\n허용된 확장자: ${allowedExts.join(
-          ", "
-        )}`
-      );
-      // 파일 input 초기화
-      target.value = "";
-      return;
-    }
-
-    switch (type) {
-      case "3d":
-        editData.value.model3dFile = file.name;
-        selected3dFile.value = file; // 파일 객체 저장
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).model_file_info) {
-            (detailItemData.value as any).model_file_info = {};
-          }
-          (detailItemData.value as any).model_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "revit":
-        editData.value.revitFile = file.name;
-        selectedRevitFile.value = file; // 파일 객체 저장
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).rfa_file_info) {
-            (detailItemData.value as any).rfa_file_info = {};
-          }
-          (detailItemData.value as any).rfa_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "symbol":
-        editData.value.symbolFile = file.name;
-        selectedSymbolFile.value = file; // 파일 객체 저장
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).symbol_file_info) {
-            (detailItemData.value as any).symbol_file_info = {};
-          }
-          (detailItemData.value as any).symbol_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "thumbnail":
-        editData.value.thumbnailFile = file.name;
-        selectedThumbnailFile.value = file; // 파일 객체 저장
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).thumbnail_file_info) {
-            (detailItemData.value as any).thumbnail_file_info = {};
-          }
-          (detailItemData.value as any).thumbnail_file_info.original_filename =
-            file.name;
-        }
-        break;
-    }
-    console.log(`${type} 파일 선택됨:`, file.name);
-  }
-};
+// 파일 업로드 관련 기능 제거됨
 
 // 그리드에서 필드 변경 처리
 const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
@@ -2273,6 +2224,12 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       detailItemData.value.description = String(value);
     }
     console.log("description 업데이트:", value);
+  }
+  else if (fieldName === (isEnglish ? "Unit Price Source" : "단가 출처")) {
+    const strValue = String(value);
+    editData.value.price_reference = strValue;
+    detailPriceReference.value = strValue;
+    console.log("price_reference 업데이트:", strValue);
   }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
   else {
@@ -2363,146 +2320,7 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
   }
 };
 
-// 파일 input refs
-const file3d = ref<HTMLInputElement>();
-const fileRevit = ref<HTMLInputElement>();
-const fileSymbol = ref<HTMLInputElement>();
-const fileThumbnail = ref<HTMLInputElement>();
-
-// 선택된 파일 객체 저장 (저장 시 사용)
-const selected3dFile = ref<File | null>(null);
-const selectedRevitFile = ref<File | null>(null);
-const selectedSymbolFile = ref<File | null>(null);
-const selectedThumbnailFile = ref<File | null>(null);
-
-// 그리드에서 파일 첨부 처리
-const handleFileAttach = (fieldName: string) => {
-  console.log(`파일 첨부 요청: ${fieldName}`);
-
-  switch (fieldName) {
-    case "3D":
-      if (file3d.value) {
-        file3d.value.click();
-      }
-      break;
-    case "Revit":
-      if (fileRevit.value) {
-        fileRevit.value.click();
-      }
-      break;
-    case t("common.symbol"):
-      if (fileSymbol.value) {
-        fileSymbol.value.click();
-      }
-      break;
-    case t("common.thumbnail"):
-      if (fileThumbnail.value) {
-        fileThumbnail.value.click();
-      }
-      break;
-    default:
-      console.error(`지원하지 않는 필드명: ${fieldName}`);
-  }
-};
-
-// 그리드에서 파일 첨부 취소 처리
-const handleFileRemove = (fieldName: string) => {
-  console.log(`파일 첨부 취소 요청: ${fieldName}`);
-
-  switch (fieldName) {
-    case "3D":
-      editData.value.model3dFile = "";
-      selected3dFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).model_file_info = null;
-      }
-      // 파일 input 초기화
-      if (file3d.value) {
-        file3d.value.value = "";
-      }
-      break;
-    case "Revit":
-      editData.value.revitFile = "";
-      selectedRevitFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).rfa_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileRevit.value) {
-        fileRevit.value.value = "";
-      }
-      break;
-    case t("common.symbol"):
-      editData.value.symbolFile = "";
-      selectedSymbolFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).symbol_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileSymbol.value) {
-        fileSymbol.value.value = "";
-      }
-      break;
-    case t("common.thumbnail"):
-      editData.value.thumbnailFile = "";
-      selectedThumbnailFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).thumbnail_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileThumbnail.value) {
-        fileThumbnail.value.value = "";
-      }
-      break;
-    default:
-      console.error(`지원하지 않는 필드명: ${fieldName}`);
-  }
-};
-
-// 파일 다운로드 핸들러
-const handleFileDownload = (fieldName: string) => {
-  console.log(`파일 다운로드 요청: ${fieldName}`);
-
-  if (!detailItemData.value) return;
-
-  const item = detailItemData.value;
-  let fileInfo = null;
-
-  // 필드명에 따라 파일 정보 가져오기
-  switch (fieldName) {
-    case "3D":
-      fileInfo = (item as any).model_file_info;
-      break;
-    case t("common.thumbnail"):
-      fileInfo = (item as any).thumbnail_file_info;
-      break;
-    case "Revit":
-      fileInfo = (item as any).rfa_file_info;
-      break;
-    case t("common.symbol"):
-      fileInfo = (item as any).symbol_file_info;
-      break;
-  }
-
-  // download_url이 있으면 다운로드
-  if (fileInfo?.download_url) {
-    const downloadUrl = fileInfo.download_url;
-
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = fileInfo.original_filename || "download";
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } else {
-    alert(t("messages.warning.noFileToDownload"));
-  }
-};
+// 파일 업로드 관련 기능 제거됨
 
 // 데이터 로드 함수
 // 데이터 로드 (RoleManagement.vue 패턴 적용)

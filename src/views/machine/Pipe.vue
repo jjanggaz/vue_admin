@@ -2374,7 +2374,7 @@ const saveDetailChanges = async () => {
       // 응답에 오류 메시지가 있는 경우 경고 표시
       const errorMessage = response?.message || response?.response?.message;
       if (errorMessage && errorMessage.trim() !== "") {
-        alert(`경고: ${errorMessage}`);
+        alert(errorMessage);
       } else {
         alert(t("messages.success.saved"));
       }

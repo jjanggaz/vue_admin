@@ -1432,44 +1432,6 @@ const handleEdit = () => {
   justify-content: flex-end;
 }
 
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &.btn-secondary {
-    background-color: #6b7280;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: #4b5563;
-    }
-
-    &:disabled {
-      background-color: #9ca3af;
-      cursor: not-allowed;
-    }
-  }
-
-  &.btn-primary {
-    background-color: #3b82f6;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: #2563eb;
-    }
-
-    &:disabled {
-      background-color: #9ca3af;
-      cursor: not-allowed;
-    }
-  }
-}
-
 .pagination-container {
   display: flex;
   justify-content: center;

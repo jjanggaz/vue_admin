@@ -476,7 +476,7 @@
     "detailCondition": "상세조건",
     "selectColumn": "선택",
     "selected": "선택됨",
-    "logout": "로그아웃",
+    "logout": "LOGOUT",
     "user": "사용자",
     "detailInfo": "상세정보",
     "view": "보기",
@@ -1152,7 +1152,7 @@
     "project": {
       "project": "프로젝트",
       "approvalPending": "승인대기",
-      "recommendedProject": "추천 프로젝트"
+      "recommendedProject": "항목관리"
     },
     "machine": {
       "structure": "구조물",

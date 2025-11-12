@@ -69,17 +69,17 @@ const changeLabel = computed(() => {
     font-size: 24px;
     color: white;
 
-    &.icon-increase {
-      background: linear-gradient(135deg, #10b981, #059669);
-    }
+    // &.icon-increase {
+    //   background: linear-gradient(135deg, #10b981, #059669);
+    // }
 
-    &.icon-decrease {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-    }
+    // &.icon-decrease {
+    //   background: linear-gradient(135deg, #ef4444, #dc2626);
+    // }
 
-    &.icon-neutral {
-      background: linear-gradient(135deg, #6b7280, #4b5563);
-    }
+    // &.icon-neutral {
+    //   background: linear-gradient(135deg, #6b7280, #4b5563);
+    // }
   }
 
   .card-content {

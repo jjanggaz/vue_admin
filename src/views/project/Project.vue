@@ -24,7 +24,7 @@
             class="blink-alert"
             @click="goToApprovalPending"
           >
-            총 32개 프로젝트 중 1-3
+            승인요청이 있습니다
           </span>
         </div>
       </div>
@@ -53,6 +53,13 @@
     </DataTable>
     <!-- 페이징 -->
     <div class="pagination-container">
+      <div class="total-count">
+        {{
+          t("common.totalCount", {
+            count: projectStore.totalCount || 0,
+          })
+        }}
+      </div>
       <Pagination
         :current-page="currentPage"
         :total-pages="totalPages"
@@ -147,13 +154,13 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "contact_person",
-    title: "설계담당자",
+    title: "설계 담당자",
     width: "120px",
     sortable: false,
   },
   {
     key: "unit_system",
-    title: "유입종류",
+    title: "단위",
     width: "100px",
     sortable: false,
   },
@@ -165,7 +172,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "solution",
-    title: "적용 공정",
+    title: "솔루션",
     width: "120px",
     sortable: false,
   },

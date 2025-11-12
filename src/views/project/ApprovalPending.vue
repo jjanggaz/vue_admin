@@ -239,58 +239,15 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .project-management {
-  padding: $spacing-lg;
+  padding: $spacing-xxl $spacing-lg 0;
 }
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.search-bar {
-  display: flex;
-  align-items: center;
-}
+
 .group-form {
-  display: flex;
-  align-items: center;
-  margin-right: 1rem;
-}
-.label-search {
-  margin-right: 0.5rem;
-}
-.form-item {
-  margin-right: 0.5rem;
-}
-.btn-search {
-  margin-left: 0.5rem;
-}
-.blink-alert {
-  margin-left: 0.5rem;
-  color: #e74c3c;
-  font-size: $font-size-sm;
-  font-weight: 700;
-  animation: blink 1s step-start infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 1rem;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 1rem;
-    font-size: 0.9rem;
-    color: $text-color;
-    font-weight: 500;
+  .form-item {
+    input {
+      width: 240px;
+      height:40px;
+    }
   }
 }
 </style>

@@ -235,7 +235,7 @@ const currentPageTitle = computed<string>(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 $spacing-xxl;
-  gap: 60px;
+  gap: 56px;
 }
 
 .page-title-section {

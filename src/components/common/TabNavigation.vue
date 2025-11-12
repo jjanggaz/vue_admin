@@ -77,8 +77,10 @@ const handleTabClick = (tab: TabItem) => {
 
   .tab-item {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: $spacing-xs;
+    min-width: 140px;
     padding: $spacing-md $spacing-lg;
     text-decoration: none;
     color: $text-light;

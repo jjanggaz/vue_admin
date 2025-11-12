@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <!-- 자동새로고침 스위치 -->
-    <div class="auto-refresh-section">
+    <!-- <div class="auto-refresh-section">
       <div class="auto-refresh-label">
         <span class="auto-refresh-text">자동 새로고침</span>
         <button
@@ -15,7 +15,7 @@
           <span class="toggle-slider"></span>
         </button>
       </div>
-    </div>
+    </div> -->
 
     <!-- 통계 요약 카드들 -->
     <div class="stats-grid">
@@ -40,7 +40,7 @@
         icon="fas fa-clock"
       />
       <StatsSummaryCard
-        title="승인 대기"
+        title="완료된 프로세스"
         :value="
           dashboardStore.dashboardData?.data?.approvalStats?.pending?.toString() ||
           '0'
@@ -50,7 +50,7 @@
         icon="fas fa-clock"
       />
       <StatsSummaryCard
-        title="승인 완료"
+        title="진행중 프로세스"
         :value="
           dashboardStore.dashboardData?.data?.approvalStats?.approved?.toString() ||
           '0'
@@ -213,52 +213,52 @@ import CategoryChart from "@/components/dashboard/CategoryChart.vue";
 const dashboardStore = useDashboardStore();
 
 // 자동새로고침 관련 상태
-const autoRefreshEnabled = ref(false);
-let autoRefreshInterval: number | null = null;
+// const autoRefreshEnabled = ref(false);
+// let autoRefreshInterval: number | null = null;
 
-// 자동새로고침 토글
-const toggleAutoRefresh = () => {
-  autoRefreshEnabled.value = !autoRefreshEnabled.value;
+// // 자동새로고침 토글
+// const toggleAutoRefresh = () => {
+//   autoRefreshEnabled.value = !autoRefreshEnabled.value;
 
-  if (autoRefreshEnabled.value) {
-    startAutoRefresh();
-  } else {
-    stopAutoRefresh();
-  }
-};
+//   if (autoRefreshEnabled.value) {
+//     startAutoRefresh();
+//   } else {
+//     stopAutoRefresh();
+//   }
+// };
 
-// 자동새로고침 시작
-const startAutoRefresh = () => {
-  stopAutoRefresh(); // 기존 타이머 정리
-  autoRefreshInterval = setInterval(async () => {
-    await dashboardStore.fetchDashboardData();
-  }, 5000); // 5초마다
-};
+// // 자동새로고침 시작
+// const startAutoRefresh = () => {
+//   stopAutoRefresh(); // 기존 타이머 정리
+//   autoRefreshInterval = setInterval(async () => {
+//     await dashboardStore.fetchDashboardData();
+//   }, 5000); // 5초마다
+// };
 
-// 자동새로고침 중지
-const stopAutoRefresh = () => {
-  if (autoRefreshInterval) {
-    clearInterval(autoRefreshInterval);
-    autoRefreshInterval = null;
-  }
-};
+// // 자동새로고침 중지
+// const stopAutoRefresh = () => {
+//   if (autoRefreshInterval) {
+//     clearInterval(autoRefreshInterval);
+//     autoRefreshInterval = null;
+//   }
+// };
 
-onMounted(async () => {
-  // 대시보드 진입 시 한 번만 새로고침
-  const hasReloaded = sessionStorage.getItem("dashboardReloaded");
-  if (!hasReloaded) {
-    sessionStorage.setItem("dashboardReloaded", "true");
-    window.location.reload();
-    return;
-  }
+// onMounted(async () => {
+//   // 대시보드 진입 시 한 번만 새로고침
+//   const hasReloaded = sessionStorage.getItem("dashboardReloaded");
+//   if (!hasReloaded) {
+//     sessionStorage.setItem("dashboardReloaded", "true");
+//     window.location.reload();
+//     return;
+//   }
 
-  await dashboardStore.fetchDashboardData();
-});
+//   await dashboardStore.fetchDashboardData();
+// });
 
-// 컴포넌트 언마운트 시 자동새로고침 중지
-onUnmounted(() => {
-  stopAutoRefresh();
-});
+// // 컴포넌트 언마운트 시 자동새로고침 중지
+// onUnmounted(() => {
+//   stopAutoRefresh();
+// });
 </script>
 
 <style scoped lang="scss">

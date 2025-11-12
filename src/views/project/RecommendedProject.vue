@@ -162,49 +162,18 @@ const handlePageChange = (page: number) => {
 
 <style scoped lang="scss">
 .project-management {
-  padding: $spacing-lg;
+  padding: $spacing-xxl $spacing-lg 0;
 }
-.action-bar {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.search-bar {
-  display: flex;
-  align-items: center;
-}
+
 .group-form {
-  display: flex;
-  align-items: center;
-  margin-right: 1rem;
+  .form-item {
+    input {
+      width: 240px;
+      height:40px;
+    }
+  }
 }
-.label-search {
-  margin-right: 0.5rem;
-}
-.form-item {
-  margin-right: 0.5rem;
-}
-.search-input {
-  max-width: 320px;
-}
-.action-bar {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 0.5rem;
-}
-.btn-delete {
-  background: #3a3d4b;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1.2rem;
-  font-size: 1rem;
-  cursor: pointer;
-}
-.btn-search {
-  margin-left: 0.5rem;
-}
+
 .input-cell {
   width: 100%;
   padding: 0.5rem;
@@ -219,21 +188,5 @@ const handlePageChange = (page: number) => {
   height: 32px;
   font-size: 1.1rem;
   cursor: pointer;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 1rem;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 1rem;
-    font-size: 0.9rem;
-    color: $text-color;
-    font-weight: 500;
-  }
 }
 </style>

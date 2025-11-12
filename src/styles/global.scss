@@ -229,6 +229,14 @@ body {
   padding: 0 1rem;
   position: relative;
   margin-top: 20px;
+
+  .total-count {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.9rem;
+    color: $text-color;
+    font-weight: 500;
+  }
 }
 
 // Responsive utilities
@@ -300,10 +308,11 @@ body {
 // blink alert
 .blink-alert {
   margin-left: 30px;
-  color: $text-light;
+  color: #e74c3c;
   font-size: $font-size-sm;
   font-weight: $font-weight-md;
   cursor: pointer;
+  animation: blink 1s step-start infinite;
 }
 @keyframes blink {
   50% {

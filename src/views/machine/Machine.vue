@@ -1009,6 +1009,7 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
+    const providerLabel = t("common.provider");
     Object.entries(item.output_values).forEach(
       ([key, field]: [string, any]) => {
         // 수정 모드이거나 값이 있는 경우 표시
@@ -1054,6 +1055,27 @@ const specVerticalData = computed(() => {
           //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
           isChanged: isChanged, // 변경 여부 추가
+        });
+
+        const providerColumnName = `${
+          isEnglish ? field.key || "-" : field.name_kr || "-"
+        } (${providerLabel})`;
+        const providerDisplayValue = isDetailEditMode.value
+          ? editData.value.output_values?.[key]?.price_reference ??
+            field.price_reference ??
+            ""
+          : field.price_reference || "-";
+
+        data.push({
+          columnName: providerColumnName,
+          value: providerDisplayValue,
+          editable: isDetailEditMode.value && isChanged,
+          fieldType: "input",
+          originalType: "string",
+          isChanged:
+            isDetailEditMode.value &&
+            originalItemData.value?.output_values?.[key]?.price_reference !==
+              providerDisplayValue,
         });
         // }
       }
@@ -1475,6 +1497,10 @@ const saveDetailChanges = async () => {
                   (currentField as any)?.unit_symbol ||
                   (originalField as any)?.unit_symbol,
                 price_value: currentValue,
+                price_reference:
+                  (currentField as any)?.price_reference ??
+                  (originalField as any)?.price_reference ??
+                  "",
               });
             } catch (error) {
               console.error(`가격 이력 생성 실패 (${key}):`, error);
@@ -1596,8 +1622,32 @@ const handleFieldChange = (fieldName: string, value: string) => {
     const item = detailItemData.value;
     if (!item) return;
 
+    const providerSuffix = ` (${t("common.provider")})`;
+
     // output_values에서 찾기
     if (item.output_values) {
+      if (fieldName.endsWith(providerSuffix)) {
+        const baseFieldName = fieldName.slice(
+          0,
+          fieldName.length - providerSuffix.length
+        );
+        const providerField = Object.entries(item.output_values).find(
+          ([_, field]: [string, any]) => {
+            const displayName = isEnglish ? field.key : field.name_kr;
+            return displayName === baseFieldName;
+          }
+        );
+        if (providerField) {
+          const [key] = providerField;
+          if (editData.value.output_values[key]) {
+            editData.value.output_values[key].price_reference = value?.trim?.()
+              ? value.trim()
+              : value;
+          }
+          return;
+        }
+      }
+
       const outputField = Object.entries(item.output_values).find(
         ([_, field]: [string, any]) => {
           const displayName = isEnglish ? field.key : field.name_kr;

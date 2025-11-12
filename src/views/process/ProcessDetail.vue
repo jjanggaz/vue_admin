@@ -1787,10 +1787,50 @@ const handleUnitChange = () => {
   // 단위 변경 시 필요한 로직 추가
 };
 
+// 파일명 검증 함수
+const validateFileName = (fileName: string): { valid: boolean; message?: string } => {
+  // 확장자 분리
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return { valid: false, message: "파일명에 확장자가 필요합니다." };
+  }
+  
+  const nameWithoutExtension = fileName.substring(0, lastDotIndex);
+  const extension = fileName.substring(lastDotIndex);
+  
+  // 파일명 길이 검증 (확장자 제외)
+  if (nameWithoutExtension.length === 0) {
+    return { valid: false, message: "파일명을 입력해주세요." };
+  }
+  
+  if (nameWithoutExtension.length > 100) {
+    return { valid: false, message: "파일명은 100자 이내로 입력해주세요." };
+  }
+  
+  // 영문, 숫자, 특수기호(_ - ())만 허용, 공백 불가
+  const validPattern = /^[a-zA-Z0-9_\-()]+$/;
+  if (!validPattern.test(nameWithoutExtension)) {
+    return {
+      valid: false,
+      message: "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
+    };
+  }
+  
+  return { valid: true };
+};
+
 const handleFileChange = async (key: string, event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
+
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
 
     if (key === "processSymbol") {
       const success = processStore.handleProcessSymbolFileChange(file);
@@ -2001,12 +2041,31 @@ const handleFormulaFilesSelected = (event: Event) => {
   if (target.files) {
     const fileArray = Array.from(target.files);
 
+    // 파일명 검증
+    const invalidFiles: string[] = [];
+    const validFiles = fileArray.filter((file) => {
+      const validation = validateFileName(file.name);
+      if (!validation.valid) {
+        invalidFiles.push(`${file.name}: ${validation.message}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (invalidFiles.length > 0) {
+      alert(
+        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFiles.join("\n")}`
+      );
+      target.value = "";
+      return;
+    }
+
     // Python 파일만 필터링
-    const formulaFiles = fileArray.filter((file) =>
+    const formulaFiles = validFiles.filter((file) =>
       file.name.toLowerCase().endsWith(".py")
     );
 
-    const unsupportedFiles = fileArray.filter(
+    const unsupportedFiles = validFiles.filter(
       (file) => !file.name.toLowerCase().endsWith(".py")
     );
 
@@ -2027,8 +2086,27 @@ const handlePfdFilesSelected = (event: Event) => {
   if (target.files) {
     const fileArray = Array.from(target.files);
 
+    // 파일명 검증
+    const invalidFiles: string[] = [];
+    const validFiles = fileArray.filter((file) => {
+      const validation = validateFileName(file.name);
+      if (!validation.valid) {
+        invalidFiles.push(`${file.name}: ${validation.message}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (invalidFiles.length > 0) {
+      alert(
+        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFiles.join("\n")}`
+      );
+      target.value = "";
+      return;
+    }
+
     // 공정카드 관련 파일만 필터링
-    const pfdFiles = fileArray.filter((file) => {
+    const pfdFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
       return (
         fileName.endsWith(".dwg") ||
@@ -2039,7 +2117,7 @@ const handlePfdFilesSelected = (event: Event) => {
       );
     });
 
-    const unsupportedFiles = fileArray.filter((file) => {
+    const unsupportedFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
       return (
         !fileName.endsWith(".dwg") &&
@@ -2067,6 +2145,15 @@ const handleCapacityCalculationFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
     const file = target.files[0];
+
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
+
     processStore.handleCapacityCalculationFileChange(file);
     // 파일 입력 초기화
     if (capacityCalculationFileInput.value) {
@@ -4978,6 +5065,14 @@ const handleSvgFileChange = (item: any, event: Event) => {
     const file = target.files[0];
     console.log("Svg 파일 선택됨:", file.name);
 
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
+
     // 공정카드 그리드에서 선택된 경우
     if (
       currentPfdItemForSvg.value &&
@@ -5019,6 +5114,14 @@ const handlePfdFileChange = (item: any, event: Event) => {
     const file = target.files[0];
     console.log("PFD 파일 선택됨:", file.name);
 
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
+
     // processStore.pfdList에서 해당 항목을 찾아서 업데이트
     const itemIndex = processStore.pfdList.findIndex(
       (pfdItem) => pfdItem.id === item.id
@@ -5057,6 +5160,14 @@ const handleFormulaFileChange = (item: any, event: Event) => {
   if (target.files && target.files[0]) {
     const file = target.files[0];
     console.log("계산식 파일 선택됨:", file.name);
+
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
 
     // .py 확장자 validation
     const allowedExtensions = [".py"];

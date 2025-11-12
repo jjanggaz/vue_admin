@@ -1740,8 +1740,46 @@ export const useProcessStore = defineStore("process", () => {
     }
   };
 
+  // 파일명 검증 함수
+  const validateFileName = (fileName: string): { valid: boolean; message?: string } => {
+    // 확장자 분리
+    const lastDotIndex = fileName.lastIndexOf(".");
+    if (lastDotIndex === -1) {
+      return { valid: false, message: "파일명에 확장자가 필요합니다." };
+    }
+    
+    const nameWithoutExtension = fileName.substring(0, lastDotIndex);
+    
+    // 파일명 길이 검증 (확장자 제외)
+    if (nameWithoutExtension.length === 0) {
+      return { valid: false, message: "파일명을 입력해주세요." };
+    }
+    
+    if (nameWithoutExtension.length > 100) {
+      return { valid: false, message: "파일명은 100자 이내로 입력해주세요." };
+    }
+    
+    // 영문, 숫자, 특수기호(_ - ())만 허용, 공백 불가
+    const validPattern = /^[a-zA-Z0-9_\-()]+$/;
+    if (!validPattern.test(nameWithoutExtension)) {
+      return {
+        valid: false,
+        message: "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
+      };
+    }
+    
+    return { valid: true };
+  };
+
   // 공정심볼 파일 선택 처리 함수
   const handleProcessSymbolFileChange = (file: File) => {
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      return false;
+    }
+
     // SVG 파일 검증
     if (!file.name.toLowerCase().endsWith(".svg")) {
       alert("SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.");
@@ -1809,6 +1847,15 @@ export const useProcessStore = defineStore("process", () => {
   // 용량계산서 파일 선택 핸들러
   const handleCapacityCalculationFileChange = (file: File | null) => {
     if (!file) {
+      capacityCalculationFile.value = null;
+      capacityCalculationFileName.value = "";
+      return;
+    }
+
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
       capacityCalculationFile.value = null;
       capacityCalculationFileName.value = "";
       return;

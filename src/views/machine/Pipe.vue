@@ -673,7 +673,7 @@
                   {{ item.price_unit_code || "-" }}
                 </template>
 
-                <!-- 제공처 슬롯 -->
+                <!-- 단가 출처 슬롯 -->
                 <template #cell-price_reference="{ item }">
                   {{ item.price_reference || "-" }}
                 </template>
@@ -1051,7 +1051,7 @@ const priceHistoryColumns: TableColumn[] = [
   },
   {
     key: "price_reference",
-    title: t("common.provider"),
+    title: "단가 출처",
     width: "100px",
     sortable: false,
   },
@@ -1070,6 +1070,7 @@ const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
 const isThumbnailLoading = ref(false);
+const detailPriceReference = ref<string>("");
 
 // 등록 팝업 관련 변수들
 const registerIsRegistered = ref(false);
@@ -1368,6 +1369,7 @@ const editData = ref<{
   output_values: Record<string, any>;
   search_criteria: Record<string, any>;
   specifications: Record<string, any>;
+  price_reference: string;
 }>({
   equipmentType: "",
   equipmentCode: "",
@@ -1382,6 +1384,7 @@ const editData = ref<{
   output_values: {},
   search_criteria: {},
   specifications: {},
+  price_reference: "",
 });
 
 // 원본 데이터 백업 (취소 시 복원용)
@@ -1389,6 +1392,29 @@ const originalItemData = ref<MachineItem | null>(null);
 
 // 콤보박스 옵션들 (API로부터 동적 로드)
 const manufacturers = ref<Array<{ value: string; label: string }>>([]);
+
+const getLatestPriceReference = (history?: PriceHistoryItem[]) => {
+  if (!history || history.length === 0) {
+    return "";
+  }
+
+  const parseTime = (value?: string) => {
+    if (!value) {
+      return Number.NEGATIVE_INFINITY;
+    }
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
+  };
+
+  return history.reduce((latest, current) => {
+    if (!latest) {
+      return current;
+    }
+    return parseTime(current.price_date) > parseTime(latest.price_date)
+      ? current
+      : latest;
+  }).price_reference || "";
+};
 
 // VerticalDataTable용 사양 데이터 - 동적 생성
 const specVerticalData = computed(() => {
@@ -1427,6 +1453,18 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
+    const priceReferenceLabel = isEnglish ? "Unit Price Source" : "단가 출처";
+    let priceReferenceInsertIndex: number | null = null;
+    const priceReferenceRow = {
+      columnName: priceReferenceLabel,
+      value: isDetailEditMode.value
+        ? editData.value.price_reference || ""
+        : detailPriceReference.value || "-",
+      editable: true,
+      fieldType: "input",
+      originalType: "string",
+    };
+
     Object.values(item.output_values).forEach((field: any) => {
       // 수정 모드이거나 값이 있는 경우 표시
       // if (
@@ -1435,6 +1473,7 @@ const specVerticalData = computed(() => {
       //     field.value !== undefined &&
       //     field.value !== "")
       // ) {
+      const displayName = isEnglish ? field.key || "-" : field.name_kr || "-";
       data.push({
         columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
         value: isDetailEditMode.value
@@ -1446,8 +1485,20 @@ const specVerticalData = computed(() => {
         fieldType: typeof field.value === "number" ? "number" : "input",
         originalType: typeof field.value,
       });
+      const isUnitPriceField =
+        (typeof field.key === "string" &&
+          field.key.toLowerCase().includes("unit_price")) ||
+        (!isEnglish && displayName === "견적가(원)");
+
+      if (priceReferenceInsertIndex === null && isUnitPriceField) {
+        priceReferenceInsertIndex = data.length;
+      }
       // }
     });
+
+    if (priceReferenceInsertIndex !== null) {
+      data.splice(priceReferenceInsertIndex + 1, 0, priceReferenceRow);
+    }
   }
 
   // 3. search_criteria 동적 추가
@@ -2034,6 +2085,9 @@ const openDetailPanel = async (item: MachineItem) => {
   // 원본 데이터 백업 (깊은 복사)
   originalItemData.value = JSON.parse(JSON.stringify(item));
   detailItemData.value = item;
+  detailPriceReference.value = getLatestPriceReference(
+    item.equipment_price_history
+  );
   isDetailPanelOpen.value = true;
   isDetailEditMode.value = false;
 
@@ -2071,6 +2125,7 @@ const closeDetailPanel = () => {
   detailItemData.value = null;
   originalItemData.value = null;
   isDetailEditMode.value = false;
+  detailPriceReference.value = "";
 
   // 썸네일 이미지 URL 및 로딩 상태 초기화
   thumbnailImageUrl.value = "";
@@ -2094,6 +2149,7 @@ const toggleEditMode = () => {
       output_values: {},
       search_criteria: {},
       specifications: {},
+      price_reference: detailPriceReference.value || "",
     };
 
     // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
@@ -2134,6 +2190,9 @@ const cancelEditMode = () => {
   if (originalItemData.value && detailItemData.value) {
     // 원본 데이터로 복원 (깊은 복사)
     detailItemData.value = JSON.parse(JSON.stringify(originalItemData.value));
+    detailPriceReference.value = getLatestPriceReference(
+      originalItemData.value.equipment_price_history
+    );
 
     // 썸네일 이미지 URL도 복원
     const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
@@ -2159,6 +2218,7 @@ const cancelEditMode = () => {
     output_values: {},
     search_criteria: {},
     specifications: {},
+    price_reference: "",
   };
 
   // 선택된 파일 객체 초기화
@@ -2181,6 +2241,9 @@ const saveDetailChanges = async () => {
 
   try {
     const item = detailItemData.value;
+    const priceReferenceValue = editData.value.price_reference
+      ? editData.value.price_reference.trim()
+      : "";
 
     // 업데이트 파라미터 준비 (Machine.vue와 동일한 형식)
     const updateParams: any = {
@@ -2240,6 +2303,8 @@ const saveDetailChanges = async () => {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
 
+      const createdPriceHistoryEntries: PriceHistoryItem[] = [];
+
       // output_values의 변경된 항목만 로그 출력 및 가격 이력 생성
       if (originalItemData.value && originalItemData.value.output_values) {
         for (const [key, originalField] of Object.entries(
@@ -2274,6 +2339,24 @@ const saveDetailChanges = async () => {
                   (currentField as any)?.unit_symbol ||
                   (originalField as any)?.unit_symbol,
                 price_value: currentValue,
+                price_reference: priceReferenceValue || undefined,
+              });
+
+              createdPriceHistoryEntries.push({
+                price_value:
+                  typeof currentValue === "number"
+                    ? currentValue
+                    : Number(currentValue) || 0,
+                price_date: new Date().toISOString(),
+                price_type:
+                  (currentField as any)?.key?.toUpperCase() ||
+                  (originalField as any)?.key?.toUpperCase() ||
+                  "",
+                price_unit_code:
+                  (currentField as any)?.unit_code ||
+                  (originalField as any)?.unit_code ||
+                  "",
+                price_reference: priceReferenceValue || "",
               });
             } catch (error) {
               console.error(`가격 이력 생성 실패 (${key}):`, error);
@@ -2298,6 +2381,34 @@ const saveDetailChanges = async () => {
 
       // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
       await loadData();
+      detailPriceReference.value = priceReferenceValue;
+      editData.value.price_reference = priceReferenceValue;
+
+      if (createdPriceHistoryEntries.length > 0) {
+        const refreshedItem = machineList.value.find(
+          (machine) => machine.equipment_id === item.equipment_id
+        );
+
+        if (refreshedItem) {
+          detailItemData.value = refreshedItem;
+          originalItemData.value = JSON.parse(JSON.stringify(refreshedItem));
+          detailPriceReference.value = getLatestPriceReference(
+            refreshedItem.equipment_price_history
+          );
+        } else if (detailItemData.value) {
+          detailItemData.value.equipment_price_history =
+            detailItemData.value.equipment_price_history || [];
+
+          createdPriceHistoryEntries.forEach((entry) => {
+            detailItemData.value!.equipment_price_history!.push(entry);
+          });
+
+          detailPriceReference.value =
+            createdPriceHistoryEntries[
+              createdPriceHistoryEntries.length - 1
+            ].price_reference;
+        }
+      }
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
     }
@@ -2467,6 +2578,12 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       detailItemData.value.description = String(value);
     }
     console.log("description 업데이트:", value);
+  }
+  else if (fieldName === (isEnglish ? "Unit Price Source" : "단가 출처")) {
+    const strValue = String(value);
+    editData.value.price_reference = strValue;
+    detailPriceReference.value = strValue;
+    console.log("price_reference 업데이트:", strValue);
   }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
   else {

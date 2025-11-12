@@ -665,7 +665,7 @@
                   {{ item.price_unit_code || "-" }}
                 </template>
 
-                <!-- 제공처 슬롯 -->
+                <!-- 단가 출처 슬롯 -->
                 <template #cell-price_reference="{ item }">
                   {{ item.price_reference || "-" }}
                 </template>
@@ -1016,7 +1016,7 @@ const priceHistoryColumns: TableColumn[] = [
   },
   {
     key: "price_reference",
-    title: t("common.provider"),
+    title: "단가 출처",
     width: "100px",
     sortable: false,
   },

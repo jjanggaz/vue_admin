@@ -2073,6 +2073,175 @@ const closeDetailPanel = () => {
   isThumbnailLoading.value = false;
 };
 
+const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
+  console.log(`필드 변경: ${fieldName} = ${value}`);
+
+  const isEnglish = locale.value === "en";
+
+  // editData에 반영
+  // 측정기코드 필드 확인 (columns.measurement.code)
+  if (fieldName === t("columns.measurement.code")) {
+    // 60바이트 제한 적용
+    const strValue = String(value);
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(strValue);
+    if (bytes.length > 60) {
+      // 60바이트를 초과하면 잘라냄
+      let truncated = "";
+      for (let i = 0; i < strValue.length; i++) {
+        const test = truncated + strValue[i];
+        if (encoder.encode(test).length > 60) {
+          break;
+        }
+        truncated = test;
+      }
+      editData.value.equipmentCode = truncated;
+      if (detailItemData.value) {
+        detailItemData.value.equipment_code = truncated;
+      }
+      alert("측정기코드는 최대 60바이트까지 입력 가능합니다.");
+    } else {
+      editData.value.equipmentCode = strValue;
+      if (detailItemData.value) {
+        detailItemData.value.equipment_code = strValue;
+      }
+    }
+  }
+  // 제조사 필드 확인 (columns.measurement.company)
+  else if (fieldName === t("columns.measurement.company")) {
+    editData.value.vendor_id = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.vendor_id = String(value);
+    }
+    console.log("vendor_id 업데이트:", value);
+  }
+  // 모델명 필드 확인 (columns.measurement.model)
+  else if (fieldName === t("columns.measurement.model")) {
+    editData.value.modelNumber = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.model_number = String(value);
+    }
+    console.log("modelNumber 업데이트:", value);
+  }
+  // 사용여부 필드 확인
+  else if (fieldName === (isEnglish ? "Usage Status" : "사용여부")) {
+    // value는 문자열이거나 실제 boolean 값일 수 있음
+    let boolValue = false;
+    if (typeof value === "boolean") {
+      boolValue = value;
+    } else {
+      const strValue = String(value);
+      boolValue = strValue === "true" || strValue === "사용" || strValue === "Used";
+    }
+    editData.value.is_active = boolValue;
+    if (detailItemData.value) {
+      detailItemData.value.is_active = boolValue;
+    }
+    console.log("is_active 업데이트:", boolValue);
+  }
+  // 장비설명 필드 확인
+  else if (fieldName === (isEnglish ? "Equipment Description" : "장비설명")) {
+    editData.value.description = String(value);
+    if (detailItemData.value) {
+      detailItemData.value.description = String(value);
+    }
+    console.log("description 업데이트:", value);
+  }
+  else if (fieldName === (isEnglish ? "Unit Price Source" : "단가 출처")) {
+    const strValue = String(value);
+    editData.value.price_reference = strValue;
+    detailPriceReference.value = strValue;
+    console.log("price_reference 업데이트:", strValue);
+  }
+  // 동적 필드 처리 (output_values, search_criteria, specifications)
+  else {
+    // detailItemData에서 해당 필드 찾기
+    const item = detailItemData.value;
+    if (!item) return;
+
+    // output_values에서 찾기
+    if (item.output_values) {
+      const outputField = Object.entries(item.output_values).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (outputField) {
+        const [key] = outputField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.output_values[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.output_values[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.output_values[key]) {
+            item.output_values[key].value = editData.value.output_values[key].value;
+          }
+        }
+        console.log(`output_values.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // search_criteria에서 찾기
+    if (item.search_criteria) {
+      const searchField = Object.entries(item.search_criteria).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (searchField) {
+        const [key] = searchField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.search_criteria[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.search_criteria[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.search_criteria[key]) {
+            item.search_criteria[key].value = editData.value.search_criteria[key].value;
+          }
+        }
+        console.log(`search_criteria.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+
+    // specifications에서 찾기
+    if (item.specifications) {
+      const specField = Object.entries(item.specifications).find(
+        ([_, field]: [string, any]) => {
+          const displayName = isEnglish ? field.key : field.name_kr;
+          return displayName === fieldName;
+        }
+      );
+      if (specField) {
+        const [key] = specField;
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.specifications[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.specifications[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.specifications[key]) {
+            item.specifications[key].value = editData.value.specifications[key].value;
+          }
+        }
+        console.log(`specifications.${key}.value 업데이트:`, value);
+        return;
+      }
+    }
+  }
+};
+
 const toggleEditMode = () => {
   if (!isDetailEditMode.value && detailItemData.value) {
     // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화

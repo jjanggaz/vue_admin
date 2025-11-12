@@ -94,7 +94,6 @@ dl.column-search {
     flex: 0 0 auto;
     font-size: 14px;
     color: #333;
-    margin-right: 8px;
     &.label-search {
       display: inline-block;
       width: 20px;
@@ -120,6 +119,11 @@ dl.column-search {
       font-size: 14px;
       box-sizing: border-box;
     }
+    &::placeholder {
+      color: #767676;
+      font-size: 15px;
+      font-weight: $font-weight-normal;
+    }
   }
 
   [class*="btn-"] {
@@ -131,7 +135,7 @@ dl.column-search {
     border-radius: $border-radius-sm;
     font-size: 14px;
     color: #ffffff;
-    background: $background-blue;
+    background: #222E77;
     cursor: pointer;
     transition: background-color 0.3s, border-color 0.3s;
 

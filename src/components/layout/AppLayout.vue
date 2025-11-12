@@ -26,12 +26,12 @@ import AppHeader from './AppHeader.vue'
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 250px; // Sidebar width
+  margin-left: 260px; // Sidebar width
 }
 
 .main-content {
   flex: 1;
-  padding: $spacing-lg;
+  padding: 16px 16px 40px;
   padding-top: 70px;
   background-color: $background-light;
   min-height: calc(100vh - 70px); // Header height

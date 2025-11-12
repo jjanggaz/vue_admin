@@ -13,10 +13,11 @@
 
       <!-- User Section -->
       <div class="user-section">
-        <span class="user-id">
+        <!-- <span class="user-id">
           {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
-        </span>
-        <Date />
+        </span> -->
+        <!-- <Date />  -->
+         <span class="user-id">idAdmin251111</span>
         <button class="logout-btn" @click="handleLogout">
           {{ t("common.logout") }}
         </button>
@@ -212,14 +213,19 @@ const currentPageTitle = computed<string>(() => {
 </script>
 
 <style scoped lang="scss">
+.user-id {
+  color: #333333;
+  font-size:$font-size-sm;
+}
+
 .app-header {
   position: fixed;
   top: 0;
-  left: 250px;
+  left: 260px;
   right: 0;
   height: 70px;
   background-color: $background-color;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid $border-form;
   z-index: 90;
 }
 
@@ -228,14 +234,14 @@ const currentPageTitle = computed<string>(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 $spacing-xl;
-  gap: $spacing-xl;
+  padding: 0 $spacing-xxl;
+  gap: 60px;
 }
 
 .page-title-section {
   .page-title {
     font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
+    font-weight: 600;
     color: $text-color;
     margin: 0;
     white-space: nowrap;
@@ -253,26 +259,26 @@ const currentPageTitle = computed<string>(() => {
     width: 100%;
 
     .tab-item {
-      height: 70px;
-      border-bottom: 3px solid transparent;
+      height: 69px;
+      border-bottom: 4px solid transparent;
       border-radius: 0;
-      padding: 0 $spacing-lg;
+      padding: 0 20px;
       font-size: $font-size-sm;
-      color: $text-light;
+      color: #555555;
 
       &:hover:not(.disabled) {
         background: $background-light;
       }
 
       &.active {
-        border-bottom-color: $primary-color;
+        border-bottom-color: $text-sky;
         background: transparent;
-        color: $primary-color;
-        font-weight: $font-weight-md;
+        color: #000000;
+        font-weight: 600;
       }
 
       &:not(.active) {
-        color: $text-light;
+        color: #555555;
         border-bottom-color: transparent;
       }
     }
@@ -282,20 +288,22 @@ const currentPageTitle = computed<string>(() => {
 .user-section {
   display: flex;
   align-items: center;
-  gap: $spacing-lg;
+  gap: 30px;
 
   .user-id {
-    color: $text-light;
+    // color: $text-light;
     font-size: $font-size-sm;
+    font-weight: 600;
   }
 
   .logout-btn {
     padding: $spacing-xs $spacing-md;
     background-color: transparent;
-    border: 1px solid $border-color;
+    border: 1px solid #333333;
     border-radius: $border-radius-sm;
-    color: $text-light;
-    font-size: $font-size-sm;
+    color: #333333;
+    font-weight: 600;
+    
     cursor: pointer;
     transition: $transition-base;
 

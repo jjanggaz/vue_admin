@@ -268,6 +268,7 @@ onMounted(async () => {
 .blink-alert {
   margin-left: 0.5rem;
   color: #e74c3c;
+  font-size: $font-size-sm;
   font-weight: 700;
   animation: blink 1s step-start infinite;
 }

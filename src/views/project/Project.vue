@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              placeholder="프로젝트명을 입력하세요"
+              placeholder="검색어를 입력하세요"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -24,7 +24,7 @@
             class="blink-alert"
             @click="goToApprovalPending"
           >
-            승인요청이 있습니다
+            총 32개 프로젝트 중 1-3
           </span>
         </div>
       </div>
@@ -53,13 +53,6 @@
     </DataTable>
     <!-- 페이징 -->
     <div class="pagination-container">
-      <div class="total-count">
-        {{
-          t("common.totalCount", {
-            count: projectStore.totalCount || 0,
-          })
-        }}
-      </div>
       <Pagination
         :current-page="currentPage"
         :total-pages="totalPages"
@@ -154,25 +147,25 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "contact_person",
-    title: "설계 담당자",
+    title: "설계담당자",
     width: "120px",
     sortable: false,
   },
   {
     key: "unit_system",
-    title: "단위",
+    title: "유입종류",
     width: "100px",
     sortable: false,
   },
   {
     key: "site_capacity",
-    title: "시설용량",
+    title: "시설용량 (m³/d)",
     width: "120px",
     sortable: false,
   },
   {
     key: "solution",
-    title: "솔루션",
+    title: "적용 공정",
     width: "120px",
     sortable: false,
   },
@@ -446,63 +439,15 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .project-management {
-  padding: $spacing-lg;
+  padding: $spacing-xxl $spacing-lg 0;
 }
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.search-bar {
-  display: flex;
-  align-items: center;
-}
+
 .group-form {
-  display: flex;
-  align-items: center;
-  margin-right: 1rem;
-}
-.label-search {
-  margin-right: 0.5rem;
-}
-.form-item {
-  margin-right: 0.5rem;
-}
-.btn-search {
-  margin-left: 0.5rem;
-}
-
-.blink-alert {
-  margin-left: 0.5rem;
-  color: #e74c3c;
-  font-weight: 700;
-  cursor: pointer;
-  animation: blink 1s step-start infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-.btn-danger {
-  margin-left: 0.5rem;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 1rem;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 1rem;
-    font-size: 0.9rem;
-    color: $text-color;
-    font-weight: 500;
+  .form-item {
+    input {
+      width: 240px;
+      height:40px;
+    }
   }
 }
 

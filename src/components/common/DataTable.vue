@@ -20,7 +20,10 @@
               <span class="select-header-text">{{ selectHeaderText }}</span>
             </template>
             <template v-else>
-              <span class="select-header-text">선택</span>
+              <!-- <span class="select-header-text">선택</span> -->
+               <input
+                type="checkbox"
+                />
             </template>
           </th>
           <th
@@ -390,11 +393,9 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
 <style scoped lang="scss">
 .data-table-container {
-  background: $background-color;
-  border-radius: $border-radius-lg;
-  overflow: hidden;
-  box-shadow: $shadow-sm;
-  border: 1px solid $border-color;
+   overflow: hidden;
+  border-top: 2px solid #000000;
+  border-bottom: 1px solid #000000;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 
@@ -410,9 +411,21 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   th,
   td {
-    padding: $spacing-md $spacing-lg;
+    height: 50px;
+    max-height: 50px;
     text-align: left;
-    border-bottom: 1px solid $border-color;
+  }
+
+  th {
+    padding: 0 20px;
+  }
+  
+  td {
+    padding: 6px 20px;
+  }
+
+  td + td {
+    padding-top: 3px;
   }
 
   th.checkbox-cell,
@@ -422,8 +435,20 @@ const formatCellValue = (item: any, column: TableColumn) => {
     vertical-align: middle;
 
     input[type="checkbox"] {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background-image: url(../../assets/icons/ico_check-off.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 20px auto;
       margin: 0;
       cursor: pointer;
+
+      &:checked {
+        background-image: url(../../assets/icons/ico_check-on.svg);
+      }
     }
 
     .select-header-text {
@@ -435,16 +460,22 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   thead {
     background-color: $background-light;
+    border-bottom: 0.6px solid #000000;
     position: sticky;
     top: 0;
     z-index: 1;
 
     th {
+      text-align: center;
       font-weight: $font-weight-md;
-      color: $text-color;
-      font-size: $font-size-sm;
+      color: #333333;
+      font-size: 15px;
       position: relative;
       background-color: $background-light; // 스크롤 시 배경색 유지
+
+      &:nth-of-type(3) {
+        text-align: left;
+      }
 
       &.sortable {
         cursor: pointer;
@@ -509,18 +540,16 @@ const formatCellValue = (item: any, column: TableColumn) => {
     .data-row {
       transition: $transition-base;
 
-      &.selected {
-        background-color: rgba($primary-color, 0.1);
-      }
-
-      &:hover {
-        background-color: $background-light;
+      & td:nth-of-type(3) {
+        text-align: left;
       }
     }
 
     td {
-      color: $text-color;
-      font-size: $font-size-sm;
+      text-align: center;
+      color: #202020;
+      font-size: 15px;
+      font-weight: $font-weight-normal;
     }
 
     .loading-message,

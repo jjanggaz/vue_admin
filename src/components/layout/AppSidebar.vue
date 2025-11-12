@@ -119,7 +119,7 @@ const availableMenus = computed(() => {
   position: fixed;
   left: 0;
   top: 0;
-  width: 250px;
+  width: 260px;
   height: 100vh;
   background-color: $background-darker;
   z-index: 100;
@@ -133,32 +133,31 @@ const availableMenus = computed(() => {
       width: 220px;
       height: auto;
       margin: $spacing-lg auto;
-      padding: 0 $spacing-lg;
+      padding: 0 20px 0 $spacing-md;
       object-fit: contain;
     }
   }
 
   .nav-menu {
     flex: 1;
-    padding: $spacing-sm 0;
+    padding: 20px 0;
 
     .nav-item {
       display: flex;
       align-items: center;
-      padding: 0 $spacing-lg;
+      padding: 0 32px;
       color: rgba($text-white, 0.7);
       text-decoration: none;
       cursor: pointer;
       transition: $transition-base;
-      border-left: 3px solid transparent;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background: rgba(39, 155, 216, 0.15);
         color: $text-white;
       }
 
       &.router-link-active {
-        background-color: rgba($primary-color, 0.1);
+        background-color: rgba($text-sky, 1);
         color: $text-white;
         border-left-color: $primary-color;
 
@@ -179,8 +178,10 @@ const availableMenus = computed(() => {
       }
 
       .nav-text {
-        font-size: $font-size-base;
-        font-weight: $font-weight-md;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 30px;
+        letter-spacing: -0.2px;
       }
     }
   }

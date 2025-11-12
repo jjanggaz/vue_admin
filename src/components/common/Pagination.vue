@@ -2,20 +2,18 @@
   <div class="pagination">
     <!-- First page button -->
     <button 
-      class="pagination-btn"
+      class="pagination-btn btn-first"
       :disabled="currentPage === 1"
       @click="$emit('page-change', 1)"
     >
-      &laquo;
     </button>
     
     <!-- Previous page button -->
     <button 
-      class="pagination-btn"
+      class="pagination-btn btn-prev"
       :disabled="currentPage === 1"
       @click="$emit('page-change', currentPage - 1)"
     >
-      &lsaquo;
     </button>
 
     <!-- Page numbers -->
@@ -33,20 +31,18 @@
 
     <!-- Next page button -->
     <button 
-      class="pagination-btn"
+      class="pagination-btn btn-next"
       :disabled="currentPage === totalPages"
       @click="$emit('page-change', currentPage + 1)"
     >
-      &rsaquo;
     </button>
 
     <!-- Last page button -->
     <button 
-      class="pagination-btn"
+      class="pagination-btn btn-last"
       :disabled="currentPage === totalPages"
       @click="$emit('page-change', totalPages)"
     >
-      &raquo;
     </button>
   </div>
 </template>
@@ -117,41 +113,84 @@ const visiblePages = computed(() => {
 .pagination {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: $spacing-sm;
   justify-content: center;
+
+  .btn-first,
+  .btn-prev,
+  .btn-next,
+  .btn-last {
+    border: 1px solid #767676;
+  }
+
+  [class*="btn-"] {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 14px;
+      transform: translate(-50%, -50%);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+    }
+  }
+
+  .btn-first {
+    &:after {
+      background-image: url(../../assets/icons/ico_pagenation-first.svg);
+    }
+  }
+  .btn-prev {
+    &:after {
+      background-image: url(../../assets/icons/ico_pagenation-prev.svg);
+    }
+  }
+  .btn-next {
+    &:after {
+      background-image: url(../../assets/icons/ico_pagenation-next.svg);
+    }
+  }
+  .btn-last {
+    &:after {
+      background-image: url(../../assets/icons/ico_pagenation-last.svg);
+    }
+  }
+
+  .btn-prev {
+    margin-right: 20px;
+
+  }
+  .btn-next {
+    margin-left: 20px;
+  }
 }
 
 .pagination-btn {
-  min-width: 36px;
-  height: 36px;
+  min-width: 40px;
+  height: 40px;
   padding: $spacing-xs;
-  border: 1px solid $border-color;
-  background-color: $background-color;
-  color: $text-color;
-  border-radius: $border-radius-sm;
+  border: 1px solid white;
+  border-radius: 20px;
+  background-color: white;
+  color: #555555;
   cursor: pointer;
-  transition: $transition-base;
-  font-size: $font-size-sm;
-  
-  &:hover:not(:disabled) {
-    border-color: $primary-color;
-    color: $primary-color;
-  }
+  transition: background-color 0.3s, color 0.3s;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
   
   &.active {
-    background-color: $primary-color;
-    border-color: $primary-color;
+    background-color: #222E77;
     color: white;
   }
   
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    
-    &:hover {
-      border-color: $border-color;
-      color: $text-color;
-    }
   }
 }
 

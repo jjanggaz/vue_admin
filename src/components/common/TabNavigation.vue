@@ -67,7 +67,6 @@ const handleTabClick = (tab: TabItem) => {
 .tab-navigation {
   display: flex;
   border-bottom: 1px solid $border-color;
-  margin-bottom: $spacing-xl;
   overflow-x: auto;
   scrollbar-width: none; // Firefox
 
@@ -95,7 +94,7 @@ const handleTabClick = (tab: TabItem) => {
     }
 
     &.active {
-      color: $primary-color;
+      color: #000000;
       border-bottom-color: $primary-color;
       background-color: rgba($primary-color, 0.08);
     }
@@ -116,7 +115,8 @@ const handleTabClick = (tab: TabItem) => {
     }
 
     .tab-text {
-      font-size: $font-size-sm;
+      font-size: $font-size-lg;
+      font-weight: 600;
     }
 
     .tab-badge {

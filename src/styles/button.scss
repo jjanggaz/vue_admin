@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "variables" as *;
 
 .btns {
@@ -13,4 +14,74 @@
   padding: 0 16px;
   border-radius: $border-radius-sm;
  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-base;
+  font-weight: $font-weight-md;
+  text-decoration: none;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  transition: $transition-base;
+  user-select: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background-color: $primary-color;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: color.scale($primary-color, $lightness: -10%);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: $secondary-color;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: color.scale($secondary-color, $lightness: -10%);
+    }
+  }
+
+  &.btn-outline {
+    background-color: transparent;
+    border: 2px solid $primary-color;
+    color: $primary-color;
+
+    &:hover:not(:disabled) {
+      background-color: $primary-color;
+      color: white;
+    }
+  }
+}
+
+.btn.btn-delete {
+    position:relative;
+    padding:8px 16px 8px 36px;
+    border-radius: 5px;
+    background-color: #3e435e;
+    color: white;
+    font-weight: $font-weight-md;
+
+    &::before {
+        content: "";
+        position:absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 16px;
+        width: 16px;
+        height: 16px;
+        background: url(../assets/icons/ico_delete.svg) no-repeat center / 16px 16px;
+        aspect-ratio: 1/1;
+    }
 }

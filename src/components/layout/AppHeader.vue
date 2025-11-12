@@ -17,7 +17,9 @@
           {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
         </span> -->
         <!-- <Date />  -->
-         <span class="user-id">idAdmin251111</span>
+        <span class="user-id">
+          {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
+        </span>
         <button class="logout-btn" @click="handleLogout">
           {{ t("common.logout") }}
         </button>
@@ -215,7 +217,7 @@ const currentPageTitle = computed<string>(() => {
 <style scoped lang="scss">
 .user-id {
   color: #333333;
-  font-size:$font-size-sm;
+  font-size: $font-size-sm;
 }
 
 .app-header {
@@ -303,7 +305,7 @@ const currentPageTitle = computed<string>(() => {
     border-radius: $border-radius-sm;
     color: #333333;
     font-weight: 600;
-    
+
     cursor: pointer;
     transition: $transition-base;
 

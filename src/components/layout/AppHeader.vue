@@ -13,10 +13,7 @@
 
       <!-- User Section -->
       <div class="user-section">
-        <!-- <span class="user-id">
-          {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
-        </span> -->
-        <!-- <Date />  -->
+        <Date />
         <span class="user-id">
           {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
         </span>

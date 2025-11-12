@@ -1006,6 +1006,8 @@
   "waterCode": {
     "parameterList": "Water Quality Parameter List",
     "parameterSettings": "Parameter Settings",
+    "parameterRegister": "Parameter Registration",
+    "parameterUpdate": "Parameter Update",
     "parameterCode": "Parameter Code",
     "parameterName": "Parameter Name",
     "parameterNameEn": "Parameter Name (English)",
@@ -1300,7 +1302,9 @@
       "menuPermissionAssignSuccess": "Menu permission successfully assigned.",
       "roleAndMenuPermissionUpdateSuccess": "Role and menu permission successfully updated.",
       "roleUpdateSuccessNoMenuData": "Role successfully updated. (No menu data)",
-      "updateComplete": "Update completed."
+      "updateComplete": "Update completed.",
+      "parameterUpdateSuccess": "Parameter successfully updated.",
+      "parameterCreateSuccess": "Parameter successfully created."
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",

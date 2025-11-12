@@ -6,6 +6,22 @@
         <div class="table-section">
           <div class="section-header">
             <h3>{{ t("waterCode.parameterList") }}</h3>
+            <div class="header-buttons">
+              <button
+                class="btn btn-update"
+                @click="handleUpdateClick"
+                :disabled="!selectedParameter"
+              >
+                {{ t("common.update") }}
+              </button>
+              <button
+                class="btn btn-danger"
+                @click="handleDeleteClick"
+                :disabled="!selectedParameter"
+              >
+                {{ t("common.delete") }}
+              </button>
+            </div>
           </div>
           <div class="table-container">
             <DataTable
@@ -13,6 +29,13 @@
               :data="waterQualityParameters"
               maxHeight="100%"
               :stickyHeader="true"
+              :selectable="true"
+              selectionMode="single"
+              :showSelectAll="false"
+              :selectHeaderText="t('common.selectColumn')"
+              row-key="parameter_id"
+              :selected-items="selectedParameter ? [selectedParameter] : []"
+              @selection-change="handleSelectionChange"
             />
           </div>
         </div>
@@ -20,7 +43,13 @@
         <!-- 오른쪽: 파라미터 설정 폼 -->
         <div class="form-section">
           <div class="section-header">
-            <h3>{{ t("waterCode.parameterSettings") }}</h3>
+            <h3>
+              {{
+                isEditMode
+                  ? t("waterCode.parameterUpdate")
+                  : t("waterCode.parameterRegister")
+              }}
+            </h3>
           </div>
           <div class="form-container">
             <form @submit.prevent="handleSubmit" class="parameter-form">
@@ -32,17 +61,8 @@
                   type="text"
                   v-model="formData.parameter_code"
                   class="form-input"
-                  :class="{ error: validationErrors.parameter_code }"
                   :placeholder="t('placeholder.parameterCode')"
-                  @input="clearValidationError('parameter_code')"
-                  required
                 />
-                <div
-                  v-if="validationErrors.parameter_code"
-                  class="error-message"
-                >
-                  {{ validationErrors.parameter_code }}
-                </div>
               </div>
 
               <div class="form-group">
@@ -53,17 +73,8 @@
                   type="text"
                   v-model="formData.parameter_name"
                   class="form-input"
-                  :class="{ error: validationErrors.parameter_name }"
                   :placeholder="t('placeholder.parameterName')"
-                  @input="clearValidationError('parameter_name')"
-                  required
                 />
-                <div
-                  v-if="validationErrors.parameter_name"
-                  class="error-message"
-                >
-                  {{ validationErrors.parameter_name }}
-                </div>
               </div>
 
               <div class="form-group">
@@ -74,17 +85,8 @@
                   type="text"
                   v-model="formData.parameter_name_en"
                   class="form-input"
-                  :class="{ error: validationErrors.parameter_name_en }"
                   :placeholder="t('placeholder.parameterNameEn')"
-                  @input="clearValidationError('parameter_name_en')"
-                  required
                 />
-                <div
-                  v-if="validationErrors.parameter_name_en"
-                  class="error-message"
-                >
-                  {{ validationErrors.parameter_name_en }}
-                </div>
               </div>
 
               <div class="form-group">
@@ -95,14 +97,8 @@
                   type="text"
                   v-model="formData.default_unit"
                   class="form-input"
-                  :class="{ error: validationErrors.default_unit }"
                   :placeholder="t('placeholder.defaultUnit')"
-                  @input="clearValidationError('default_unit')"
-                  required
                 />
-                <div v-if="validationErrors.default_unit" class="error-message">
-                  {{ validationErrors.default_unit }}
-                </div>
               </div>
 
               <div class="form-group">
@@ -119,12 +115,25 @@
 
               <div class="form-actions">
                 <button
+                  type="button"
+                  class="btn btn-secondary"
+                  @click="handleCancel"
+                  :disabled="isSubmitting"
+                  v-if="isEditMode"
+                >
+                  {{ t("common.cancel") }}
+                </button>
+                <button
                   type="submit"
                   class="btn btn-primary"
                   :disabled="isSubmitting"
                 >
                   {{
-                    isSubmitting ? t("common.processing") : t("common.register")
+                    isSubmitting
+                      ? t("common.processing")
+                      : isEditMode
+                      ? t("common.save")
+                      : t("common.register")
                   }}
                 </button>
               </div>
@@ -178,11 +187,76 @@ const formData = ref<Partial<WaterQualityParameter>>({
   is_active: true,
 });
 
-// Validation 상태
-const validationErrors = ref<Record<string, string>>({});
+// 제출 상태
 const isSubmitting = ref(false);
 
-// 상태 관리 (추가 전용이므로 편집 관련 상태 제거)
+// 선택된 파라미터
+const selectedParameter = ref<WaterQualityParameter | null>(null);
+
+// 수정 모드 여부
+const isEditMode = ref(false);
+
+// 선택 변경 핸들러
+const handleSelectionChange = (items: WaterQualityParameter[]) => {
+  if (items.length > 0) {
+    selectedParameter.value = items[0];
+  } else {
+    selectedParameter.value = null;
+  }
+};
+
+// 수정 버튼 클릭 핸들러
+const handleUpdateClick = () => {
+  if (!selectedParameter.value) return;
+
+  // 선택된 항목을 폼에 로드
+  formData.value = {
+    parameter_id: selectedParameter.value.parameter_id,
+    parameter_code: selectedParameter.value.parameter_code,
+    parameter_name: selectedParameter.value.parameter_name,
+    parameter_name_en: selectedParameter.value.parameter_name_en,
+    default_unit: selectedParameter.value.default_unit,
+    description: selectedParameter.value.description,
+    is_active: selectedParameter.value.is_active,
+  };
+
+  isEditMode.value = true;
+};
+
+// 삭제 버튼 클릭 핸들러
+const handleDeleteClick = async () => {
+  if (!selectedParameter.value) return;
+
+  const confirmMessage = selectedParameter.value.parameter_name
+    ? `${t("messages.confirm.deleteItem")} (${
+        selectedParameter.value.parameter_name
+      })`
+    : t("messages.confirm.deleteItem");
+
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  try {
+    await inflowStore.deleteWaterQualityParameter(
+      selectedParameter.value.parameter_id
+    );
+
+    // 성공 후 데이터 새로고침
+    await inflowStore.fetchWaterQualityParameters(props.flowDirection);
+
+    // 선택 해제
+    selectedParameter.value = null;
+
+    // 폼 초기화
+    resetForm();
+
+    alert(t("messages.success.deleted"));
+  } catch (error) {
+    console.error("파라미터 삭제 실패:", error);
+    alert(t("messages.error.deleteFailed"));
+  }
+};
 
 // 테이블 컬럼 정의
 const tableColumns: TableColumn[] = [
@@ -227,58 +301,47 @@ onMounted(async () => {
   }
 });
 
-// Validation 함수들
-const validateForm = (): boolean => {
-  validationErrors.value = {};
-  let isValid = true;
-
+// Validation 함수
+const validateForm = (): string | null => {
   // 파라미터 코드 검증
   if (!formData.value.parameter_code?.trim()) {
-    validationErrors.value.parameter_code = t("validation.required", {
+    return t("validation.required", {
       field: t("waterCode.parameterCode"),
     });
-    isValid = false;
   }
 
   // 파라미터명 검증
   if (!formData.value.parameter_name?.trim()) {
-    validationErrors.value.parameter_name = t("validation.required", {
+    return t("validation.required", {
       field: t("waterCode.parameterName"),
     });
-    isValid = false;
-  }
-
-  // 기본 단위 검증
-  if (!formData.value.default_unit?.trim()) {
-    validationErrors.value.default_unit = t("validation.required", {
-      field: t("waterCode.defaultUnit"),
-    });
-    isValid = false;
   }
 
   // 영문 파라미터명 검증
   if (!formData.value.parameter_name_en?.trim()) {
-    validationErrors.value.parameter_name_en = t("validation.required", {
+    return t("validation.required", {
       field: t("waterCode.parameterNameEn"),
     });
-    isValid = false;
   }
 
-  return isValid;
-};
-
-const clearValidationError = (field: string) => {
-  if (validationErrors.value[field]) {
-    delete validationErrors.value[field];
+  // 기본 단위 검증
+  if (!formData.value.default_unit?.trim()) {
+    return t("validation.required", {
+      field: t("waterCode.defaultUnit"),
+    });
   }
+
+  return null;
 };
 
-// 폼 제출 처리 (등록만)
+// 폼 제출 처리 (등록/수정)
 const handleSubmit = async () => {
   if (isSubmitting.value) return;
 
   // Validation 체크
-  if (!validateForm()) {
+  const errorMessage = validateForm();
+  if (errorMessage) {
+    alert(errorMessage);
     return;
   }
 
@@ -292,22 +355,42 @@ const handleSubmit = async () => {
       flow_direction: props.flowDirection,
     };
 
-    // API 호출로 등록 처리
-    await inflowStore.createWaterQualityParameter(submitData);
+    if (isEditMode.value) {
+      // 수정 모드
+      if (!formData.value.parameter_id) {
+        alert(t("messages.error.parameterUpdateFailed"));
+        return;
+      }
+      await inflowStore.updateWaterQualityParameter(
+        formData.value.parameter_id,
+        submitData
+      );
+      alert(t("messages.success.parameterUpdateSuccess"));
+    } else {
+      // 등록 모드
+      await inflowStore.createWaterQualityParameter(submitData);
+      alert(t("messages.success.parameterCreateSuccess"));
+    }
 
     // 성공 후 폼 초기화
     resetForm();
     // 데이터 새로고침
     await inflowStore.fetchWaterQualityParameters(props.flowDirection);
-
-    // 성공 메시지 표시
-    alert(t("messages.success.parameterCreateSuccess"));
   } catch (error) {
-    console.error("등록 실패:", error);
-    alert(t("messages.error.parameterCreateFailed"));
+    console.error(isEditMode.value ? "수정 실패:" : "등록 실패:", error);
+    alert(
+      isEditMode.value
+        ? t("messages.error.parameterUpdateFailed")
+        : t("messages.error.parameterCreateFailed")
+    );
   } finally {
     isSubmitting.value = false;
   }
+};
+
+// 취소 핸들러
+const handleCancel = () => {
+  resetForm();
 };
 
 // 폼 초기화
@@ -320,7 +403,8 @@ const resetForm = () => {
     description: "",
     is_active: true,
   };
-  validationErrors.value = {};
+  isEditMode.value = false;
+  selectedParameter.value = null;
 };
 
 // 삭제 처리 제거 (추가 전용이므로)
@@ -369,6 +453,59 @@ const resetForm = () => {
       overflow: hidden;
       display: flex;
       flex-direction: column;
+
+      .section-header {
+        margin-bottom: $spacing-xs;
+        padding-bottom: $spacing-xs;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+          margin: 0;
+          color: $primary-color;
+          font-size: $font-size-base;
+          font-weight: $font-weight-bold;
+        }
+
+        .header-buttons {
+          display: flex;
+          gap: $spacing-xs;
+          align-items: center;
+        }
+
+        .btn {
+          padding: 6px 12px;
+          border-radius: $border-radius-sm;
+          cursor: pointer;
+          border: 1px solid transparent;
+          font-size: 14px;
+          font-weight: $font-weight-md;
+          transition: all 0.2s ease;
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          &.btn-update {
+            background-color: $primary-color;
+            color: white;
+            &:hover:not(:disabled) {
+              background-color: darken($primary-color, 10%);
+            }
+          }
+
+          &.btn-danger {
+            background-color: $error-color;
+            color: white;
+            &:hover:not(:disabled) {
+              background-color: darken($error-color, 10%);
+            }
+          }
+        }
+      }
     }
 
     .form-section {
@@ -390,7 +527,7 @@ const resetForm = () => {
       .section-header {
         margin-bottom: $spacing-xs;
         padding-bottom: $spacing-xs;
-        border-bottom: 2px solid $primary-color;
+        border-bottom: 2px solid #000000;
         flex-shrink: 0;
 
         h3 {

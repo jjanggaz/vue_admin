@@ -768,6 +768,70 @@ export const useInflowStore = defineStore("inflow", {
       }
     },
 
+    // 수질 파라미터 수정
+    async updateWaterQualityParameter(
+      parameterId: string,
+      parameterData: Partial<WaterQualityParameter>
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/inflow/codeUpdate/${parameterId}`,
+          undefined,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(parameterData),
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("수질 파라미터 수정 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "수질 파라미터 수정에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 수질 파라미터 삭제
+    async deleteWaterQualityParameter(parameterId: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await request(
+          `/api/inflow/codeDelete/${parameterId}`,
+          undefined,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        return response;
+      } catch (error) {
+        console.error("수질 파라미터 삭제 실패:", error);
+        this.error =
+          error instanceof Error
+            ? error.message
+            : "수질 파라미터 삭제에 실패했습니다.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // 계산식 파일 추출
     async extractFormula(formData: FormData) {
       this.loading = true;

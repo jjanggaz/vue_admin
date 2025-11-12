@@ -987,6 +987,8 @@
   "waterCode": {
     "parameterList": "수질 파라미터 목록",
     "parameterSettings": "파라미터 설정",
+    "parameterRegister": "파라미터 등록",
+    "parameterUpdate": "파라미터 수정",
     "parameterCode": "파라미터 코드",
     "parameterName": "파라미터명",
     "parameterNameEn": "파라미터명(영문)",
@@ -1296,7 +1298,9 @@
       "menuPermissionAssignSuccess": "메뉴 권한이 성공적으로 할당되었습니다.",
       "roleAndMenuPermissionUpdateSuccess": "권한과 메뉴 권한이 성공적으로 수정되었습니다.",
       "roleUpdateSuccessNoMenuData": "권한이 성공적으로 수정되었습니다. (메뉴 데이터 없음)",
-      "updateComplete": "수정 완료되었습니다."
+      "updateComplete": "수정 완료되었습니다.",
+      "parameterUpdateSuccess": "파라미터 수정에 성공했습니다.",
+      "parameterCreateSuccess": "파라미터 등록에 성공했습니다."
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",

@@ -3825,12 +3825,7 @@ onMounted(async () => {
   transition: background-color 0.2s;
 
   &.btn-primary {
-    background-color: $primary-color;
     color: white;
-
-    &:hover {
-      background-color: color.scale($primary-color, $lightness: -10%);
-    }
 
     &:disabled {
       background-color: $text-light;

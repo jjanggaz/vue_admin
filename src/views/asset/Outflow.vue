@@ -2923,6 +2923,14 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
   margin-bottom: $spacing-sm;
+
+  .btn.btn-delete {
+    padding:8px 16px 8px 36px;
+    background-color: #3e435e;
+    &:hover {
+      background-color: #3C4973;
+    }
+  }
 }
 
 .tab-action-bar {

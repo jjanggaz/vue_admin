@@ -2675,14 +2675,6 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 40px;
   margin-bottom: 20px;
-
-  .btn.btn-delete {
-    padding:8px 16px 8px 36px;
-    background-color: #3e435e;
-    &:hover {
-      background-color: #3C4973;
-    }
-  }
 }
 
 .tab-action-bar {

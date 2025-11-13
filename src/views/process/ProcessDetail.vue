@@ -6415,6 +6415,59 @@ const handlePfdSave = async () => {
       await refreshPfdData();
       console.log("PFD 그리드 새로고침 완료");
 
+      // P&ID 그리드 새로고침 (현재 선택된 PFD 항목이 있는 경우)
+      if (currentPfdItemForMapping.value) {
+        console.log("P&ID 그리드 새로고침 시작...");
+        try {
+          // refreshPfdData 후 업데이트된 PFD 항목 찾기
+          const updatedPfdItem = processStore.pfdList.find(
+            (item: any) =>
+              item.drawing_id === currentPfdItemForMapping.value.drawing_id ||
+              item.id === currentPfdItemForMapping.value.id
+          );
+
+          if (updatedPfdItem) {
+            // 업데이트된 drawing_id로 currentPfdItemForMapping 업데이트
+            currentPfdItemForMapping.value = {
+              ...currentPfdItemForMapping.value,
+              drawing_id: updatedPfdItem.drawing_id || currentPfdItemForMapping.value.drawing_id,
+            };
+
+            // P&ID 그리드 새로고침
+            await loadMappingPidList(updatedPfdItem);
+            console.log("P&ID 그리드 새로고침 완료");
+
+            // P&ID Components 그리드 새로고침 (P&ID Components 섹션이 열려있는 경우)
+            if (showPidComponentSection.value && selectedPidForComponent.value) {
+              console.log("P&ID Components 그리드 새로고침 시작...");
+              try {
+                // 업데이트된 P&ID 항목 찾기
+                const updatedPidItem = mappingPidList.value.find(
+                  (item: any) =>
+                    item.drawing_id === selectedPidForComponent.value.drawing_id ||
+                    item.id === selectedPidForComponent.value.id
+                );
+
+                if (updatedPidItem) {
+                  await loadPidComponentDataWithoutClear(updatedPidItem);
+                  console.log("P&ID Components 그리드 새로고침 완료");
+                } else {
+                  console.log("업데이트된 P&ID 항목을 찾을 수 없어 P&ID Components 새로고침 건너뜀");
+                }
+              } catch (componentError: any) {
+                console.error("P&ID Components 그리드 새로고침 실패:", componentError);
+                // 에러가 발생해도 전체 프로세스는 계속 진행
+              }
+            }
+          } else {
+            console.log("업데이트된 PFD 항목을 찾을 수 없어 P&ID 그리드 새로고침 건너뜀");
+          }
+        } catch (pidError: any) {
+          console.error("P&ID 그리드 새로고침 실패:", pidError);
+          // 에러가 발생해도 전체 프로세스는 계속 진행
+        }
+      }
+
       alert("공정카드가 저장되었습니다.");
     } else {
       console.log("저장할 변경사항이 없습니다.");

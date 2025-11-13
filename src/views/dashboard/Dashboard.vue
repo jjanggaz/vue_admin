@@ -140,24 +140,22 @@
           <div class="activity-list">
             <div class="activity-item">
               <div class="activity-icon document">
-                <i class="fas fa-file-alt"></i>
               </div>
               <div class="activity-content">
                 <div class="activity-title">신규 프로젝트 등록</div>
                 <div class="activity-desc">
-                  혁신치료 시스템 구축 프로젝트가 등록되었습니다.
+                  혁신치료 시스템 구축 프로젝트가 등록되었습니다.혁신치료 시스템 구축 프로젝트가 등록되었습니다.혁신치료 시스템 구축 프로젝트가 등록되었습니다.
                 </div>
                 <div class="activity-time">10분 전</div>
               </div>
             </div>
             <div class="activity-item">
               <div class="activity-icon success">
-                <i class="fas fa-check-circle"></i>
               </div>
               <div class="activity-content">
                 <div class="activity-title">프로젝트 완료</div>
                 <div class="activity-desc">
-                  AI 모델 학습 프로젝트가 성공적으로 완료되었습니다.
+                  AI 모델 학습 프로젝트가 성공적으로 완료되었습니다.AI 모델 학습 프로젝트가 성공적으로 완료되었습니다.AI 모델 학습 프로젝트가 성공적으로 완료되었습니다.
                 </div>
                 <div class="activity-time">1시간 전</div>
               </div>
@@ -174,7 +172,6 @@
           <div class="activity-list">
             <div class="activity-item urgent">
               <div class="activity-icon urgent">
-                <i class="fas fa-exclamation-triangle"></i>
               </div>
               <div class="activity-content">
                 <div class="activity-title">긴급: 시스템 점검 예정</div>
@@ -184,7 +181,6 @@
             </div>
             <div class="activity-item warning">
               <div class="activity-icon warning">
-                <i class="fas fa-exclamation-circle"></i>
               </div>
               <div class="activity-content">
                 <div class="activity-title">저장공간 부족 경고</div>
@@ -378,7 +374,7 @@ onUnmounted(() => {
     .activity-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: $spacing-lg;
+      gap: 20px;
     }
   }
 }
@@ -393,23 +389,23 @@ onUnmounted(() => {
 
 .activity-card {
   @extend .dashboard-card;
-  padding: $spacing-lg;
+  padding: 20px;
 
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: $spacing-lg;
+    margin-bottom: 20px;
 
     h3 {
       margin: 0;
       color: #1f2937;
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 600;
     }
 
     .view-all {
-      color: #3b82f6;
+      color: #82869d;
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
@@ -421,71 +417,29 @@ onUnmounted(() => {
   }
 
   .activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-
+    .activity-item + .activity-item {
+      margin-top: 10px;
+    }
     .activity-item {
-      display: flex;
-      gap: $spacing-md;
-      padding: $spacing-md;
-      border-radius: 8px;
-      transition: background-color 0.2s;
-
-      &:hover {
-        background-color: #f9fafb;
-      }
-
-      &.urgent {
-        background-color: #fef2f2;
-        border-left: 4px solid #ef4444;
-      }
-
-      &.warning {
-        background-color: #fffbeb;
-        border-left: 4px solid #f59e0b;
-      }
-
-      .activity-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 16px;
-        flex-shrink: 0;
-
-        &.document {
-          background-color: #3b82f6;
-        }
-
-        &.success {
-          background-color: #10b981;
-        }
-
-        &.urgent {
-          background-color: #ef4444;
-        }
-
-        &.warning {
-          background-color: #f59e0b;
-        }
-      }
-
       .activity-content {
         flex: 1;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: rgba(192, 227, 248, .3);
 
         .activity-title {
-          font-weight: 600;
-          color: #1f2937;
+          font-weight: 500;
+          color: #202020;
           margin-bottom: 4px;
         }
 
         .activity-desc {
-          color: #6b7280;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          color: #484848;
           font-size: 14px;
+          font-weight: 400;
           margin-bottom: 4px;
         }
 

@@ -2383,7 +2383,7 @@ onBeforeUnmount(() => {
 }
 
 .inflow {
-  padding: $spacing-xl;
+  padding: 40px 24px;
   min-width: 0; // 전체 컨테이너가 축소될 수 있도록 허용
 
   .page-content {
@@ -2435,22 +2435,12 @@ onBeforeUnmount(() => {
         margin-bottom: $spacing-sm;
         padding-bottom: $spacing-sm;
         border-bottom: 2px solid $primary-color;
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
 
         h3 {
           margin: 0;
           color: $primary-color;
           font-size: $font-size-lg;
           font-weight: $font-weight-bold;
-        }
-
-        .applied-formula {
-          font-size: $font-size-sm;
-          color: $text-color;
-          font-weight: $font-weight-md;
-          margin-left: $spacing-xs;
         }
 
         .tab-info {
@@ -2682,8 +2672,17 @@ onBeforeUnmount(() => {
 .action-bar {
   min-width: 0; // 액션 바가 축소될 수 있도록 허용
   display: flex;
-  justify-content: flex-end; // 버튼을 오른쪽 끝에 배치
-  margin-bottom: $spacing-sm;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 20px;
+
+  .btn.btn-delete {
+    padding:8px 16px 8px 36px;
+    background-color: #3e435e;
+    &:hover {
+      background-color: #3C4973;
+    }
+  }
 }
 
 .tab-action-bar {
@@ -2694,80 +2693,85 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   width: 100%;
-  flex: 1; // 전체 공간을 차지하도록
   min-width: 0; // 스와이퍼 바가 축소될 수 있도록 허용
 }
 
 .tabs-wrapper {
   display: flex;
   align-items: center;
-  flex: 1; // swiper-bar 내에서 전체 공간 차지
   overflow: hidden;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
+  padding: 20px;
 }
 
 .tabs {
   display: flex;
+  align-items: flex-end;
   overflow-x: auto;
-  scroll-behavior: smooth;
   flex: 1;
+  scroll-behavior: smooth;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE/Edge
+  padding: 0 10px;
 
   &::-webkit-scrollbar {
     display: none; // Chrome/Safari
   }
 
   .tab {
-    flex-shrink: 0; // 탭이 축소되지 않도록
+    display: inline-flex;
     white-space: nowrap; // 텍스트 줄바꿈 방지
-    max-width: 200px; // 개별 탭의 최대 너비 제한
     overflow: hidden; // 넘치는 텍스트 숨김
+    padding: 0 20px;
+    height: 34px;
+    line-height: 34px;
+    border-radius: 10px 10px 0 0;
+    font-size: 15px;
+    font-weight: 500;
+
+    &.active {
+      height: 40px;
+      line-height: 40px;
+      border-bottom: none;
+    }
   }
 }
 
 .btn-scroll {
-  background: $primary-color;
-  color: white;
+  background: #e7e6ed;
   border: none;
   border-radius: 4px;
-  width: 30px;
-  height: 2.5rem; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
+  width: 20px;
+  height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  min-width: 30px;
+  min-width: 20px;
+  margin-top: 3px;
 
   img {
-    width: 16px;
-    height: 16px;
-    filter: brightness(0) invert(1); // 흰색으로 변경
+    width: 8px;
+    height: 10px;
+    filter: brightness(0) invert(0.5); // 회색으로 변경
   }
 
   &:hover:not(:disabled) {
-    background: color.scale($primary-color, $lightness: -10%);
+    background: #d6d4e3;
   }
 
   &:disabled {
-    background: $background-light;
+    background: #e7e6de;
+    opacity: .6;
     cursor: not-allowed;
-
-    img {
-      filter: brightness(0) invert(0.5); // 회색으로 변경
-    }
   }
+}
 
-  &.left {
-    margin-right: 8px;
-  }
-
-  &.right {
-    margin-left: 8px;
-  }
+.tab-buttons {
+  flex-shrink: 0;
 }
 
 .symbol-image-preview {

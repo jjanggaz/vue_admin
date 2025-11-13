@@ -84,4 +84,7 @@
         background: url(../assets/icons/ico_delete.svg) no-repeat center / 16px 16px;
         aspect-ratio: 1/1;
     }
+    &:hover {
+      background-color: #3C4973;
+    }
 }

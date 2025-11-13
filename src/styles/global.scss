@@ -177,22 +177,19 @@ body {
     font-size: $font-size-lg;
     font-weight: $font-weight-bold;
     color: $text-color;
-    h4 {
-    }
   }
 
   .btns {
     button {
-      margin-left: $spacing-xs;
       padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       font-weight: $font-weight-md;
       border-radius: $border-radius-sm;
       transition: $transition-base;
       color: white;
-      background-color: $background-blue;
+      background-color: #222E77;
       &:hover {
-        background-color: color.scale($background-light, $lightness: -5%);
+        background-color: #29378C;
       }
     }
   }

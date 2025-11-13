@@ -215,7 +215,7 @@
                 v-model="newCode.code_group"
                 type="text"
                 :placeholder="t('placeholder.codeGroup')"
-                disabled
+                :disabled="!!modalCodeGroup.key"
               />
               <input
                 id="code-high-code"

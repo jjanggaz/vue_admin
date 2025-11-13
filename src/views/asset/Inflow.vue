@@ -2701,7 +2701,7 @@ onBeforeUnmount(() => {
   align-items: center;
   overflow: hidden;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
-  padding: 20px;
+  padding: 0 20px;
 }
 
 .tabs {
@@ -2729,6 +2729,7 @@ onBeforeUnmount(() => {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
+    
 
     &.active {
       height: 40px;

@@ -724,10 +724,10 @@
             {{ item.equipmentType || "-" }}
           </span>
         </template>
-        <template #cell-standard_quantity="{ item }">
+        <template #cell-total_quantity="{ item }">
           <input
             type="number"
-            v-model="item.standard_quantity"
+            v-model="item.total_quantity"
             class="form-control"
             placeholder="0"
             min="0"
@@ -1186,7 +1186,7 @@ const pidComponentColumns: TableColumn[] = [
   { key: "middleCategory", title: "중분류", sortable: false, width: "120px" },
   { key: "equipmentType", title: "유형", sortable: false, width: "250px" },
   {
-    key: "standard_quantity",
+    key: "total_quantity",
     title: "총수량",
     sortable: false,
     width: "80px",
@@ -2879,6 +2879,8 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
               equipmentType: hierarchyData.level4_korean_name || "", // 유형: 수중오수모터펌프(자동탈착식)
               // POC IN 항목을 input_poc로 매핑
               input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
+              // 총수량 항목을 total_quantity로 매핑 (API 응답에 standard_quantity가 있을 경우 대비)
+              total_quantity: Number(item.total_quantity ?? item.standard_quantity ?? 0),
               // 각 행별 개별 옵션 저장
               _middleCategoryOptions: [],
               _smallCategoryOptions: [],
@@ -2908,7 +2910,7 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
               소분류_smallCategory: component.smallCategory,
               장비유형_equipmentType: component.equipmentType,
               원본_component_type: component.component_type,
-              수량상용: component.standard_quantity,
+              수량상용: component.total_quantity,
               수량예비: component.spare_quantity,
             });
           }
@@ -3394,7 +3396,7 @@ const hasPidComponentChanges = () => {
       middleCategory: item.middleCategory ?? null,
       smallCategory: item.smallCategory ?? null,
       equipmentType: item.equipmentType ?? null,
-      standard_quantity: Number(item.standard_quantity ?? 0),
+      total_quantity: Number(item.total_quantity ?? 0),
     }));
 
   const normalizedInitial = normalize(initial);
@@ -3816,9 +3818,9 @@ const handlePidComponentSave = async () => {
       for (const item of updateItems) {
         console.log(`수정할 항목 상세 정보:`, {
           component_id: item.component_id,
-          standard_quantity: item.standard_quantity,
+          total_quantity: item.total_quantity,
           spare_quantity: item.spare_quantity,
-          standard_quantityType: typeof item.standard_quantity,
+          total_quantityType: typeof item.total_quantity,
           spare_quantityType: typeof item.spare_quantity,
         });
 
@@ -3836,7 +3838,7 @@ const handlePidComponentSave = async () => {
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           // 기존 항목 수정 시에는 hierarchy 필드들(category, middleCategory, smallCategory, equipmentType) 제외
           input_poc: Number(item.input_poc) || 0, // POC IN 값
-          standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
+          total_quantity: Number(item.total_quantity) || 0, // 수량(상용)
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true, // 고정값
         };
@@ -3851,7 +3853,7 @@ const handlePidComponentSave = async () => {
           pid_id: componentData.pid_id,
           // component_type 제거됨 (기존 항목 수정 시 hierarchy 필드 제외)
           input_poc: componentData.input_poc,
-          standard_quantity: componentData.standard_quantity,
+          total_quantity: componentData.total_quantity,
           spare_quantity: componentData.spare_quantity,
           is_active: componentData.is_active,
         });
@@ -3896,7 +3898,7 @@ const handlePidComponentSave = async () => {
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           component_type: item.equipmentType, // 장비유형 select의 code
           input_poc: Number(item.input_poc) || 0, // POC IN 값
-          standard_quantity: Number(item.standard_quantity) || 0, // 수량(상용)
+          total_quantity: Number(item.total_quantity) || 0, // 수량(상용)
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true, // 고정값
         };

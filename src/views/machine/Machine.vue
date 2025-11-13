@@ -1554,6 +1554,35 @@ const handleFileSelect = (type: string, event: Event) => {
       return;
     }
 
+    // 파일명 validation (확장자 제외)
+    // 여러 확장자 중 하나를 사용할 수 있는 경우 (예: thumbnail의 경우 .jpg, .jpeg, .png, .gif)
+    // 가장 긴 확장자부터 매칭하여 제거
+    let fileNameWithoutExt = file.name;
+    for (const ext of allowedExts.sort((a, b) => b.length - a.length)) {
+      if (file.name.toLowerCase().endsWith(ext.toLowerCase())) {
+        fileNameWithoutExt = file.name.substring(
+          0,
+          file.name.length - ext.length
+        );
+        break;
+      }
+    }
+
+    // 100자 이내 체크
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      return;
+    }
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      return;
+    }
+
     switch (type) {
       case "3d":
         editData.value.model3dFile = file.name;

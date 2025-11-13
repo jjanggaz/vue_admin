@@ -460,8 +460,8 @@ const handleFormulaFileChange = (e: Event) => {
       return;
     }
 
-    // 영문, 공백, 특수기호 체크 (영문, 숫자, _, -, (, ) 허용)
-    const validFileNamePattern = /^[a-zA-Z0-9_\-\\(\\)]+$/;
+    // 영문, 공백, 특수기호 체크 (영문, 숫자, _, -, (, ), . 허용)
+    const validFileNamePattern = /^[a-zA-Z0-9_\-().]+$/;
     if (!validFileNamePattern.test(fileNameWithoutExt)) {
       alert(t("messages.warning.invalidFormulaFileNameFormat"));
       input.value = "";

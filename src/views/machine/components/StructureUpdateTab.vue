@@ -395,42 +395,60 @@ const handleDeleteFormula = async () => {
   }
 };
 
+// 공통 파일명 validation 함수
+const validateFileName = (
+  file: File,
+  extension: string,
+  errorMessageKey: string
+): boolean => {
+  const maxSize = 200;
+  if (file.size > maxSize * 1024 * 1024) {
+    alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
+    return false;
+  }
+
+  const lower = file.name.toLowerCase();
+  const extensionLower = extension.toLowerCase();
+  if (!lower.endsWith(extensionLower)) {
+    alert(t(errorMessageKey));
+    return false;
+  }
+
+  // 파일명에서 확장자를 제거한 이름 부분 검증
+  // extension에서 앞의 . 제거 후 정규식 생성 (특수문자 이스케이프 처리)
+  const extensionWithoutDot = extension.replace(/^\./, "");
+  const escapedExtension = extensionWithoutDot.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+  const extensionRegex = new RegExp(`\\.${escapedExtension}$`, "i");
+  const fileNameWithoutExt = file.name.replace(extensionRegex, "");
+
+  // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+  const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+
+  if (!fileNameRegex.test(fileNameWithoutExt)) {
+    alert(t("messages.warning.invalidFormulaFileNameFormat"));
+    return false;
+  }
+
+  if (fileNameWithoutExt.length > 100) {
+    alert(t("messages.warning.invalidFormulaFileNameFormat"));
+    return false;
+  }
+
+  return true;
+};
+
 // 파일 변경 핸들러들
 const handleFormulaFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
+    if (!validateFileName(file, ".py", "messages.warning.pyFileOnly")) {
       input.value = "";
       return;
     }
-    const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".py")) {
-      alert(t("messages.warning.pyFileOnly"));
-      input.value = "";
-      return;
-    }
-
-    // 파일명에서 확장자를 제거한 이름 부분 검증
-    const fileNameWithoutExt = file.name.replace(/\.py$/i, "");
-
-    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만 허용
-    const fileNameRegex = /^[a-zA-Z0-9_\-()]+$/;
-
-    if (!fileNameRegex.test(fileNameWithoutExt)) {
-      alert(t("messages.warning.invalidFormulaFileNameFormat"));
-      input.value = "";
-      return;
-    }
-
-    if (fileNameWithoutExt.length > 100) {
-      alert(t("messages.warning.invalidFormulaFileNameFormat"));
-      input.value = "";
-      return;
-    }
-
     formulaFileName.value = file.name;
   }
 };
@@ -439,15 +457,7 @@ const handleDtdFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = "";
-      return;
-    }
-    const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".dtdx")) {
-      alert(t("messages.warning.dtdxFileOnly"));
+    if (!validateFileName(file, ".dtdx", "messages.warning.dtdxFileOnly")) {
       input.value = "";
       return;
     }
@@ -477,6 +487,25 @@ const handleThumbnailFileChange = (e: Event) => {
       input.value = "";
       return;
     }
+
+    // 파일명에서 확장자를 제거한 이름 부분 검증
+    const fileNameWithoutExt = file.name.replace(/\.(png|jpg|jpeg|gif)$/i, "");
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      return;
+    }
+
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      input.value = "";
+      return;
+    }
+
     thumbnailFileName.value = file.name;
   }
 };
@@ -485,15 +514,7 @@ const handleRevitFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = "";
-      return;
-    }
-    const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".rvt")) {
-      alert(t("messages.warning.rvtFileOnly"));
+    if (!validateFileName(file, ".rvt", "messages.warning.rvtFileOnly")) {
       input.value = "";
       return;
     }

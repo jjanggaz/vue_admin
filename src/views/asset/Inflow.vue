@@ -1317,6 +1317,27 @@ const handleFileUpload = (event: Event) => {
       return;
     }
 
+    // 파일명 validation (확장자 제외)
+    const fileNameWithoutExt = file.name.substring(
+      0,
+      file.name.lastIndexOf(".")
+    );
+
+    // 100자 이내 체크
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      return;
+    }
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      return;
+    }
+
     uploadForm.value.file = file;
 
     // 새로 첨부한 파일이므로 기존 심볼이 아님
@@ -1355,6 +1376,32 @@ const handleMetricFileUpload = async (event: Event) => {
     // .py 파일인지 확인
     if (!file.name.endsWith(".py")) {
       alert(t("messages.warning.pythonFileOnly"));
+      target.value = "";
+      return;
+    }
+
+    // 파일명 validation (확장자 제외)
+    const fileNameWithoutExt = file.name.substring(
+      0,
+      file.name.lastIndexOf(".")
+    );
+
+    // 100자 이내 체크
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      metricFileName.value = "";
+      metricFile.value = null;
+      return;
+    }
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      metricFileName.value = "";
+      metricFile.value = null;
       return;
     }
 
@@ -1435,6 +1482,32 @@ const handleUscsFileUpload = async (event: Event) => {
     // .py 파일인지 확인
     if (!file.name.endsWith(".py")) {
       alert(t("messages.warning.pythonFileOnly"));
+      target.value = "";
+      return;
+    }
+
+    // 파일명 validation (확장자 제외)
+    const fileNameWithoutExt = file.name.substring(
+      0,
+      file.name.lastIndexOf(".")
+    );
+
+    // 100자 이내 체크
+    if (fileNameWithoutExt.length > 100) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      uscsFileName.value = "";
+      uscsFile.value = null;
+      return;
+    }
+
+    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+    if (!fileNameRegex.test(fileNameWithoutExt)) {
+      alert(t("messages.warning.invalidFormulaFileNameFormat"));
+      target.value = "";
+      uscsFileName.value = "";
+      uscsFile.value = null;
       return;
     }
 

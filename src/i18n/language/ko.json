@@ -1306,7 +1306,7 @@
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
-      "loginFail": "로그인에 실패했습니다.",
+      "loginFail": "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.",
       "passwordsDoNotMatch": "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
       "idAlreadyExists": "이미 존재하는 아이디입니다.",
       "registrationError": "등록 중 오류가 발생했습니다.",
@@ -1460,6 +1460,7 @@
       "selectFormulaFileAttach": "계산식 파일을 첨부해주세요.",
       "excelFileOnly": "엑셀 파일({extensions})만 업로드 가능합니다.",
       "zipFileOnly": "압축 파일({extensions})만 업로드 가능합니다.",
+      "zipFileExtensionOnly": "ZIP 파일만 업로드할 수 있습니다.",
       "noAllowedFileInZip": "ZIP 파일에 허용된 형식(.dtdx, .rfa, .svg, 이미지)이 하나도 없습니다. 첨부를 취소합니다.",
       "noAllowedFileInStructureZip": "ZIP 파일에 허용된 형식(.py, .dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다.",
       "missingRequiredFilesInZip": "ZIP 파일에 필수 파일이 빠졌습니다.\\n\\n필수 파일:\\n- 계산식(.py)\\n- 3D모델(.dtdx)\\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\\n\\n선택 파일:\\n- Revit모델(.rvt)\\n\\n누락: {missing}",
@@ -1491,7 +1492,7 @@
       "structureUpdateSuccess": "구조물이 성공적으로 수정되었습니다.",
       "structureUpdateFail": "구조물 수정에 실패했습니다. 다시 시도해주세요.",
       "excelTemplateDownloadFailed": "Excel 템플릿 다운로드에 실패했습니다.",
-      "invalidFormulaFileNameFormat": "영문만 사용, 공백 불가, 100자 이내, 특수 기호는 \"_ - ()\"만 허용합니다."
+      "invalidFormulaFileNameFormat": "영문만 사용, 공백 불가, 100자 이내, 특수 기호는 \"_ - () .\"만 허용합니다."
     },
     "info": {}
   },

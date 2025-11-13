@@ -135,7 +135,7 @@ const handleLogin = async () => {
     console.log("에러 message:", error?.message);
     console.log("에러 전체 구조:", JSON.stringify(error, null, 2));
 
-    const errorMessage = error?.message || t("messages.error.loginFail");
+    const errorMessage = t("messages.error.loginFail");
     alert(errorMessage);
   }
 };

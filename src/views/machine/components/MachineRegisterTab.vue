@@ -318,6 +318,7 @@ const extractZipContents = async (file: File) => {
       "svg",
     ];
     const invalidFiles: string[] = [];
+    const invalidFileNameFiles: string[] = [];
     let hasAllowedFile = false;
     let hasDtdx = false;
     let hasImage = false;
@@ -349,6 +350,15 @@ const extractZipContents = async (file: File) => {
           if (["jpg", "jpeg", "png", "gif"].includes(fileExtension))
             hasImage = true;
           // svg는 심볼 파일로 허용되지만 필수는 아님
+
+          // 허용된 확장자를 가진 파일들의 파일명 validation 체크
+          const validationResult = validateZipFileName(
+            relativePath,
+            allowedExtensions
+          );
+          if (!validationResult.isValid) {
+            invalidFileNameFiles.push(relativePath);
+          }
         } else if (fileExtension) {
           invalidFiles.push(relativePath);
         }
@@ -383,6 +393,28 @@ const extractZipContents = async (file: File) => {
       showZipContents.value = false;
       bulkFileName.value = "";
       bulkFile.value = null;
+      if (bulkFileInput.value) {
+        bulkFileInput.value.value = "";
+      }
+      return;
+    }
+
+    // 파일명 validation 실패한 파일이 있으면 첨부 불가 처리
+    if (invalidFileNameFiles.length > 0) {
+      alert(
+        t("messages.warning.invalidFormulaFileNameFormat") +
+          "\n\n" +
+          t("messages.warning.zipInvalidFiles", {
+            files: invalidFileNameFiles.join("\n"),
+          })
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      bulkFileName.value = "";
+      bulkFile.value = undefined as unknown as File;
+      if (bulkFileInput.value) {
+        bulkFileInput.value.value = "";
+      }
       return;
     }
 
@@ -419,8 +451,70 @@ const extractZipContents = async (file: File) => {
     alert(t("messages.warning.zipReadFail"));
     zipFileList.value = [];
     showZipContents.value = false;
-    bulkFile.value = null;
+    bulkFileName.value = "";
+    bulkFile.value = undefined as unknown as File;
+    if (bulkFileInput.value) {
+      bulkFileInput.value.value = "";
+    }
   }
+};
+
+// ZIP 파일 내부 파일명 validation 함수
+const validateZipFileName = (
+  filePath: string,
+  allowedExtensions: string[]
+): { isValid: boolean; errorMessage?: string } => {
+  // 파일 경로에서 파일명만 추출 (경로 구분자 처리)
+  const fileName = filePath.split(/[\\/]/).pop() || filePath;
+
+  if (!fileName || fileName.trim() === "") {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  // 확장자 추출
+  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
+
+  // 허용된 확장자 체크
+  if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+    return { isValid: true }; // 확장자 체크는 별도로 처리
+  }
+
+  // 파일명에서 확장자를 제거한 이름 부분 검증
+  const extensionRegex = new RegExp(
+    `\\.${fileExtension.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+    "i"
+  );
+  const fileNameWithoutExt = fileName.replace(extensionRegex, "");
+
+  // 파일명이 비어있으면 안 됨
+  if (!fileNameWithoutExt || fileNameWithoutExt.trim() === "") {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+  const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+
+  if (!fileNameRegex.test(fileNameWithoutExt)) {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  if (fileNameWithoutExt.length > 100) {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  return { isValid: true };
 };
 
 // 공통 검증 함수: 기계명 필수 체크
@@ -499,12 +593,45 @@ const handleExcelFileChange = (e: Event) => {
     return;
   }
 
-  // 크기 검증 (예: 10MB)
+  // 크기 검증 (예: 200MB)
   const maxSize = 200 * 1024 * 1024; // 200MB
   if (file.size > maxSize) {
     alert(
       t("messages.warning.fileSizeExceed", { size: maxSize / 1024 / 1024 })
     );
+    input.value = "";
+    excelFileName.value = "";
+    excelFile.value = null;
+    return;
+  }
+
+  // 파일명 validation (확장자 제외)
+  // 여러 확장자 중 하나를 사용할 수 있는 경우 (.xlsx, .xls)
+  // 가장 긴 확장자부터 매칭하여 제거
+  let fileNameWithoutExt = file.name;
+  for (const allowedExt of allowed.sort((a, b) => b.length - a.length)) {
+    if (file.name.toLowerCase().endsWith(allowedExt.toLowerCase())) {
+      fileNameWithoutExt = file.name.substring(
+        0,
+        file.name.length - allowedExt.length
+      );
+      break;
+    }
+  }
+
+  // 100자 이내 체크
+  if (fileNameWithoutExt.length > 100) {
+    alert(t("messages.warning.invalidFormulaFileNameFormat"));
+    input.value = "";
+    excelFileName.value = "";
+    excelFile.value = null;
+    return;
+  }
+
+  // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+  const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+  if (!fileNameRegex.test(fileNameWithoutExt)) {
+    alert(t("messages.warning.invalidFormulaFileNameFormat"));
     input.value = "";
     excelFileName.value = "";
     excelFile.value = null;

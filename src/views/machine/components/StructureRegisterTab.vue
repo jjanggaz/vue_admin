@@ -294,6 +294,64 @@ const validateBasicSelections = (): boolean => {
   return true;
 };
 
+// ZIP 파일 내부 파일명 validation 함수
+const validateZipFileName = (
+  filePath: string,
+  allowedExtensions: string[]
+): { isValid: boolean; errorMessage?: string } => {
+  // 파일 경로에서 파일명만 추출 (경로 구분자 처리)
+  const fileName = filePath.split(/[\\/]/).pop() || filePath;
+
+  if (!fileName || fileName.trim() === "") {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  // 확장자 추출
+  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
+
+  // 허용된 확장자 체크
+  if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+    return { isValid: true }; // 확장자 체크는 별도로 처리
+  }
+
+  // 파일명에서 확장자를 제거한 이름 부분 검증
+  const extensionRegex = new RegExp(
+    `\\.${fileExtension.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+    "i"
+  );
+  const fileNameWithoutExt = fileName.replace(extensionRegex, "");
+
+  // 파일명이 비어있으면 안 됨
+  if (!fileNameWithoutExt || fileNameWithoutExt.trim() === "") {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
+  const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
+
+  if (!fileNameRegex.test(fileNameWithoutExt)) {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  if (fileNameWithoutExt.length > 100) {
+    return {
+      isValid: false,
+      errorMessage: t("messages.warning.invalidFormulaFileNameFormat"),
+    };
+  }
+
+  return { isValid: true };
+};
+
 // 편집 모드 삭제 로직 제거
 
 // ZIP 파일 내부 파일 목록 추출 함수 (임시 구현)
@@ -339,6 +397,7 @@ const extractZipContents = async (file: File) => {
       "gif",
     ];
     const invalidFiles: string[] = [];
+    const invalidFileNameFiles: string[] = [];
     let hasAllowedFile = false;
     let hasPy = false;
     let hasDtdx = false;
@@ -370,6 +429,15 @@ const extractZipContents = async (file: File) => {
           if (fileExtension === "dtdx") hasDtdx = true;
           if (["jpg", "jpeg", "png", "gif"].includes(fileExtension))
             hasImage = true;
+
+          // 허용된 확장자를 가진 파일들의 파일명 validation 체크
+          const validationResult = validateZipFileName(
+            relativePath,
+            allowedExtensions
+          );
+          if (!validationResult.isValid) {
+            invalidFileNameFiles.push(relativePath);
+          }
         } else if (fileExtension) {
           invalidFiles.push(relativePath);
         }
@@ -415,23 +483,24 @@ const extractZipContents = async (file: File) => {
       return;
     }
 
-    // 필수 파일(.py, .dtdx, 썸네일 이미지)이 모두 포함되어 있는지 검증
-    // if (!(hasPy && hasDtdx && hasImage)) {
-    //   const missing: string[] = [];
-    //   if (!hasPy) missing.push("계산식(.py)");
-    //   if (!hasDtdx) missing.push("3D모델(.dtdx)");
-    //   if (!hasImage) missing.push("썸네일 이미지(.jpg/.jpeg/.png/.gif)");
-    //   alert(
-    //     t("messages.warning.missingRequiredFilesInZip", {
-    //       missing: missing.join(", "),
-    //     })
-    //   );
-    //   zipFileList.value = [];
-    //   showZipContents.value = false;
-    //   allFileName.value = "";
-    //   allFile.value = undefined as unknown as File;
-    //   return;
-    // }
+    // 파일명 validation 실패한 파일이 있으면 첨부 불가 처리
+    if (invalidFileNameFiles.length > 0) {
+      alert(
+        t("messages.warning.invalidFormulaFileNameFormat") +
+          "\n\n" +
+          t("messages.warning.invalidFilesInZip", {
+            files: invalidFileNameFiles.join("\n"),
+          })
+      );
+      zipFileList.value = [];
+      showZipContents.value = false;
+      allFileName.value = "";
+      allFile.value = undefined as unknown as File;
+      if (allFileInput.value) {
+        allFileInput.value.value = "";
+      }
+      return;
+    }
 
     // 허용되지 않은 파일이 있으면 경고
     if (invalidFiles.length > 0) {
@@ -449,6 +518,11 @@ const extractZipContents = async (file: File) => {
     alert(t("messages.warning.zipFileReadError"));
     zipFileList.value = [];
     showZipContents.value = false;
+    allFileName.value = "";
+    allFile.value = undefined as unknown as File;
+    if (allFileInput.value) {
+      allFileInput.value.value = "";
+    }
   }
 };
 
@@ -457,96 +531,32 @@ const handleAllFileChange = async (e: Event) => {
   const input = e.target as HTMLInputElement;
   const file = input?.files && input.files[0];
   if (file) {
+    // 파일 크기 체크만 수행 (파일명 validation은 내부 파일에서 수행)
     const maxSize = 200;
     if (file.size > maxSize * 1024 * 1024) {
       alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
       input.value = ""; // input 초기화
       return;
     }
+
+    // ZIP 파일 확장자 체크
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".zip")) {
+      alert(t("messages.warning.zipFileExtensionOnly"));
+      input.value = ""; // input 초기화
+      return;
+    }
+
     allFileName.value = file.name;
     allFile.value = file;
 
-    // ZIP 파일인 경우 내부 파일 목록 추출
+    // ZIP 파일인 경우 내부 파일 목록 추출 (내부 파일명 validation 수행)
     if (file.name.toLowerCase().endsWith(".zip")) {
       await extractZipContents(file);
     } else {
       zipFileList.value = [];
       showZipContents.value = false;
     }
-  }
-  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
-  input.value = "";
-};
-
-const handleFormulaFileChange = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = ""; // input 초기화
-      return;
-    }
-    formulaFileName.value = file.name;
-    formulaFile.value = file;
-  }
-  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
-  input.value = "";
-};
-
-const handleDtdFileChange = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = ""; // input 초기화
-      return;
-    }
-    dtdFileName.value = file.name;
-    dtdFile.value = file;
-  }
-  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
-  input.value = "";
-};
-
-const handleThumbnailFileChange = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = ""; // input 초기화
-      return;
-    }
-    const allowed = ["image/png", "image/jpeg", "image/gif"];
-    if (!allowed.includes(file.type)) {
-      alert(t("messages.warning.imageFileOnly"));
-      input.value = ""; // input 초기화
-      return;
-    }
-    thumbnailFileName.value = file.name;
-    thumbnailFile.value = file;
-  }
-  // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
-  input.value = "";
-};
-
-const handleRevitFileChange = (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  const file = input?.files && input.files[0];
-  if (file) {
-    const maxSize = 200;
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(t("messages.warning.fileSizeExceed", { size: maxSize }));
-      input.value = ""; // input 초기화
-      return;
-    }
-    revitFileName.value = file.name;
-    revitFile.value = file;
   }
   // 파일 선택 후 input 초기화 (같은 파일 재선택 가능하도록)
   input.value = "";

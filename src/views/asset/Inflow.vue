@@ -2680,6 +2680,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   width: 100%;
+  flex: 1;
   min-width: 0; // 스와이퍼 바가 축소될 수 있도록 허용
 }
 
@@ -2687,6 +2688,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   overflow: hidden;
+  flex: 1;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
   padding: 0 20px;
 }
@@ -2708,6 +2710,7 @@ onBeforeUnmount(() => {
 
   .tab {
     display: inline-flex;
+    flex-shrink: 0;
     white-space: nowrap; // 텍스트 줄바꿈 방지
     overflow: hidden; // 넘치는 텍스트 숨김
     padding: 0 20px;
@@ -2716,6 +2719,7 @@ onBeforeUnmount(() => {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
+    
 
     &.active {
       height: 40px;
@@ -2752,13 +2756,9 @@ onBeforeUnmount(() => {
 
   &:disabled {
     background: #e7e6de;
-    opacity: 0.6;
+    opacity: .6;
     cursor: not-allowed;
   }
-}
-
-.tab-buttons {
-  flex-shrink: 0;
 }
 
 .symbol-image-preview {

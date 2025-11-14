@@ -5841,10 +5841,27 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         errorDetail: response.response?.detail || response.response?.message,
       });
 
+      // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
+      const itemIndex = mappingPidList.value.findIndex(
+        (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
+      );
+      if (itemIndex !== -1) {
+        console.log("Excel 업로드 실패 - 파일명 및 관련 데이터 초기화");
+        mappingPidList.value[itemIndex].excelFileName = "";
+        mappingPidList.value[itemIndex].excel_file_name = "";
+        mappingPidList.value[itemIndex].excelFile = undefined;
+        // Vue 반응성을 위해 배열 재할당
+        mappingPidList.value = [...mappingPidList.value];
+      }
+
       // 400 에러의 경우 더 상세한 정보 제공
+      const errorMsg =
+        response.response?.detail || 
+        (typeof response.response === 'string' ? JSON.parse(response.response || '{}').detail : null) ||
+        response.message || 
+        "알 수 없는 오류";
+      
       if (response.status === 400) {
-        const errorMsg =
-          response.response?.detail || response.message || "알 수 없는 오류";
         console.error("🚨 400 에러 가능한 원인들:");
         console.error(
           "1. API 엔드포인트가 잘못됨: /api/process/excel/child/upload"
@@ -5854,22 +5871,37 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         console.error("4. parent_drawing_id가 유효하지 않음");
         console.error("5. excelFile 파라미터는 올바르게 전달됨");
 
-        alert(
-          `Excel 파일 업로드 실패 (400 에러):\n${errorMsg}\n\n현재 파라미터 구조:\n- excelData Map: ${JSON.stringify(
-            excelData
-          )}\n- excelFile: ${
-            excelFile.name
-          }\n- 백엔드 컨트롤러 구조에 맞게 수정됨\n\n백엔드 개발자에게 문의하세요.`
+        const error = new Error(
+          `Excel 파일 업로드 실패 (400 에러): ${errorMsg}`
         );
+        alert(error.message);
+        throw error;
       } else {
-        alert(
-          `Excel 파일 업로드 실패: ${response.message || "알 수 없는 오류"}`
+        const error = new Error(
+          `Excel 파일 업로드 실패: ${errorMsg}`
         );
+        alert(error.message);
+        throw error;
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("P&ID Excel 파일 업로드 중 오류:", error);
-    alert(`Excel 파일 업로드 실패: ${error.message || error}`);
+    
+    // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
+    const itemIndex = mappingPidList.value.findIndex(
+      (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
+    );
+    if (itemIndex !== -1) {
+      console.log("Excel 업로드 실패 - 파일명 및 관련 데이터 초기화");
+      mappingPidList.value[itemIndex].excelFileName = "";
+      mappingPidList.value[itemIndex].excel_file_name = "";
+      mappingPidList.value[itemIndex].excelFile = undefined;
+      // Vue 반응성을 위해 배열 재할당
+      mappingPidList.value = [...mappingPidList.value];
+    }
+    
+    // 오류를 상위 함수로 전달 (상위 함수에서 alert 표시)
+    throw error;
   }
 };
 

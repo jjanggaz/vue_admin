@@ -428,20 +428,6 @@ onMounted(() => {
   font-size: 0.9rem;
   transition: background-color 0.2s;
 
-  &.btn-primary {
-    background-color: $primary-color;
-    color: white;
-
-    &:hover {
-      background-color: color.scale($primary-color, $lightness: -10%);
-    }
-
-    &:disabled {
-      background-color: $text-light;
-      cursor: not-allowed;
-    }
-  }
-
   &.btn-secondary {
     background-color: $background-light;
     color: $text-color;
@@ -450,20 +436,6 @@ onMounted(() => {
     &:hover {
       background-color: color.scale($background-light, $lightness: -5%);
     }
-  }
-}
-
-.btn-search {
-  background-color: $primary-color;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-
-  &:hover {
-    background-color: color.scale($primary-color, $lightness: -10%);
   }
 }
 

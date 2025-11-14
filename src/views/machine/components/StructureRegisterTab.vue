@@ -902,29 +902,9 @@ $desktop: 1200px;
 }
 
 .btn-register {
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #059669;
-  }
-
-  &:active {
-    background: #047857;
-  }
-
   @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -1016,21 +996,6 @@ $desktop: 1200px;
 
   .btn-file {
     flex-shrink: 0;
-  }
-}
-
-.btn-primary {
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  white-space: nowrap;
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
   }
 }
 

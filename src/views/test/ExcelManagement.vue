@@ -465,20 +465,6 @@ onMounted(() => {
     }
   }
 
-  &.btn-primary {
-    background-color: $primary-color;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background-color: color.scale($primary-color, $lightness: -10%);
-    }
-
-    &:disabled {
-      background-color: $border-color;
-      cursor: not-allowed;
-    }
-  }
-
   &.btn-success {
     background-color: #10b981;
     color: white;

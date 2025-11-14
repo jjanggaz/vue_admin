@@ -488,28 +488,4 @@ onUnmounted(() => {
   display: flex;
   gap: 10px;
 }
-
-.btn-search {
-  height: 32px;
-  padding: 0 20px;
-  border-radius: 4px;
-  font-size: 14px;
-  min-width: 80px;
-  border: 1px solid #1c1c1c;
-  color: #ffffff;
-  background-color: #4a9eff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  
-  &:hover {
-    background-color: #3a8eef;
-    border-color: #3a8eef;
-  }
-  
-  &:active {
-    background-color: #2a7edf;
-  }
-}
-
 </style>

@@ -481,15 +481,6 @@ onMounted(() => {
   font-weight: 500;
   transition: all 0.2s;
 
-  &.btn-primary {
-    background-color: #1e40af;
-    color: white;
-
-    &:hover {
-      background-color: #1e3a8a;
-    }
-  }
-
   &.btn-secondary {
     background-color: #6b7280;
     color: white;

@@ -2602,7 +2602,7 @@ onBeforeUnmount(() => {
 }
 
 .outflow {
-  padding: $spacing-xl;
+  padding: 40px 24px;
   min-width: 0; // 전체 컨테이너가 축소될 수 있도록 허용
 
   .page-content {

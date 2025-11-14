@@ -1013,21 +1013,7 @@ const closeMenuPermissionsModal = () => {
   transition: background-color 0.2s;
 }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-primary:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
+/* .btn-secondary {
   background-color: #6c757d;
   color: white;
 }
@@ -1046,21 +1032,5 @@ const closeMenuPermissionsModal = () => {
 
 .btn-delete:disabled {
   background-color: #6c757d;
-}
-
-.btn-view {
-  background-color: #10b981;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.btn-view:hover {
-  background-color: #059669;
-}
+} */
 </style>

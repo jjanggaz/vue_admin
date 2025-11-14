@@ -659,14 +659,6 @@ const resetForm = () => {
         cursor: not-allowed;
       }
 
-      &.btn-primary {
-        background-color: $primary-color;
-        color: white;
-        &:hover:not(:disabled) {
-          background-color: darken($primary-color, 10%);
-        }
-      }
-
       &.btn-secondary {
         background-color: white;
         border-color: $border-color;

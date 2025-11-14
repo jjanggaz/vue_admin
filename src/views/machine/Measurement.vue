@@ -3801,15 +3801,6 @@ onMounted(async () => {
   font-size: 0.9rem;
   transition: background-color 0.2s;
 
-  &.btn-primary {
-    color: white;
-
-    &:disabled {
-      background-color: $text-light;
-      cursor: not-allowed;
-    }
-  }
-
   &.btn-secondary {
     background-color: $background-light;
     color: $text-color;
@@ -3818,35 +3809,6 @@ onMounted(async () => {
     &:hover {
       background-color: color.scale($background-light, $lightness: -5%);
     }
-  }
-}
-
-.btn-search {
-  background-color: $primary-color;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-
-  &:hover {
-    background-color: color.scale($primary-color, $lightness: -10%);
-  }
-}
-
-.btn-view {
-  background-color: $primary-color;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: color.scale($primary-color, $lightness: -10%);
   }
 }
 
@@ -4197,19 +4159,6 @@ $tablet: 1024px;
 }
 
 .btn-register {
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  white-space: nowrap;
-
-  &:hover {
-    background-color: #357abd;
-  }
-
   @media (max-width: $mobile) {
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;

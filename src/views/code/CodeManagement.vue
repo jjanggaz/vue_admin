@@ -1284,22 +1284,6 @@ const handleEdit = () => {
   }
 }
 
-.btn-search {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: auto;
-
-  &:hover {
-    background-color: #2563eb;
-  }
-}
-
 // Main Content Section
 .main-content {
   display: flex;

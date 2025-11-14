@@ -555,20 +555,6 @@ const formatDate = (date: Date): string => {
   font-size: $font-size-sm;
   transition: $transition-base;
 
-  &.btn-primary {
-    background: $primary-color;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: color.scale($primary-color, $lightness: -10%);
-    }
-
-    &:disabled {
-      background: $border-color;
-      cursor: not-allowed;
-    }
-  }
-
   &.btn-secondary {
     background: $background-darker;
     color: white;

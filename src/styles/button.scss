@@ -36,11 +36,11 @@
   }
 
   &.btn-primary {
-    background-color: $primary-color;
+    background-color: #222E77;
     color: white;
 
     &:hover:not(:disabled) {
-      background-color: color.scale($primary-color, $lightness: -10%);
+      background-color: #29378C;
     }
 
     &.btn-delete {
@@ -96,4 +96,51 @@
     &:hover {
       background-color: #3C4973;
     }
+}
+
+.btn-search {
+  background-color: #222E77;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: auto;
+
+  &:hover {
+    background-color: #29378C;
+  }
+}
+
+.btn-view {
+  background-color: #3e435e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #3C4973;
+  }
+}
+
+.btn-register {
+  background-color: #222E77;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #29378C;
+  }
 }

@@ -12562,18 +12562,6 @@ watch(
   box-sizing: border-box !important;
 }
 
-.btn-register {
-  padding: 8px 24px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 .btn-register:hover:not(:disabled) {
   background-color: #0056b3;
 }

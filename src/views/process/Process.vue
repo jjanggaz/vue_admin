@@ -2203,20 +2203,6 @@ onMounted(async () => {
   flex: 1;
 }
 
-.btn-view {
-  background-color: $primary-color;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-
-  &:hover {
-    background-color: color.scale($primary-color, $lightness: -10%);
-  }
-}
-
 .pagination-container {
   display: flex;
   justify-content: center;

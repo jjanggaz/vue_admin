@@ -773,20 +773,6 @@ $desktop: 1200px;
   }
 }
 
-.btn-primary {
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  white-space: nowrap;
-
-  @media (max-width: $mobile) {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-}
-
 .btn-danger {
   background: #e74c3c;
   color: #fff;
@@ -929,27 +915,9 @@ $desktop: 1200px;
 }
 
 .btn-register {
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  white-space: nowrap;
-  cursor: pointer;
-  font-size: 14px;
-
-  &:hover:not(:disabled) {
-    background: #1557b0;
-  }
-
-  &:disabled {
-    background: #d0d5dd;
-    cursor: not-allowed;
-  }
-
   @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
   }
 }
 

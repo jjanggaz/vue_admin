@@ -753,20 +753,6 @@ onMounted(() => {
     cursor: pointer;
     transition: $transition-base;
 
-    &.btn-primary {
-      background-color: $primary-color;
-      color: white;
-
-      &:hover:not(:disabled) {
-        background-color: color.scale($primary-color, $lightness: -10%);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-
     &.btn-secondary {
       background-color: $background-light;
       color: $text-color;

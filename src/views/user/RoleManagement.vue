@@ -309,6 +309,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRoleStore } from "@/stores/roleStore";
 import { useMenuStore } from "@/stores/menuStore";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import DataTable from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import AccordionTable, {
@@ -323,6 +324,10 @@ import type {
 import type { MenuItem } from "@/stores/menuStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const roleStore = useRoleStore();
 const menuStore = useMenuStore();
 
@@ -666,7 +671,13 @@ const handleDelete = async () => {
         await loadRoles();
       } catch (error) {
         console.error("권한 삭제 실패:", error);
-        alert(t("messages.error.deleteFailed"));
+        const errorMessage = translateMessage(
+          error && typeof error === "object" && "message" in error
+            ? (error as { message: string }).message
+            : undefined,
+          "messages.error.deleteFailed"
+        );
+        alert(errorMessage);
       }
     }
   }
@@ -708,7 +719,10 @@ const handleSubmit = async () => {
     await loadRoles();
   } catch (error: any) {
     console.error("권한 저장 실패:", error);
-    const errorMessage = error?.message || "권한 저장에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -741,7 +755,13 @@ const viewMenuPermissions = async (role: Role) => {
     isMenuPermissionsModalOpen.value = true;
   } catch (error) {
     console.error("메뉴권한 조회 실패:", error);
-    alert(t("messages.error.loadFailed"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.loadFailed"
+    );
+    alert(errorMessage);
   }
 };
 

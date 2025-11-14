@@ -57,11 +57,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
 const projectStore = useProjectStore();
 const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
 const selectedItems = ref<ProjectItem[]>([]);
@@ -161,7 +165,10 @@ const handlePageChange = async (page: number) => {
     });
   } catch (error: any) {
     console.error("페이지 변경 실패:", error);
-    const errorMessage = error?.message || "페이지 변경에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.pageChangeFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -187,7 +194,10 @@ const handleSearch = async () => {
     });
   } catch (error: any) {
     console.error("검색 실패:", error);
-    const errorMessage = error?.message || "검색에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.searchFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -246,7 +256,7 @@ onMounted(async () => {
   .form-item {
     input {
       width: 240px;
-      height:40px;
+      height: 40px;
     }
   }
 }

@@ -49,7 +49,11 @@
                 @keyup.enter="handleSearch"
                 class="form-input"
               />
-              <button class="btn-detail-search" @click="toggleDetailSearch" style="display: none;">
+              <button
+                class="btn-detail-search"
+                @click="toggleDetailSearch"
+                style="display: none"
+              >
                 {{ t("common.detailCondition") }}
                 <span class="arrow-icon">{{
                   isDetailSearchOpen ? "▲" : "▼"
@@ -495,7 +499,16 @@
 
           <!-- 배관코드 슬롯 (줄바꿈 지원) -->
           <template #cell-equipment_code="{ item }">
-            <span style="word-break: break-word; white-space: normal; line-height: 1.4; display: inline-block; max-width: 100%;">{{ item.equipment_code || "-" }}</span>
+            <span
+              style="
+                word-break: break-word;
+                white-space: normal;
+                line-height: 1.4;
+                display: inline-block;
+                max-width: 100%;
+              "
+              >{{ item.equipment_code || "-" }}</span
+            >
           </template>
 
           <!-- 업체명 슬롯 -->
@@ -662,16 +675,27 @@
           <!-- 등록 폼 -->
           <div class="electrical-register-form">
             <!-- 상단 검색/필터 영역 -->
-            <div class="filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; overflow: hidden;">
-              <div class="group-form inline" style="flex-shrink: 0; gap: 4px;">
-                <span class="label required" style="min-width: auto; white-space: nowrap;"
+            <div
+              class="filter-bar"
+              style="
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: nowrap;
+                overflow: hidden;
+              "
+            >
+              <div class="group-form inline" style="flex-shrink: 0; gap: 4px">
+                <span
+                  class="label required"
+                  style="min-width: auto; white-space: nowrap"
                   >⊙ {{ t("common.unit") }}</span
                 >
                 <select
                   class="input select-md"
                   v-model="registerSelectedUnit"
                   :disabled="registerIsRegistered"
-                  style="max-width: 70px; width: 70px; flex-shrink: 0;"
+                  style="max-width: 70px; width: 70px; flex-shrink: 0"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -683,15 +707,17 @@
                   </option>
                 </select>
               </div>
-              <div class="group-form inline" style="flex-shrink: 0; gap: 4px;">
-                <span class="label required" style="min-width: auto; white-space: nowrap;"
+              <div class="group-form inline" style="flex-shrink: 0; gap: 4px">
+                <span
+                  class="label required"
+                  style="min-width: auto; white-space: nowrap"
                   >⊙ {{ t("electrical.materialType") }}</span
                 >
                 <select
                   class="input select-md"
                   v-model="registerSelectedElectricalName"
                   :disabled="registerIsRegistered"
-                  style="max-width: 80px; width: 80px; flex-shrink: 0;"
+                  style="max-width: 80px; width: 80px; flex-shrink: 0"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -703,16 +729,26 @@
                   </option>
                 </select>
               </div>
-              <div class="group-form inline" style="flex: 1; min-width: 0; gap: 6px;">
-                <span class="label required" style="min-width: auto; white-space: nowrap;">⊙ {{ t("common.excelUpload") }}</span>
-                <div class="file-upload-group" style="display: flex; gap: 6px; flex: 1; min-width: 0;">
+              <div
+                class="group-form inline"
+                style="flex: 1; min-width: 0; gap: 6px"
+              >
+                <span
+                  class="label required"
+                  style="min-width: auto; white-space: nowrap"
+                  >⊙ {{ t("common.excelUpload") }}</span
+                >
+                <div
+                  class="file-upload-group"
+                  style="display: flex; gap: 6px; flex: 1; min-width: 0"
+                >
                   <input
                     type="text"
                     class="input file-name-input"
                     :value="registerExcelFileName"
                     readonly
                     :placeholder="t('placeholder.selectFile')"
-                    style="flex: 1; min-width: 0; width: 0;"
+                    style="flex: 1; min-width: 0; width: 0"
                   />
                   <input
                     type="file"
@@ -725,13 +761,16 @@
                     type="button"
                     class="btn-file"
                     @click="registerExcelFileInput?.click()"
-                    style="flex-shrink: 0; white-space: nowrap;"
+                    style="flex-shrink: 0; white-space: nowrap"
                   >
                     {{ t("common.selectFile") }}
                   </button>
                 </div>
               </div>
-              <div class="group-form inline right-align" style="flex-shrink: 0; gap: 6px;">
+              <div
+                class="group-form inline right-align"
+                style="flex-shrink: 0; gap: 6px"
+              >
                 <button
                   type="button"
                   class="btn-outline"
@@ -750,8 +789,10 @@
             </div>
 
             <!-- 전기자재 리스트 업로드 영역 -->
-            <div class="section-header" style="display: none;">
-              <div class="section-title">⊙ {{ t("common.electricalUpload") }}</div>
+            <div class="section-header" style="display: none">
+              <div class="section-title">
+                ⊙ {{ t("common.electricalUpload") }}
+              </div>
               <div class="section-actions">
                 <div class="file-upload-group">
                   <input
@@ -851,9 +892,14 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useElectricalStore } from "@/stores/electricalStore";
 
 const { t, locale } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const electricalStore = useElectricalStore();
 
 interface PriceHistoryItem {
@@ -906,7 +952,12 @@ interface MachineItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("columns.electrical.no"), width: "60px", sortable: false },
+  {
+    key: "no",
+    title: t("columns.electrical.no"),
+    width: "60px",
+    sortable: false,
+  },
   {
     key: "equipment_type_name",
     title: t("columns.electrical.majorCategory"),
@@ -1075,7 +1126,9 @@ const parseHierarchy = (fullHierarchy?: string) => {
 
 // hierarchy_info에서 값을 가져오는 헬퍼 함수들
 const getMajorCategory = (item: MachineItem): string => {
-  const hierarchyInfo = item.hierarchy_info as { full_hierarchy?: string } | undefined;
+  const hierarchyInfo = item.hierarchy_info as
+    | { full_hierarchy?: string }
+    | undefined;
   if (hierarchyInfo?.full_hierarchy) {
     const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
     if (parsed.majorCategory) return parsed.majorCategory;
@@ -1084,32 +1137,32 @@ const getMajorCategory = (item: MachineItem): string => {
 };
 
 const getMiddleCategory = (item: MachineItem): string => {
-  const hierarchyInfo = item.hierarchy_info as {
-    full_hierarchy?: string;
-    middle_category_name?: string;
-    middle_category?: string;
-  } | undefined;
+  const hierarchyInfo = item.hierarchy_info as
+    | {
+        full_hierarchy?: string;
+        middle_category_name?: string;
+        middle_category?: string;
+      }
+    | undefined;
   if (hierarchyInfo?.full_hierarchy) {
     const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
     if (parsed.middleCategory) return parsed.middleCategory;
   }
   return (
-    hierarchyInfo?.middle_category_name ||
-    hierarchyInfo?.middle_category ||
-    "-"
+    hierarchyInfo?.middle_category_name || hierarchyInfo?.middle_category || "-"
   );
 };
 
 const getElectricalType = (item: MachineItem): string => {
-  const hierarchyInfo = item.hierarchy_info as { full_hierarchy?: string } | undefined;
+  const hierarchyInfo = item.hierarchy_info as
+    | { full_hierarchy?: string }
+    | undefined;
   if (hierarchyInfo?.full_hierarchy) {
     const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
     if (parsed.electricalType) return parsed.electricalType;
   }
   return item.equipment_type || "-";
 };
-
-
 
 // 상세검색 관련 변수들
 const isDetailSearchOpen = ref(false);
@@ -1194,14 +1247,16 @@ const getLatestPriceReference = (history?: PriceHistoryItem[]) => {
     return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
   };
 
-  return history.reduce((latest, current) => {
-    if (!latest) {
-      return current;
-    }
-    return parseTime(current.price_date) > parseTime(latest.price_date)
-      ? current
-      : latest;
-  }).price_reference || "";
+  return (
+    history.reduce((latest, current) => {
+      if (!latest) {
+        return current;
+      }
+      return parseTime(current.price_date) > parseTime(latest.price_date)
+        ? current
+        : latest;
+    }).price_reference || ""
+  );
 };
 
 // VerticalDataTable용 사양 데이터 - 동적 생성
@@ -1218,8 +1273,10 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.electrical.code"),
-    value: isDetailEditMode.value 
-      ? (detailItemData.value ? (detailItemData.value as any).equipment_code || "" : "")
+    value: isDetailEditMode.value
+      ? detailItemData.value
+        ? (detailItemData.value as any).equipment_code || ""
+        : ""
       : item.equipment_code || "-",
     editable: false,
     fieldType: "input",
@@ -1227,14 +1284,18 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.electrical.company"),
-    value: isDetailEditMode.value ? item.vendor_id || "" : item.vendor_id || "-",
+    value: isDetailEditMode.value
+      ? item.vendor_id || ""
+      : item.vendor_id || "-",
     editable: false,
     fieldType: "select",
     options: manufacturers.value,
   });
   data.push({
     columnName: t("columns.electrical.model"),
-    value: isDetailEditMode.value ? item.model_number || "" : item.model_number || "-",
+    value: isDetailEditMode.value
+      ? item.model_number || ""
+      : item.model_number || "-",
     editable: false,
     fieldType: "input",
   });
@@ -1359,7 +1420,9 @@ const specVerticalData = computed(() => {
   data.push({
     columnName: isEnglish ? "Usage Status" : "사용여부",
     value: isDetailEditMode.value
-      ? item.is_active !== undefined ? item.is_active : true
+      ? item.is_active !== undefined
+        ? item.is_active
+        : true
       : item.is_active !== undefined
       ? item.is_active
         ? isEnglish
@@ -1718,8 +1781,10 @@ const onDownloadExcelTemplate = async () => {
     }
   } catch (error) {
     console.error("템플릿 다운로드 실패:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : t("messages.error.downloadFailed");
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.downloadFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -1765,8 +1830,10 @@ const handleElectricalRegister = async () => {
     registerIsRegistered.value = true;
   } catch (error) {
     console.error("배관 등록 실패:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -1812,8 +1879,10 @@ const handleModelRegister = async () => {
     }
   } catch (error) {
     console.error("모델 등록 실패:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -1849,10 +1918,10 @@ const handleDelete = async () => {
       await loadData();
     } catch (error) {
       console.error("삭제 실패:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t("messages.error.deleteFailed");
+      const errorMessage = translateMessage(
+        error instanceof Error ? error.message : undefined,
+        "messages.error.deleteFailed"
+      );
       alert(errorMessage);
     }
   }
@@ -1875,30 +1944,43 @@ const openDetailPanel = async (item: MachineItem) => {
     };
 
     // 각 output_values 필드에 대해 해당 price_type의 최신 price_reference 찾기
-    Object.entries(item.output_values).forEach(([key, field]: [string, any]) => {
-      const priceType = (field.key || "").toUpperCase();
-      if (priceType) {
-        // 해당 price_type의 최신 이력 찾기
-        const latestHistory = priceHistory
-          .filter((h: PriceHistoryItem) => h.price_type?.toUpperCase() === priceType)
-          .reduce((latest: PriceHistoryItem | null, current: PriceHistoryItem) => {
-            if (!latest) {
-              return current;
-            }
-            return parseTime(current.price_date) > parseTime(latest.price_date)
-              ? current
-              : latest;
-          }, null);
+    Object.entries(item.output_values).forEach(
+      ([key, field]: [string, any]) => {
+        const priceType = (field.key || "").toUpperCase();
+        if (priceType) {
+          // 해당 price_type의 최신 이력 찾기
+          const latestHistory = priceHistory
+            .filter(
+              (h: PriceHistoryItem) => h.price_type?.toUpperCase() === priceType
+            )
+            .reduce(
+              (latest: PriceHistoryItem | null, current: PriceHistoryItem) => {
+                if (!latest) {
+                  return current;
+                }
+                return parseTime(current.price_date) >
+                  parseTime(latest.price_date)
+                  ? current
+                  : latest;
+              },
+              null
+            );
 
-        if (latestHistory && latestHistory.price_reference && item.output_values) {
-          // output_values에 price_reference 설정
-          if (!item.output_values[key]) {
-            item.output_values[key] = {};
+          if (
+            latestHistory &&
+            latestHistory.price_reference &&
+            item.output_values
+          ) {
+            // output_values에 price_reference 설정
+            if (!item.output_values[key]) {
+              item.output_values[key] = {};
+            }
+            item.output_values[key].price_reference =
+              latestHistory.price_reference;
           }
-          item.output_values[key].price_reference = latestHistory.price_reference;
         }
       }
-    });
+    );
   }
 
   // 원본 데이터 백업 (깊은 복사) - price_reference 설정 후 백업
@@ -2152,11 +2234,11 @@ const saveDetailChanges = async () => {
           }
         }
       }
-      
+
       // 응답에 오류 메시지가 있는 경우 경고 표시
       const errorMessage = response?.message || response?.response?.message;
       if (errorMessage && errorMessage.trim() !== "") {
-        alert(errorMessage);
+        alert(translateMessage(errorMessage, "messages.error.saveFailed"));
       } else {
         alert(t("messages.success.saved"));
       }
@@ -2186,14 +2268,23 @@ const saveDetailChanges = async () => {
     }
   } catch (error) {
     console.error("저장 중 오류 발생:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.saveFailed"
+    );
+    alert(errorMessage);
   }
 };
 
 // 파일 업로드 관련 기능 제거됨
 
 // 그리드에서 필드 변경 처리
-const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
+const handleFieldChange = (
+  fieldName: string,
+  value: string | boolean | number
+) => {
   const isEnglish = locale.value === "en";
 
   // editData에 반영
@@ -2249,7 +2340,8 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       boolValue = value;
     } else {
       const strValue = String(value);
-      boolValue = strValue === "true" || strValue === "사용" || strValue === "Used";
+      boolValue =
+        strValue === "true" || strValue === "사용" || strValue === "Used";
     }
     editData.value.is_active = boolValue;
     if (detailItemData.value) {
@@ -2271,9 +2363,7 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
     const item = detailItemData.value;
     if (!item) return;
 
-    const providerSuffix = isEnglish
-      ? " (Unit Price Source)"
-      : " (단가출처)";
+    const providerSuffix = isEnglish ? " (Unit Price Source)" : " (단가출처)";
 
     // output_values에서 찾기
     if (item.output_values) {
@@ -2291,7 +2381,8 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
         if (providerField) {
           const [key] = providerField;
           if (editData.value.output_values[key]) {
-            const strValue = typeof value === "string" ? value.trim() : String(value);
+            const strValue =
+              typeof value === "string" ? value.trim() : String(value);
             editData.value.output_values[key].price_reference = strValue;
           }
           return;
@@ -2306,18 +2397,19 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       );
       if (outputField) {
         const [key] = outputField;
-                        // 객체 구조를 유지하면서 value만 업데이트
-                if (editData.value.output_values[key]) {
-                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-                  const strValue = String(value);
-                  const numValue = Number(strValue);
-                  editData.value.output_values[key].value =
-                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-                  // detailItemData도 업데이트
-                  if (item.output_values[key]) {
-                    item.output_values[key].value = editData.value.output_values[key].value;
-                  }
-                }
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.output_values[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.output_values[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.output_values[key]) {
+            item.output_values[key].value =
+              editData.value.output_values[key].value;
+          }
+        }
         console.log(`output_values.${key}.value 업데이트:`, value);
         return;
       }
@@ -2333,18 +2425,19 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       );
       if (searchField) {
         const [key] = searchField;
-                        // 객체 구조를 유지하면서 value만 업데이트
-                if (editData.value.search_criteria[key]) {
-                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-                  const strValue = String(value);
-                  const numValue = Number(strValue);
-                  editData.value.search_criteria[key].value =
-                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-                  // detailItemData도 업데이트
-                  if (item.search_criteria[key]) {
-                    item.search_criteria[key].value = editData.value.search_criteria[key].value;
-                  }
-                }
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.search_criteria[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.search_criteria[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.search_criteria[key]) {
+            item.search_criteria[key].value =
+              editData.value.search_criteria[key].value;
+          }
+        }
         console.log(`search_criteria.${key}.value 업데이트:`, value);
         return;
       }
@@ -2360,18 +2453,19 @@ const handleFieldChange = (fieldName: string, value: string | boolean | number) 
       );
       if (specField) {
         const [key] = specField;
-                        // 객체 구조를 유지하면서 value만 업데이트
-                if (editData.value.specifications[key]) {
-                  // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-                  const strValue = String(value);
-                  const numValue = Number(strValue);
-                  editData.value.specifications[key].value =
-                    !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-                  // detailItemData도 업데이트
-                  if (item.specifications[key]) {
-                    item.specifications[key].value = editData.value.specifications[key].value;
-                  }
-                }
+        // 객체 구조를 유지하면서 value만 업데이트
+        if (editData.value.specifications[key]) {
+          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
+          const strValue = String(value);
+          const numValue = Number(strValue);
+          editData.value.specifications[key].value =
+            !isNaN(numValue) && strValue !== "" ? numValue : strValue;
+          // detailItemData도 업데이트
+          if (item.specifications[key]) {
+            item.specifications[key].value =
+              editData.value.specifications[key].value;
+          }
+        }
         console.log(`specifications.${key}.value 업데이트:`, value);
         return;
       }
@@ -2642,7 +2736,10 @@ const handleMachineCategoryChange = async () => {
         (row: any) => row.code_key === selectedMachineCategory.value
       );
       if (selected?.code_group) {
-        const res = await electricalStore.fetchDepthDetail(selected.code_group, 3);
+        const res = await electricalStore.fetchDepthDetail(
+          selected.code_group,
+          3
+        );
         const codes = (res as any)?.response?.data?.codes ?? [];
         if (Array.isArray(codes)) {
           const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
@@ -3817,7 +3914,6 @@ $tablet: 1024px;
     padding: 0 0.75rem 0.75rem 0.75rem;
   }
 }
-
 
 .column-regist {
   display: grid;

@@ -715,9 +715,14 @@ import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
 import MachineRegisterTab from "./components/MachineRegisterTab.vue";
 import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t, locale } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const machineStore = useMachineStore();
 
 // 모달 탭 구성 - 등록 모드만 사용
@@ -1268,10 +1273,10 @@ const handleDelete = async () => {
       await loadData();
     } catch (error) {
       console.error("삭제 실패:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t("messages.error.deleteFailed");
+      const errorMessage = translateMessage(
+        error instanceof Error ? error.message : undefined,
+        "messages.error.deleteFailed"
+      );
       alert(errorMessage);
     }
   }
@@ -1518,7 +1523,13 @@ const saveDetailChanges = async () => {
     }
   } catch (error) {
     console.error("저장 중 오류 발생:", error);
-    alert(t("messages.error.saveFailed"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.saveFailed"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -3118,7 +3129,7 @@ onMounted(async () => {
 
   &.btn-primary {
     color: white;
-    
+
     &:disabled {
       background-color: $text-light;
       cursor: not-allowed;

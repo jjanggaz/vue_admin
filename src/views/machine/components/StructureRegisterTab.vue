@@ -194,6 +194,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { ref, onMounted } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 
@@ -202,6 +203,10 @@ import { useStructureStore } from "@/stores/structureStore";
 // 등록 전용 컴포넌트로 사용 (props 바인딩 제거)
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const structureStore = useStructureStore();
 
 const isRegistered = ref(false); // 등록 완료 상태
@@ -515,7 +520,13 @@ const extractZipContents = async (file: File) => {
     showZipContents.value = true;
   } catch (error) {
     console.error("ZIP 파일 읽기 실패:", error);
-    alert(t("messages.warning.zipFileReadError"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.warning.zipFileReadError"
+    );
+    alert(errorMessage);
     zipFileList.value = [];
     showZipContents.value = false;
     allFileName.value = "";
@@ -627,7 +638,13 @@ const onRegister = async () => {
     }
   } catch (error) {
     console.error("구조물 등록 실패:", error);
-    alert(t("messages.warning.structureRegisterError"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.warning.structureRegisterError"
+    );
+    alert(errorMessage);
   }
 };
 

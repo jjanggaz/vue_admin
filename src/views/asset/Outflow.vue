@@ -804,6 +804,7 @@
 import { ref, nextTick, computed, onMounted, onBeforeUnmount } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useInflowStore } from "@/stores/inflow";
 import WaterCodeManagement from "./components/WaterCodeManagement.vue";
 
@@ -811,13 +812,7 @@ const { t } = useI18n();
 const outflowStore = useInflowStore();
 
 // 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
-const translateMessage = (
-  message: string | undefined,
-  fallbackKey: string
-): string => {
-  if (!message) return t(fallbackKey);
-  return message.startsWith("messages.") ? t(message) : message;
-};
+const translateMessage = useTranslateMessage();
 const newOutflowTypeName = ref("");
 const newOutflowTypeNameEn = ref("");
 const selectedOutputType = ref(""); // 선택된 유출종류 코드
@@ -1471,7 +1466,7 @@ const handleMetricFileUpload = async (event: Event) => {
               parameter_id: matchingParameter.parameter_id || "",
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
-              effluent: paramData.value || 0,
+              effluent: paramData.default_value || 0,
               unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
               is_active: true,
               is_required: !!paramData.is_required,
@@ -1579,7 +1574,7 @@ const handleUpdateMetricFileUpload = async (event: Event) => {
               parameter_id: matchingParameter.parameter_id || "",
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
-              effluent: paramData.value || 0,
+              effluent: paramData.default_value || 0,
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
@@ -1681,7 +1676,7 @@ const handleUscsFileUpload = async (event: Event) => {
               parameter_id: matchingParameter.parameter_id || "",
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
-              effluent: paramData.value || 0,
+              effluent: paramData.default_value || 0,
               unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
               is_active: true,
               is_required: !!paramData.is_required,
@@ -1789,7 +1784,7 @@ const handleUpdateUscsFileUpload = async (event: Event) => {
               parameter_id: matchingParameter.parameter_id || "",
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
-              effluent: paramData.value || 0,
+              effluent: paramData.default_value || 0,
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
@@ -2925,10 +2920,10 @@ onBeforeUnmount(() => {
   margin-bottom: $spacing-sm;
 
   .btn.btn-delete {
-    padding:8px 16px 8px 36px;
+    padding: 8px 16px 8px 36px;
     background-color: #3e435e;
     &:hover {
-      background-color: #3C4973;
+      background-color: #3c4973;
     }
   }
 }

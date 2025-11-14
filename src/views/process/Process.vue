@@ -455,9 +455,14 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import ProcessDetail from "./ProcessDetail.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useProcessStore, type ProcessItem } from "@/stores/processStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const processStore = useProcessStore();
 
 // 공정명 값 변경 추적
@@ -763,7 +768,11 @@ const handleDelete = async () => {
       console.log("삭제 후 그리드 새로고침");
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);
-      alert(`삭제 처리 중 오류가 발생했습니다: ${error.message}`);
+      const errorMessage = translateMessage(
+        error?.message,
+        "messages.error.deleteFailed"
+      );
+      alert(errorMessage);
     }
   } else {
     console.log("삭제 취소됨");
@@ -1116,7 +1125,13 @@ const saveProcessRegistration = async () => {
     closeRegistModal();
   } catch (error) {
     console.error("공정 등록 실패:", error);
-    alert("공정 등록에 실패했습니다.");
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.processRegisterFailed"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -1438,8 +1453,11 @@ const handleSearch = async () => {
     await processStore.searchProcesses();
     console.log("=== searchProcesses 호출 완료 ===");
   } catch (error: any) {
-    const errorMessage = error?.message || "검색 중 오류가 발생했습니다.";
-    alert(`검색 실패: ${errorMessage}`);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.searchFailed"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -2215,4 +2233,3 @@ onMounted(async () => {
   }
 }
 </style>
-

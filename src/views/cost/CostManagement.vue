@@ -193,9 +193,13 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { request } from "@/utils/request";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
 
 interface CostItem {
   id: string;
@@ -336,7 +340,10 @@ const loadData = async () => {
   } catch (error: any) {
     console.error("단가표 데이터 로드 실패:", error);
     // 백엔드 에러 메시지 표시
-    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.dataLoadFailed"
+    );
     alert(errorMessage);
     // API 실패 시 샘플 데이터 사용
     loadSampleData();
@@ -472,7 +479,10 @@ const handleSave = async () => {
     selectedItems.value = [];
   } catch (error: any) {
     console.error("저장 실패:", error);
-    const errorMessage = error?.message || t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -506,7 +516,10 @@ const handleDelete = async () => {
       alert(t("messages.success.deleted"));
     } catch (error: any) {
       console.error("삭제 실패:", error);
-      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      const errorMessage = translateMessage(
+        error?.message,
+        "messages.error.deleteFailed"
+      );
       alert(errorMessage);
     }
   }

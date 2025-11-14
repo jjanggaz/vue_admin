@@ -123,6 +123,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useMenuStore } from "@/stores/menuStore";
 import type { MenuItem } from "@/stores/menuStore";
 import AccordionTable, {
@@ -130,6 +131,10 @@ import AccordionTable, {
 } from "@/components/common/AccordionTable.vue";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const menuStore = useMenuStore();
 
 // 상태 관리
@@ -241,7 +246,10 @@ const saveMenu = async () => {
     await loadData();
   } catch (error: any) {
     console.error("메뉴 저장 실패:", error);
-    const errorMessage = error?.message || t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -262,7 +270,10 @@ const loadData = async () => {
     }
   } catch (error: any) {
     console.error("데이터 로딩 실패:", error);
-    const errorMessage = error?.message || t("messages.error.loadFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.loadFailed"
+    );
     alert(errorMessage);
   } finally {
     loading.value = false;

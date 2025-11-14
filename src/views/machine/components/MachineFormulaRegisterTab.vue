@@ -120,11 +120,16 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { ref, watch } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const machineStore = useMachineStore();
 
 // 선택 상태

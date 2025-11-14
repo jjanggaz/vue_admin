@@ -154,11 +154,16 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { ref } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const machineStore = useMachineStore();
 
 // 등록 완료 상태
@@ -556,8 +561,10 @@ const onDownloadExcelTemplate = async () => {
   } catch (error: any) {
     console.error("Excel 템플릿 다운로드 실패:", error);
     // error.response의 message가 있으면 표시, 없으면 기본 메시지
-    const errorMessage =
-      error?.message || t("messages.warning.excelTemplateDownloadFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.warning.excelTemplateDownloadFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -730,8 +737,10 @@ const handleMachineRegister = async () => {
     isRegistered.value = true;
   } catch (error) {
     console.error("기계 등록 실패:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -777,8 +786,10 @@ const handleModelRegister = async () => {
     }
   } catch (error) {
     console.error("모델 등록 실패:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };

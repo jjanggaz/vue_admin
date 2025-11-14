@@ -306,9 +306,13 @@ import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useUserStore, type User } from "@/stores/userStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
 const userStore = useUserStore();
 
 // 폼용 사용자 인터페이스 (UI 전용)
@@ -501,7 +505,10 @@ const loadData = async () => {
     ]);
   } catch (error: any) {
     console.error("데이터 로드 실패:", error);
-    const errorMessage = error?.message || "데이터 로드에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.dataLoadFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -521,7 +528,10 @@ const handlePageChange = async (page: number) => {
     selectedItems.value = [];
   } catch (error: any) {
     console.error("페이지 변경 실패:", error);
-    const errorMessage = error?.message || "페이지 변경에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.pageChangeFailed"
+    );
     alert(errorMessage);
   }
 };

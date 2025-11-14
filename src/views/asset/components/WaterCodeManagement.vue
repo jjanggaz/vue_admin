@@ -149,6 +149,7 @@
 import { ref, onMounted, computed } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useInflowStore } from "@/stores/inflow";
 
 // Props 정의
@@ -161,6 +162,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const inflowStore = useInflowStore();
 
 // 인터페이스 정의
@@ -254,7 +259,13 @@ const handleDeleteClick = async () => {
     alert(t("messages.success.deleted"));
   } catch (error) {
     console.error("파라미터 삭제 실패:", error);
-    alert(t("messages.error.deleteFailed"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.deleteFailed"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -359,6 +370,7 @@ const handleSubmit = async () => {
       // 수정 모드
       if (!formData.value.parameter_id) {
         alert(t("messages.error.parameterUpdateFailed"));
+        isSubmitting.value = false;
         return;
       }
       await inflowStore.updateWaterQualityParameter(
@@ -378,11 +390,15 @@ const handleSubmit = async () => {
     await inflowStore.fetchWaterQualityParameters(props.flowDirection);
   } catch (error) {
     console.error(isEditMode.value ? "수정 실패:" : "등록 실패:", error);
-    alert(
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
       isEditMode.value
-        ? t("messages.error.parameterUpdateFailed")
-        : t("messages.error.parameterCreateFailed")
+        ? "messages.error.parameterUpdateFailed"
+        : "messages.error.parameterCreateFailed"
     );
+    alert(errorMessage);
   } finally {
     isSubmitting.value = false;
   }

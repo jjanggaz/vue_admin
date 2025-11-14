@@ -180,6 +180,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { ref, watch, onMounted } from "vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useStructureStore } from "@/stores/structureStore";
@@ -218,6 +219,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const structureStore = useStructureStore();
 
 // 선택된 구조물 대분류 및 타입 (수정 모드에서는 비활성)
@@ -391,7 +396,13 @@ const handleDeleteFormula = async () => {
     }
   } catch (error) {
     console.error("공식 삭제 실패:", error);
-    alert(t("messages.warning.formulaDeleteFail"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.warning.formulaDeleteFail"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -608,7 +619,13 @@ const onUpdate = async () => {
     alert(t("messages.warning.structureUpdateSuccess"));
   } catch (error) {
     console.error("구조물 수정 실패:", error);
-    alert(t("messages.warning.structureUpdateFail"));
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.warning.structureUpdateFail"
+    );
+    alert(errorMessage);
   }
 };
 

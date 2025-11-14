@@ -429,6 +429,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import CodeRegistrationModal from "./components/CodeRegistrationModal.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
@@ -444,6 +445,9 @@ const SYSTEM_CODE = import.meta.env.VITE_SYSTEM_CODE;
 console.log("SYSTEM_CODE :", SYSTEM_CODE);
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
 
 // Store 사용
 const codeStore = useCodeStore();
@@ -821,9 +825,12 @@ const loadData = async () => {
     console.log("totalPages.value :", totalPages.value);
   } catch (error: unknown) {
     console.error("데이터 로드 실패:", error);
-    const errorMessage = (error as Error)?.message
-      ? t((error as Error).message)
-      : "데이터 로드에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.dataLoadFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -900,9 +907,12 @@ const handleModalSave = async (data: CodeCreateRequest[]) => {
     await refreshAllSelectBoxes();
   } catch (error: unknown) {
     console.error("코드 저장 실패:", error);
-    const errorMessage = (error as Error)?.message
-      ? t((error as Error).message)
-      : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -1130,9 +1140,12 @@ const updateCode = async () => {
     console.log("등록 성공 - 모든 selectbox 데이터 refresh 완료");
   } catch (error: unknown) {
     console.error("코드 저장 실패:", error);
-    const errorMessage = (error as Error)?.message
-      ? t((error as Error).message)
-      : t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -1189,9 +1202,12 @@ const handleDelete = async () => {
       console.log("삭제 완료 - 모든 selectbox 데이터 refresh 완료");
     } catch (error: unknown) {
       console.error("삭제 처리 실패:", error);
-      const errorMessage = (error as Error)?.message
-        ? t((error as Error).message)
-        : t("messages.error.deleteFailed");
+      const errorMessage = translateMessage(
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
+        "messages.error.deleteFailed"
+      );
       alert(errorMessage);
     }
   }

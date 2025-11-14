@@ -227,9 +227,14 @@ import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import StructureRegisterTab from "./components/StructureRegisterTab.vue";
 import StructureUpdateTab from "./components/StructureUpdateTab.vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useStructureStore } from "@/stores/structureStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const structureStore = useStructureStore();
 const registerTabRef = ref<InstanceType<typeof StructureRegisterTab> | null>(
   null
@@ -480,7 +485,11 @@ const handleDelete = async () => {
     }
     await loadData();
   } else {
-    alert(t("messages.error.structureDeleteFail"));
+    const errorMessage = translateMessage(
+      undefined,
+      "messages.error.structureDeleteFail"
+    );
+    alert(errorMessage);
   }
 };
 

@@ -143,11 +143,15 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import * as XLSX from "xlsx";
 import { useCodeStore, type CodeCreateRequest } from "@/stores/codeStore";
 
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
 
 // CodeStore 사용
 const codeStore = useCodeStore();
@@ -321,8 +325,10 @@ const parseExcelFile = (file: File) => {
       alert(t("messages.success.excelDataImported"));
     } catch (error: any) {
       console.error("Excel 파일 파싱 오류:", error);
-      const errorMessage =
-        error?.message || t("messages.error.excelParseError");
+      const errorMessage = translateMessage(
+        error?.message,
+        "messages.error.excelParseError"
+      );
       alert(errorMessage);
     }
   };

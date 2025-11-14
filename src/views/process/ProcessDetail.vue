@@ -33,12 +33,12 @@
             <select
               :value="processStore.processDetail.processType || ''"
               @change="handleProcessTypeChange"
-              :key="`processType-${(filteredProcessTypeOptions?.length || 0)}`"
+              :key="`processType-${filteredProcessTypeOptions?.length || 0}`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in (filteredProcessTypeOptions || [])"
+                v-for="option in filteredProcessTypeOptions || []"
                 :key="option.value"
                 :value="option.value"
               >
@@ -55,12 +55,14 @@
             <select
               :value="processStore.processDetail.subCategory || ''"
               @change="handleSubCategoryChange"
-              :key="`subCategory-${(processStore.searchSubCategoryOptions?.length || 0)}`"
+              :key="`subCategory-${
+                processStore.searchSubCategoryOptions?.length || 0
+              }`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in (processStore.searchSubCategoryOptions || [])"
+                v-for="option in processStore.searchSubCategoryOptions || []"
                 :key="option.value"
                 :value="option.value"
               >
@@ -77,12 +79,14 @@
             <select
               :value="processStore.processDetail.processName || ''"
               @change="handleProcessNameChange"
-              :key="`processName-${(processStore.searchProcessNameOptions?.length || 0)}`"
+              :key="`processName-${
+                processStore.searchProcessNameOptions?.length || 0
+              }`"
               :disabled="!props.isRegisterMode"
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="option in (processStore.searchProcessNameOptions || [])"
+                v-for="option in processStore.searchProcessNameOptions || []"
                 :key="option.value"
                 :value="option.value"
               >
@@ -109,10 +113,17 @@
                 {{ t("common.selectFile") }}
               </button>
               <span class="selected-file">
-                <div style="position: relative; display: inline-block;">
+                <div style="position: relative; display: inline-block">
                   <span
                     v-if="!processStore.processSymbolPreviewUrl"
-                    style="color: #6b7280; font-size: 14px; font-style: italic; display: block; padding: 40px 10px; text-align: center;"
+                    style="
+                      color: #6b7280;
+                      font-size: 14px;
+                      font-style: italic;
+                      display: block;
+                      padding: 40px 10px;
+                      text-align: center;
+                    "
                   >
                     {{ t("common.noFile") }}
                   </span>
@@ -120,25 +131,63 @@
                     v-else
                     :src="processStore.processSymbolPreviewUrl"
                     alt="공정심볼 미리보기"
-                    style="max-width: 100px; max-height: 100px; vertical-align: middle; display: block;"
+                    style="
+                      max-width: 100px;
+                      max-height: 100px;
+                      vertical-align: middle;
+                      display: block;
+                    "
                   />
                   <button
-                    v-if="(processStore.processDetail.symbolId && processStore.processDetail.symbolId !== '00000000-0000-0000-0000-000000000000') || processStore.processSymbolPreviewUrl"
+                    v-if="
+                      (processStore.processDetail.symbolId &&
+                        processStore.processDetail.symbolId !==
+                          '00000000-0000-0000-0000-000000000000') ||
+                      processStore.processSymbolPreviewUrl
+                    "
                     @click="handleDeleteProcessSymbol"
                     title="심볼 삭제"
-                    style="position: absolute; top: 0; right: 0; width: 20px; height: 20px; border-radius: 0; border: none; background-color: rgba(0, 0, 0, 0.5); color: white; font-size: 18px; font-weight: normal; font-family: Arial, sans-serif; line-height: 1; text-align: center; cursor: pointer; transition: background-color 0.2s; z-index: 10; padding: 1px 0 0 0; margin: 0;"
-                    @mouseover="$event.target.style.backgroundColor='rgba(0,0,0,0.7)'"
-                    @mouseout="$event.target.style.backgroundColor='rgba(0,0,0,0.5)'"
+                    style="
+                      position: absolute;
+                      top: 0;
+                      right: 0;
+                      width: 20px;
+                      height: 20px;
+                      border-radius: 0;
+                      border: none;
+                      background-color: rgba(0, 0, 0, 0.5);
+                      color: white;
+                      font-size: 18px;
+                      font-weight: normal;
+                      font-family: Arial, sans-serif;
+                      line-height: 1;
+                      text-align: center;
+                      cursor: pointer;
+                      transition: background-color 0.2s;
+                      z-index: 10;
+                      padding: 1px 0 0 0;
+                      margin: 0;
+                    "
+                    @mouseover="
+                      $event.target.style.backgroundColor = 'rgba(0,0,0,0.7)'
+                    "
+                    @mouseout="
+                      $event.target.style.backgroundColor = 'rgba(0,0,0,0.5)'
+                    "
                   >
                     ×
                   </button>
                 </div>
                 <button
-                  v-if="processStore.processDetail.symbolId && processStore.processDetail.symbolId !== '00000000-0000-0000-0000-000000000000'"
+                  v-if="
+                    processStore.processDetail.symbolId &&
+                    processStore.processDetail.symbolId !==
+                      '00000000-0000-0000-0000-000000000000'
+                  "
                   @click="downloadProcessSymbol"
                   class="btn btn-sm btn-outline-primary download-btn"
                   title="공정심볼 다운로드"
-                  style="margin-left: 10px; vertical-align: middle;"
+                  style="margin-left: 10px; vertical-align: middle"
                 >
                   <i class="fas fa-download"></i>
                 </button>
@@ -157,8 +206,16 @@
     </div>
 
     <!-- 파일명 규칙 안내 -->
-    <div style="color: red; padding: 10px 15px; margin-bottom: 15px; text-align: center;">
-      ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만 허용합니다.
+    <div
+      style="
+        color: red;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        text-align: center;
+      "
+    >
+      ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만
+      허용합니다.
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -179,7 +236,11 @@
             <button
               @click="handleFormulaDelete"
               class="btn btn-danger"
-              :disabled="!selectedFormulaItems || (Array.isArray(selectedFormulaItems) && selectedFormulaItems.length === 0)"
+              :disabled="
+                !selectedFormulaItems ||
+                (Array.isArray(selectedFormulaItems) &&
+                  selectedFormulaItems.length === 0)
+              "
             >
               {{ t("common.delete") }}
             </button>
@@ -237,7 +298,11 @@
                   {{ t("common.selectFile") }}
                 </button>
                 <span class="selected-file">
-                  {{ item.file_name || (item as any)?._file?.name || t("common.noFile") }}
+                  {{
+                    item.file_name ||
+                    (item as any)?._file?.name ||
+                    t("common.noFile")
+                  }}
                   <button
                     v-if="item.formula_id"
                     @click="downloadFormulaFromList(item)"
@@ -462,7 +527,11 @@
             <button
               class="btn btn-danger"
               @click="deleteSelectedMappingPidItems"
-              :disabled="!selectedMappingPidItems || (Array.isArray(selectedMappingPidItems) && selectedMappingPidItems.length === 0)"
+              :disabled="
+                !selectedMappingPidItems ||
+                (Array.isArray(selectedMappingPidItems) &&
+                  selectedMappingPidItems.length === 0)
+              "
             >
               삭제
             </button>
@@ -767,7 +836,11 @@
           <input
             type="text"
             class="form-control"
-            :value="processStore.capacityCalculationFileName || processStore.processDetail.ccs_file_name || ''"
+            :value="
+              processStore.capacityCalculationFileName ||
+              processStore.processDetail.ccs_file_name ||
+              ''
+            "
             placeholder="파일을 선택해주세요"
             readonly
           />
@@ -778,7 +851,7 @@
             @click="handleCapacityCalculationDownload"
             :disabled="!hasFormulaData"
             title="용량계산서 다운로드"
-            style="margin-left: 10px; vertical-align: middle;"
+            style="margin-left: 10px; vertical-align: middle"
           >
             <i class="fas fa-download"></i>
           </button>
@@ -794,7 +867,11 @@
             type="button"
             class="file-select-btn"
             @click="handleCapacityCalculationFileDelete"
-            :disabled="(!processStore.capacityCalculationFile && !processStore.processDetail.ccs_file_name) || !hasFormulaData"
+            :disabled="
+              (!processStore.capacityCalculationFile &&
+                !processStore.processDetail.ccs_file_name) ||
+              !hasFormulaData
+            "
           >
             삭제
           </button>
@@ -925,6 +1002,7 @@
 import { ref, onMounted, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import { useProcessStore } from "@/stores/processStore";
 import DataTable from "@/components/common/DataTable.vue";
 import type { TableColumn } from "@/types/components";
@@ -957,6 +1035,10 @@ const emit = defineEmits<{
 // Composables
 const route = useRoute();
 const { t } = useI18n();
+
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+
 const processStore = useProcessStore();
 
 // 공정 등록/수정 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
@@ -1089,26 +1171,30 @@ const formulaTableKey = ref(0);
 
 // 그리드 스크롤 높이: 10건 초과 시 스크롤 적용
 const formulaTableMaxHeight = computed(() =>
-  ((Array.isArray(processStore.formulaList)
+  (Array.isArray(processStore.formulaList)
     ? processStore.formulaList.length
-    : (processStore.formulaList as any)?.length || 0) > 10)
+    : (processStore.formulaList as any)?.length || 0) > 10
     ? "420px"
     : "auto"
 );
 const pfdTableMaxHeight = computed(() =>
-  ((Array.isArray(processStore.pfdList)
+  (Array.isArray(processStore.pfdList)
     ? processStore.pfdList.length
-    : (processStore.pfdList as any)?.length || 0) > 10)
+    : (processStore.pfdList as any)?.length || 0) > 10
     ? "420px"
     : "auto"
 );
 const pidTableMaxHeight = computed(() =>
-  (((mappingPidList as any)?.value?.length || (mappingPidList as any)?.length || 0) > 10)
+  ((mappingPidList as any)?.value?.length ||
+    (mappingPidList as any)?.length ||
+    0) > 10
     ? "420px"
     : "auto"
 );
 const pidComponentTableMaxHeight = computed(() =>
-  (((pidComponentList as any)?.value?.length || (pidComponentList as any)?.length || 0) > 10)
+  ((pidComponentList as any)?.value?.length ||
+    (pidComponentList as any)?.length ||
+    0) > 10
     ? "420px"
     : "auto"
 );
@@ -1134,13 +1220,13 @@ const pfdColumns: TableColumn[] = [
   { key: "no", title: "No.", sortable: false },
   { key: "pfdFileName", title: "공정카드 파일", sortable: false },
   { key: "svgFile", title: "Svg 파일", sortable: false },
-  { 
-    key: "registrationDate", 
-    title: "등록일자", 
+  {
+    key: "registrationDate",
+    title: "등록일자",
     sortable: false,
     formatter: (value: any, item: any) => {
-      return item?.registrationDate || item?.created_at || value || '-';
-    }
+      return item?.registrationDate || item?.created_at || value || "-";
+    },
   },
   { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
   { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true },
@@ -1253,13 +1339,13 @@ const formatDateTime = (
   // 이미 "YYYY-MM-DD HH:MI" 형식인 경우 그대로 반환
   if (typeof dateValue === "string") {
     const trimmedValue = dateValue.trim();
-    
+
     // 이미 포맷된 형식 체크 (YYYY-MM-DD HH:MI 또는 YYYY-MM-DD HH:MM)
     const alreadyFormattedPattern = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
     if (alreadyFormattedPattern.test(trimmedValue)) {
       return trimmedValue;
     }
-    
+
     // 문자열이 비어있으면 빈 문자열 반환
     if (trimmedValue === "") {
       return "";
@@ -1267,7 +1353,7 @@ const formatDateTime = (
   }
 
   let date: Date;
-  
+
   if (dateValue instanceof Date) {
     date = dateValue;
   } else if (typeof dateValue === "string") {
@@ -1422,9 +1508,8 @@ const searchPfdDrawingAPI = async (processId: string) => {
         const drawingId = item.drawing_id || item.id;
 
         // 등록일자: API 응답의 created_at 찾기 (다양한 위치 확인)
-        const registrationDate = item.created_at 
-          || item.current_file?.created_at 
-          || null;
+        const registrationDate =
+          item.created_at || item.current_file?.created_at || null;
 
         return {
           id: `pfd-${index + 1}`,
@@ -1788,34 +1873,37 @@ const handleUnitChange = () => {
 };
 
 // 파일명 검증 함수
-const validateFileName = (fileName: string): { valid: boolean; message?: string } => {
+const validateFileName = (
+  fileName: string
+): { valid: boolean; message?: string } => {
   // 확장자 분리
   const lastDotIndex = fileName.lastIndexOf(".");
   if (lastDotIndex === -1) {
     return { valid: false, message: "파일명에 확장자가 필요합니다." };
   }
-  
+
   const nameWithoutExtension = fileName.substring(0, lastDotIndex);
   const extension = fileName.substring(lastDotIndex);
-  
+
   // 파일명 길이 검증 (확장자 제외)
   if (nameWithoutExtension.length === 0) {
     return { valid: false, message: "파일명을 입력해주세요." };
   }
-  
+
   if (nameWithoutExtension.length > 100) {
     return { valid: false, message: "파일명은 100자 이내로 입력해주세요." };
   }
-  
+
   // 영문, 숫자, 특수기호(_ - ())만 허용, 공백 불가
   const validPattern = /^[a-zA-Z0-9_\-()]+$/;
   if (!validPattern.test(nameWithoutExtension)) {
     return {
       valid: false,
-      message: "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
+      message:
+        "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
     };
   }
-  
+
   return { valid: true };
 };
 
@@ -2189,15 +2277,18 @@ const handleCapacityCalculationFileDelete = async () => {
       }
 
       if (confirm("용량계산서 파일을 삭제하시겠습니까?")) {
-        await processStore.deleteCapacityCalculationFile(processId, ccsFileName);
-        
+        await processStore.deleteCapacityCalculationFile(
+          processId,
+          ccsFileName
+        );
+
         // 삭제 성공 후 공정 상세 정보 다시 로드하여 ccs_file_id, ccs_file_name 초기화
         await processStore.searchProcessById(processId);
-        
+
         if (capacityCalculationFileInput.value) {
           capacityCalculationFileInput.value.value = "";
         }
-        
+
         alert("용량계산서 파일이 삭제되었습니다.");
       }
     } else {
@@ -2209,7 +2300,11 @@ const handleCapacityCalculationFileDelete = async () => {
     }
   } catch (error: any) {
     console.error("용량계산서 파일 삭제 실패:", error);
-    alert("용량계산서 파일 삭제에 실패했습니다: " + (error.message || error));
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.fileDeleteFailed"
+    );
+    alert(errorMessage);
   }
 };
 
@@ -2229,21 +2324,21 @@ const handleCapacityCalculationRegister = async () => {
 
     await processStore.uploadCapacityCalculationFile(processId);
     alert("용량계산서가 등록되었습니다.");
-    
+
     // 파일 입력 초기화
     if (capacityCalculationFileInput.value) {
       capacityCalculationFileInput.value.value = "";
     }
-    
+
     // 공정 상세 정보 다시 조회하여 ccs_file_id 업데이트
     if (processId) {
       await processStore.searchProcessById(processId);
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "용량계산서 등록에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error instanceof Error ? error.message : undefined,
+      "messages.error.fileUploadFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -2268,7 +2363,7 @@ const handleCapacityCalculationDownload = async () => {
     console.log("processId:", processId);
     console.log("ccs_file_name:", ccsFileName);
     console.log("processDetail 전체:", processStore.processDetail);
-    
+
     await processStore.downloadCapacityCalculationFile(processId, ccsFileName);
   } catch (error) {
     // 에러는 downloadCapacityCalculationFile에서 이미 처리됨
@@ -2350,11 +2445,15 @@ const isPidRowSaved = (item: any): boolean => {
   // 1) drawing_id 존재 여부
   if (!item.drawing_id) return false;
   // 2) 임시 drawing_id 여부
-  if (typeof item.drawing_id === 'string' && item.drawing_id.startsWith('temp_pid_drawing_')) return false;
+  if (
+    typeof item.drawing_id === "string" &&
+    item.drawing_id.startsWith("temp_pid_drawing_")
+  )
+    return false;
   // 3) 파일 존재 여부 (pidFileName 또는 업로드된 pidFile 중 하나)
   if (!item.pidFileName && !(item as any).pidFile) return false;
   // 4) isSaved 플래그가 있으면 그 값 사용
-  if (Object.prototype.hasOwnProperty.call(item, 'isSaved')) {
+  if (Object.prototype.hasOwnProperty.call(item, "isSaved")) {
     return !!item.isSaved;
   }
   // 위 조건 통과 시 저장된 것으로 간주
@@ -2880,7 +2979,9 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
               // POC IN 항목을 input_poc로 매핑
               input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
               // 총수량 항목을 total_quantity로 매핑 (API 응답에 standard_quantity가 있을 경우 대비)
-              total_quantity: Number(item.total_quantity ?? item.standard_quantity ?? 0),
+              total_quantity: Number(
+                item.total_quantity ?? item.standard_quantity ?? 0
+              ),
               // 각 행별 개별 옵션 저장
               _middleCategoryOptions: [],
               _smallCategoryOptions: [],
@@ -3383,7 +3484,7 @@ const hasPidComponentChanges = () => {
   // 빈 배열 체크
   const initial = initialPidComponentList.value || [];
   const current = pidComponentList.value || [];
-  
+
   if (initial.length === 0 && current.length === 0) {
     return false;
   }
@@ -4051,21 +4152,24 @@ const downloadProcessSymbol = async () => {
 const handleDeleteProcessSymbol = () => {
   const symbolId = processStore.processDetail.symbolId;
   const hasSelectedFile = processStore.selectedFiles["processSymbol"];
-  
+
   // 삭제할 심볼이 없는 경우
-  if (!hasSelectedFile && (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000")) {
+  if (
+    !hasSelectedFile &&
+    (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000")
+  ) {
     alert("삭제할 공정심볼이 없습니다.");
     return;
   }
 
   // 미리보기 URL 해제
   processStore.clearProcessSymbolPreview();
-  
+
   // 선택된 파일 제거
   const updatedSelectedFiles = { ...processStore.selectedFiles };
   delete updatedSelectedFiles["processSymbol"];
   processStore.setSelectedFiles(updatedSelectedFiles);
-  
+
   // processDetail에서 심볼 표시 정보 초기화
   // originalSymbolId와 originalProcessSymbol은 유지하여 저장 시 삭제 감지
   if (symbolId && symbolId !== "00000000-0000-0000-0000-000000000000") {
@@ -5192,11 +5296,14 @@ const handleFormulaFileChange = (item: any, event: Event) => {
     );
     if (itemIndex === -1 && (item as any).formula_id) {
       itemIndex = processStore.formulaList.findIndex(
-        (formulaItem) => (formulaItem as any).formula_id === (item as any).formula_id
+        (formulaItem) =>
+          (formulaItem as any).formula_id === (item as any).formula_id
       );
     }
     if (itemIndex === -1) {
-      itemIndex = processStore.formulaList.findIndex((formulaItem) => formulaItem === item);
+      itemIndex = processStore.formulaList.findIndex(
+        (formulaItem) => formulaItem === item
+      );
     }
 
     if (itemIndex !== -1) {
@@ -5843,7 +5950,8 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
 
       // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
       const itemIndex = mappingPidList.value.findIndex(
-        (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
+        (item) =>
+          item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
       );
       if (itemIndex !== -1) {
         console.log("Excel 업로드 실패 - 파일명 및 관련 데이터 초기화");
@@ -5856,11 +5964,13 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
 
       // 400 에러의 경우 더 상세한 정보 제공
       const errorMsg =
-        response.response?.detail || 
-        (typeof response.response === 'string' ? JSON.parse(response.response || '{}').detail : null) ||
-        response.message || 
+        response.response?.detail ||
+        (typeof response.response === "string"
+          ? JSON.parse(response.response || "{}").detail
+          : null) ||
+        response.message ||
         "알 수 없는 오류";
-      
+
       if (response.status === 400) {
         console.error("🚨 400 에러 가능한 원인들:");
         console.error(
@@ -5877,16 +5987,14 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         alert(error.message);
         throw error;
       } else {
-        const error = new Error(
-          `Excel 파일 업로드 실패: ${errorMsg}`
-        );
+        const error = new Error(`Excel 파일 업로드 실패: ${errorMsg}`);
         alert(error.message);
         throw error;
       }
     }
   } catch (error: any) {
     console.error("P&ID Excel 파일 업로드 중 오류:", error);
-    
+
     // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
     const itemIndex = mappingPidList.value.findIndex(
       (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
@@ -5899,7 +6007,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
       // Vue 반응성을 위해 배열 재할당
       mappingPidList.value = [...mappingPidList.value];
     }
-    
+
     // 오류를 상위 함수로 전달 (상위 함수에서 alert 표시)
     throw error;
   }
@@ -6462,7 +6570,9 @@ const handlePfdSave = async () => {
             // 업데이트된 drawing_id로 currentPfdItemForMapping 업데이트
             currentPfdItemForMapping.value = {
               ...currentPfdItemForMapping.value,
-              drawing_id: updatedPfdItem.drawing_id || currentPfdItemForMapping.value.drawing_id,
+              drawing_id:
+                updatedPfdItem.drawing_id ||
+                currentPfdItemForMapping.value.drawing_id,
             };
 
             // P&ID 그리드 새로고침
@@ -6470,13 +6580,17 @@ const handlePfdSave = async () => {
             console.log("P&ID 그리드 새로고침 완료");
 
             // P&ID Components 그리드 새로고침 (P&ID Components 섹션이 열려있는 경우)
-            if (showPidComponentSection.value && selectedPidForComponent.value) {
+            if (
+              showPidComponentSection.value &&
+              selectedPidForComponent.value
+            ) {
               console.log("P&ID Components 그리드 새로고침 시작...");
               try {
                 // 업데이트된 P&ID 항목 찾기
                 const updatedPidItem = mappingPidList.value.find(
                   (item: any) =>
-                    item.drawing_id === selectedPidForComponent.value.drawing_id ||
+                    item.drawing_id ===
+                      selectedPidForComponent.value.drawing_id ||
                     item.id === selectedPidForComponent.value.id
                 );
 
@@ -6484,15 +6598,22 @@ const handlePfdSave = async () => {
                   await loadPidComponentDataWithoutClear(updatedPidItem);
                   console.log("P&ID Components 그리드 새로고침 완료");
                 } else {
-                  console.log("업데이트된 P&ID 항목을 찾을 수 없어 P&ID Components 새로고침 건너뜀");
+                  console.log(
+                    "업데이트된 P&ID 항목을 찾을 수 없어 P&ID Components 새로고침 건너뜀"
+                  );
                 }
               } catch (componentError: any) {
-                console.error("P&ID Components 그리드 새로고침 실패:", componentError);
+                console.error(
+                  "P&ID Components 그리드 새로고침 실패:",
+                  componentError
+                );
                 // 에러가 발생해도 전체 프로세스는 계속 진행
               }
             }
           } else {
-            console.log("업데이트된 PFD 항목을 찾을 수 없어 P&ID 그리드 새로고침 건너뜀");
+            console.log(
+              "업데이트된 PFD 항목을 찾을 수 없어 P&ID 그리드 새로고침 건너뜀"
+            );
           }
         } catch (pidError: any) {
           console.error("P&ID 그리드 새로고침 실패:", pidError);
@@ -8028,10 +8149,10 @@ const saveBasicProcessInfo = async (processId: string) => {
     const originalSymbolId = processStore.processDetail.originalSymbolId;
     const currentSymbolId = processStore.processDetail.symbolId;
     const currentProcessSymbol = processStore.processDetail.processSymbol;
-    
+
     // 기존에 심볼 파일이 있었고, 새로운 파일이 선택되지 않았으며, 현재 심볼이 비어있는 경우 삭제로 판단
-    const isSymbolDeleted = 
-      originalSymbolId && 
+    const isSymbolDeleted =
+      originalSymbolId &&
       originalSymbolId !== "00000000-0000-0000-0000-000000000000" &&
       !hasProcessSymbolChanged &&
       (!currentProcessSymbol || currentProcessSymbol.trim() === "");
@@ -8132,18 +8253,21 @@ const saveBasicProcessInfo = async (processId: string) => {
           console.log("업데이트 성공 후 파일 상태 초기화 완료");
         }
         console.log("기본 정보 업데이트 완료");
-        
+
         // 공정심볼 파일 저장 후 process_master 정보 새로고침
         await processStore.searchProcessById(processId);
         // 새로고침된 symbolId로 미리보기 다시 로드
         const newSymbolId = processStore.processDetail.symbolId;
-        if (newSymbolId && newSymbolId !== "00000000-0000-0000-0000-000000000000") {
+        if (
+          newSymbolId &&
+          newSymbolId !== "00000000-0000-0000-0000-000000000000"
+        ) {
           await processStore.loadProcessSymbolPreview();
         } else {
           // symbolId가 없거나 빈 UUID인 경우 미리보기 URL 해제
           processStore.clearProcessSymbolPreview();
         }
-        
+
         alert("기본 정보가 저장되었습니다.");
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
@@ -8164,7 +8288,11 @@ const saveBasicProcessInfo = async (processId: string) => {
           } catch (deleteError: any) {
             console.error("공정심볼 파일 삭제 실패:", deleteError);
             // 삭제 실패해도 계속 진행 (경고만 표시)
-            alert(`공정심볼 파일 삭제에 실패했습니다: ${deleteError.message || deleteError}`);
+            alert(
+              `공정심볼 파일 삭제에 실패했습니다: ${
+                deleteError.message || deleteError
+              }`
+            );
           }
         }
 
@@ -8183,7 +8311,8 @@ const saveBasicProcessInfo = async (processId: string) => {
 
         // 심볼 파일이 삭제된 경우 symbolId를 빈 UUID로 설정
         if (isSymbolDeleted) {
-          processDetailForSave.symbolId = "00000000-0000-0000-0000-000000000000";
+          processDetailForSave.symbolId =
+            "00000000-0000-0000-0000-000000000000";
           processDetailForSave.processSymbol = "";
         }
 
@@ -9059,10 +9188,11 @@ const refreshPfdData = async () => {
           }
 
           // 등록일자: 기존 registrationDate가 있으면 사용, 없으면 API 응답의 created_at 사용
-          const registrationDate = item.registrationDate 
-            || item.created_at 
-            || item.current_file?.created_at 
-            || null;
+          const registrationDate =
+            item.registrationDate ||
+            item.created_at ||
+            item.current_file?.created_at ||
+            null;
 
           return {
             id: `pfd_${index + 1}`,
@@ -11017,7 +11147,7 @@ onMounted(async () => {
       if (capacityCalculationFileInput.value) {
         capacityCalculationFileInput.value.value = "";
       }
-      
+
       // 공정 상세 정보 로드
       console.log("=== 공정 상세 정보 로드 시작 ===");
       console.log("props.processId:", props.processId);
@@ -11270,10 +11400,11 @@ onMounted(async () => {
               item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
 
             // 등록일자: 기존 registrationDate가 있으면 사용, 없으면 API 응답의 created_at 사용
-            const registrationDate = item.registrationDate 
-              || item.created_at 
-              || item.current_file?.created_at 
-              || null;
+            const registrationDate =
+              item.registrationDate ||
+              item.created_at ||
+              item.current_file?.created_at ||
+              null;
 
             return {
               id: `pfd_${index + 1}`,
@@ -11301,7 +11432,6 @@ onMounted(async () => {
         processStore.setPfdList([]);
         processStore.setInitialPfdList([]);
       }
-
     } else {
       console.warn("processId가 없습니다.");
     }
@@ -11541,8 +11671,7 @@ watch(
 
       // 1. 정확한 값 비교
       matchedOption = newOptions.find(
-        (option) =>
-          option.value === processStore.processDetail.processName
+        (option) => option.value === processStore.processDetail.processName
       );
 
       if (!matchedOption) {
@@ -11556,12 +11685,14 @@ watch(
         if (!matchedOption) {
           // 3. 라벨로 비교
           matchedOption = newOptions.find(
-            (option) =>
-              option.label === processStore.processDetail.processName
+            (option) => option.label === processStore.processDetail.processName
           );
 
           if (matchedOption) {
-            console.log("공정명 옵션 watch: 라벨로 매칭된 옵션:", matchedOption);
+            console.log(
+              "공정명 옵션 watch: 라벨로 매칭된 옵션:",
+              matchedOption
+            );
             // 라벨이 일치하면 value로 업데이트
             processStore.setProcessDetail({
               processName: matchedOption.value,
@@ -11573,16 +11704,21 @@ watch(
       // 4. process_code로 비교 (더 정확한 매칭)
       if (!matchedOption && processStore.processDetail.processCode) {
         matchedOption = newOptions.find(
-          (option) =>
-            option.value === processStore.processDetail.processCode
+          (option) => option.value === processStore.processDetail.processCode
         );
         if (matchedOption) {
-          console.log("공정명 옵션 watch: process_code로 매칭된 옵션:", matchedOption);
+          console.log(
+            "공정명 옵션 watch: process_code로 매칭된 옵션:",
+            matchedOption
+          );
         }
       }
 
       // 매칭된 옵션이 있고, 현재 값이 다르면 업데이트
-      if (matchedOption && matchedOption.value !== processStore.processDetail.processName) {
+      if (
+        matchedOption &&
+        matchedOption.value !== processStore.processDetail.processName
+      ) {
         console.log("공정명 옵션 watch: 값 업데이트", {
           현재값: processStore.processDetail.processName,
           새값: matchedOption.value,
@@ -12415,7 +12551,9 @@ watch(
   flex: 1;
 }
 
-.capacity-calculation-section .file-input-group input[type="text"].form-control {
+.capacity-calculation-section
+  .file-input-group
+  input[type="text"].form-control {
   flex: 0.3 !important;
   padding: 6.4px 8px !important;
   min-height: unset !important;

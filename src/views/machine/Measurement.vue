@@ -2192,32 +2192,18 @@ const handleFieldChange = (
         truncated = test;
       }
       editData.value.equipmentCode = truncated;
-      if (detailItemData.value) {
-        detailItemData.value.equipment_code = truncated;
-      }
       alert("측정기코드는 최대 60바이트까지 입력 가능합니다.");
     } else {
       editData.value.equipmentCode = strValue;
-      if (detailItemData.value) {
-        detailItemData.value.equipment_code = strValue;
-      }
     }
   }
   // 제조사 필드 확인 (columns.measurement.company)
   else if (fieldName === t("columns.measurement.company")) {
     editData.value.vendor_id = String(value);
-    if (detailItemData.value) {
-      detailItemData.value.vendor_id = String(value);
-    }
-    console.log("vendor_id 업데이트:", value);
   }
   // 모델명 필드 확인 (columns.measurement.model)
   else if (fieldName === t("columns.measurement.model")) {
     editData.value.modelNumber = String(value);
-    if (detailItemData.value) {
-      detailItemData.value.model_number = String(value);
-    }
-    console.log("modelNumber 업데이트:", value);
   }
   // 사용여부 필드 확인
   else if (fieldName === (isEnglish ? "Usage Status" : "사용여부")) {
@@ -2231,18 +2217,10 @@ const handleFieldChange = (
         strValue === "true" || strValue === "사용" || strValue === "Used";
     }
     editData.value.is_active = boolValue;
-    if (detailItemData.value) {
-      detailItemData.value.is_active = boolValue;
-    }
-    console.log("is_active 업데이트:", boolValue);
   }
   // 장비설명 필드 확인
   else if (fieldName === (isEnglish ? "Equipment Description" : "장비설명")) {
     editData.value.description = String(value);
-    if (detailItemData.value) {
-      detailItemData.value.description = String(value);
-    }
-    console.log("description 업데이트:", value);
   }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
   else {
@@ -2291,13 +2269,7 @@ const handleFieldChange = (
           const numValue = Number(strValue);
           editData.value.output_values[key].value =
             !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-          // detailItemData도 업데이트
-          if (item.output_values[key]) {
-            item.output_values[key].value =
-              editData.value.output_values[key].value;
-          }
         }
-        console.log(`output_values.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -2319,13 +2291,7 @@ const handleFieldChange = (
           const numValue = Number(strValue);
           editData.value.search_criteria[key].value =
             !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-          // detailItemData도 업데이트
-          if (item.search_criteria[key]) {
-            item.search_criteria[key].value =
-              editData.value.search_criteria[key].value;
-          }
         }
-        console.log(`search_criteria.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -2347,13 +2313,7 @@ const handleFieldChange = (
           const numValue = Number(strValue);
           editData.value.specifications[key].value =
             !isNaN(numValue) && strValue !== "" ? numValue : strValue;
-          // detailItemData도 업데이트
-          if (item.specifications[key]) {
-            item.specifications[key].value =
-              editData.value.specifications[key].value;
-          }
         }
-        console.log(`specifications.${key}.value 업데이트:`, value);
         return;
       }
     }
@@ -2569,25 +2529,71 @@ const saveDetailChanges = async () => {
         alert(t("messages.success.saved"));
       }
 
-      // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
-      await loadData();
+      // 상세정보창이 열려있는 상태를 유지하기 위해 선택된 항목 백업
+      const wasDetailPanelOpen = isDetailPanelOpen.value;
+      const currentEquipmentId = item.equipment_id;
 
-      if (createdPriceHistoryEntries.length > 0) {
+      // 데이터 새로고침 (상세정보창 유지를 위해 선택 항목 보존)
+      await loadData(true);
+
+      // 상세정보창이 열려있었고, 저장한 항목이 있었던 경우
+      if (wasDetailPanelOpen && currentEquipmentId) {
+        // 새로고침된 그리드에서 해당 항목 찾기
         const refreshedItem = machineList.value.find(
-          (machine) => machine.equipment_id === item.equipment_id
+          (machine) => machine.equipment_id === currentEquipmentId
         );
 
         if (refreshedItem) {
-          detailItemData.value = refreshedItem;
-          originalItemData.value = JSON.parse(JSON.stringify(refreshedItem));
-        } else if (detailItemData.value) {
-          detailItemData.value.equipment_price_history =
-            detailItemData.value.equipment_price_history || [];
+          // 상세정보창 다시 열기 (단가이력에서 price_reference 설정 포함)
+          await openDetailPanel(refreshedItem);
+          
+          // 가격 이력이 생성된 경우 추가
+          if (createdPriceHistoryEntries.length > 0) {
+            if (detailItemData.value) {
+              detailItemData.value.equipment_price_history =
+                detailItemData.value.equipment_price_history || [];
 
-          createdPriceHistoryEntries.forEach((entry) => {
-            detailItemData.value!.equipment_price_history!.push(entry);
-          });
+              createdPriceHistoryEntries.forEach((entry) => {
+                // 중복 체크 (같은 price_type, price_date가 있으면 추가하지 않음)
+                const exists = detailItemData.value!.equipment_price_history!.some(
+                  (h: PriceHistoryItem) =>
+                    h.price_type === entry.price_type &&
+                    h.price_date === entry.price_date
+                );
+                if (!exists) {
+                  detailItemData.value!.equipment_price_history!.push(entry);
+                }
+              });
+              
+              // originalItemData도 업데이트
+              originalItemData.value = JSON.parse(JSON.stringify(detailItemData.value));
+            }
+          }
+        } else {
+          // 현재 페이지에 해당 항목이 없는 경우 (다른 페이지로 이동했을 수 있음)
+          // 상세정보창은 유지하되, 가격 이력만 추가
+          if (createdPriceHistoryEntries.length > 0 && detailItemData.value) {
+            detailItemData.value.equipment_price_history =
+              detailItemData.value.equipment_price_history || [];
+
+            createdPriceHistoryEntries.forEach((entry) => {
+              const exists = detailItemData.value!.equipment_price_history!.some(
+                (h: PriceHistoryItem) =>
+                  h.price_type === entry.price_type &&
+                  h.price_date === entry.price_date
+              );
+              if (!exists) {
+                detailItemData.value!.equipment_price_history!.push(entry);
+              }
+            });
+            
+            originalItemData.value = JSON.parse(JSON.stringify(detailItemData.value));
+          }
         }
+      } else if (createdPriceHistoryEntries.length > 0) {
+        // 상세정보창이 닫혀있었지만 가격 이력이 생성된 경우
+        // (일반적으로는 발생하지 않지만 안전을 위해)
+        // 그리드 데이터는 이미 새로고침되었으므로 추가 작업 불필요
       }
     } else {
       throw new Error(response?.message || "저장에 실패했습니다.");
@@ -2607,7 +2613,7 @@ const saveDetailChanges = async () => {
 // 파일 업로드 관련 기능 제거됨
 // 데이터 로드 함수
 // 데이터 로드 (RoleManagement.vue 패턴 적용)
-const loadData = async () => {
+const loadData = async (preserveSelection: boolean = false) => {
   try {
     // 상세검색이 열려있고 기계유형 옵션이 있는데 선택하지 않은 경우
     if (
@@ -2619,8 +2625,10 @@ const loadData = async () => {
       return;
     }
 
-    // 체크된 row 초기화
-    selectedItems.value = [];
+    // 체크된 row 초기화 (상세정보창 유지가 필요한 경우 제외)
+    if (!preserveSelection) {
+      selectedItems.value = [];
+    }
 
     // 기본 검색 파라미터
     const searchParams: any = {

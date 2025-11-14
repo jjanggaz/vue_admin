@@ -215,7 +215,7 @@
                 v-model="newCode.code_group"
                 type="text"
                 :placeholder="t('placeholder.codeGroup')"
-                disabled
+                :disabled="!!modalCodeGroup.key"
               />
               <input
                 id="code-high-code"
@@ -279,6 +279,13 @@
               <select v-model="newCode.is_leaf" class="filter-select">
                 <option :value="true">Y</option>
                 <option :value="false">N</option>
+              </select>
+            </dd>
+            <dt>{{ t("columns.code.isAdminOnly") }}</dt>
+            <dd>
+              <select v-model="newCode.is_admin_only" class="filter-select">
+                <option :value="true">{{ t("common.yes") }}</option>
+                <option :value="false">{{ t("common.noOption") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.codeDescription") }}</dt>
@@ -386,6 +393,13 @@
               <select v-model="newCode.is_leaf" class="filter-select">
                 <option :value="true">Y</option>
                 <option :value="false">N</option>
+              </select>
+            </dd>
+            <dt>{{ t("columns.code.isAdminOnly") }}</dt>
+            <dd>
+              <select v-model="newCode.is_admin_only" class="filter-select">
+                <option :value="true">{{ t("common.yes") }}</option>
+                <option :value="false">{{ t("common.noOption") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.codeDescription") }}</dt>
@@ -607,6 +621,7 @@ const newCode = ref<CodeItem>({
   parent_key: "",
   code_level: "",
   description: "",
+  is_admin_only: false,
 });
 
 // 테이블 컬럼 설정
@@ -674,6 +689,14 @@ const tableColumns: TableColumn[] = [
     width: "100px",
     sortable: true,
     formatter: (value: boolean) => (value ? "Y" : "N"),
+  },
+  {
+    key: "is_admin_only",
+    title: t("columns.code.isAdminOnly"),
+    width: "100px",
+    sortable: true,
+    formatter: (value: boolean | undefined | null) =>
+      value === true ? "Y" : "N",
   },
   {
     key: "description",
@@ -942,6 +965,7 @@ const handleSingleRegist = () => {
     parent_key: parentKey,
     code_level: codeLevel,
     description: "",
+    is_admin_only: false,
   };
 
   console.log("단건 등록 모드 - 선택된 데이터:", {
@@ -1035,6 +1059,7 @@ const updateCode = async () => {
         is_active: newCode.value.is_active,
         is_leaf: newCode.value.is_leaf,
         description: newCode.value.description,
+        is_admin_only: newCode.value.is_admin_only ?? false,
       };
 
       console.log("수정 요청 데이터:", requestData);
@@ -1062,6 +1087,7 @@ const updateCode = async () => {
         parent_key: newCode.value.parent_key,
         code_level: newCode.value.code_level,
         description: newCode.value.description,
+        is_admin_only: newCode.value.is_admin_only ?? false,
       };
 
       console.log("등록 요청 데이터:", requestData);
@@ -1094,6 +1120,7 @@ const updateCode = async () => {
       parent_key: "",
       code_level: "",
       description: "",
+      is_admin_only: false,
     };
     isEditMode.value = false;
 
@@ -1182,6 +1209,7 @@ const handleEdit = () => {
   newCode.value = {
     ...itemToEdit,
     is_active: itemToEdit.is_active, // boolean 값 그대로 사용
+    is_admin_only: itemToEdit.is_admin_only ?? false, // boolean 값 그대로 사용
   };
 
   console.log("수정 모드 - 선택된 항목:", itemToEdit);

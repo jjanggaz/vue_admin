@@ -572,31 +572,6 @@
           </div>
         </div>
         <div class="detail-panel-body">
-          <!-- 모델 썸네일 이미지 영역 -->
-          <div class="model-thumbnail-section">
-            <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
-              <!-- 로딩 오버레이 -->
-              <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
-                <div class="loading-spinner"></div>
-                <span class="loading-text">{{ t("common.loading") }}</span>
-              </div>
-              <!-- 이미지 -->
-              <img
-                :src="thumbnailImageUrl"
-                :alt="t('common.modelThumbnailSection')"
-                class="thumbnail-image"
-                :class="{ hidden: isThumbnailLoading }"
-                @load="isThumbnailLoading = false"
-                @error="isThumbnailLoading = false"
-              />
-            </div>
-            <div v-else class="thumbnail-placeholder">
-              <span class="thumbnail-text">{{
-                t("common.noModelThumbnail")
-              }}</span>
-            </div>
-          </div>
-
           <div class="detail-tables-container">
             <!-- 사양 정보 -->
             <div class="detail-section">
@@ -1032,8 +1007,6 @@ const selectedUnit = ref("");
 const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<MachineItem | null>(null);
-const thumbnailImageUrl = ref<string>("");
-const isThumbnailLoading = ref(false);
 const detailPriceReference = ref<string>("");
 
 // 등록 팝업 관련 변수들
@@ -2033,10 +2006,6 @@ const handleDelete = async () => {
 };
 
 const openDetailPanel = async (item: MachineItem) => {
-  // 이전 썸네일 초기화 (새 항목을 열 때마다 초기화)
-  thumbnailImageUrl.value = "";
-  isThumbnailLoading.value = false;
-
   // 단가이력에서 각 필드별 최신 단가출처를 output_values에 설정
   if (item.equipment_price_history && item.output_values) {
     const priceHistory = item.equipment_price_history;
@@ -2100,17 +2069,8 @@ const openDetailPanel = async (item: MachineItem) => {
       }
     }
 
-    // 썸네일 이미지 URL 처리 - download_url 사용
-    const thumbnailInfo = (item as any).thumbnail_file_info;
-    if (thumbnailInfo?.download_url) {
-      isThumbnailLoading.value = true;
-      thumbnailImageUrl.value = thumbnailInfo.download_url;
-    } else {
-      thumbnailImageUrl.value = "";
-    }
   } catch (error) {
     console.error("상세 정보 조회 실패:", error);
-    isThumbnailLoading.value = false;
   }
 };
 const closeDetailPanel = () => {
@@ -2119,10 +2079,6 @@ const closeDetailPanel = () => {
   originalItemData.value = null;
   isDetailEditMode.value = false;
   detailPriceReference.value = "";
-
-  // 썸네일 이미지 URL 및 로딩 상태 초기화
-  thumbnailImageUrl.value = "";
-  isThumbnailLoading.value = false;
 };
 
 const handleFieldChange = (fieldName: string, value: string | boolean | number) => {
@@ -2370,14 +2326,6 @@ const cancelEditMode = () => {
     detailPriceReference.value = getLatestPriceReference(
       originalItemData.value.equipment_price_history
     );
-
-    // 썸네일 이미지 URL도 복원
-    const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
-    if (thumbnailInfo?.download_url) {
-      thumbnailImageUrl.value = thumbnailInfo.download_url;
-    } else {
-      thumbnailImageUrl.value = "";
-    }
   }
 
   // editData 초기화
@@ -3237,87 +3185,6 @@ onMounted(async () => {
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
-
-    .model-thumbnail-section {
-      width: 100%;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: center;
-
-      .thumbnail-image-container {
-        width: 280px;
-        height: 210px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        position: relative;
-
-        .thumbnail-image {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-          transition: opacity 0.3s;
-
-          &.hidden {
-            opacity: 0;
-          }
-        }
-
-        .thumbnail-loading-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(2px);
-          gap: 0.75rem;
-          z-index: 1;
-
-          .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid $border-color;
-            border-top-color: $primary-color;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-          }
-
-          .loading-text {
-            color: $text-light;
-            font-size: 0.875rem;
-          }
-        }
-      }
-
-      .thumbnail-placeholder {
-        width: 200px;
-        height: 150px;
-        border: 2px dashed $border-color;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: $background-light;
-
-        .thumbnail-text {
-          color: $text-light;
-          font-size: 0.875rem;
-          text-align: center;
-        }
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-    }
 
     .edit-fields-section {
       margin-top: 1.5rem;

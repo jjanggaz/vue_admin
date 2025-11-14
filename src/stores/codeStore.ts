@@ -13,6 +13,7 @@ export interface CodeItem {
   is_active: boolean;
   description: string;
   is_leaf: boolean;
+  is_admin_only?: boolean;
 }
 
 export interface CodeGroup {
@@ -41,6 +42,7 @@ export interface CodeCreateRequest {
   parent_key: string;
   code_level: string;
   description: string;
+  is_admin_only?: boolean;
 }
 
 export interface CodeUpdateRequest {
@@ -50,6 +52,7 @@ export interface CodeUpdateRequest {
   is_active: boolean;
   is_leaf: boolean;
   description: string;
+  is_admin_only?: boolean;
 }
 
 export interface CodeQueryParams {

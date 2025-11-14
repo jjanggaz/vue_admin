@@ -9,26 +9,22 @@
         <!-- Top Section - Search/Filter Controls -->
         <div class="search-section">
           <div class="search-filters">
-            <div v-if="props.selectedCodeGroup" class="filter-group">
+            <div class="filter-group">
               <label class="filter-label"
                 >⊙ {{ t("columns.code.codeGroup") }}</label
               >
               <select
                 v-model="searchCodeGroupInput"
                 class="filter-select"
-                disabled
+                :disabled="!!props.selectedCodeGroup"
               >
-                <option value="">
-                  {{ props.selectedCodeGroup?.value || "내용없음" }}
-                </option>
+                <option value="">{{ t("common.select") }}</option>
                 <option
-                  v-if="props.selectedCodeGroup"
-                  :key="props.selectedCodeGroup.key"
-                  :value="props.selectedCodeGroup.key"
+                  v-for="group in uniqueCodeGroups"
+                  :key="group.key"
+                  :value="group.key"
                 >
-                  {{ props.selectedCodeGroup.value }} [{{
-                    props.selectedCodeGroup.key
-                  }}]
+                  {{ group.value }} [{{ group.key }}]
                 </option>
               </select>
             </div>
@@ -145,13 +141,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import * as XLSX from "xlsx";
-import { type CodeCreateRequest } from "@/stores/codeStore";
+import { useCodeStore, type CodeCreateRequest } from "@/stores/codeStore";
 
 const { t } = useI18n();
+
+// CodeStore 사용
+const codeStore = useCodeStore();
+const { uniqueCodeGroups, loadCodeGroups } = codeStore;
 
 // CodeItem은 CodeCreateRequest와 동일한 구조이므로 별도 정의 불필요
 
@@ -305,7 +305,8 @@ const parseExcelFile = (file: File) => {
             description: String(row[3] || ""),
             parent_key: props.selectedParentKey || "",
             code_level: props.selectedCodeLevel || "",
-            code_group: props.selectedCodeGroup?.key || "",
+            code_group:
+              searchCodeGroupInput.value || props.selectedCodeGroup?.key || "",
             code_order: "1",
             is_active: true,
             is_leaf: false,
@@ -357,14 +358,35 @@ watch(
 // visible prop 변경 감지하여 모달이 열릴 때마다 DataTable 초기화
 watch(
   () => props.visible,
-  (newVisible) => {
+  async (newVisible) => {
     if (newVisible) {
       // 모달이 열릴 때 DataTable 초기화
       codeList.value = [];
       console.log("다건등록 모달 열림 - DataTable 초기화됨");
+
+      // 코드그룹이 없으면 코드그룹 목록 로드
+      if (!props.selectedCodeGroup) {
+        try {
+          await loadCodeGroups();
+        } catch (error) {
+          console.error("코드그룹 목록 로드 실패:", error);
+        }
+      }
     }
   }
 );
+
+// 컴포넌트 마운트 시 코드그룹 목록 로드
+onMounted(async () => {
+  // 코드그룹이 없으면 코드그룹 목록 로드
+  if (!props.selectedCodeGroup) {
+    try {
+      await loadCodeGroups();
+    } catch (error) {
+      console.error("코드그룹 목록 로드 실패:", error);
+    }
+  }
+});
 </script>
 
 <style scoped lang="scss">

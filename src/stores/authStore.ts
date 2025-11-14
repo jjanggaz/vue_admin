@@ -78,6 +78,10 @@ export const useAuthStore = defineStore("auth", {
                 "authUserId",
                 responseData.user_info.user_id
               );
+              localStorage.setItem(
+                "authSuper",
+                String(responseData.user_info.is_superuser || false)
+              );
 
               // 스토어 상태 업데이트
               this.isLoggedIn = true;
@@ -148,6 +152,7 @@ export const useAuthStore = defineStore("auth", {
         localStorage.removeItem("authRoleName");
         localStorage.removeItem("authCodes");
         localStorage.removeItem("authUserId");
+        localStorage.removeItem("authSuper");
 
         // 자동 토큰 갱신 중지
         stopAutoRefresh();
@@ -212,6 +217,7 @@ export const useAuthStore = defineStore("auth", {
           localStorage.removeItem("authRoleName");
           localStorage.removeItem("authCodes");
           localStorage.removeItem("authUserId");
+          localStorage.removeItem("authSuper");
         }
         return this.isLoggedIn; // 실제 스토어 상태를 반환
       } catch (error) {
@@ -226,6 +232,7 @@ export const useAuthStore = defineStore("auth", {
         localStorage.removeItem("authRoleName");
         localStorage.removeItem("authCodes");
         localStorage.removeItem("authUserId");
+        localStorage.removeItem("authSuper");
 
         return false;
       }

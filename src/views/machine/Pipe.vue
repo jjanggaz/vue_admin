@@ -4483,7 +4483,7 @@ $tablet: 1024px;
 }
 
 .form-input {
-  width: 100%;
+  width: 300px;
   padding: 0.5rem;
   border: 1px solid $border-color;
   border-radius: 4px;

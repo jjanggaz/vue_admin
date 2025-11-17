@@ -3620,7 +3620,7 @@ onMounted(async () => {
 @use "sass:color";
 
 .pipe-page {
-  padding: $spacing-lg;
+  padding: 40px 24px;
   height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
@@ -3993,9 +3993,8 @@ onMounted(async () => {
 
 .search-filter-bar {
   background: $background-light;
-  padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
 // 상세검색 패널 스타일
@@ -4280,15 +4279,24 @@ onMounted(async () => {
 }
 
 .form-select {
-  padding: 0.5rem;
-  border: 1px solid $border-color;
+  appearance: none;
+  width: 240px;
+  height: 40px;
+  padding: 8px 32px 8px 8px;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
   font-size: 0.9rem;
   min-width: 120px;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
 
   &:focus {
     outline: none;
     border-color: $primary-color;
+    background-image: url(../../assets/icons/ico_select-up.svg);
+    z-index: 2;
   }
 }
 
@@ -4483,11 +4491,13 @@ $tablet: 1024px;
 }
 
 .form-input {
-  width: 300px;
+  width: 100%;
+  min-width: 240px;
+  height: 40px;
   padding: 0.5rem;
-  border: 1px solid $border-color;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 15px;
 
   &:focus {
     outline: none;

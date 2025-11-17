@@ -637,14 +637,14 @@ onMounted(async () => {
 @use "sass:color";
 
 .structure-page {
-  padding: $spacing-lg;
+  padding: 40px 24px;
 }
 
 .search-filter-bar {
   background: $background-light;
-  padding: 1rem;
+  // padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
 .filter-group {
@@ -666,15 +666,24 @@ onMounted(async () => {
 }
 
 .form-select {
-  padding: 0.5rem;
-  border: 1px solid $border-color;
+  appearance: none;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+  width: 240px;
+  height: 40px;
+  padding: 8px 32px 8px 8px;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 15px;
+  font-weight: 400;
   min-width: 120px;
 
   &:focus {
     outline: none;
     border-color: $primary-color;
+    background-image: url(../../assets/icons/ico_select-up.svg);
   }
 }
 

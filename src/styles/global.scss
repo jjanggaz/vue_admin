@@ -171,11 +171,26 @@ body {
   align-items: center;
   margin-bottom: 20px;
 
+  .btns {
+    .btn {
+      &:disabled {
+        background-color: #abaebd;
+        
+        &:hover {
+          background-color: #abaebd;
+        }
+      }
+    }
+  }
+
   .btn.btn-delete {
-    padding:8px 16px 8px 36px;
+    padding:8px 16px 8px 32px;
     background-color: #3e435e;
     &:hover {
       background-color: #3C4973;
+    }
+    &:disabled {
+      background-color: #abaebd;
     }
   }
 
@@ -198,6 +213,9 @@ body {
       background-color: #222E77;
       &:hover {
         background-color: #29378C;
+      }
+      &:disabled:hover {
+        background-color: #abaebd;
       }
     }
   }

@@ -292,9 +292,9 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.menu-management {
-  padding: 20px;
-}
+// .menu-management {
+//   padding: 20px;
+// }
 
 .header-section {
   margin-bottom: 30px;

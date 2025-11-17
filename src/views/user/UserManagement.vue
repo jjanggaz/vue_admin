@@ -11,6 +11,6 @@
 <style scoped lang="scss">
 .user-management-layout {
   height: 100%;
-  padding: $spacing-lg;
+  padding: 40px 24px;
 }
 </style>

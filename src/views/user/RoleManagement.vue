@@ -773,9 +773,9 @@ const closeMenuPermissionsModal = () => {
 </script>
 
 <style scoped>
-.role-management {
+/* .role-management {
   padding: 20px;
-}
+} */
 
 .title-section {
   margin-bottom: 20px;
@@ -792,7 +792,6 @@ const closeMenuPermissionsModal = () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding: 15px;
   background-color: #f8f9fa;
   border-radius: 8px;
 }
@@ -809,17 +808,31 @@ const closeMenuPermissionsModal = () => {
 }
 
 .search-select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
+  appearance: none;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+  width: 240px;
+  height: 40px;
+  padding: 8px 32px 8px 8px;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
   min-width: 120px;
+
+  &:focus {
+    background-image: url(../../assets/icons/ico_select-up.svg);
+  }
 }
 
 .search-input {
+  min-width: 240px;
+  height: 40px;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
-  min-width: 200px;
 }
 
 .btns {
@@ -1002,35 +1015,4 @@ const closeMenuPermissionsModal = () => {
     color: #721c24;
   }
 }
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-/* .btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-.btn-delete {
-  background-color: #dc3545;
-}
-
-.btn-delete:hover {
-  background-color: #c82333;
-}
-
-.btn-delete:disabled {
-  background-color: #6c757d;
-} */
 </style>

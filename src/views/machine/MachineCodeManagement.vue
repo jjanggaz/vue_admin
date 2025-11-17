@@ -386,14 +386,14 @@ onMounted(() => {
 @use "sass:color";
 
 .machine-code-page {
-  padding: $spacing-lg;
+  padding: 40px 24px;
 }
 
 .action-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
 .search-bar {
@@ -407,12 +407,8 @@ onMounted(() => {
   margin-right: 1rem;
 }
 
-.label-search {
-  margin-right: 0.5rem;
-}
-
 .form-item {
-  margin-right: 0.5rem;
+  width: 240px;
 }
 
 .btns {

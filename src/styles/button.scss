@@ -31,34 +31,57 @@
   user-select: none;
 
   &:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
+    background-color: #abaebd;
   }
 
   &.btn-primary {
     background-color: #222E77;
     color: white;
 
+    &:disabled {
+      background-color: #abaebd;
+
+      &:hover {
+        background-color: #abaebd;
+      }
+    }
+
     &:hover:not(:disabled) {
       background-color: #29378C;
     }
 
     &.btn-delete {
-      padding:8px 16px 8px 36px;
+      padding:8px 16px 8px 32px;
       background-color: #3e435e;
 
       &:hover {
         background-color: #3C4973;
       }
+
+      &:disabled {
+        background-color: #abaebd;
+
+        &:hover {
+          background-color: #abaebd;
+        }
+      }
     }
   }
 
   &.btn-secondary {
-    background-color: $secondary-color;
-    color: white;
+    background-color: #222E77;
+    color: #ffffff;
 
-    &:hover:not(:disabled) {
-      background-color: color.scale($secondary-color, $lightness: -10%);
+    &:disabled {
+      background-color: #abaebd;
+      &:hover {
+        background-color: #abaebd;
+      }
+    }
+
+    &:hover {
+      background-color: #29378C;
     }
   }
 
@@ -76,7 +99,7 @@
 
 .btn.btn-delete {
     position:relative;
-    padding:8px 16px 8px 36px;
+    padding:8px 16px 8px 32px;
     border-radius: 5px;
     background-color: #3e435e;
     color: white;
@@ -87,7 +110,7 @@
         position:absolute;
         top: 50%;
         transform: translateY(-50%);
-        left: 16px;
+        left: 12px;
         width: 16px;
         height: 16px;
         background: url(../assets/icons/ico_delete.svg) no-repeat center / 16px 16px;
@@ -96,9 +119,13 @@
     &:hover {
       background-color: #3C4973;
     }
+    &:disabled {
+      background-color: #abaebd;
+    }
 }
 
 .btn-search {
+  height: 40px;
   background-color: #222E77;
   color: white;
   border: none;
@@ -142,5 +169,114 @@
 
   &:hover {
     background-color: #29378C;
+  }
+}
+
+.action-buttons {
+  .btn-register {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+  }
+  
+  .btn-edit {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+  }
+}
+
+.action-bar {
+  .btns button.btn-regist {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+  }
+
+  .btns button.btn-update,
+  .btns button.btn-edit {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+  }
+}
+
+div[class$="-list-header"] {
+  .btn-register {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+  }
+
+  .btn-edit {
+    position: relative;
+    padding-left: 32px;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 13px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
   }
 }

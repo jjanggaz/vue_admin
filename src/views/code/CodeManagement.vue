@@ -1251,7 +1251,7 @@ const handleEdit = () => {
 
 .search-filters {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 15px;
   flex-wrap: wrap;
 }
@@ -1268,20 +1268,6 @@ const handleEdit = () => {
   font-size: 14px;
   font-weight: 600;
   color: #374151;
-}
-
-.filter-select {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 14px;
-  background: white;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
 }
 
 // Main Content Section
@@ -1311,10 +1297,9 @@ const handleEdit = () => {
 .action-buttons {
   display: flex;
   gap: 10px;
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
   justify-content: flex-end;
   flex-shrink: 0;
+  margin-bottom: 20px;
 }
 
 .table-wrapper {

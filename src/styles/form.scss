@@ -113,10 +113,12 @@ dl.column-search {
     textarea,
     select {
       width: 100%;
+      height: 40px;
       padding: 8px;
-      border: 1px solid $border-form;
+      border: 1px solid #e7e6ed;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 400;
       box-sizing: border-box;
     }
     &::placeholder {
@@ -269,19 +271,19 @@ input[type="file"] {
     outline: none;
   }
   &::placeholder {
-    color: #999;
+    color: #767676;
   }
   &::-webkit-file-upload-button {
     display: none;
   }
   &::-webkit-input-placeholder {
-    color: #999;
+    color: #767676;
   }
   &::-moz-placeholder {
-    color: #999;
+    color: #767676;
   }
   &:-ms-input-placeholder {
-    color: #999;
+    color: #767676;
   }
 }
 
@@ -336,4 +338,26 @@ input[type="file"] {
 }
 .tab-contents {
   overflow: hidden;
+}
+
+.filter-select {
+  appearance: none;
+  height: 40px;
+  padding: 8px 32px 8px 12px;
+  background-color: #ffffff;
+  background-image: url(../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    // box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-image: url(../assets/icons/ico_select-up.svg);
+  }
 }

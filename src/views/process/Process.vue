@@ -1564,7 +1564,7 @@ onMounted(async () => {
 @use "sass:color";
 
 .process-page {
-  padding: $spacing-lg;
+  padding: 40px 24px;
 }
 
 :deep(.process-page .data-table) {
@@ -1610,7 +1610,6 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
 }
 
 .search-bar {
@@ -1641,27 +1640,40 @@ onMounted(async () => {
 
         // 셀렉트 폭 조정
         .form-select {
-          max-width: 120px;
-          min-width: 80px;
+          appearance: none;
+          background-image: url(../../assets/icons/ico_select-down.svg);
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 12px auto;
+          // max-width: 240px;
+          min-width: 240px;
+          height: 40px;
+          padding: 8px 32px 8px 8px;
+          font-size: 15px;
+          font-weight: 400;
+
+          &:focus {
+            background-image: url(../../assets/icons/ico_select-up.svg);
+          }
         }
 
         // 공정구분 셀렉트 폭 조정
-        &:nth-child(3) .form-select {
-          max-width: 150px;
-          min-width: 120px;
-        }
+        // &:nth-child(3) .form-select {
+        //   max-width: 150px;
+        //   min-width: 120px;
+        // }
 
         // 공정중분류 셀렉트 폭 조정
-        &:nth-child(4) .form-select {
-          max-width: 180px;
-          min-width: 150px;
-        }
+        // &:nth-child(4) .form-select {
+        //   max-width: 180px;
+        //   min-width: 150px;
+        // }
 
         // 공정명 셀렉트 폭 조정
-        &:nth-child(5) .form-select {
-          max-width: 200px;
-          min-width: 180px;
-        }
+        // &:nth-child(5) .form-select {
+        //   max-width: 200px;
+        //   min-width: 180px;
+        // }
 
         // 라벨 폭 조정
         .label-title {
@@ -1678,10 +1690,10 @@ onMounted(async () => {
         min-width: 0;
 
         // 셀렉트 폭 조정
-        .form-select {
-          max-width: 100px;
-          min-width: 80px;
-        }
+        // .form-select {
+        //   max-width: 100px;
+        //   min-width: 80px;
+        // }
 
         // 라벨 폭 조정
         .label-title {
@@ -1693,14 +1705,13 @@ onMounted(async () => {
   }
 
   .group-form {
-    margin-bottom: 1rem;
     min-width: 0;
 
     // 셀렉트 폭 조정
-    .form-select {
-      max-width: 180px;
-      min-width: 120px;
-    }
+    // .form-select {
+    //   max-width: 180px;
+    //   min-width: 120px;
+    // }
 
     // 버튼 그룹 스타일
     .button-group {
@@ -1841,12 +1852,11 @@ onMounted(async () => {
             .form-select {
               width: 100%;
               max-width: 400px;
-              padding: 8px;
-              border: 1px solid #ddd;
+              border: 1px solid #e7e6ed;
               border-radius: 4px;
               background-color: white;
               font-size: 14px;
-              height: 36px;
+              height: 40px;
               line-height: 1.2;
               &:focus {
                 outline: none;

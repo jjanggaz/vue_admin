@@ -1235,7 +1235,7 @@ const handleEdit = () => {
 
 <style scoped lang="scss">
 .code-management {
-  padding: 20px;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
 }

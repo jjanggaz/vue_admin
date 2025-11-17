@@ -59,7 +59,7 @@ const changeLabel = computed(() => {
 
 <style scoped lang="scss">
 .stats-summary-card {
-  padding: 24px;
+  padding: 18px 18px 16px;
 
   .card-content {
     flex: 1;

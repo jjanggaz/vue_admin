@@ -2914,10 +2914,10 @@ onBeforeUnmount(() => {
 
 // 탭 스크롤 관련 스타일
 .action-bar {
-  min-width: 0; // 액션 바가 축소될 수 있도록 허용
   display: flex;
   justify-content: space-between;
   gap: 40px;
+  width: 100%;
   margin-bottom: 20px;
 }
 
@@ -2928,8 +2928,8 @@ onBeforeUnmount(() => {
 .swiper-bar {
   display: flex;
   align-items: center;
-  width: 100%;
-  flex: 1;
+  // flex: 1 1 auto;
+  max-width: 1100px;
   min-width: 0; // 스와이퍼 바가 축소될 수 있도록 허용
 }
 
@@ -2946,7 +2946,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-end;
   overflow-x: auto;
-  flex: 1;
+  flex: 1 1 auto;
   scroll-behavior: smooth;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
   scrollbar-width: none; // Firefox
@@ -2958,7 +2958,6 @@ onBeforeUnmount(() => {
   }
 
   .tab {
-    display: inline-flex;
     flex-shrink: 0;
     white-space: nowrap; // 텍스트 줄바꿈 방지
     overflow: hidden; // 넘치는 텍스트 숨김
@@ -2979,36 +2978,42 @@ onBeforeUnmount(() => {
 }
 
 .btn-scroll {
-  background: #e7e6ed;
-  border: none;
-  border-radius: 4px;
-  width: 20px;
-  height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+    flex-shrink: 0;
+    background: #e7e6ed;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    min-width: 20px;
+    margin-top: 3px;
+
+    img {
+      width: 8px;
+      height: 10px;
+      filter: brightness(0) invert(0.5); // 회색으로 변경
+    }
+
+    &:hover:not(:disabled) {
+      background: #d6d4e3;
+    }
+
+    &:disabled {
+      background: #e7e6de;
+      opacity: .6;
+      cursor: not-allowed;
+    }
+  }
+
+.tab-buttons {
   flex-shrink: 0;
-  min-width: 20px;
-  margin-top: 3px;
-
-  img {
-    width: 8px;
-    height: 10px;
-    filter: brightness(0) invert(0.5); // 회색으로 변경
-  }
-
-  &:hover:not(:disabled) {
-    background: #d6d4e3;
-  }
-
-  &:disabled {
-    background: #e7e6de;
-    opacity: .6;
-    cursor: not-allowed;
-  }
 }
+
 .symbol-image-preview {
   display: flex;
   align-items: center;

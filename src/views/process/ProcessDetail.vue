@@ -6959,6 +6959,22 @@ const processPfdChanges = async (processId: string) => {
 
           const responseData = response;
           console.log("PFD 도면 생성 API 응답:", responseData);
+          
+          // response.data.success가 false인 경우 저장 실패 처리
+          if (responseData.response?.data?.success === false) {
+            const errorMessage = 
+              responseData.response?.data?.message || 
+              responseData.response?.data?.detail || 
+              "도면 저장에 실패했습니다.";
+            console.error("❌ PFD 도면 저장 실패:", {
+              message: errorMessage,
+              error_code: responseData.response?.data?.error_code,
+              field: responseData.response?.data?.field,
+              value: responseData.response?.data?.value,
+            });
+            throw new Error(errorMessage);
+          }
+          
           console.log("응답 구조 분석:");
           console.log("- responseData.response:", responseData.response);
           console.log(
@@ -7289,6 +7305,21 @@ const processPfdChanges = async (processId: string) => {
 
             if (!response.success) {
               throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // response.data.success가 false인 경우 저장 실패 처리
+            if (response.response?.data?.success === false) {
+              const errorMessage = 
+                response.response?.data?.message || 
+                response.response?.data?.detail || 
+                "도면 수정에 실패했습니다.";
+              console.error("❌ PFD 도면 수정 실패:", {
+                message: errorMessage,
+                error_code: response.response?.data?.error_code,
+                field: response.response?.data?.field,
+                value: response.response?.data?.value,
+              });
+              throw new Error(errorMessage);
             }
 
             // symbol_id 추출 및 업데이트 (Svg 파일이 변경된 경우)

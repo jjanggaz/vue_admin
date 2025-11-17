@@ -533,7 +533,7 @@ export const useProcessStore = defineStore("process", () => {
               process_type: processInfo.level2_code_key || "",
               process_type_nm: processInfo.level2_code_value || "",
               process_nm: processInfo.process_name || "",
-              process_name: processInfo.process_name || "", // 그리드에서 사용할 process_name 추가
+              process_name: processInfo.level4_code_value || "", // 그리드에서 사용할 process_name 추가
               sub_category: processInfo.level3_code_key || "",
               sub_category_nm: processInfo.level3_code_value || "",
               level3_code_key: processInfo.level3_code_key || "", // 그리드에서 사용할 level3_code_key 추가

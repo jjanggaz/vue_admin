@@ -143,7 +143,8 @@
                       (processStore.processDetail.symbolId &&
                         processStore.processDetail.symbolId !==
                           '00000000-0000-0000-0000-000000000000') ||
-                      processStore.processSymbolPreviewUrl
+                      (processStore.processSymbolPreviewUrl &&
+                        processStore.selectedFiles['processSymbol'])
                     "
                     @click="handleDeleteProcessSymbol"
                     title="심볼 삭제"

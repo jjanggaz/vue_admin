@@ -129,6 +129,7 @@
                 :selectable="true"
                 selectionMode="single"
                 :showSelectAll="false"
+                :selectHeaderText="t('common.selectColumn')"
                 :selectedItems="selectedMetricFormula"
                 @selection-change="onMetricFormulaSelectionChange"
               >
@@ -215,6 +216,7 @@
                 :selectable="true"
                 selectionMode="single"
                 :showSelectAll="false"
+                :selectHeaderText="t('common.selectColumn')"
                 :selectedItems="selectedUscsFormula"
                 @selection-change="onUscsFormulaSelectionChange"
               >

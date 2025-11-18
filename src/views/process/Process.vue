@@ -572,7 +572,7 @@ const processDetailRef = ref<InstanceType<typeof ProcessDetail> | null>(null);
 const isComponentMounted = ref(false);
 
 // 단위 선택
-const selectedUnit = ref<string>("METRIC");
+const selectedUnit = ref<string>("");
 
 // 단위 시스템 옵션 (Pipe.vue 패턴 참조, 추후 API에서 로드하도록 변경 가능)
 const unitSystems = ref<
@@ -1525,12 +1525,40 @@ onMounted(async () => {
       searchUnitType: typeof processStore.searchUnit,
     });
 
-    // 0. 초기 단위 설정
+    // 0. 화면 로드 시 select 박스 선택 초기화
+    // 단위 초기화
+    selectedUnit.value = "";
     if (typeof processStore.setSearchUnit === "function") {
-      processStore.setSearchUnit(selectedUnit.value);
-      console.log("0. 초기 단위 설정 완료:", selectedUnit.value);
-    } else {
-      console.error("processStore.setSearchUnit 함수가 존재하지 않습니다.");
+      processStore.setSearchUnit("");
+      console.log("0-1. 단위 초기화 완료");
+    }
+
+    // 공정구분 초기화
+    if (typeof processStore.setSearchProcessType === "function") {
+      processStore.setSearchProcessType(null);
+      console.log("0-2. 공정구분 초기화 완료");
+    }
+
+    // 공정 중분류 초기화
+    if (typeof processStore.setSearchSubCategoryInput === "function") {
+      processStore.setSearchSubCategoryInput(null);
+      // 중분류 옵션도 초기화
+      processStore.searchSubCategoryOptions.splice(
+        0,
+        processStore.searchSubCategoryOptions.length
+      );
+      console.log("0-3. 공정 중분류 초기화 완료");
+    }
+
+    // 공정명 초기화
+    if (typeof processStore.setSearchProcessName === "function") {
+      processStore.setSearchProcessName(null);
+      // 공정명 옵션도 초기화
+      processStore.searchProcessNameOptions.splice(
+        0,
+        processStore.searchProcessNameOptions.length
+      );
+      console.log("0-4. 공정명 초기화 완료");
     }
 
     // 1. 초기 공정구분 옵션 로드

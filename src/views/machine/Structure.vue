@@ -184,7 +184,6 @@
             @click="closeRegistModal"
             aria-label="Close"
           >
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -641,7 +640,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  background: $background-light;
   // padding: 1rem;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -793,28 +791,11 @@ $tablet: 1024px;
   }
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+.close-btn {
+  width: 24px;
+  height: 24px;
+  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
   cursor: pointer;
-  color: $text-light;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &:hover {
-    color: $text-color;
-  }
-
-  @media (max-width: $mobile) {
-    width: 24px;
-    height: 24px;
-    font-size: 1.2rem;
-  }
 }
 
 .modal-body {

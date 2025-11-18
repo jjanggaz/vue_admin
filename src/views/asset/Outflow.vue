@@ -245,7 +245,6 @@
         <div class="modal-header">
           <h3>{{ t("outflow.registerNew") }}</h3>
           <button class="close-btn" @click="closeModal" aria-label="Close">
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -502,7 +501,6 @@
             @click="closeUpdateModal"
             aria-label="Close"
           >
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -601,7 +599,6 @@
                   @click="handleDeleteSymbol"
                   :title="t('common.deleteSymbol')"
                 >
-                  ×
                 </button>
               </div>
             </dd>
@@ -786,7 +783,6 @@
             @click="closeCodeManagementModal"
             aria-label="Close"
           >
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -2785,14 +2781,10 @@ onBeforeUnmount(() => {
   }
 
   .close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
     cursor: pointer;
-    color: $text-light;
-    &:hover {
-      color: $text-color;
-    }
   }
 }
 
@@ -3040,9 +3032,9 @@ onBeforeUnmount(() => {
 }
 
 .no-symbol-message {
-  color: #6b7280;
-  font-size: 14px;
-  font-style: italic;
+  color: #aaaaaa;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .formula-link {

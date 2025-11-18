@@ -75,7 +75,6 @@
             @click="closeRegistModal"
             aria-label="Close"
           >
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -485,18 +484,6 @@ onMounted(() => {
 
   h3 {
     margin: 0;
-    color: $text-color;
-  }
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: $text-light;
-
-  &:hover {
     color: $text-color;
   }
 }

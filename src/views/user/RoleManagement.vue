@@ -111,7 +111,7 @@
                 : t("columns.roleGroup.register")
             }}
           </h3>
-          <button class="btn-close" @click="closeModal">×</button>
+          <button class="btn-close" @click="closeModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="handleSubmit">
@@ -242,7 +242,6 @@
             }})
           </h3>
           <button class="btn-close" @click="closeMenuPermissionsModal">
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -787,15 +786,6 @@ const closeMenuPermissionsModal = () => {
   font-weight: 600;
 }
 
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
 .search-bar {
   flex: 1; /* Search bar takes available space */
   margin-right: 20px; /* Space between search bar and buttons */
@@ -891,14 +881,6 @@ const closeMenuPermissionsModal = () => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
 }
 
 .modal-body {

@@ -4,7 +4,7 @@
     <div class="filter-bar">
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("common.structureMajorCategory") }}</span
+          >{{ t("common.structureMajorCategory") }}</span
         >
         <select
           class="input select-md"
@@ -24,7 +24,7 @@
       </div>
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
+          >{{ t("columns.machine.structureTypeDetail") }}</span
         >
         <select
           class="input select-md"
@@ -45,7 +45,7 @@
       <div class="group-form inline">
         <span
           class="label required long-label"
-          v-html="'⊙ ' + t('common.integratedFile').replace(/,/g, ',<br />')"
+          v-html="'' + t('common.integratedFile').replace(/,/g, ',<br />')"
         ></span>
         <div class="file-input-wrapper">
           <input
@@ -69,7 +69,7 @@
 
       <!--
       <div class="group-form inline">
-        <span class="label required">⊙ 3D 구조물 계산식</span>
+        <span class="label required">3D 구조물 계산식</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -90,7 +90,7 @@
         </div>
       </div>      
       <div class="group-form inline">
-        <span class="label required">⊙ 3D 구조물 DTD모델</span>
+        <span class="label required">3D 구조물 DTD모델</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -112,7 +112,7 @@
       </div>
 
       <div class="group-form inline">
-        <span class="label required">⊙ 모델 썸네일</span>
+        <span class="label required">모델 썸네일</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -133,7 +133,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ 3D REVIT모델</span>
+        <span class="label">3D REVIT모델</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -155,7 +155,7 @@
       </div>
       -->
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.remarks") }}</span>
+        <span class="label">{{ t("common.remarks") }}</span>
         <input
           type="text"
           class="input"

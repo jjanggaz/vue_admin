@@ -3,7 +3,7 @@
     <div class="modal-container-large">
       <div class="modal-header">
         <h3>{{ t("common.registerCode") }}</h3>
-        <button class="btn-close" @click="handleClose">×</button>
+        <button class="btn-close" @click="handleClose"></button>
       </div>
       <div class="modal-body">
         <!-- Top Section - Search/Filter Controls -->
@@ -11,7 +11,7 @@
           <div class="search-filters">
             <div class="filter-group">
               <label class="filter-label"
-                >⊙ {{ t("columns.code.codeGroup") }}</label
+                >{{ t("columns.code.codeGroup") }}</label
               >
               <select
                 v-model="searchCodeGroupInput"
@@ -30,7 +30,7 @@
             </div>
             <div v-if="props.selectedCategory1" class="filter-group">
               <label class="filter-label"
-                >⊙ {{ t("columns.code.majorCategory") }}</label
+                >{{ t("columns.code.majorCategory") }}</label
               >
               <select
                 v-model="searchCategory1Input"
@@ -53,7 +53,7 @@
             </div>
             <div v-if="props.selectedCategory2" class="filter-group">
               <label class="filter-label"
-                >⊙ {{ t("columns.code.mediumCategory") }}</label
+                >{{ t("columns.code.mediumCategory") }}</label
               >
               <select
                 v-model="searchCategory2Input"
@@ -76,7 +76,7 @@
             </div>
             <div v-if="props.selectedCategory3" class="filter-group">
               <label class="filter-label"
-                >⊙ {{ t("columns.code.minorCategory") }}</label
+                >{{ t("columns.code.minorCategory") }}</label
               >
               <select
                 v-model="searchCategory3Input"
@@ -430,18 +430,6 @@ onMounted(async () => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-  }
-
-  .btn-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #6b7280;
-
-    &:hover {
-      color: #374151;
-    }
   }
 }
 

@@ -2132,8 +2132,8 @@ onBeforeUnmount(() => {
 }
 
 .no-symbol-message {
-  color: #6b7280;
-  font-size: 14px;
-  font-style: italic;
+  color: #aaaaaa;
+  font-size: 13px;
+  font-weight: 400;
 }
 </style>

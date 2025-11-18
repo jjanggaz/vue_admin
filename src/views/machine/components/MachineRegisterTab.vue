@@ -4,7 +4,7 @@
     <div class="filter-bar">
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("common.machineMajorCategory") }}</span
+          >{{ t("common.machineMajorCategory") }}</span
         >
         <select
           class="input select-md"
@@ -22,7 +22,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required">⊙ {{ t("common.excelUpload") }}</span>
+        <span class="label required">{{ t("common.excelUpload") }}</span>
         <div class="file-upload-group">
           <input
             type="text"
@@ -67,7 +67,7 @@
 
     <!-- 리스트 테이블 -->
     <div class="section-header">
-      <div class="section-title">⊙ {{ t("common.machineUpload") }}</div>
+      <div class="section-title">{{ t("common.machineUpload") }}</div>
       <div class="section-actions">
         <div class="file-upload-group">
           <input

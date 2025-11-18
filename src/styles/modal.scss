@@ -31,8 +31,8 @@
   gap: 0.5rem;
 }
 .btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+  width: 24px;
+  height: 24px;
+  background: url(../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
   cursor: pointer;
 }

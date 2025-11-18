@@ -1077,7 +1077,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  background: $background-light;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;

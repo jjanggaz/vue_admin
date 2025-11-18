@@ -110,7 +110,6 @@
             }}
           </h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
-            ×
           </button>
         </div>
         <div class="modal-body">

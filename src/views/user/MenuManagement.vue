@@ -77,7 +77,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("menuManagement.editMenu") }}</h3>
-          <button class="btn-close" @click="isEditModalOpen = false">×</button>
+          <button class="btn-close" @click="isEditModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -414,18 +414,6 @@ onMounted(() => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-  }
-
-  .btn-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #6b7280;
-
-    &:hover {
-      color: #374151;
-    }
   }
 }
 

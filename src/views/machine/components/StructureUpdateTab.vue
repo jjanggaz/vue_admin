@@ -4,7 +4,7 @@
     <div class="filter-bar">
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("common.structureMajorCategory") }}</span
+          >{{ t("common.structureMajorCategory") }}</span
         >
         <select
           class="input select-md"
@@ -23,7 +23,7 @@
       </div>
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("columns.machine.structureTypeDetail") }}</span
+          >{{ t("columns.machine.structureTypeDetail") }}</span
         >
         <select
           class="input select-md"
@@ -41,7 +41,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.formulaFile") }}</span>
+        <span class="label">{{ t("common.formulaFile") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -62,7 +62,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.dtdModel") }}</span>
+        <span class="label">{{ t("common.dtdModel") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -83,7 +83,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.modelThumbnail") }}</span>
+        <span class="label">{{ t("common.modelThumbnail") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -105,7 +105,7 @@
       </div>
 
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.revitModel3D") }}</span>
+        <span class="label">{{ t("common.revitModel3D") }}</span>
         <div class="file-input-wrapper">
           <input
             type="text"
@@ -126,7 +126,7 @@
         </div>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.remarks") }}</span>
+        <span class="label">{{ t("common.remarks") }}</span>
         <input
           type="text"
           class="input"
@@ -138,7 +138,7 @@
     <!-- 수정시 테이블 -->
     <div class="section-header">
       <div class="section-title">
-        ⊙ {{ t("common.structure3DFormulaVersionManagement") }}
+        {{ t("common.structure3DFormulaVersionManagement") }}
       </div>
       <div class="section-actions">
         <button

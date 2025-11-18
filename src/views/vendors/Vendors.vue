@@ -1274,18 +1274,6 @@ onMounted(() => {
   }
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: $text-light;
-
-  &:hover {
-    color: $text-color;
-  }
-}
-
 .modal-body {
   padding: 1rem;
 }

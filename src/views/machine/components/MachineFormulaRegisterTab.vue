@@ -4,7 +4,7 @@
     <div class="filter-bar">
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("common.machineMajorCategory") }}</span
+          >{{ t("common.machineMajorCategory") }}</span
         >
         <select class="input select-md" v-model="selectedMachineName">
           <option value="">{{ t("common.select") }}</option>
@@ -19,7 +19,7 @@
       </div>
       <div class="group-form inline">
         <span class="label required"
-          >⊙ {{ t("common.machineSubCategory") }}</span
+          >{{ t("common.machineSubCategory") }}</span
         >
         <select
           class="input select-sm"
@@ -37,7 +37,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">⊙ {{ t("common.machineType") }}</span>
+        <span class="label">{{ t("common.machineType") }}</span>
         <select
           class="input select-sm"
           :disabled="!isStep2Enabled"
@@ -54,7 +54,7 @@
         </select>
       </div>
       <div class="group-form inline formula-file-group">
-        <span class="label required">⊙ {{ t("common.formulaFile") }}</span>
+        <span class="label required">{{ t("common.formulaFile") }}</span>
         <div class="file-upload-group">
           <input
             type="text"
@@ -83,7 +83,7 @@
     <!-- 계산식 리스트 -->
     <div class="section-header">
       <div class="section-title">
-        ⊙ {{ t("common.formulaVersionManagement") }}
+        {{ t("common.formulaVersionManagement") }}
       </div>
       <div class="section-actions">
         <button class="btn-danger" @click="handleDelete">

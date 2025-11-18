@@ -580,7 +580,6 @@
               @click="closeDetailPanel"
               aria-label="Close"
             >
-              ×
             </button>
           </div>
         </div>
@@ -649,7 +648,6 @@
             @click="closeRegistModal"
             aria-label="Close"
           >
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -670,7 +668,7 @@
                 <span
                   class="label required"
                   style="min-width: auto; white-space: nowrap"
-                  >⊙ {{ t("common.unit") }}</span
+                  >{{ t("common.unit") }}</span
                 >
                 <select
                   class="input select-md"
@@ -692,7 +690,7 @@
                 <span
                   class="label required"
                   style="min-width: auto; white-space: nowrap"
-                  >⊙ {{ t("measurement.materialType") }}</span
+                  >{{ t("measurement.materialType") }}</span
                 >
                 <select
                   class="input select-md"
@@ -717,7 +715,7 @@
                 <span
                   class="label required"
                   style="min-width: auto; white-space: nowrap"
-                  >⊙ {{ t("common.excelUpload") }}</span
+                  >{{ t("common.excelUpload") }}</span
                 >
                 <div
                   class="file-upload-group"
@@ -772,7 +770,7 @@
             <!-- 계측기 리스트 업로드 영역 -->
             <div class="section-header" style="display: none">
               <div class="section-title">
-                ⊙ {{ t("common.measurementUpload") }}
+                {{ t("common.measurementUpload") }}
               </div>
               <div class="section-actions">
                 <div class="file-upload-group">
@@ -3278,13 +3276,10 @@ onMounted(async () => {
       }
 
       .btn-close {
-        padding: 0.5rem;
-        border: none;
-        background: transparent;
-        color: $text-color;
+        width: 24px;
+        height: 24px;
+        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
         cursor: pointer;
-        font-size: 1.25rem;
-        border-radius: 4px;
       }
     }
   }
@@ -3386,23 +3381,6 @@ onMounted(async () => {
       }
     }
   }
-
-  .btn-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: $text-light;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      color: $text-color;
-    }
-  }
 }
 
 .detail-tables-container {
@@ -3475,7 +3453,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  background: $background-light;
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -3500,26 +3477,6 @@ onMounted(async () => {
       font-size: 1.1rem;
       font-weight: 600;
       color: $text-color;
-    }
-
-    .btn-close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: $text-light;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &:hover {
-        color: $text-color;
-      }
     }
 
     .detail-search-row {
@@ -3888,30 +3845,13 @@ $tablet: 1024px;
   }
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: $text-light;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &:hover {
-    color: $text-color;
-  }
-
-  @media (max-width: $mobile) {
+.close-btn {
     width: 24px;
     height: 24px;
-    font-size: 1.2rem;
+    background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
+    cursor: pointer;
   }
-}
-
+  
 .modal-body {
   padding: 0 1rem 1rem 1rem;
   flex: 1;

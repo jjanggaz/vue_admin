@@ -180,7 +180,7 @@
       <div class="modal-container large-modal">
         <div class="modal-header">
           <h3>{{ t("process.registerProcess") }}</h3>
-          <button class="btn-close" @click="closeRegistModal">×</button>
+          <button class="btn-close" @click="closeRegistModal"></button>
         </div>
         <div class="modal-body">
           <!-- 상단: 기본 정보 입력 -->
@@ -425,7 +425,7 @@
       <div class="modal-container detail-modal-container">
         <div class="modal-header">
           <h3>{{ isRegisterMode ? "공정 등록" : "공정 상세" }}</h3>
-          <button class="btn-close" @click="closeDetailModal">×</button>
+          <button class="btn-close" @click="closeDetailModal"></button>
         </div>
         <div class="modal-body detail-modal-body">
           <div v-if="!selectedProcessId" class="loading-placeholder">

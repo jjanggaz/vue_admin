@@ -203,7 +203,6 @@
         <div class="modal-header">
           <h3>{{ t("common.registerCode") }}</h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -316,7 +315,6 @@
         <div class="modal-header">
           <h3>{{ t("common.editCode") }}</h3>
           <button class="btn-close" @click="isRegistModalOpen = false">
-            ×
           </button>
         </div>
         <div class="modal-body">
@@ -1349,18 +1347,6 @@ const handleEdit = () => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-  }
-
-  .btn-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #6b7280;
-
-    &:hover {
-      color: #374151;
-    }
   }
 }
 

@@ -260,7 +260,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .dashboard {
   padding: 40px 24px;
-  background-color: #f9fafb;
+  background-color: #ffffff;
   min-height: 100vh;
 
   .auto-refresh-section {

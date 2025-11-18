@@ -66,7 +66,6 @@
           >
             <slot name="empty">
               <div class="empty-state">
-                <span class="empty-icon">📂</span>
                 <p>{{ $t("datatable.noData") }}</p>
                 <!-- 등록된 데이터가 없습니다 -->
               </div>
@@ -459,7 +458,6 @@ const formatCellValue = (item: any, column: TableColumn) => {
   }
 
   thead {
-    background-color: $background-light;
     border-bottom: 0.6px solid #000000;
     position: sticky;
     top: 0;
@@ -471,7 +469,6 @@ const formatCellValue = (item: any, column: TableColumn) => {
       color: #333333;
       font-size: 15px;
       position: relative;
-      background-color: $background-light; // 스크롤 시 배경색 유지
 
       &:nth-of-type(3) {
         text-align: left;
@@ -480,11 +477,6 @@ const formatCellValue = (item: any, column: TableColumn) => {
       &.sortable {
         cursor: pointer;
         user-select: none;
-        transition: $transition-base;
-
-        &:hover {
-          background-color: darken($background-light, 3%);
-        }
       }
 
       .th-content {
@@ -538,10 +530,14 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   tbody {
     .data-row {
-      transition: $transition-base;
+      transition: $transition-fast;
 
       & td:nth-of-type(3) {
         text-align: left;
+      }
+
+      &:hover {
+        background-color: #c0e3f866;
       }
     }
 
@@ -575,20 +571,10 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
     .empty-message {
       .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: $spacing-md;
-
-        .empty-icon {
-          font-size: 2rem;
-          opacity: 0.5;
-        }
-
         p {
-          color: $text-light;
-          margin: 0;
-          font-style: italic;
+          color: #aaaaaa;
+          font-weight: 400;
+          font-size: 13px;
         }
       }
     }

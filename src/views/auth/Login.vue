@@ -254,7 +254,8 @@ const handleLogin = async () => {
   .login-btn {
     width: 100%;
     height: 60px;
-    font-size: $font-size-base;
+    font-size: 20px;
+    font-weight: 700;
   }
 }
 

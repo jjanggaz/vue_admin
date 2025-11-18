@@ -223,7 +223,7 @@ const currentPageTitle = computed<string>(() => {
   left: 260px;
   right: 0;
   height: 70px;
-  background-color: $background-color;
+  background-color: #ffffff;
   border-bottom: 1px solid $border-form;
   z-index: 90;
 }

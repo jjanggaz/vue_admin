@@ -19,7 +19,7 @@ import AppHeader from './AppHeader.vue'
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: $background-light;
+  background-color: #ffffff;
 }
 
 .main-wrapper {
@@ -33,7 +33,7 @@ import AppHeader from './AppHeader.vue'
   flex: 1;
   padding: 16px 16px 40px;
   padding-top: 70px;
-  background-color: $background-light;
+  background-color: #ffffff;
   min-height: calc(100vh - 70px); // Header height
 }
 

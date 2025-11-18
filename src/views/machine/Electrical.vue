@@ -3722,9 +3722,9 @@ onMounted(async () => {
   margin-bottom: 1rem;
 
   h2 {
-    margin: 0;
-    color: $text-color;
-    font-size: 1.5rem;
+    color: #000000;
+    font-size: 20px;
+    font-weight: 500;
   }
 }
 

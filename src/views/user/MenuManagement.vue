@@ -366,7 +366,7 @@ onMounted(() => {
 }
 
 .btn-edit {
-  background-color: #3b82f6;
+  background-color: #222E77;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -376,7 +376,7 @@ onMounted(() => {
   font-weight: 500;
 
   &:hover {
-    background-color: #2563eb;
+    background-color: #29378C;
   }
 }
 

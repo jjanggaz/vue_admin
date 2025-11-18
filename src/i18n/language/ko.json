@@ -634,6 +634,7 @@
       "inactive": "비활성"
     },
     "fileUpload": "파일 업로드",
+    "symbolUpload": "심볼 업로드",
     "drawingTypeLabel": "도면종류",
     "statusLabel": "상태",
     "approvalStatusLabel": "승인상태",

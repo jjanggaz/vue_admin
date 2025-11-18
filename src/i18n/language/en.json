@@ -636,6 +636,7 @@
       "inactive": "Inactive"
     },
     "fileUpload": "File Upload",
+    "symbolUpload": "Symbol Upload",
     "drawingTypeLabel": "Drawing Type",
     "statusLabel": "Status",
     "approvalStatusLabel": "Approval Status",

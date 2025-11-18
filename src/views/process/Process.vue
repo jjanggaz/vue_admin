@@ -1649,7 +1649,7 @@ onMounted(async () => {
   // 각 줄의 스타일
   .search-row {
     display: flex;
-    gap: 0.5rem;
+    gap: 15px;
     align-items: flex-start;
     width: 100%;
     flex-wrap: wrap;
@@ -1705,7 +1705,9 @@ onMounted(async () => {
 
         // 라벨 폭 조정
         .label-title {
-          font-size: 0.85rem;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333333;
           white-space: nowrap;
         }
       }
@@ -1725,7 +1727,9 @@ onMounted(async () => {
 
         // 라벨 폭 조정
         .label-title {
-          font-size: 0.85rem;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333333;
           white-space: nowrap;
         }
       }

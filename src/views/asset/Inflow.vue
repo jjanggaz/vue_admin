@@ -77,7 +77,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="currentMetricGridData"
-                maxHeight="300px"
+                maxHeight="500px"
                 :stickyHeader="true"
               >
                 <template
@@ -124,11 +124,12 @@
               <DataTable
                 :columns="gridColumns2"
                 :data="currentGridData2"
-                maxHeight="300px"
+                maxHeight="500px"
                 :stickyHeader="true"
                 :selectable="true"
                 selectionMode="single"
                 :showSelectAll="false"
+                :selectHeaderText="t('common.selectColumn')"
                 :selectedItems="selectedMetricFormula"
                 @selection-change="onMetricFormulaSelectionChange"
               >
@@ -158,7 +159,7 @@
               <DataTable
                 :columns="gridColumns"
                 :data="currentUscsGridData"
-                maxHeight="300px"
+                maxHeight="500px"
                 :stickyHeader="true"
               >
                 <template
@@ -210,11 +211,12 @@
               <DataTable
                 :columns="gridColumns2"
                 :data="currentUscsGridData2"
-                maxHeight="300px"
+                maxHeight="500px"
                 :stickyHeader="true"
                 :selectable="true"
                 selectionMode="single"
                 :showSelectAll="false"
+                :selectHeaderText="t('common.selectColumn')"
                 :selectedItems="selectedUscsFormula"
                 @selection-change="onUscsFormulaSelectionChange"
               >
@@ -300,7 +302,7 @@
                 <span class="color-text">{{ selectedColor }}</span>
               </div>
             </dd>
-            <dt>{{ t("common.fileUpload") }}</dt>
+            <dt>{{ t("common.symbolUpload") }}</dt>
             <dd>
               <div class="file-upload-row">
                 <input
@@ -558,7 +560,7 @@
                 <span class="color-text">{{ selectedColor }}</span>
               </div>
             </dd>
-            <dt>{{ t("common.fileUpload") }}</dt>
+            <dt>{{ t("common.symbolUpload") }}</dt>
             <dd>
               <div class="file-upload-row">
                 <input
@@ -2718,7 +2720,6 @@ onBeforeUnmount(() => {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
-    
 
     &.active {
       height: 40px;
@@ -2729,37 +2730,37 @@ onBeforeUnmount(() => {
 }
 
 .btn-scroll {
-    flex-shrink: 0;
-    background: #e7e6ed;
-    border: none;
-    border-radius: 4px;
-    width: 20px;
-    height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-    min-width: 20px;
-    margin-top: 3px;
+  flex-shrink: 0;
+  background: #e7e6ed;
+  border: none;
+  border-radius: 4px;
+  width: 20px;
+  height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  min-width: 20px;
+  margin-top: 3px;
 
-    img {
-      width: 8px;
-      height: 10px;
-      filter: brightness(0) invert(0.5); // 회색으로 변경
-    }
-
-    &:hover:not(:disabled) {
-      background: #d6d4e3;
-    }
-
-    &:disabled {
-      background: #e7e6de;
-      opacity: .6;
-      cursor: not-allowed;
-    }
+  img {
+    width: 8px;
+    height: 10px;
+    filter: brightness(0) invert(0.5); // 회색으로 변경
   }
+
+  &:hover:not(:disabled) {
+    background: #d6d4e3;
+  }
+
+  &:disabled {
+    background: #e7e6de;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
 
 .tab-buttons {
   flex-shrink: 0;

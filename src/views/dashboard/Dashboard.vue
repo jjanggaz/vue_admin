@@ -259,7 +259,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .dashboard {
-  padding: $spacing-lg;
+  padding: 40px 24px;
   background-color: #f9fafb;
   min-height: 100vh;
 
@@ -381,7 +381,7 @@ onUnmounted(() => {
 
 // 공통 카드 스타일
 .dashboard-card {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   border: 1px solid #e5e7eb;

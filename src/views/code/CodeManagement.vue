@@ -5,7 +5,7 @@
       <div class="search-filters">
         <div class="filter-group">
           <label class="filter-label"
-            >⊙ {{ t("columns.code.codeGroup") }}</label
+            >{{ t("columns.code.codeGroup") }}</label
           >
           <select
             v-model="searchCodeGroupInput"
@@ -28,7 +28,7 @@
         </div>
         <div class="filter-group">
           <label class="filter-label"
-            >⊙ {{ t("columns.code.majorCategory") }}</label
+            >{{ t("columns.code.majorCategory") }}</label
           >
           <select
             v-model="searchCategory1Input"
@@ -56,7 +56,7 @@
         </div>
         <div class="filter-group">
           <label class="filter-label"
-            >⊙ {{ t("columns.code.mediumCategory") }}</label
+            >{{ t("columns.code.mediumCategory") }}</label
           >
           <select
             v-model="searchCategory2Input"
@@ -84,7 +84,7 @@
         </div>
         <div class="filter-group">
           <label class="filter-label"
-            >⊙ {{ t("columns.code.minorCategory") }}</label
+            >{{ t("columns.code.minorCategory") }}</label
           >
           <select
             v-model="searchCategory3Input"
@@ -1242,32 +1242,30 @@ const handleEdit = () => {
 
 // Top Section - Search/Filter Controls
 .search-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .search-filters {
   display: flex;
-  align-items: flex-end;
   gap: 15px;
   flex-wrap: wrap;
 }
 
 .filter-group {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
-  min-width: 120px;
-  flex: 1;
+
+  select {
+    width: 240px;
+  }
 }
 
 .filter-label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  color: #333333;
+  white-space: nowrap;
 }
 
 // Main Content Section

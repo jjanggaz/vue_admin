@@ -3075,18 +3075,6 @@ onMounted(async () => {
   align-items: center;
 }
 
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  label {
-    font-weight: 500;
-    color: $text-color;
-    white-space: nowrap;
-  }
-}
-
 .form-select {
   appearance: none;
   background-image: url(../../assets/icons/ico_select-down.svg);

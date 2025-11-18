@@ -4,7 +4,7 @@
       <div class="card-top">
         <h3 class="card-title">{{ title }}</h3>
         <div class="card-icon" :class="iconClass">
-          <i :class="icon"></i>
+          <span class="ico"></span>
         </div>
       </div>
       <div class="card-bottom">
@@ -61,6 +61,25 @@ const changeLabel = computed(() => {
 .stats-summary-card {
   padding: 18px 18px 16px;
 
+  &:nth-of-type(1),
+  &:nth-of-type(2) {
+    .ico {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: url(../../assets/icons/ico_dashboard-01.svg) no-repeat bottom / 21px auto;
+    }
+  }
+  &:nth-of-type(3),
+  &:nth-of-type(4) {
+    .ico {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: url(../../assets/icons/ico_dashboard-02.svg) no-repeat bottom / 21px auto;
+    }
+  }
+
   .card-content {
     flex: 1;
 
@@ -73,23 +92,6 @@ const changeLabel = computed(() => {
         font-size: 20px;
         color: #197FC5;
         font-weight: 500;
-      }
-
-      .card-icon {
-        width: 21px;
-        height: 19px;
-
-        // &.icon-increase {
-        //   background: linear-gradient(135deg, #10b981, #059669);
-        // }
-
-        // &.icon-decrease {
-        //   background: linear-gradient(135deg, #ef4444, #dc2626);
-        // }
-
-        // &.icon-neutral {
-        //   background: linear-gradient(135deg, #6b7280, #4b5563);
-        // }
       }
     }
 

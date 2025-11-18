@@ -157,6 +157,7 @@ const handleLogin = async () => {
   right: 32px;
   z-index: 10;
 }
+
 .login-container {
   position: relative;
   width: 100%;
@@ -208,24 +209,31 @@ const handleLogin = async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: $spacing-lg;
+    margin-bottom: 40px;
 
     label {
       display: flex;
       align-items: center;
-      font-size: $font-size-sm;
-      color: $text-color;
+      gap: 6px;
+      font-size: 15px;
+      color: #888888;
+      font-weight: 600;
       cursor: pointer;
+
       input[type="checkbox"] {
+        appearance: none;
         width: 20px;
         height: 20px;
         border: 1px solid $border-color;
         border-radius: $border-radius-sm;
-        appearance: none;
         cursor: pointer;
+        background: url(../../assets/icons/ico_check-off.svg) no-repeat center / 20px auto;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 20px auto;
+
         &:checked {
-          background: $background-blue url(/process/images/icons/ico_check.svg)
-            no-repeat center center;
+          background-image: url(../../assets/icons/ico_login-check-on.svg);
           border-color: $primary-color;
           accent-color: $background-blue;
         }
@@ -255,12 +263,14 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: flex-end;
   margin-top: 10px;
+
   .lang-icon {
     margin-right: 6px;
     font-size: 18px;
   }
+  
   .lang-select {
-    padding: 4px 12px;
+    padding: 4px;
     border-radius: 4px;
     border: 1px solid #ddd;
     font-size: 15px;

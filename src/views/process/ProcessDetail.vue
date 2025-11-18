@@ -10688,11 +10688,18 @@ const addMappingPidRow = () => {
 
   // 새로 추가된 행을 현재 선택된 항목으로 설정
   currentPidItemForMapping.value = newRow;
+  
+  // 새로 추가된 행을 선택된 상태로 표시
+  (selectedMappingPidItems.value as any) = newRow;
 
   console.log("새 행 추가 완료:", newRow);
   console.log(
     "새 행을 currentPidItemForMapping으로 설정:",
     currentPidItemForMapping.value?.id
+  );
+  console.log(
+    "새 행을 selectedMappingPidItems로 설정:",
+    selectedMappingPidItems.value?.id
   );
 };
 

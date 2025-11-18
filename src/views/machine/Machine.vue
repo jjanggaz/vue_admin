@@ -3026,12 +3026,6 @@ onMounted(async () => {
   }
 }
 
-.filter-group {
-  display: flex;
-  gap: 2rem;
-  align-items: center;
-}
-
 .form-select {
   appearance: none;
   background-image: url(../../assets/icons/ico_select-down.svg);

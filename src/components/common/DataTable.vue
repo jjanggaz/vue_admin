@@ -448,6 +448,10 @@ const formatCellValue = (item: any, column: TableColumn) => {
       &:checked {
         background-image: url(../../assets/icons/ico_check-on.svg);
       }
+
+      &:disabled {
+        background-image: url(../../assets/icons/ico_check-disabled.svg);
+      }
     }
 
     .select-header-text {

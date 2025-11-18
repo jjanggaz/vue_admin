@@ -1250,10 +1250,6 @@ const handleEdit = () => {
 }
 
 .filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
   select {
     width: 240px;
   }

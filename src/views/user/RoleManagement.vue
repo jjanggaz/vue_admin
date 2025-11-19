@@ -30,7 +30,7 @@
             class="search-input"
             @keyup.enter="handleSearch"
           />
-          <button class="btn btn-primary" @click="handleSearch">
+          <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
@@ -924,23 +924,6 @@ const closeMenuPermissionsModal = () => {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-badge.active {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-badge.inactive {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 
 .menu-permissions {

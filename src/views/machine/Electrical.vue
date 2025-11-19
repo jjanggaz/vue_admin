@@ -3690,25 +3690,6 @@ onMounted(async () => {
   gap: 0.5rem;
 }
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-
-  &.btn-secondary {
-    background-color: $background-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: color.scale($background-light, $lightness: -5%);
-    }
-  }
-}
-
 .pagination-container {
   display: flex;
   justify-content: center;

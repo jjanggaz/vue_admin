@@ -15,7 +15,8 @@
       <div class="user-section">
         <Date />
         <span class="user-id">
-          {{ userName }}{{ userRole ? ` (${userRole})` : "" }}
+          <span class="user-name">{{ userName }}</span><br>
+          <span class="user-info">{{ userRole ? ` (${userRole})` : "" }}</span>
         </span>
         <button class="logout-btn" @click="handleLogout">
           {{ t("common.logout") }}
@@ -290,17 +291,32 @@ const currentPageTitle = computed<string>(() => {
   gap: 30px;
 
   .user-id {
-    // color: $text-light;
     font-size: $font-size-sm;
     font-weight: 600;
+
+    .user-name {
+      color: #333333;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .user-info {
+      color: #484848;
+      font-size: 12px;
+      font-weight: 400;
+    }
   }
 
   .logout-btn {
-    padding: $spacing-xs $spacing-md;
+    width: 72px;
+    height: 32px;
+    line-height: 28px;
+    padding: 0 $spacing-xs;
     background-color: transparent;
     border: 1px solid #333333;
     border-radius: $border-radius-sm;
     color: #333333;
+    font-size: 15px;
     font-weight: 600;
 
     cursor: pointer;

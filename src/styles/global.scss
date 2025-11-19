@@ -184,8 +184,9 @@ body {
   }
 
   .btn.btn-delete {
-    padding:8px 16px 8px 32px;
+    color: #ffffff;
     background-color: #3e435e;
+
     &:hover {
       background-color: #3C4973;
     }
@@ -204,7 +205,6 @@ body {
 
   .btns {
     button {
-      padding: $spacing-sm $spacing-md;
       font-size: $font-size-base;
       font-weight: $font-weight-md;
       border-radius: $border-radius-sm;
@@ -346,12 +346,31 @@ body {
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 15px;
 
   label {
     font-size: 16px;
     font-weight: 600;
     color: #333333;
     white-space: nowrap;
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  height: 20px;
+  line-height: 1.4;
+  padding: 0 8px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+
+  &.active {
+    border: 1px solid #34C759;
+    color: #34C759;
+  }
+  &.inactive {
+    border: 1px solid #707489;
+    color: #707489;
   }
 }

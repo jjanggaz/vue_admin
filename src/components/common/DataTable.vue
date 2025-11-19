@@ -431,18 +431,18 @@ const formatCellValue = (item: any, column: TableColumn) => {
   td.checkbox-cell {
     width: 40px;
     text-align: center;
-    vertical-align: middle;
 
     input[type="checkbox"] {
       appearance: none;
+      // vertical-align: middle;
       width: 20px;
       height: 20px;
       border: none;
+      background-color: transparent;
       background-image: url(../../assets/icons/ico_check-off.svg);
       background-repeat: no-repeat;
       background-position: center;
       background-size: 20px auto;
-      margin: 0;
       cursor: pointer;
 
       &:checked {

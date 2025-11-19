@@ -2,7 +2,6 @@
   <div class="login-page">
     <div class="login-container">
       <div class="lang-select-wrap abs-lang-select">
-        <span class="lang-icon">🌐</span>
         <select
           v-model="selectedLang"
           @change="changeLang"
@@ -224,18 +223,16 @@ const handleLogin = async () => {
         appearance: none;
         width: 20px;
         height: 20px;
-        border: 1px solid $border-color;
-        border-radius: $border-radius-sm;
-        cursor: pointer;
+        border: none;
+        background-color: transparent;
         background: url(../../assets/icons/ico_check-off.svg) no-repeat center / 20px auto;
         background-repeat: no-repeat;
         background-position: center;
         background-size: 20px auto;
+        cursor: pointer;
 
         &:checked {
           background-image: url(../../assets/icons/ico_login-check-on.svg);
-          border-color: $primary-color;
-          accent-color: $background-blue;
         }
       }
     }
@@ -252,8 +249,10 @@ const handleLogin = async () => {
   }
 
   .login-btn {
+    justify-content: center;
     width: 100%;
     height: 60px;
+    padding: 10px 0;
     font-size: 20px;
     font-weight: 700;
   }
@@ -264,18 +263,25 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: flex-end;
   margin-top: 10px;
-
-  .lang-icon {
-    margin-right: 6px;
-    font-size: 18px;
-  }
   
   .lang-select {
-    padding: 4px;
+    position: relative;
+    appearance: none;
+    width: 80px;
+    height: 26px;
+    padding: 0 10px;
     border-radius: 4px;
-    border: 1px solid #ddd;
-    font-size: 15px;
-    outline: none;
+    border: 1px solid #707489;
+    font-size: 12px;
+    font-weight: 400;
+    background-image: url(../../assets/icons/ico_select-down.svg);
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px auto;
+
+    &:focus {
+      background-image: url(../../assets/icons/ico_select-up.svg);
+    }
   }
 }
 </style>

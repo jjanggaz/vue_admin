@@ -56,9 +56,7 @@
               />
               <button class="btn-detail-search" @click="toggleDetailSearch">
                 {{ t("common.detailCondition") }}
-                <span class="arrow-icon">{{
-                  isDetailSearchOpen ? "▲" : "▼"
-                }}</span>
+                <span :class="['arrow-icon', { open: isDetailSearchOpen }]"></span>
               </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
@@ -3004,25 +3002,48 @@ onMounted(async () => {
 }
 
 .btn-detail-search {
-  background-color: #6c757d;
+  text-align: left;
+  width: auto;
+  height: 40px;
+  padding: 8px 34px 8px 16px;
+  background-color: #3E435E;
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-right: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 16px;
+  font-weight: 500;
 
   .arrow-icon {
-    font-size: 0.75rem;
-    transition: transform 0.3s ease;
+    position: relative;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      margin-top: -11px;
+      right: -18px;
+      width: 12px;
+      height: 24px;
+      background-image: url(../../assets/icons/ico_detail-arrow.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 12px auto;
+      transition: $transition-fast;
+    }
+
+    &.open {
+      &::after {
+        margin-top: -12px;
+
+
+
+        transform: rotate(180deg);
+      }
+    }
   }
 
   &:hover {
-    background-color: color.scale(#6c757d, $lightness: -10%);
+    background-color: #3C4973;
   }
 }
 
@@ -3065,25 +3086,6 @@ onMounted(async () => {
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-  
-  &.btn-secondary {
-    background-color: $background-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: color.scale($background-light, $lightness: -5%);
-    }
-  }
 }
 
 .link-download {

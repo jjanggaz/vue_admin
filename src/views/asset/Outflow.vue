@@ -2943,6 +2943,7 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
   scroll-behavior: smooth;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
+  height: 40px;
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE/Edge
   padding: 0 10px;
@@ -2961,6 +2962,7 @@ onBeforeUnmount(() => {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
+    transition: height .3s ease;
 
     &.active {
       height: 40px;

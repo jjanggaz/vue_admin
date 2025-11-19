@@ -56,7 +56,7 @@
       padding: 8px 16px 8px 35px;
 
       &:hover {
-        background-color: #3C4973;
+        background-color: #3c4973;
       }
 
       &:disabled {
@@ -114,7 +114,7 @@
         aspect-ratio: 1/1;
     }
     &:hover {
-      background-color: #3C4973;
+      background-color: #3c4973;
     }
     &:disabled {
       background-color: #abaebd;
@@ -155,7 +155,7 @@
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #3C4973;
+    background-color: #3c4973;
   }
 }
 
@@ -223,6 +223,22 @@
        background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
        aspect-ratio: 1/1;
      }
+   }
+
+   .btn.btn-delete.sm {
+    width: 48px;
+    height: 32px;
+    justify-content: center;
+    padding: 0;
+    background-color: #3e435e;
+
+    &::before {
+      background: none;
+    }
+
+    &:hover {
+      background-color: #3c4973;
+    }
    }
   }
 
@@ -334,7 +350,7 @@ div[class$="-list-header"] {
     }
 
     &:hover {
-      background-color: #3C4973;
+      background-color: #3c4973;
     }
   }
 

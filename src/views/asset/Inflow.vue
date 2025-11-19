@@ -115,7 +115,7 @@
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-delete" @click="deleteMetricFormula">
+                  <button class="btn btn-delete sm" @click="deleteMetricFormula">
                     {{ t("inflow.delete") }}
                   </button>
                 </div>
@@ -202,7 +202,7 @@
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-delete" @click="deleteUscsFormula">
+                  <button class="btn btn-delete sm" @click="deleteUscsFormula">
                     {{ t("inflow.delete") }}
                   </button>
                 </div>

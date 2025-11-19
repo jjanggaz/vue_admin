@@ -3043,7 +3043,7 @@ onMounted(async () => {
   }
 
   &:hover {
-    background-color: #3C4973;
+    background-color: #3c4973;
   }
 }
 

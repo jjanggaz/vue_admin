@@ -135,9 +135,9 @@ const sectionTabs = {
       to: "/machine/measurement",
     },
     {
-      name: "MachineCodeManagement",
+      name: "Asset3D",
       label: t("tabs.machine.3dAsset"),
-      to: "/machine/codeMng",
+      to: "/machine/asset3D",
     },
   ],
   user: [

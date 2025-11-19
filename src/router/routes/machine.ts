@@ -5,8 +5,8 @@ const Machine = () => import("@/views/machine/Machine.vue");
 const Pipe = () => import("@/views/machine/Pipe.vue");
 const Electrical = () => import("@/views/machine/Electrical.vue");
 const Measurement = () => import("@/views/machine/Measurement.vue");
-const MachineCodeManagement = () =>
-  import("@/views/machine/MachineCodeManagement.vue");
+const Asset3D = () =>
+  import("@/views/machine/Asset3D.vue");
 
 export const machineRoute = {
   path: "/machine",
@@ -77,9 +77,9 @@ export const machineRoute = {
       },
     },
     {
-      path: "codeMng",
-      name: "MachineCodeManagement",
-      component: MachineCodeManagement,
+      path: "asset3D",
+      name: "Asset3D",
+      component: Asset3D,
       meta: {
         titleKey: "tabs.machine.3dAsset",
         breadcrumbKeys: [

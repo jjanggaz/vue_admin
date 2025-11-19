@@ -2,7 +2,7 @@
 const ModelManagement = () => import("@/views/model/ModelManagement.vue");
 const Revit = () => import("@/views/model/Revit.vue");
 const Standard = () => import("@/views/model/Standard.vue");
-const Asset3D = () => import("@/views/model/Asset3D.vue");
+const Asset3D = () => import("@/views/model/Asset3D_old.vue");
 
 export const modelRoute = {
   path: "/model",

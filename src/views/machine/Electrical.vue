@@ -824,6 +824,9 @@
                 </div>
               </div>
             </div>
+            <div class="model-register-warning">
+              ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
+            </div>
 
             <!-- ZIP 파일 내부 파일 목록 테이블 -->
             <div
@@ -1593,6 +1596,40 @@ const updateRegisterZipFileListWithResult = (resultData: any) => {
   });
 };
 
+// 파일명 검증 함수
+const validateFileName = (
+  fileName: string
+): { valid: boolean; message?: string } => {
+  // 확장자 분리
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return { valid: false, message: "파일명에 확장자가 필요합니다." };
+  }
+
+  const nameWithoutExtension = fileName.substring(0, lastDotIndex);
+
+  // 파일명 길이 검증 (확장자 제외)
+  if (nameWithoutExtension.length === 0) {
+    return { valid: false, message: "파일명을 입력해주세요." };
+  }
+
+  if (nameWithoutExtension.length > 100) {
+    return { valid: false, message: "파일명은 100자 이내로 입력해주세요." };
+  }
+
+  // 영문, 숫자, 특수기호(_ - ())만 허용, 공백 불가
+  const validPattern = /^[a-zA-Z0-9_\-()]+$/;
+  if (!validPattern.test(nameWithoutExtension)) {
+    return {
+      valid: false,
+      message:
+        "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
+    };
+  }
+
+  return { valid: true };
+};
+
 // ZIP 파일 내부 파일 목록 추출 함수
 const extractRegisterZipContents = async (file: File) => {
   try {
@@ -1636,6 +1673,7 @@ const extractRegisterZipContents = async (file: File) => {
       "svg",
     ];
     const invalidFiles: string[] = [];
+    const invalidFileNameFiles: string[] = [];
     let hasAllowedFile = false;
 
     // ZIP 파일 내부의 모든 파일을 순회
@@ -1645,6 +1683,15 @@ const extractRegisterZipContents = async (file: File) => {
         const fileExtension =
           relativePath.split(".").pop()?.toLowerCase() || "";
         let fileType = "Unknown";
+
+        // 파일명 검증 (경로에서 파일명만 추출)
+        const fileName = relativePath.split(/[/\\]/).pop() || relativePath;
+        const fileNameValidation = validateFileName(fileName);
+        if (!fileNameValidation.valid) {
+          invalidFileNameFiles.push(
+            `${relativePath}: ${fileNameValidation.message}`
+          );
+        }
 
         // 파일 확장자에 따른 타입 분류
         if (["dtdx"].includes(fileExtension)) {
@@ -1686,6 +1733,20 @@ const extractRegisterZipContents = async (file: File) => {
         });
       }
     });
+
+    // 파일명 규칙에 맞지 않는 파일이 있으면 경고 및 처리 중단
+    if (invalidFileNameFiles.length > 0) {
+      alert(
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFileNameFiles.join(
+          "\n"
+        )}`
+      );
+      registerZipFileList.value = [];
+      registerShowZipContents.value = false;
+      registerBulkFileName.value = "";
+      registerBulkFile.value = null;
+      return;
+    }
 
     // 허용된 파일이 하나도 없으면 첨부 불가 처리
     if (!hasAllowedFile) {
@@ -4047,6 +4108,13 @@ $tablet: 1024px;
     align-items: center;
     gap: 0.5rem;
   }
+}
+
+.model-register-warning {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #b54708;
 }
 
 .zip-contents-section {

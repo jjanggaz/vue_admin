@@ -860,8 +860,7 @@
               </div>
             </div>
             <div class="model-register-warning">
-              ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_
-              - ()"만 허용합니다.
+              ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
             </div>
 
             <!-- ZIP 파일 내부 파일 목록 테이블 -->
@@ -1928,7 +1927,7 @@ const extractRegisterZipContents = async (file: File) => {
     // 파일명 규칙에 맞지 않는 파일이 있으면 경고 및 처리 중단
     if (invalidFileNameFiles.length > 0) {
       alert(
-        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFileNameFiles.join(
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFileNameFiles.join(
           "\n"
         )}`
       );

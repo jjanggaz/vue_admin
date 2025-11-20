@@ -215,8 +215,7 @@
         text-align: center;
       "
     >
-      ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()"만
-      허용합니다.
+      ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -2143,7 +2142,7 @@ const handleFormulaFilesSelected = (event: Event) => {
 
     if (invalidFiles.length > 0) {
       alert(
-        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFiles.join("\n")}`
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
       );
       target.value = "";
       return;
@@ -2188,7 +2187,7 @@ const handlePfdFilesSelected = (event: Event) => {
 
     if (invalidFiles.length > 0) {
       alert(
-        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFiles.join("\n")}`
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
       );
       target.value = "";
       return;

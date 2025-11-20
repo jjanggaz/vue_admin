@@ -2782,50 +2782,47 @@ onMounted(async () => {
 
 // 상세검색 패널 스타일
 .detail-search-panel {
+  width: 100%;
   background: white;
-  border: 1px solid $border-color;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  padding: 20px 20px 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 1050px;
 
   .detail-search-header {
     position: relative;
-    padding: 1rem;
-    background: $background-light;
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid #e7e6ed;
     border-radius: 8px 8px 0 0;
+    padding-bottom: 10px;
 
     h3 {
-      margin: 0 0 1rem 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: $text-color;
+      font-size: 20PX;
+      font-weight: 500;
+      color: #000000;
     }
 
     .detail-search-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-top: 1rem;
+      gap: 40px;
+      margin-top: 10px;
     }
 
     .detail-search-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-right: 1rem;
+      gap: 10px;
 
       &:last-child {
         margin-right: 0;
       }
 
       label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: $text-color;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333333;
         margin-bottom: 0;
-        min-width: 120px;
         flex-shrink: 0;
 
         &.label-machine-type {
@@ -2854,7 +2851,7 @@ onMounted(async () => {
         flex: 1;
         min-width: 0;
         padding: 0.5rem 0.75rem;
-        border: 1px solid $border-color;
+        border: 1px solid #e7e6ed;
         border-radius: 4px;
         font-size: 0.875rem;
 
@@ -2875,113 +2872,87 @@ onMounted(async () => {
   }
 
   .detail-search-content {
-    padding: 1.5rem;
+    padding-top: 10px;
   }
 
   .detail-search-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 40px;
+    padding-bottom: 2rem;
   }
 
   .detail-search-column {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 10px;
   }
 
   .detail-search-item {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.5rem;
+    gap: 10px;
 
     label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: $text-color;
-      margin-bottom: 0;
-      min-width: 120px;
+      display: inline-block;
+      width: 90px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333333;
       flex-shrink: 0;
+      padding-left: 12px;
 
       &.label-machine-type {
-        background: #f0f8ff;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #4a90e2;
       }
 
       &.label-machine-subtype {
-        background: #f0fff0;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #32cd32;
       }
 
       &.label-machine-category {
         background: #fff0f5;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #ff69b4;
       }
 
       &.label-capacity {
-        background: #fff5f0;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #ff8c42;
       }
 
       &.label-power {
-        background: #f5f0ff;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #8c42ff;
       }
 
       &.label-pressure {
-        background: #f0fff5;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #42ff8c;
       }
 
       &.label-head {
-        background: #fff0f5;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #ff428c;
       }
 
       &.label-material {
-        background: #f0f5ff;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #428cff;
       }
 
       &.label-diameter {
-        background: #fffcf0;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #ffdc42;
       }
 
       &.label-other {
-        background: #f8f8f8;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
         border-left: 3px solid #888;
       }
     }
 
     .form-input,
     .form-select {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid $border-color;
+      height: 40px;
+      padding: 0 10px;
+      border: 1px solid #d7d6ed;
       border-radius: 4px;
-      font-size: 0.875rem;
+      font-size: 15px;
+      font-weight: 400;
       flex: 1;
       min-width: 0;
 

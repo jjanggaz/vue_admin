@@ -34,28 +34,36 @@
       </div>
       <div class="form-group">
         <label class="required">썸네일 업로드</label>
-        <div class="file-upload-group">
-          <input
-            type="text"
-            class="form-input file-name-input"
-            :value="thumbnailFileName"
-            readonly
-            placeholder="파일 선택"
+        <div class="file-upload-wrapper">
+          <div class="file-upload-group">
+            <input
+              type="text"
+              class="form-input file-name-input"
+              :value="thumbnailFileName"
+              readonly
+              placeholder="파일 선택"
+            />
+            <input
+              type="file"
+              ref="thumbnailFileInput"
+              accept=".jpg,.jpeg,.png,.gif"
+              style="display: none"
+              @change="handleThumbnailFileChange"
+            />
+            <button
+              type="button"
+              class="btn-ellipsis"
+              @click="thumbnailFileInput?.click()"
+            >
+              ...
+            </button>
+          </div>
+          <img
+            v-if="thumbnailPreviewUrl"
+            :src="thumbnailPreviewUrl"
+            alt="썸네일 미리보기"
+            class="thumbnail-preview"
           />
-          <input
-            type="file"
-            ref="thumbnailFileInput"
-            accept=".jpg,.jpeg,.png,.gif"
-            style="display: none"
-            @change="handleThumbnailFileChange"
-          />
-          <button
-            type="button"
-            class="btn-ellipsis"
-            @click="thumbnailFileInput?.click()"
-          >
-            ...
-          </button>
         </div>
       </div>
       <div class="form-group right-align">
@@ -106,6 +114,16 @@
             >
               {{ type.label }}
             </option>
+          </select>
+        </template>
+        <template #cell-subType="{ item }">
+          <select
+            v-model="item.subType"
+            class="table-select"
+          >
+            <option value="">-- 선택 --</option>
+            <option value="option1">옵션1</option>
+            <option value="option2">옵션2</option>
           </select>
         </template>
         <template #cell-diameter="{ item }">
@@ -177,12 +195,14 @@ const presetName = ref("");
 const thumbnailFile = ref<File | null>(null);
 const thumbnailFileName = ref("");
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
+const thumbnailPreviewUrl = ref<string>("");
 
 // 테이블 데이터
 interface TableRow {
   id: number;
   no: number;
   type: string;
+  subType: string;
   diameter: string;
   equipmentCode: string;
   dtdxModel: string;
@@ -198,19 +218,14 @@ let nextRowId = 1;
 // 유형 옵션
 const typeOptions = ref([
   { value: "piping", label: "배관" },
-  { value: "flange", label: "플랜지" },
-  { value: "longBendPipe", label: "롱곡관" },
   { value: "manualValve", label: "수동밸브" },
-  { value: "stainlessFlexible", label: "스테인리스 플랙시블" },
-  { value: "castIronSwingCheckValve", label: "주철스윙 체크밸브" },
-  { value: "straightPipe", label: "직관" },
-  { value: "tee", label: "티" },
 ]);
 
 // 테이블 컬럼 정의
 const tableColumns: TableColumn[] = [
   { key: "no", title: "번호", width: "80px", sortable: false },
   { key: "type", title: "유형", width: "150px", sortable: false },
+  { key: "subType", title: "세부유형", width: "150px", sortable: false },
   { key: "diameter", title: "직경", width: "120px", sortable: false },
   { key: "equipmentCode", title: "장비 코드", width: "200px", sortable: false },
   { key: "dtdxModel", title: "Dtdx 모델", width: "200px", sortable: false },
@@ -259,9 +274,17 @@ const handleThumbnailFileChange = (e: Event) => {
 
     thumbnailFileName.value = file.name;
     thumbnailFile.value = file;
+
+    // 이미지 미리보기 생성
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      thumbnailPreviewUrl.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   } else {
     thumbnailFileName.value = "";
     thumbnailFile.value = null;
+    thumbnailPreviewUrl.value = "";
   }
 };
 
@@ -297,6 +320,7 @@ const handleAddRow = () => {
     id: nextRowId++,
     no: tableRows.value.length + 1,
     type: "",
+    subType: "",
     diameter: "",
     equipmentCode: "",
     dtdxModel: "",
@@ -356,6 +380,7 @@ const handleThumbnailRegister = async () => {
     // 등록 성공 후 파일 초기화
     thumbnailFileName.value = "";
     thumbnailFile.value = null;
+    thumbnailPreviewUrl.value = "";
     if (thumbnailFileInput.value) {
       thumbnailFileInput.value.value = "";
     }
@@ -374,7 +399,7 @@ const handleThumbnailRegister = async () => {
 .filter-bar {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+  align-items: flex-start;
   margin-bottom: 14px;
   background: #f7f9fc;
   border: 1px solid #e5e9f2;
@@ -418,10 +443,11 @@ const handleThumbnailRegister = async () => {
 
   // 등록 버튼은 우측 정렬
   &.right-align {
-    justify-content: flex-end;
-    align-items: flex-end;
+    justify-content: flex-start;
+    align-items: flex-start;
     flex: 0 0 auto;
     margin-left: auto;
+    padding-top: 26px; // label(13px) + gap(6px) + 컨트롤 높이(32px) - 등록 버튼 높이(32px) = 19px, 하지만 정확히 맞추기 위해 26px
   }
 }
 
@@ -472,15 +498,32 @@ label {
   }
 }
 
+.file-upload-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
 .file-upload-group {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex: 1;
+  min-width: 0;
 
   .form-input {
     flex: 1;
     min-width: 0;
   }
+}
+
+.thumbnail-preview {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .btn-ellipsis {
@@ -588,5 +631,15 @@ label {
 
 .table-select {
   cursor: pointer;
+}
+
+// 유형과 세부유형 컬럼 헤더 및 셀 중앙정렬
+:deep(.data-table) {
+  thead th:nth-of-type(3),
+  thead th:nth-of-type(4),
+  tbody td:nth-of-type(3),
+  tbody td:nth-of-type(4) {
+    text-align: center;
+  }
 }
 </style>

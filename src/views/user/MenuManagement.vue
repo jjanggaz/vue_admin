@@ -326,31 +326,36 @@ onMounted(() => {
 }
 
 .usage-status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  display: inline-block;
+  height: 20px;
+  line-height: 1.4;
+  padding: 0 8px;
+  border-radius: 15px;
+  font-size: 13px;
   font-weight: 500;
 
   &.used {
-    background-color: #d4edda;
-    color: #155724;
+    border: 1px solid #34C759;
+    color: #34C759;
   }
 
   &.unused {
-    background-color: #f8d7da;
-    color: #721c24;
+    border: 1px solid #707489;
+    color: #707489;
   }
 }
 
 .btn-edit {
+  width: 45px;
+  height: 32px;
   background-color: #222E77;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 0 4px;
   border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
 
   &:hover {
     background-color: #29378C;

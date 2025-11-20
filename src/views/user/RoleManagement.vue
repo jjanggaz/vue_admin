@@ -971,12 +971,12 @@ const closeMenuPermissionsModal = () => {
   font-weight: 500;
 
   &.used {
-    background-color: #d4edda;
+    border: 1px solid #d4edda;
     color: #155724;
   }
 
   &.unused {
-    background-color: #f8d7da;
+    border: 1px solid #f8d7da;
     color: #721c24;
   }
 }

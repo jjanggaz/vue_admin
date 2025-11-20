@@ -890,13 +890,28 @@ const handleEdit = () => {
 
 // 활성 상태 스타일
 .status-active {
-  color: #28a745;
-  font-weight: 600;
+  display: inline-block;
+  height: 20px;
+  line-height: 1.4;
+  padding: 0 8px;
+  border: 1px solid #34c759;
+  border-radius: 15px;
+  color: #34c759;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .status-inactive {
-  color: #dc3545;
-  font-weight: 600;
+  display: inline-block;
+  height: 20px;
+  line-height: 1.4;
+  padding: 0 8px;
+  border: 1px solid #707489;
+  border-radius: 15px;
+  color: #34c759;
+  font-size: 13px;
+  font-weight: 500;
+  color: #707489;
 }
 
 .no-data {

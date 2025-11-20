@@ -413,9 +413,9 @@ const toggleSelectRow = (item: any) => {
 <style scoped lang="scss">
 .accordion-table-container {
   background: white;
-  border-radius: 8px;
+  border-top: 2px solid #000000;
+  border-bottom: 1px solid #000000;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .accordion-table {
@@ -442,14 +442,15 @@ const toggleSelectRow = (item: any) => {
   }
 
   thead {
-    background-color: #4a5568;
+    background-color: #ffffff;
 
     th {
-      color: white;
-      font-weight: 600;
+      border-bottom: 0.6px solid #000000;
+      color: #333333;
+      font-weight: 500;
       padding: 12px 16px;
       text-align: left;
-      font-size: 14px;
+      font-size: 15px;
 
       .th-content {
         display: flex;

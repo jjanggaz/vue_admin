@@ -2397,6 +2397,7 @@ onBeforeUnmount(() => {
   .content-wrapper,
   .modal-content-wrapper {
     display: flex;
+    align-items: flex-start;
     gap: 20px;
     min-width: 0; // flex 컨테이너가 축소될 수 있도록 허용
 

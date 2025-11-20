@@ -859,6 +859,8 @@ const openRegistModal = () => {
   if (isDetailPanelOpen.value) {
     isDetailPanelOpen.value = false;
   }
+  // '3D 라이브러리 등록' 탭을 기본 선택
+  modalActiveTab.value = 0;
   isRegistModalOpen.value = true;
 };
 

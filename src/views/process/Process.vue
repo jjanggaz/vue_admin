@@ -253,7 +253,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label class="essential">공정심볼 파일</label>
+                <label class="essential">{{ t("process.processSymbolFile") }}</label>
                 <div class="file-input-group">
                   <input
                     type="file"
@@ -276,17 +276,17 @@
 
           <!-- 중간: 파일 업로드 그리드 -->
           <div class="file-upload-section">
-            <h4>파일 업로드</h4>
+            <h4>{{ t("process.fileUpload") }}</h4>
             <div class="grid-actions">
               <button class="btn btn-primary btn-sm" @click="addFileUploadRow">
-                + 행 추가
+                {{ t("process.addRow") }}
               </button>
               <button
                 class="btn btn-danger btn-sm"
                 @click="deleteSelectedFileRows"
                 :disabled="selectedFileRows.length === 0"
               >
-                삭제
+                {{ t("common.delete") }}
               </button>
             </div>
             <div class="file-upload-table">
@@ -307,9 +307,9 @@
                         "
                       />
                     </th>
-                    <th>No.</th>
-                    <th>계산식(*)</th>
-                    <th>PFD (*)</th>
+                    <th>{{ t("common.no") }}.</th>
+                    <th>{{ t("process.formulaRequired") }}</th>
+                    <th>{{ t("process.pfdRequired") }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -347,7 +347,7 @@
                           v-if="row.formulaFile"
                           class="clear-file"
                           @click="clearFormulaFile(row)"
-                          title="파일 제거"
+                          :title="t('process.removeFile')"
                         >
                           &times;
                         </button>
@@ -374,7 +374,7 @@
                           v-if="row.pfdFile"
                           class="clear-file"
                           @click="clearPfdFile(row)"
-                          title="파일 제거"
+                          :title="t('process.removeFile')"
                         >
                           &times;
                         </button>
@@ -411,10 +411,10 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" @click="saveProcessRegistration">
-            저장
+            {{ t("common.save") }}
           </button>
           <button class="btn btn-secondary" @click="closeRegistModal">
-            닫기
+            {{ t("common.close") }}
           </button>
         </div>
       </div>
@@ -424,12 +424,12 @@
     <div v-if="isDetailModalOpen" class="modal-overlay detail-modal-overlay">
       <div class="modal-container detail-modal-container">
         <div class="modal-header">
-          <h3>{{ isRegisterMode ? "공정 등록" : "공정 상세" }}</h3>
+          <h3>{{ isRegisterMode ? t("process.registerProcess") : t("process.processDetail") }}</h3>
           <button class="btn-close" @click="closeDetailModal"></button>
         </div>
         <div class="modal-body detail-modal-body">
           <div v-if="!selectedProcessId" class="loading-placeholder">
-            <p>공정 정보를 불러오는 중...</p>
+            <p>{{ t("process.loadingProcessInfo") }}</p>
           </div>
           <ProcessDetail
             v-else
@@ -715,7 +715,7 @@ const handleDelete = async () => {
 
   console.log("삭제 확인 대화상자 표시");
   const confirmed = confirm(
-    "공정 삭제 시 하위의 계산식과 도면 정보가 모두 삭제됩니다.\n정말 삭제하시겠습니까?"
+    t("process.deleteConfirmMessage")
   );
 
   console.log("삭제 확인 결과:", confirmed);
@@ -800,13 +800,13 @@ const handleSelectAllFileRows = () => {
 
 const deleteSelectedFileRows = () => {
   if (selectedFileRows.value.length === 0) {
-    alert("삭제할 항목을 선택해주세요.");
+    alert(t("process.selectItemToDelete"));
     return;
   }
 
   if (
     confirm(
-      `선택된 ${selectedFileRows.value.length}개 항목을 삭제하시겠습니까?`
+      t("process.deleteSelectedItemsConfirm", { count: selectedFileRows.value.length })
     )
   ) {
     const selectedIds = selectedFileRows.value.map((row) => row.id);
@@ -837,7 +837,7 @@ const handleProcessSymbolFileChange = async (event: Event) => {
     console.log("선택된 파일:", file.name, file.size, file.type);
 
     if (!file.name.toLowerCase().endsWith(".svg")) {
-      alert("SVG 파일만 선택할 수 있습니다. 다시 선택해주세요.");
+      alert(t("process.onlySvgFile"));
       target.value = "";
       return;
     }
@@ -893,7 +893,7 @@ const handleFormulaFileSelected = (event: Event) => {
 
     // Python 파일만 허용
     if (!file.name.toLowerCase().endsWith(".py")) {
-      alert("Python 파일(.py)만 선택 가능합니다.");
+      alert(t("process.onlyPythonFile"));
       target.value = "";
       return;
     }
@@ -922,9 +922,7 @@ const handlePfdFileSelected = (event: Event) => {
       .substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert(
-        "PFD 파일은 .dwg, .dxf, .pdf, .png, .jpg, .jpeg 파일만 선택 가능합니다."
-      );
+      alert(t("process.onlyPfdFile"));
       target.value = "";
       return;
     }
@@ -967,7 +965,7 @@ const saveProcessRegistration = async () => {
       !registForm.value.processType ||
       !registForm.value.processNm
     ) {
-      alert("필수 항목을 입력해주세요.");
+      alert(t("messages.warning.pleaseCompleteRequiredFields"));
       return;
     }
 
@@ -980,27 +978,27 @@ const saveProcessRegistration = async () => {
     const symbolFile =
       selectedProcessSymbolFile.value || registForm.value.processSymbolFile;
     if (!symbolFile) {
-      alert("공정심볼 파일을 선택해주세요.");
+      alert(t("process.selectProcessSymbolFile"));
       return;
     }
 
     // 파일 업로드 검증 - 첫 행이 추가된 데이터로 간주
     if (fileUploadRows.value.length === 0) {
-      alert("최소 하나의 파일 업로드 행을 추가해주세요.");
+      alert(t("process.addAtLeastOneFileRow"));
       return;
     }
 
     // 첫 행 검증 - 첫 행은 반드시 추가된 데이터로 간주
     const firstRow = fileUploadRows.value[0];
     if (!firstRow) {
-      alert("첫 번째 행이 존재하지 않습니다.");
+      alert(t("process.firstRowNotExists"));
       return;
     }
 
     // 첫 행에 최소 하나의 파일이 있어야 함
     const hasAnyFile = firstRow.formulaFile || firstRow.pfdFile;
     if (!hasAnyFile) {
-      alert("첫 번째 행에 최소 하나의 파일을 선택해주세요.");
+      alert(t("process.selectAtLeastOneFileInFirstRow"));
       return;
     }
 
@@ -1116,9 +1114,9 @@ const saveProcessRegistration = async () => {
     console.log("result.response?.id:", result.response?.id);
 
     // 성공 메시지에 계산식 파일 정보 포함
-    let successMessage = "공정 등록이 완료되었습니다.";
+    let successMessage = t("process.processRegistrationCompleted");
     if (formulaFiles.length > 0) {
-      successMessage += `\n계산식 파일 ${formulaFiles.length}개가 함께 등록되었습니다.`;
+      successMessage += `\n${t("process.formulaFilesRegistered", { count: formulaFiles.length })}`;
     }
 
     alert(successMessage);
@@ -1181,7 +1179,7 @@ const closeDetailModal = async () => {
         hasPidComponentChanges ||
         hasFormulaChanges
       ) {
-        if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+        if (!confirm(t("process.hasChangesConfirm"))) {
           return;
         }
       }

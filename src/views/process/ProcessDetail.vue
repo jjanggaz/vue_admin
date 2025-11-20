@@ -6,7 +6,7 @@
         <div class="form-grid">
           <div class="form-group">
             <label class="required"
-              >단위 <span class="required-mark">*</span></label
+              >{{ t("processDetail.unit") }} <span class="required-mark">*</span></label
             >
             <select
               v-model="selectedUnit"
@@ -130,7 +130,7 @@
                   <img
                     v-else
                     :src="processStore.processSymbolPreviewUrl"
-                    alt="공정심볼 미리보기"
+                    :alt="t('processDetail.processSymbolPreview')"
                     style="
                       max-width: 100px;
                       max-height: 100px;
@@ -147,7 +147,7 @@
                         processStore.selectedFiles['processSymbol'])
                     "
                     @click="handleDeleteProcessSymbol"
-                    title="심볼 삭제"
+                    :title="t('processDetail.deleteSymbol')"
                     style="
                       position: absolute;
                       top: 0;
@@ -187,7 +187,7 @@
                   "
                   @click="downloadProcessSymbol"
                   class="btn btn-sm btn-outline-primary download-btn"
-                  title="공정심볼 다운로드"
+                  :title="t('processDetail.downloadProcessSymbol')"
                   style="margin-left: 10px; vertical-align: middle"
                 >
                   <i class="fas fa-download"></i>
@@ -200,7 +200,7 @@
         <!-- 등록 버튼을 우측 위에 배치 -->
         <div class="register-button-container">
           <button @click="handleMainSave" class="btn btn-primary save-btn">
-            등록
+            {{ t("processDetail.register") }}
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@
       <div class="formula-section">
         <div class="tab-header">
           <div class="grid-title">
-            <h4>계산식</h4>
+            <h4>{{ t("processDetail.calculation") }}</h4>
           </div>
           <div
             class="tab-actions"
@@ -245,7 +245,7 @@
               {{ t("common.delete") }}
             </button>
             <button @click="handleFormulaSave" class="btn btn-success">
-              저장
+              {{ t("processDetail.save") }}
             </button>
           </div>
         </div>
@@ -307,7 +307,7 @@
                     v-if="item.formula_id"
                     @click="downloadFormulaFromList(item)"
                     class="btn btn-sm btn-outline-primary download-btn"
-                    title="계산식 다운로드"
+                    :title="t('processDetail.downloadFormula')"
                   >
                     <i class="fas fa-download"></i>
                   </button>
@@ -319,9 +319,9 @@
             <button
               class="file-select-btn"
               @click="toggleComponentsGrid(item, index)"
-              :title="'컴포넌트 목록 보기'"
+              :title="t('processDetail.componentList') + ' ' + t('processDetail.view')"
             >
-              컴포넌트
+              {{ t("processDetail.component") }}
             </button>
           </template>
           <template #cell-registrationDate="{ item }">
@@ -369,7 +369,7 @@
         <div class="pfd-section">
           <div class="tab-header">
             <div class="grid-title">
-              <h4>공정카드</h4>
+              <h4>{{ t("processDetail.processCard") }}</h4>
             </div>
             <div
               class="tab-actions"
@@ -453,7 +453,7 @@
                       "
                       @click="downloadPfd(item.drawing_id)"
                       class="btn btn-sm btn-outline-primary download-btn"
-                      title="공정카드 다운로드"
+                      :title="t('processDetail.downloadPfd')"
                     >
                       <i class="fas fa-download"></i>
                     </button>
@@ -501,10 +501,10 @@
                 :title="
                   !item.drawing_id ||
                   item.drawing_id.startsWith('temp_pfd_drawing_')
-                    ? 'PFD를 먼저 저장해주세요'
+                    ? t('processDetail.savePfdFirst')
                     : item.hasPidMapping
-                    ? 'P&ID 매핑 보기'
-                    : 'P&ID 매핑 추가'
+                    ? t('processDetail.viewPidMapping')
+                    : t('processDetail.addPidMapping')
                 "
               >
                 P&ID
@@ -614,7 +614,7 @@
                     )
                   "
                   class="btn btn-sm btn-outline-primary download-btn"
-                  title="매핑 Excel 다운로드"
+                  :title="t('processDetail.downloadMappingExcel')"
                 >
                   <i class="fas fa-download"></i>
                 </button>
@@ -625,7 +625,7 @@
                   "
                   class="text-muted"
                   style="font-size: 11px"
-                  title="excel_drawing_id가 없어 다운로드할 수 없습니다"
+                  :title="t('processDetail.cannotDownloadNoExcelDrawingId')"
                 >
                   (다운로드 불가)
                 </span>
@@ -665,7 +665,7 @@
                     )
                   "
                   class="btn btn-sm btn-outline-primary download-btn"
-                  title="매핑 Svg 다운로드"
+                  :title="t('processDetail.downloadMappingSvg')"
                 >
                   <i class="fas fa-download"></i>
                 </button>
@@ -676,7 +676,7 @@
                   "
                   class="text-muted"
                   style="font-size: 11px"
-                  title="svg_drawing_id가 없어 다운로드할 수 없습니다"
+                  :title="t('processDetail.cannotDownloadNoSvgDrawingId')"
                 >
                   (다운로드 불가)
                 </span>
@@ -820,7 +820,7 @@
     <div class="capacity-calculation-section">
       <div class="tab-header">
         <div class="grid-title">
-          <h4>용량계산서 등록</h4>
+          <h4>{{ t("processDetail.capacityCalculationRegistration") }}</h4>
         </div>
       </div>
       <div class="file-upload-container">
@@ -850,7 +850,7 @@
             class="btn btn-sm btn-outline-primary download-btn"
             @click="handleCapacityCalculationDownload"
             :disabled="!hasFormulaData"
-            title="용량계산서 다운로드"
+            :title="t('processDetail.downloadCapacityCalculation')"
             style="margin-left: 10px; vertical-align: middle"
           >
             <i class="fas fa-download"></i>
@@ -886,7 +886,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <!-- 계산식 파일 첨부 모달 -->
   <div
@@ -915,7 +914,7 @@
           <span class="selected-files-info">
             {{
               selectedFormulaFiles.length > 0
-                ? `${selectedFormulaFiles.length}개 파일 선택됨`
+                ? t("processDetail.filesSelected", { count: selectedFormulaFiles.length })
                 : t("common.noFilesSelected")
             }}
           </span>
@@ -967,7 +966,7 @@
           <span class="selected-files-info">
             {{
               selectedPfdFiles.length > 0
-                ? `${selectedPfdFiles.length}개 파일 선택됨`
+                ? t("processDetail.filesSelected", { count: selectedPfdFiles.length })
                 : t("common.noFilesSelected")
             }}
           </span>
@@ -995,6 +994,7 @@
         </button>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -1084,19 +1084,19 @@ const deletedPidComponentIds = ref<any>([]); // 삭제된 컴포넌트 ID들 추
 // P&ID 컴포넌트 추가 버튼 비활성화 여부 (제한 없음)
 // P&ID 컴포넌트 select 옵션 데이터
 const categoryOptions = ref([
-  { value: null, label: "선택하세요" },
-  { value: "STRUCT_WWTP", label: "토목" },
-  { value: "EQUIP", label: "기계" },
+  { value: null, label: t("processDetail.selectPlease") },
+  { value: "STRUCT_WWTP", label: t("processDetail.civil") },
+  { value: "EQUIP", label: t("processDetail.machine") },
 ]);
 
 // 중분류 옵션 (동적으로 로드됨)
-const middleCategoryOptions = ref([{ value: null, label: "선택하세요" }]);
+const middleCategoryOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
 
 // 소분류 옵션 (동적으로 로드됨)
-const smallCategoryOptions = ref([{ value: null, label: "선택하세요" }]);
+const smallCategoryOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
 
 // 장비유형 옵션 (동적으로 로드됨)
-const equipmentTypeOptions = ref([{ value: null, label: "선택하세요" }]);
+const equipmentTypeOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
 
 // P&ID 목록 메인화면 표시 상태
 const showPidListInMain = ref(false);
@@ -1201,11 +1201,11 @@ const pidComponentTableMaxHeight = computed(() =>
 
 // 컬럼 정의
 const formulaColumns: TableColumn[] = [
-  { key: "select", title: "선택", sortable: false },
-  { key: "no", title: "No.", sortable: false },
-  { key: "file_name", title: "등록 계산식", sortable: false },
-  { key: "registrationDate", title: "등록일자", sortable: false },
-  { key: "component", title: "컴포넌트", sortable: false, hidden: true },
+  { key: "select", title: t("processDetail.select"), sortable: false },
+  { key: "no", title: t("processDetail.no"), sortable: false },
+  { key: "file_name", title: t("processDetail.registeredFormula"), sortable: false },
+  { key: "registrationDate", title: t("processDetail.registrationDate"), sortable: false },
+  { key: "component", title: t("processDetail.component"), sortable: false, hidden: true },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
   {
     key: "process_dependencies",
@@ -1216,38 +1216,38 @@ const formulaColumns: TableColumn[] = [
 ];
 
 const pfdColumns: TableColumn[] = [
-  { key: "select", title: "선택", sortable: false },
-  { key: "no", title: "No.", sortable: false },
-  { key: "pfdFileName", title: "공정카드 파일", sortable: false },
-  { key: "svgFile", title: "Svg 파일", sortable: false },
+  { key: "select", title: t("processDetail.select"), sortable: false },
+  { key: "no", title: t("processDetail.no"), sortable: false },
+  { key: "pfdFileName", title: t("processDetail.pfdFile"), sortable: false },
+  { key: "svgFile", title: t("processDetail.svgFile"), sortable: false },
   {
     key: "registrationDate",
-    title: "등록일자",
+    title: t("processDetail.registrationDate"),
     sortable: false,
     formatter: (value: any, item: any) => {
       return item?.registrationDate || item?.created_at || value || "-";
     },
   },
-  { key: "mappingPidList", title: "매핑 P&ID 목록", sortable: false },
+  { key: "mappingPidList", title: t("processDetail.mappingPidList"), sortable: false },
   { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true },
 ];
 
 const componentsColumns: TableColumn[] = [
-  { key: "category", title: "분류", sortable: false },
-  { key: "component", title: "Components", sortable: false },
-  { key: "type", title: "유형", sortable: false },
-  { key: "codeKey", title: "코드 키", sortable: false },
-  { key: "item", title: "ITEM", sortable: false },
+  { key: "category", title: t("processDetail.category"), sortable: false },
+  { key: "component", title: t("processDetail.component"), sortable: false },
+  { key: "type", title: t("processDetail.type"), sortable: false },
+  { key: "codeKey", title: t("processDetail.codeKey"), sortable: false },
+  { key: "item", title: t("processDetail.item"), sortable: false },
 ];
 
 // P&ID 매핑 목록 컬럼 정의
 const mappingPidColumns: TableColumn[] = [
-  { key: "select", title: "선택", sortable: false },
-  { key: "no", title: "No.", sortable: false },
-  { key: "pidFile", title: "P&ID", sortable: false },
-  { key: "excelFile", title: "매핑 Excel", sortable: false },
-  { key: "svgFile", title: "Svg 도면", sortable: false },
-  { key: "pidComponent", title: "P&ID 컴포넌트", sortable: false },
+  { key: "select", title: t("processDetail.select"), sortable: false },
+  { key: "no", title: t("processDetail.no"), sortable: false },
+  { key: "pidFile", title: t("processDetail.pid"), sortable: false },
+  { key: "excelFile", title: t("processDetail.mappingExcel"), sortable: false },
+  { key: "svgFile", title: t("processDetail.svgDrawing"), sortable: false },
+  { key: "pidComponent", title: t("processDetail.pidComponent"), sortable: false },
   {
     key: "excel_drawing_id",
     title: "Excel Drawing ID",
@@ -1264,22 +1264,22 @@ const mappingPidColumns: TableColumn[] = [
 
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
-  { key: "select", title: "선택", sortable: false, width: "60px" },
-  { key: "no", title: "No.", sortable: false, width: "50px" },
-  { key: "pid_id", title: "POC IN", sortable: false, width: "80px" },
-  { key: "category", title: "구분", sortable: false, width: "100px" },
-  { key: "smallCategory", title: "대분류", sortable: false, width: "120px" },
-  { key: "middleCategory", title: "중분류", sortable: false, width: "120px" },
-  { key: "equipmentType", title: "유형", sortable: false, width: "250px" },
+  { key: "select", title: t("processDetail.select"), sortable: false, width: "60px" },
+  { key: "no", title: t("processDetail.no"), sortable: false, width: "50px" },
+  { key: "pid_id", title: t("processDetail.pocIn"), sortable: false, width: "80px" },
+  { key: "category", title: t("processDetail.division"), sortable: false, width: "100px" },
+  { key: "smallCategory", title: t("processDetail.majorCategory"), sortable: false, width: "120px" },
+  { key: "middleCategory", title: t("processDetail.middleCategory"), sortable: false, width: "120px" },
+  { key: "equipmentType", title: t("processDetail.type"), sortable: false, width: "250px" },
   {
     key: "total_quantity",
-    title: "총수량",
+    title: t("processDetail.totalQuantity"),
     sortable: false,
     width: "80px",
   },
   {
     key: "spare_quantity",
-    title: "수량(예비)",
+    title: t("processDetail.spareQuantity"),
     sortable: false,
     width: "80px",
     hidden: true,
@@ -1516,7 +1516,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
           no: index + 1,
           pfdFileName: fileName,
           registrationDate: registrationDate,
-          mappingPidList: "보기",
+          mappingPidList: t("processDetail.view"),
           remarks: item.remarks || "",
           drawing_id: drawingId,
           symbol_id: item.symbol_id || item.symbolId || null,
@@ -2272,11 +2272,11 @@ const handleCapacityCalculationFileDelete = async () => {
       }
 
       if (!processId) {
-        alert("공정 ID가 없습니다.");
+        alert(t("processDetail.noProcessId"));
         return;
       }
 
-      if (confirm("용량계산서 파일을 삭제하시겠습니까?")) {
+      if (confirm(t("processDetail.deleteCapacityCalculationConfirm"))) {
         await processStore.deleteCapacityCalculationFile(
           processId,
           ccsFileName
@@ -2289,7 +2289,7 @@ const handleCapacityCalculationFileDelete = async () => {
           capacityCalculationFileInput.value.value = "";
         }
 
-        alert("용량계산서 파일이 삭제되었습니다.");
+        alert(t("processDetail.capacityCalculationDeleted"));
       }
     } else {
       // 삭제할 파일이 없는 경우
@@ -2318,12 +2318,12 @@ const handleCapacityCalculationRegister = async () => {
     }
 
     if (!processId) {
-      alert("공정 ID가 없습니다.");
+      alert(t("processDetail.noProcessId"));
       return;
     }
 
     await processStore.uploadCapacityCalculationFile(processId);
-    alert("용량계산서가 등록되었습니다.");
+    alert(t("processDetail.capacityCalculationRegistered"));
 
     // 파일 입력 초기화
     if (capacityCalculationFileInput.value) {
@@ -2353,7 +2353,7 @@ const handleCapacityCalculationDownload = async () => {
     }
 
     if (!processId) {
-      alert("공정 ID가 없습니다.");
+      alert(t("processDetail.noProcessId"));
       return;
     }
 
@@ -2373,7 +2373,7 @@ const handleCapacityCalculationDownload = async () => {
 // 파일 업로드 함수들
 const uploadFormulaFiles = () => {
   if (selectedFormulaFiles.value.length === 0) {
-    alert("업로드할 파일을 선택해주세요.");
+    alert(t("processDetail.selectFileToUpload"));
     return;
   }
 
@@ -2394,7 +2394,7 @@ const uploadFormulaFiles = () => {
   const updatedFormulaList = [...processStore.formulaList, ...newFormulaItems];
   processStore.setFormulaList(updatedFormulaList);
 
-  alert(`계산식 파일 ${newFormulaItems.length}개가 그리드에 추가되었습니다.`);
+  alert(t("processDetail.formulaFilesAddedToGrid", { count: newFormulaItems.length }));
 
   closeFormulaModal();
 };
@@ -2411,7 +2411,7 @@ const uploadPfdFiles = () => {
       no: processStore.pfdList.length + index + 1,
       pfdFileName: file.name,
       registrationDate: formatDate(new Date()),
-      mappingPidList: "보기",
+      mappingPidList: t("processDetail.view"),
       remarks: "",
       _file: file,
       drawing_id: `temp_pfd_drawing_${Date.now()}_${index}`,
@@ -2705,7 +2705,7 @@ const generateSelectOptionsFromLoadedData = async () => {
         );
 
       middleCategoryOptions.value = [
-        { value: "", label: "선택하세요" },
+        { value: "", label: t("processDetail.selectPlease") },
         ...flatMiddleOptions,
       ];
 
@@ -2785,7 +2785,7 @@ const generateSelectOptionsFromLoadedData = async () => {
         );
 
       smallCategoryOptions.value = [
-        { value: "", label: "선택하세요" },
+        { value: "", label: t("processDetail.selectPlease") },
         ...flatSmallOptions,
       ];
 
@@ -2865,7 +2865,7 @@ const generateSelectOptionsFromLoadedData = async () => {
         );
 
       equipmentTypeOptions.value = [
-        { value: "", label: "선택하세요" },
+        { value: "", label: t("processDetail.selectPlease") },
         ...flatEquipmentOptions,
       ];
 
@@ -3084,7 +3084,7 @@ const handlePidComponentCategoryChange = async (item: any) => {
 
         // 해당 행의 개별 옵션만 업데이트
         item._middleCategoryOptions = [
-          { value: "", label: "선택하세요" },
+          { value: "", label: t("processDetail.selectPlease") },
           ...subCategoryOptions,
         ];
 
@@ -3094,16 +3094,16 @@ const handlePidComponentCategoryChange = async (item: any) => {
         );
       } else {
         console.log("P&ID 컴포넌트 중분류 API 응답이 올바르지 않음");
-        item._middleCategoryOptions = [{ value: "", label: "선택하세요" }];
+        item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 중분류 옵션 로드 실패:", error);
       // 에러 발생 시 기본 옵션으로 설정
-      item._middleCategoryOptions = [{ value: "", label: "선택하세요" }];
+      item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
     }
   } else {
     // 구분이 선택되지 않았을 때 중분류 옵션 초기화
-    item._middleCategoryOptions = [{ value: "", label: "선택하세요" }];
+    item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
   }
 
   // 하위 필드들 초기화 (해당 행만)
@@ -3112,9 +3112,9 @@ const handlePidComponentCategoryChange = async (item: any) => {
   item.equipmentType = "";
 
   // 하위 옵션들도 초기화 (해당 행만)
-  item._middleCategoryOptions = [{ value: "", label: "선택하세요" }];
-  item._smallCategoryOptions = [{ value: "", label: "선택하세요" }];
-  item._equipmentTypeOptions = [{ value: "", label: "선택하세요" }];
+  item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+  item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+  item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
 
   console.log(`행 ${item.id} 구분 변경 완료 - 하위 필드들 초기화됨`);
 };
@@ -3169,7 +3169,7 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
 
         // 해당 행의 개별 옵션만 업데이트
         item._smallCategoryOptions = [
-          { value: "", label: "선택하세요" },
+          { value: "", label: t("processDetail.selectPlease") },
           ...subCategoryOptions,
         ];
 
@@ -3179,15 +3179,15 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
         );
       } else {
         console.log("P&ID 컴포넌트 소분류 API 응답이 올바르지 않음");
-        item._smallCategoryOptions = [{ value: "", label: "선택하세요" }];
+        item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 소분류 옵션 로드 실패:", error);
-      item._smallCategoryOptions = [{ value: "", label: "선택하세요" }];
+      item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
     }
   } else {
     // 중분류가 선택되지 않았을 때 소분류 옵션 초기화
-    item._smallCategoryOptions = [{ value: "", label: "선택하세요" }];
+    item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
   }
 
   // 하위 필드들 초기화 (해당 행만)
@@ -3195,8 +3195,8 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
   item.equipmentType = "";
 
   // 하위 옵션들도 초기화 (해당 행만)
-  item._smallCategoryOptions = [{ value: "", label: "선택하세요" }];
-  item._equipmentTypeOptions = [{ value: "", label: "선택하세요" }];
+  item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+  item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
 
   console.log(`행 ${item.id} 중분류 변경 완료 - 하위 필드들 초기화됨`);
 };
@@ -3244,7 +3244,7 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
 
         // 해당 행의 개별 옵션만 업데이트
         item._equipmentTypeOptions = [
-          { value: "", label: "선택하세요" },
+          { value: "", label: t("processDetail.selectPlease") },
           ...equipmentTypeOptionsData,
         ];
 
@@ -3254,15 +3254,15 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
         );
       } else {
         console.log("P&ID 컴포넌트 장비유형 API 응답이 올바르지 않음");
-        item._equipmentTypeOptions = [{ value: "", label: "선택하세요" }];
+        item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 장비유형 옵션 로드 실패:", error);
-      item._equipmentTypeOptions = [{ value: "", label: "선택하세요" }];
+      item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
     }
   } else {
     // 소분류가 선택되지 않았을 때 장비유형 옵션 초기화 (해당 행만)
-    item._equipmentTypeOptions = [{ value: "", label: "선택하세요" }];
+    item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
   }
 
   // 하위 필드 초기화 (해당 행만)
@@ -3516,7 +3516,7 @@ const closePidComponentSection = () => {
 
   // 변경사항 확인
   if (hasPidComponentChanges()) {
-    if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+    if (!confirm(t("process.hasChangesConfirm"))) {
       return;
     }
   }
@@ -3559,7 +3559,7 @@ const handlePidComponentSelectionChange = () => {
 // P&ID 컴포넌트 행 삭제
 const deletePidComponentRow = () => {
   if (selectedPidComponentItems.value.length === 0) {
-    alert("삭제할 행을 선택해주세요.");
+    alert(t("processDetail.selectRowToDelete"));
     return;
   }
 
@@ -3838,7 +3838,7 @@ const handlePidComponentSave = async () => {
       pidComponentList.value.length === 0 &&
       deletedPidComponentIds.value.length === 0
     ) {
-      alert("저장할 데이터가 없습니다.");
+      alert(t("processDetail.noDataToSave"));
       return;
     }
 
@@ -4158,7 +4158,7 @@ const handleDeleteProcessSymbol = () => {
     !hasSelectedFile &&
     (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000")
   ) {
-    alert("삭제할 공정심볼이 없습니다.");
+    alert(t("processDetail.noProcessSymbolToDelete"));
     return;
   }
 
@@ -4202,7 +4202,7 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
 
     if (!symbolId) {
       console.log("❌ symbol_id가 없어서 다운로드 불가");
-      alert("다운로드할 Svg 파일이 없습니다.");
+      alert(t("processDetail.noSvgFileToDownload"));
       return;
     }
 
@@ -4328,7 +4328,7 @@ const downloadFormulaFromList = async (formulaItem: any) => {
     }
   } catch (error) {
     console.error("계산식 다운로드 실패:", error);
-    alert("계산식 다운로드에 실패했습니다: " + (error.message || error));
+    alert(t("processDetail.formulaDownloadFailed", { error: error.message || error }));
   }
 };
 
@@ -4340,7 +4340,7 @@ const downloadFormula = async (formulaId: string, fileName?: string) => {
     console.log("fileName:", fileName);
 
     if (!formulaId) {
-      alert("다운로드할 계산식이 없습니다.");
+      alert(t("processDetail.noFormulaToDownload"));
       return;
     }
 
@@ -4442,7 +4442,7 @@ const downloadFormula = async (formulaId: string, fileName?: string) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("계산식 다운로드 실패:", error);
-    alert("계산식 다운로드에 실패했습니다: " + (error.message || error));
+    alert(t("processDetail.formulaDownloadFailed", { error: error.message || error }));
   }
 };
 // 공정카드 다운로드 함수
@@ -4452,7 +4452,7 @@ const downloadPfd = async (drawingId: string) => {
     console.log("drawingId:", drawingId);
 
     if (!drawingId) {
-      alert("다운로드할 공정카드가 없습니다.");
+      alert(t("processDetail.noPfdToDownload"));
       return;
     }
 
@@ -4564,7 +4564,7 @@ const downloadPfd = async (drawingId: string) => {
     }
   } catch (error) {
     console.error("공정카드 다운로드 실패:", error);
-    alert("공정카드 다운로드에 실패했습니다: " + (error.message || error));
+    alert(t("processDetail.pfdDownloadFailed", { error: error.message || error }));
   }
 };
 
@@ -4817,7 +4817,7 @@ const downloadExcel = async (drawingId: string) => {
     console.log("drawingId:", drawingId);
 
     if (!drawingId) {
-      alert("다운로드할 Excel 파일이 없습니다.");
+      alert(t("processDetail.noExcelFileToDownload"));
       return;
     }
 
@@ -5282,7 +5282,7 @@ const handleFormulaFileChange = (item: any, event: Event) => {
       .substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("계산식 파일은 .py 확장자만 허용됩니다.");
+      alert(t("processDetail.onlyPyFileAllowed"));
       target.value = ""; // 파일 선택 초기화
       return;
     }
@@ -5685,7 +5685,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
     if (props.isRegisterMode) {
       if (!createdProcessId.value) {
         console.error("공정 등록 모드에서 createdProcessId가 없습니다.");
-        alert("공정을 먼저 등록해주세요.");
+        alert(t("processDetail.registerProcessFirst"));
         return;
       }
       processId = createdProcessId.value;
@@ -5693,7 +5693,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
       processId = props.processId || (route.params.id as string);
       if (!processId) {
         console.error("processId를 찾을 수 없습니다.");
-        alert("공정 ID를 찾을 수 없습니다.");
+        alert(t("processDetail.processIdNotFound"));
         return;
       }
     }
@@ -6097,7 +6097,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
     if (props.isRegisterMode) {
       if (!createdProcessId.value) {
         console.error("공정 등록 모드에서 createdProcessId가 없습니다.");
-        alert("공정을 먼저 등록해주세요.");
+        alert(t("processDetail.registerProcessFirst"));
         return;
       }
       processId = createdProcessId.value;
@@ -6105,7 +6105,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       processId = props.processId || (route.params.id as string);
       if (!processId) {
         console.error("processId를 찾을 수 없습니다.");
-        alert("공정 ID를 찾을 수 없습니다.");
+        alert(t("processDetail.processIdNotFound"));
         return;
       }
     }
@@ -6530,7 +6530,7 @@ const handlePfdSave = async () => {
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때는 생성된 공정 ID 사용
       if (!createdProcessId.value) {
-        alert("공정이 등록되지 않았습니다. 먼저 기본정보를 등록해주세요.");
+        alert(t("processDetail.processNotRegistered"));
         return;
       }
       processId = createdProcessId.value;
@@ -6621,7 +6621,7 @@ const handlePfdSave = async () => {
         }
       }
 
-      alert("공정카드가 저장되었습니다.");
+      alert(t("processDetail.pfdSaved"));
     } else {
       console.log("저장할 변경사항이 없습니다.");
       alert("변경사항이 없습니다.");
@@ -7405,11 +7405,11 @@ const handlePfdSelectionChange = () => {
 // 삭제 함수들
 const handleFormulaDelete = () => {
   if (!selectedFormulaItems.value) {
-    alert("삭제할 항목을 선택해주세요.");
+    alert(t("process.selectItemToDelete"));
     return;
   }
 
-  const confirmed = confirm("선택된 계산식을 삭제하시겠습니까?");
+  const confirmed = confirm(t("processDetail.deleteFormulaConfirm"));
   if (!confirmed) return;
 
   const updatedList = processStore.formulaList.filter(
@@ -7434,7 +7434,7 @@ const handleFormulaSave = async () => {
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때는 생성된 공정 ID 사용
       if (!createdProcessId.value) {
-        alert("공정이 등록되지 않았습니다. 먼저 기본정보를 등록해주세요.");
+        alert(t("processDetail.processNotRegistered"));
         return;
       }
       processId = createdProcessId.value;
@@ -7477,10 +7477,10 @@ const handleFormulaSave = async () => {
       // 렌더 강제 갱신
       formulaTableKey.value++;
 
-      alert("계산식 저장이 완료되었습니다.");
+      alert(t("processDetail.formulaSaveCompleted"));
     } else {
       console.log("저장할 변경사항이 없습니다.");
-      alert("저장할 계산식 변경사항이 없습니다.");
+      alert(t("processDetail.noFormulaChangesToSave"));
     }
   } catch (error: any) {
     console.error("계산식 저장 실패:", error);
@@ -7908,11 +7908,11 @@ const processFormulaChanges = async (processId: string) => {
 
 const handlePfdDelete = () => {
   if (!selectedPfdItems.value) {
-    alert("삭제할 항목을 선택해주세요.");
+    alert(t("process.selectItemToDelete"));
     return;
   }
 
-  const confirmed = confirm("선택된 공정카드를 삭제하시겠습니까?");
+  const confirmed = confirm(t("processDetail.deletePfdConfirm"));
   if (!confirmed) return;
 
   // 삭제될 PFD 항목의 drawing_id 확인
@@ -7987,17 +7987,17 @@ const createNewProcess = async () => {
     // 필수 필드 검증
 
     if (!selectedUnit.value) {
-      alert("단위를 선택해주세요.");
+      alert(t("processDetail.selectUnit"));
       return;
     }
 
     if (!processStore.processDetail.processType) {
-      alert("공정구분을 선택해주세요.");
+      alert(t("processDetail.selectProcessType"));
       return;
     }
 
     if (!processStore.processDetail.subCategory) {
-      alert("공정 중분류를 선택해주세요.");
+      alert(t("processDetail.selectSubCategory"));
       return;
     }
 
@@ -8011,7 +8011,7 @@ const createNewProcess = async () => {
     });
 
     if (!processStore.processDetail.processName) {
-      alert("공정명을 선택해주세요.");
+      alert(t("processDetail.selectProcessName"));
       return;
     }
 
@@ -8025,7 +8025,7 @@ const createNewProcess = async () => {
       );
 
     if (!selectedProcessNameOption) {
-      alert("선택된 공정명을 찾을 수 없습니다.");
+      alert(t("processDetail.processNameNotFound"));
       return;
     }
 
@@ -8130,7 +8130,7 @@ const createNewProcess = async () => {
     }
 
     console.log("새 공정 생성 완료:", response);
-    alert("공정이 성공적으로 등록되었습니다.");
+    alert(t("processDetail.processRegisteredSuccessfully"));
 
     // 생성된 공정 ID 저장
     if (
@@ -8224,7 +8224,7 @@ const saveBasicProcessInfo = async (processId: string) => {
     // 변경사항이 있는지 확인
     if (!hasAnyChanges) {
       console.log("저장할 변경사항이 없습니다.");
-      alert("저장할 내용이 없습니다.");
+      alert(t("processDetail.noContentToSave"));
       return;
     }
 
@@ -8299,7 +8299,7 @@ const saveBasicProcessInfo = async (processId: string) => {
           processStore.clearProcessSymbolPreview();
         }
 
-        alert("기본 정보가 저장되었습니다.");
+        alert(t("processDetail.basicInfoSaved"));
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
         throw updateError;
@@ -8360,7 +8360,7 @@ const saveBasicProcessInfo = async (processId: string) => {
           });
         }
 
-        alert("기본 정보가 저장되었습니다.");
+        alert(t("processDetail.basicInfoSaved"));
 
         // 기본 정보 저장 후 공정카드 데이터 로드
         await refreshPfdData();
@@ -8998,7 +8998,7 @@ const handleUpdate = async () => {
     }
 
     if (hasAnyChanges) {
-      alert("공정 수정이 완료되었습니다.");
+      alert(t("processDetail.processUpdateCompleted"));
       emit("update-success");
     } else {
       alert("변경사항이 없습니다.");
@@ -9344,7 +9344,7 @@ const confirmMappingPid = async () => {
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때는 생성된 공정 ID 사용
       if (!createdProcessId.value) {
-        alert("공정이 등록되지 않았습니다. 먼저 기본정보를 등록해주세요.");
+        alert(t("processDetail.processNotRegistered"));
         return;
       }
       processId = createdProcessId.value;
@@ -10737,7 +10737,7 @@ const selectPidFile = (item: any) => {
 const selectExcelFile = (item: any) => {
   // P&ID 파일이 저장되어 drawing_id가 생성된 이후에만 활성화
   if (!item.drawing_id || item.drawing_id.startsWith("temp_pid_drawing_")) {
-    alert("매핑 Excel 파일을 선택하려면 먼저 P&ID 파일을 저장해주세요.");
+    alert(t("processDetail.selectExcelFileAfterSavePid"));
     return;
   }
 
@@ -11037,7 +11037,7 @@ const deleteSelectedMappingPidItems = () => {
     return;
   }
 
-  if (confirm("선택된 P&ID 항목을 삭제하시겠습니까?")) {
+  if (confirm(t("processDetail.deleteSelectedPidConfirm"))) {
     // 삭제될 P&ID 항목의 drawing_id 확인
     const deletedDrawingId = selectedMappingPidItems.value.drawing_id;
 

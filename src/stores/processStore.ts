@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { request } from "@/utils/request";
+import { useI18n } from "vue-i18n";
 
 export interface ProcessItem {
   id: string;
@@ -149,6 +150,8 @@ export interface GlobalProcessData {
 }
 
 export const useProcessStore = defineStore("process", () => {
+  const { t } = useI18n();
+  
   // 기존 상태들
   const processList = ref<ProcessItem[]>([]);
   const selectedItems = ref<ProcessItem[]>([]);
@@ -655,7 +658,7 @@ export const useProcessStore = defineStore("process", () => {
         selectedItems.value = [];
         
         // 사용자에게 알림
-        throw new Error("검색 조건이 올바르지 않습니다. 검색 조건을 확인해주세요.");
+        throw new Error(t("messages.error.invalidSearchCondition"));
       }
 
       // 오류 발생 시 테이블 초기화
@@ -1076,7 +1079,7 @@ export const useProcessStore = defineStore("process", () => {
 
         return { successCount, failCount };
       } else {
-        throw new Error("모든 항목 삭제에 실패했습니다.");
+        throw new Error(t("messages.error.allItemsDeleteFailed"));
       }
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);
@@ -1140,7 +1143,7 @@ export const useProcessStore = defineStore("process", () => {
           
           if (!result.success) {
             console.error('계산식 파일 저장 실패:', result);
-            throw new Error(`계산식 파일 저장 실패: ${result.message || '알 수 없는 오류'}`);
+            throw new Error(t("messages.error.formulaFileSaveFailed", { message: result.message || t("messages.error.unknownError") }));
           }
         } else {
           console.warn('계산식 파일에 _file이 없습니다:', formulaItem);
@@ -1665,7 +1668,7 @@ export const useProcessStore = defineStore("process", () => {
       const symbolId = processDetail.value.symbolId;
 
       if (!symbolId || symbolId === "00000000-0000-0000-0000-000000000000") {
-        alert("다운로드할 공정심볼이 없습니다.");
+        alert(t("processDetail.noProcessSymbolToDelete"));
         return;
       }
 
@@ -1682,7 +1685,7 @@ export const useProcessStore = defineStore("process", () => {
 
       if (!response.ok) {
         throw new Error(
-          `다운로드 실패: ${response.status} ${response.statusText}`
+          t("messages.error.downloadFailed", { status: response.status, statusText: response.statusText })
         );
       }
 
@@ -1709,7 +1712,7 @@ export const useProcessStore = defineStore("process", () => {
       if (responseData.success && responseData.response_body) {
         svgContent = responseData.response_body;
       } else {
-        throw new Error("SVG 내용을 찾을 수 없습니다.");
+        throw new Error(t("messages.error.svgContentNotFound"));
       }
 
       // SVG 유효성 검사
@@ -1717,7 +1720,7 @@ export const useProcessStore = defineStore("process", () => {
         !svgContent.trim().startsWith("<svg") &&
         !svgContent.trim().startsWith("<?xml")
       ) {
-        throw new Error("유효하지 않은 SVG 형식입니다.");
+        throw new Error(t("messages.error.invalidSvgFormat"));
       }
 
       // Blob으로 변환하여 다운로드
@@ -1736,7 +1739,7 @@ export const useProcessStore = defineStore("process", () => {
       window.URL.revokeObjectURL(url);
     } catch (error: any) {
       console.error("공정심볼 다운로드 실패:", error);
-      alert("공정심볼 다운로드에 실패했습니다: " + (error.message || error));
+      alert(t("messages.error.processSymbolDownloadFailed", { error: error.message || error }));
     }
   };
 
@@ -1871,7 +1874,7 @@ export const useProcessStore = defineStore("process", () => {
       file.type === "application/vnd.ms-excel";
 
     if (!isExcelFile) {
-      alert("엑셀 파일(.xlsx, .xls)만 선택 가능합니다.");
+      alert(t("messages.warning.excelFileOnly"));
       capacityCalculationFile.value = null;
       capacityCalculationFileName.value = "";
       return;
@@ -1891,11 +1894,11 @@ export const useProcessStore = defineStore("process", () => {
   const deleteCapacityCalculationFile = async (processId: string, filename: string) => {
     try {
       if (!processId) {
-        throw new Error("공정 ID가 없습니다.");
+        throw new Error(t("processDetail.noProcessId"));
       }
 
       if (!filename) {
-        throw new Error("파일명이 없습니다.");
+        throw new Error(t("messages.error.filenameMissing"));
       }
 
       // API 호출: /api/process/ccs/delete/{tableName}/{pkValue}/{filename}
@@ -1932,7 +1935,7 @@ export const useProcessStore = defineStore("process", () => {
         capacityCalculationFileName.value = "";
         return response;
       } else {
-        throw new Error(response?.message || "용량계산서 삭제에 실패했습니다.");
+        throw new Error(response?.message || t("messages.error.capacityCalculationDeleteFailed"));
       }
     } catch (error: any) {
       console.error("=== 용량계산서 삭제 실패 ===");
@@ -1945,11 +1948,11 @@ export const useProcessStore = defineStore("process", () => {
   const uploadCapacityCalculationFile = async (processId: string) => {
     try {
       if (!capacityCalculationFile.value) {
-        throw new Error("파일을 선택해주세요.");
+        throw new Error(t("messages.warning.pleaseSelectFile"));
       }
 
       if (!processId) {
-        throw new Error("공정 ID가 없습니다.");
+        throw new Error(t("processDetail.noProcessId"));
       }
 
       // FormData 생성
@@ -2004,7 +2007,7 @@ export const useProcessStore = defineStore("process", () => {
   const downloadCapacityCalculationFile = async (processId: string, ccsFileName?: string) => {
     try {
       if (!processId) {
-        throw new Error("공정 ID가 없습니다.");
+        throw new Error(t("processDetail.noProcessId"));
       }
 
       // 파일명 설정: ccs_file_name이 있으면 사용, 없으면 기본값
@@ -2140,10 +2143,10 @@ export const useProcessStore = defineStore("process", () => {
       }
 
       // download_url이 없는 경우 에러
-      throw new Error("다운로드 URL을 찾을 수 없습니다.");
+      throw new Error(t("messages.error.downloadUrlNotFound"));
     } catch (error: any) {
       console.error("용량계산서 파일 다운로드 실패:", error);
-      alert("용량계산서 파일 다운로드에 실패했습니다: " + (error.message || error));
+      alert(t("messages.error.capacityCalculationDownloadFailed", { error: error.message || error }));
       throw error;
     }
   };

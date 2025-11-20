@@ -337,14 +337,14 @@ onUnmounted(() => {
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: $spacing-lg;
-    margin-bottom: $spacing-lg;
+    gap: 20px;
+    margin-bottom: 20px;
   }
 
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: $spacing-md;
+    gap: 20px;
     margin-bottom: 20px;
 
     .chart-item {
@@ -363,8 +363,8 @@ onUnmounted(() => {
     }
 
     .chart-separator {
-      height: 10px;
-      margin: 13px 0;
+      height: 20px;
+      // margin: 13px 0;
     }
   }
 

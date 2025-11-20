@@ -1,8 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { request } from "@/utils/request";
+import { useI18n } from "vue-i18n";
 
 export const usePipeStore = defineStore("pipe", () => {
+  const { t } = useI18n();
+  
   // 상태
   const langCodes = ref<
     Array<{
@@ -176,7 +179,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("공통코드 조회 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "공통코드 조회에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.commonCodeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -215,7 +218,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "깊이별 공통코드 조회에 실패했습니다.";
+          : t("messages.error.depthCodeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -244,7 +247,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 검색 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "배관 검색에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.pipeSearchFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -313,7 +316,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "배관 공통 코드 조회에 실패했습니다.";
+          : t("messages.error.pipeCommonCodeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -343,7 +346,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "상세 깊이 코드 조회에 실패했습니다.";
+          : t("messages.error.depthDetailCodeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -369,7 +372,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "상세 깊이 검색 타입 조회에 실패했습니다.";
+          : t("messages.error.depthDetailSearchTypeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -396,7 +399,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "Excel 템플릿 다운로드에 실패했습니다.";
+          : t("messages.error.excelTemplateDownloadFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -427,7 +430,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "배관 Excel 업로드에 실패했습니다.";
+          : t("messages.error.pipeExcelUploadFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -456,7 +459,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("모델 ZIP 업로드 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "모델 ZIP 업로드에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.modelZipUploadFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -491,7 +494,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 삭제 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "배관 삭제에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.pipeDeleteFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -515,7 +518,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "배관 공통 상세 조회에 실패했습니다.";
+          : t("messages.error.pipeCommonDetailRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -552,7 +555,7 @@ export const usePipeStore = defineStore("pipe", () => {
       error.value =
         err instanceof Error
           ? err.message
-          : "배관 파일 상세 조회에 실패했습니다.";
+          : t("messages.error.pipeFileDetailRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -644,7 +647,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 수정 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "배관 수정에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.pipeUpdateFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -666,7 +669,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("계산식 검색 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "계산식 검색에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.formulaSearchFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -696,7 +699,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("계산식 생성 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "계산식 생성에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.formulaCreateFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -720,7 +723,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("계산식 삭제 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "계산식 삭제에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.formulaDeleteFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -753,7 +756,7 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("가격 이력 생성 실패:", err);
       error.value =
-        err instanceof Error ? err.message : "가격 이력 생성에 실패했습니다.";
+        err instanceof Error ? err.message : t("messages.error.priceHistoryCreateFailed");
       throw err;
     } finally {
       loading.value = false;

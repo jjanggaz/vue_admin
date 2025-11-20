@@ -50,7 +50,6 @@
           >
             <slot name="empty">
               <div class="empty-state">
-                <span class="empty-icon">📂</span>
                 <p>{{ $t("datatable.noData") }}</p>
                 <!-- 등록된 데이터가 없습니다 -->
               </div>

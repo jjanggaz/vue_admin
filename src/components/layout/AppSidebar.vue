@@ -2,7 +2,9 @@
   <aside class="sidebar">
     <div class="sidebar-content">
       <!-- <img src="/public/images/logo/logo_wai_sd.svg" alt="" /> -->
-      <img :src="logoWaiSd" alt="WAI SD Logo" />
+       <a href="/dashboard" title="대쉬보드 바로가기">
+         <img :src="logoWaiSd" alt="WAI SD Logo" />
+       </a>
 
       <!-- Navigation Menu -->
       <nav class="nav-menu">
@@ -128,8 +130,9 @@ const availableMenus = computed(() => {
     height: 100%;
     display: flex;
     flex-direction: column;
-
+    
     img {
+      display: block;
       width: 220px;
       height: auto;
       margin: $spacing-lg auto;

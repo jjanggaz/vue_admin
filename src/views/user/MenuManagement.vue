@@ -318,29 +318,6 @@ onMounted(() => {
   }
 }
 
-.radio-group {
-  display: flex;
-  gap: 20px;
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-
-  input[type="radio"] {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-  }
-
-  .radio-text {
-    font-size: 14px;
-    color: #333;
-  }
-}
-
 .menu-list-title {
   font-size: 1.1rem;
   font-weight: 600;

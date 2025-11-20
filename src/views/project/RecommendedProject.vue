@@ -174,19 +174,21 @@ const handlePageChange = (page: number) => {
   }
 }
 
-.input-cell {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-.btn-edit {
-  background: #f7f7f7;
-  border: 1px solid #bbb;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.1rem;
+ input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px auto;
+  background-image: url(../../assets/icons/ico_check-off.svg);
   cursor: pointer;
-}
+
+  &:checked {
+    background-image: url(../../assets/icons/ico_check-on.svg);
+  }
+ }
 </style>

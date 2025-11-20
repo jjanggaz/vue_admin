@@ -41,5 +41,13 @@
       display: inline-block;
     }
   }
+
+  .unit-dateTime {
+    p {
+      color: #333333;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  }
   </style>
   

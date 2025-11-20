@@ -104,19 +104,19 @@
                   <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" disabled />
+                  <span class="check-edit" :class="{ on: item.is_active, off: !item.is_active }"></span>
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" disabled />
+                  <span class="check-edit required" :class="{ on: item.is_required, off: !item.is_required }"></span>
                 </template>
               </DataTable>
 
-              <div class="action-bar">
+              <div class="action-bar" style="margin: 22px 0px 12px;">
                 <div class="title">
                   <h4>{{ t("outflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-add" @click="deleteMetricFormula">
+                  <button class="btn btn-delete sm" @click="deleteMetricFormula">
                     {{ t("outflow.delete") }}
                   </button>
                 </div>
@@ -191,19 +191,19 @@
                   <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_active" disabled />
+                  <span class="check-edit" :class="{ on: item.is_active, off: !item.is_active }"></span>
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <input type="checkbox" v-model="item.is_required" disabled />
+                  <span class="check-edit required" :class="{ on: item.is_required, off: !item.is_required }"></span>
                 </template>
               </DataTable>
 
-              <div class="action-bar">
+              <div class="action-bar" style="margin: 22px 0px 12px;">
                 <div class="title">
                   <h4>{{ t("outflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-add" @click="deleteUscsFormula">
+                  <button class="btn btn-delete sm" @click="deleteUscsFormula">
                     {{ t("outflow.delete") }}
                   </button>
                 </div>
@@ -2620,7 +2620,7 @@ onBeforeUnmount(() => {
   .content-wrapper,
   .modal-content-wrapper {
     display: flex;
-    gap: $spacing-lg;
+    gap: 20px;
     min-width: 0; // flex 컨테이너가 축소될 수 있도록 허용
 
     // 반응형 처리: 작은 화면에서는 세로 배치
@@ -2634,9 +2634,11 @@ onBeforeUnmount(() => {
     .modal-tab-content-metric,
     .modal-tab-content-uscs {
       flex: 1;
-      background: white;
-      border-radius: $border-radius-md;
-      padding: $spacing-sm;
+      width: 770px;
+      background: #ffffff;
+      border: 1px solid #e7e6ed;
+      border-radius: 10px;
+      padding: 20px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
       overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
@@ -2649,25 +2651,23 @@ onBeforeUnmount(() => {
       }
 
       .section-header {
-        margin-bottom: $spacing-sm;
-        padding-bottom: $spacing-sm;
-        border-bottom: 2px solid $primary-color;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: $spacing-sm;
+        gap: 10px;
+        margin-bottom: 12px;
 
         h3 {
-          margin: 0;
-          color: $primary-color;
-          font-size: $font-size-lg;
-          font-weight: $font-weight-bold;
+          color: #202020;
+          font-size: 24px;
+          font-weight: 600;
         }
 
         .applied-formula {
-          font-size: $font-size-sm;
-          color: $text-color;
-          font-weight: $font-weight-md;
-          margin-left: $spacing-xs;
+          display: inline-block;
+          color: #333333;
+          font-size: 13px;
+          font-weight: 400;
         }
 
         .tab-info {
@@ -2723,6 +2723,31 @@ onBeforeUnmount(() => {
     color: $text-light;
     cursor: default;
     animation: pulse 1.5s infinite;
+  }
+
+  // 편집여부 체크
+  .check-edit {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 24px auto;
+    vertical-align: middle;
+    line-height: 0;
+
+    &.on {
+      width: 24px;
+      height: 24px;
+      background-color: #bed500;
+      border-radius: 20px;
+      background-image: url(../../assets/icons/ico_inflow-check.svg);
+    }
+    
+    &.off,
+    &.required.off {
+      display: none;
+    }
   }
 
   @keyframes pulse {
@@ -2913,6 +2938,14 @@ onBeforeUnmount(() => {
   gap: 40px;
   width: 100%;
   margin-bottom: 20px;
+
+  .title {
+    h4 {
+      color: #202020;
+      font-size: 20px;
+      font-weight: 600;
+    }
+  }
 }
 
 .tab-action-bar {
@@ -2943,6 +2976,7 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
   scroll-behavior: smooth;
   min-width: 0; // flex 아이템이 축소될 수 있도록 허용
+  height: 40px;
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE/Edge
   padding: 0 10px;
@@ -2961,6 +2995,7 @@ onBeforeUnmount(() => {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
+    transition: height .3s ease;
 
     &.active {
       height: 40px;
@@ -3039,7 +3074,8 @@ onBeforeUnmount(() => {
 
 .formula-link {
   color: #3b82f6;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 3px; 
   cursor: pointer;
 
   &:hover {

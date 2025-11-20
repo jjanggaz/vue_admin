@@ -392,7 +392,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
 <style scoped lang="scss">
 .data-table-container {
-   overflow: hidden;
+  overflow: hidden;
   border-top: 2px solid #000000;
   border-bottom: 1px solid #000000;
   overflow-x: auto;
@@ -400,6 +400,24 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   &.with-scroll {
     overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #e7e6ed;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #d7d5e4;
+    }
+  }
+  &::-webkit-scrollbar-button:start:decrement {
+    display:block;
+    height:50px;
+    width: 0;
+    background-color: transparent;
   }
 }
 
@@ -431,18 +449,18 @@ const formatCellValue = (item: any, column: TableColumn) => {
   td.checkbox-cell {
     width: 40px;
     text-align: center;
-    vertical-align: middle;
 
     input[type="checkbox"] {
       appearance: none;
+      // vertical-align: middle;
       width: 20px;
       height: 20px;
       border: none;
+      background-color: transparent;
       background-image: url(../../assets/icons/ico_check-off.svg);
       background-repeat: no-repeat;
       background-position: center;
       background-size: 20px auto;
-      margin: 0;
       cursor: pointer;
 
       &:checked {

@@ -35,13 +35,8 @@
                 @change="handleAsset3DCategoryChange"
               >
                 <option value="">{{ t("common.select") }}</option>
-                <option
-                  v-for="category in asset3DStore.secondDepth"
-                  :key="category.code_id"
-                  :value="category.code_key"
-                >
-                  {{ category.code_value }}
-                </option>
+                <option value="preset">프리셋</option>
+                <option value="library">3D 라이브러리</option>
               </select>
             </div>
             <div class="filter-item">
@@ -375,8 +370,8 @@
             </div>
           </div>
           <div class="tab-content">
-            <MachineRegisterTab v-if="modalActiveTab === 0" />
-            <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
+            <Asset3DLibraryTab v-if="modalActiveTab === 0" />
+            <Asset3DPresetTab v-if="modalActiveTab === 1" />
           </div>
         </div>
         <div class="modal-footer">
@@ -394,8 +389,8 @@ import { ref, computed, onMounted } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import VerticalDataTable from "@/components/common/VerticalDataTable.vue";
-import MachineRegisterTab from "./components/MachineRegisterTab.vue";
-import MachineFormulaRegisterTab from "./components/MachineFormulaRegisterTab.vue";
+import Asset3DLibraryTab from "./components/Asset3DLibraryTab.vue";
+import Asset3DPresetTab from "./components/Asset3DPresetTab.vue";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import { useAsset3DStore } from "@/stores/asset3DStore";
@@ -409,10 +404,10 @@ const asset3DStore = useAsset3DStore();
 
 // 모달 탭 구성 - 등록 모드만 사용
 const modalTabs = [
-  { key: "machine", label: t("common.machineRegistration") },
+  { key: "machine", label: "3D 라이브러리 등록" },
   {
     key: "formula",
-    label: t("common.machineFormulaRegistration"),
+    label: "3D 프리셋 등록",
   },
 ];
 const modalActiveTab = ref(0);
@@ -864,6 +859,8 @@ const openRegistModal = () => {
   if (isDetailPanelOpen.value) {
     isDetailPanelOpen.value = false;
   }
+  // '3D 라이브러리 등록' 탭을 기본 선택
+  modalActiveTab.value = 0;
   isRegistModalOpen.value = true;
 };
 
@@ -873,7 +870,7 @@ const closeRegistModal = async () => {
   await loadData();
 };
 
-// 등록은 MachineRegisterTab, MachineFormulaRegisterTab에서 처리
+// 등록은 Asset3DLibraryTab, Asset3DPresetTab에서 처리
 
 const handleDelete = async () => {
   if (selectedItems.value.length === 0) {
@@ -1550,6 +1547,7 @@ const loadData = async () => {
       keyword: searchQueryInput.value,
       root_equipment_type: selectedAsset3DCategory.value,
       unit_system_code: selectedUnit.value,
+      model3d_type: selectedAsset3DCategory.value,
       page: currentPage.value,
       page_size: pageSize.value,
     };
@@ -1579,10 +1577,6 @@ const loadData = async () => {
 
 // Asset3D 대분류 변경 핸들러
 const handleAsset3DCategoryChange = async () => {
-  if (selectedAsset3DCategory.value) {
-    await asset3DStore.fetchThirdDepth(selectedAsset3DCategory.value, 3);
-  }
-
   // Asset3D 대분류 변경 시 자동 검색
   await handleSearch();
 };
@@ -1994,25 +1988,6 @@ onMounted(async () => {
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-  
-  &.btn-secondary {
-    background-color: $background-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: color.scale($background-light, $lightness: -5%);
-    }
-  }
 }
 
 .link-download {

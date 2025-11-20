@@ -10,7 +10,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 40px;
   padding: 0 16px;
   border-radius: $border-radius-sm;
  }
@@ -19,8 +18,10 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: $spacing-sm $spacing-md;
+  justify-content: flex-end;
+  width: 80px;
+  height: 40px;
+  padding: 8px 16px 8px 35px;
   font-size: $font-size-base;
   font-weight: $font-weight-md;
   text-decoration: none;
@@ -52,11 +53,10 @@
     }
 
     &.btn-delete {
-      padding:8px 16px 8px 32px;
-      background-color: #3e435e;
+      padding: 8px 16px 8px 35px;
 
       &:hover {
-        background-color: #3C4973;
+        background-color: #3c4973;
       }
 
       &:disabled {
@@ -99,25 +99,22 @@
 
 .btn.btn-delete {
     position:relative;
-    padding:8px 16px 8px 32px;
-    border-radius: 5px;
     background-color: #3e435e;
-    color: white;
-    font-weight: $font-weight-md;
+    padding: 8px 16px 8px 35px;
 
     &::before {
         content: "";
         position:absolute;
         top: 50%;
         transform: translateY(-50%);
-        left: 12px;
+        left: 16px;
         width: 16px;
         height: 16px;
-        background: url(../assets/icons/ico_delete.svg) no-repeat center / 16px 16px;
+        background: url(../assets/icons/ico_delete.svg) no-repeat center / 11px auto;
         aspect-ratio: 1/1;
     }
     &:hover {
-      background-color: #3C4973;
+      background-color: #3c4973;
     }
     &:disabled {
       background-color: #abaebd;
@@ -125,15 +122,19 @@
 }
 
 .btn-search {
+  min-width: 60px;
+  width: 60px;
   height: 40px;
+  padding: 0;
+  text-align: center;
   background-color: #222E77;
   color: white;
   border: none;
-  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
+  transition: $transition-base;
 
   &:hover {
     background-color: #29378C;
@@ -141,18 +142,20 @@
 }
 
 .btn-view {
+  width: 45px;
+  height: 32px;
   background-color: #3e435e;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 0 4px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #3C4973;
+    background-color: #3c4973;
   }
 }
 
@@ -160,10 +163,8 @@
   background-color: #222E77;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.875rem;
   white-space: nowrap;
 
   &:hover {
@@ -174,14 +175,13 @@
 .action-buttons {
   .btn-register {
     position: relative;
-    padding-left: 32px;
 
     &::before {
       content: "";
       position:absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 13px;
+      left: 16px;
       width: 13px;
       height: 13px;
       background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
@@ -191,14 +191,13 @@
   
   .btn-edit {
     position: relative;
-    padding-left: 32px;
 
     &::before {
       content: "";
       position:absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 13px;
+      left: 16px;
       width: 13px;
       height: 13px;
       background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
@@ -208,34 +207,52 @@
 }
 
 .action-bar {
-  .btns button.btn-regist {
-    position: relative;
-    padding-left: 32px;
+  .btns {
+    button.btn-regist {
+     position: relative;
+     padding: 8px 16px 8px 35px;
+ 
+     &::before {
+       content: "";
+       position:absolute;
+       top: 50%;
+       transform: translateY(-50%);
+       left: 16px;
+       width: 13px;
+       height: 13px;
+       background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+       aspect-ratio: 1/1;
+     }
+   }
+
+   .btn.btn-delete.sm {
+    width: 48px;
+    height: 32px;
+    justify-content: center;
+    padding: 0;
+    background-color: #3e435e;
 
     &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 13px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
+      background: none;
     }
+
+    &:hover {
+      background-color: #3c4973;
+    }
+   }
   }
 
   .btns button.btn-update,
   .btns button.btn-edit {
     position: relative;
-    padding-left: 32px;
+    padding: 8px 16px 8px 35px;
 
     &::before {
       content: "";
       position:absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 13px;
+      left: 16px;
       width: 13px;
       height: 13px;
       background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
@@ -244,17 +261,34 @@
   }
 }
 
+.btns .btn-create {
+  position: relative;
+  width: auto;
+  padding: 8px 16px 8px 35px;
+
+  &::before {
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    width: 13px;
+    height: 13px;
+    background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+    aspect-ratio: 1/1;
+  }
+}
+
 div[class$="-list-header"] {
   .btn-register {
     position: relative;
-    padding-left: 32px;
 
     &::before {
       content: "";
       position:absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 13px;
+      left: 16px;
       width: 13px;
       height: 13px;
       background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
@@ -264,18 +298,69 @@ div[class$="-list-header"] {
 
   .btn-edit {
     position: relative;
-    padding-left: 32px;
 
     &::before {
       content: "";
       position:absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 13px;
+      left: 16px;
       width: 13px;
       height: 13px;
       background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
       aspect-ratio: 1/1;
+    }
+  }
+}
+
+.btn-multi-register {
+  position: relative;
+  width: auto;
+
+  &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 16px;
+      width: 13px;
+      height: 13px;
+      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+      aspect-ratio: 1/1;
+    }
+}
+
+.btns {
+  .btn.btn-code-management {
+    position: relative;
+    width: auto;
+    padding: 8px 16px 8px 35px;
+    background-color: #3e435e;
+
+    &::before {
+      content: "";
+      position:absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 16px;
+      width: 16px;
+      height: 16px;
+      background: url(../assets/icons/ico_code-sett.svg) no-repeat center / 16px auto;
+      aspect-ratio: 1/1;
+    }
+
+    &:hover {
+      background-color: #3c4973;
+    }
+  }
+
+  .btn.btn-add {
+    position: relative;
+    padding: 8px 16px 8px 35px;
+    background-color: #222E77;
+
+    &:hover {
+      background-color: #29378C;
     }
   }
 }

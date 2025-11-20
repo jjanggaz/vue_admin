@@ -860,8 +860,7 @@
               </div>
             </div>
             <div class="model-register-warning">
-              ⚠️ 파일명 규칙: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_
-              - ()"만 허용합니다.
+              ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
             </div>
 
             <!-- ZIP 파일 내부 파일 목록 테이블 -->
@@ -1027,7 +1026,7 @@ const tableColumns = computed<TableColumn[]>(() => {
   if (selectedMachineCategory.value === "P_DI") {
     columns.push({
       key: "fitting",
-      title: "피팅방식",
+      title: t("pipe.fittingType"),
       width: "150px",
       sortable: false,
     });
@@ -1229,7 +1228,7 @@ const additionalFieldDefinitions: Record<
 > = {
   fitting: {
     keyCandidates: ["fitting", "fitting_code", "fittingType"],
-    nameKoCandidates: ["피팅방식", "피팅방식(코드)"],
+    nameKoCandidates: [t("pipe.fittingType"), t("pipe.fittingTypeCode")],
     nameEnCandidates: ["Fitting", "Fitting Type"],
   },
   body_material: {
@@ -1505,7 +1504,7 @@ const specVerticalData = computed(() => {
 
   // 2. output_values 동적 추가
   if (item.output_values) {
-    const providerLabel = isEnglish ? "Unit Price Source" : "단가출처";
+    const providerLabel = t("pipe.unitPriceSource");
     Object.entries(item.output_values).forEach(
       ([key, field]: [string, any]) => {
         // 원본 값과 현재 값 비교
@@ -1621,7 +1620,7 @@ const specVerticalData = computed(() => {
 
   // 5. 사용여부 (is_active) 필드 추가
   data.push({
-    columnName: isEnglish ? "Usage Status" : "사용여부",
+    columnName: isEnglish ? t("pipe.usageStatus") : t("pipe.usageStatus"),
     value: isDetailEditMode.value
       ? item.is_active !== undefined
         ? item.is_active
@@ -1629,24 +1628,24 @@ const specVerticalData = computed(() => {
       : item.is_active !== undefined
       ? item.is_active
         ? isEnglish
-          ? "Used"
-          : "사용"
+          ? t("pipe.used")
+          : t("pipe.used")
         : isEnglish
-        ? "Not Used"
-        : "미사용"
+        ? t("pipe.notUsed")
+        : t("pipe.notUsed")
       : "-",
     editable: true,
     fieldType: "select",
     options: [
-      { value: true, label: isEnglish ? "Used" : "사용" },
-      { value: false, label: isEnglish ? "Not Used" : "미사용" },
+      { value: true, label: isEnglish ? t("pipe.used") : t("pipe.used") },
+      { value: false, label: isEnglish ? t("pipe.notUsed") : t("pipe.notUsed") },
     ],
     originalType: "boolean",
   });
 
   // 6. 장비설명 (description) 필드 추가
   data.push({
-    columnName: isEnglish ? "Equipment Description" : "장비설명",
+    columnName: isEnglish ? t("pipe.equipmentDescription") : t("pipe.equipmentDescription"),
     value: isDetailEditMode.value
       ? item.description || ""
       : item.description || "-",
@@ -1928,7 +1927,7 @@ const extractRegisterZipContents = async (file: File) => {
     // 파일명 규칙에 맞지 않는 파일이 있으면 경고 및 처리 중단
     if (invalidFileNameFiles.length > 0) {
       alert(
-        `파일명 규칙에 맞지 않는 파일이 있습니다:\n\n${invalidFileNameFiles.join(
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFileNameFiles.join(
           "\n"
         )}`
       );
@@ -2781,7 +2780,7 @@ const handleFieldChange = (
         truncated = test;
       }
       editData.value.equipmentCode = truncated;
-      alert("배관코드는 최대 60바이트까지 입력 가능합니다.");
+      alert(t("messages.warning.pipeCodeMaxBytes"));
     } else {
       editData.value.equipmentCode = strValue;
     }
@@ -2795,7 +2794,7 @@ const handleFieldChange = (
     editData.value.modelNumber = String(value);
   }
   // 사용여부 필드 확인
-  else if (fieldName === (isEnglish ? "Usage Status" : "사용여부")) {
+  else if (fieldName === t("pipe.usageStatus")) {
     // value는 문자열이거나 실제 boolean 값일 수 있음
     let boolValue = false;
     if (typeof value === "boolean") {
@@ -2803,12 +2802,12 @@ const handleFieldChange = (
     } else {
       const strValue = String(value);
       boolValue =
-        strValue === "true" || strValue === "사용" || strValue === "Used";
+        strValue === "true" || strValue === t("pipe.used") || strValue === (isEnglish ? "Used" : t("pipe.used"));
     }
     editData.value.is_active = boolValue;
   }
   // 장비설명 필드 확인
-  else if (fieldName === (isEnglish ? "Equipment Description" : "장비설명")) {
+  else if (fieldName === t("pipe.equipmentDescription")) {
     editData.value.description = String(value);
   }
   // 동적 필드 처리 (output_values, search_criteria, specifications)
@@ -4255,25 +4254,6 @@ onMounted(async () => {
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-
-  &.btn-secondary {
-    background-color: $background-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: color.scale($background-light, $lightness: -5%);
-    }
-  }
 }
 
 .pagination-container {

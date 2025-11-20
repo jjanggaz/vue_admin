@@ -7,7 +7,7 @@ export const setCookie = (name: string, value: string, days: number = 7) => {
 
   // 보안 속성 추가
   const secure = window.location.protocol === "https:" ? ";Secure" : "";
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict${secure}`;
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax${secure}`;
 };
 
 // 쿠키 가져오기
@@ -25,7 +25,7 @@ export const getCookie = (name: string): string | null => {
 // 쿠키 삭제 (보안 강화)
 export const deleteCookie = (name: string) => {
   const secure = window.location.protocol === "https:" ? ";Secure" : "";
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Strict${secure}`;
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax${secure}`;
 };
 
 // 사용자 정보 쿠키 관리

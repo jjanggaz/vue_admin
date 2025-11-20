@@ -1,105 +1,93 @@
 <template>
   <div class="asset3d-library-register-tab">
     <!-- 등록 폼 -->
-    <div class="register-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="required">단위</label>
-          <select v-model="selectedUnit" class="form-select">
-            <option value="">-- 선택 --</option>
-            <option
-              v-for="unit in asset3DStore.unitSystems"
-              :key="unit.unit_system_id"
-              :value="unit.system_code"
-            >
-              {{ unit.system_name }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="required">3D ASSET 카테고리</label>
-          <select v-model="selectedCategory" class="form-select">
-            <option value="">-- 선택 --</option>
-            <option
-              v-for="category in asset3DStore.secondDepth"
-              :key="category.code_id"
-              :value="category.code_key"
-            >
-              {{ category.code_value }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="required">3D 모델명</label>
-          <div class="input-with-button">
-            <input
-              type="text"
-              v-model="modelName"
-              class="form-input"
-              placeholder="모델명 입력"
-            />
-            <button type="button" class="btn-ellipsis" @click="handleModelNameSearch">
-              ...
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>3D모델 업로드</label>
-          <div class="file-upload-group">
-            <input
-              type="text"
-              class="form-input file-name-input"
-              :value="modelFileName"
-              readonly
-              placeholder="파일 선택"
-            />
-            <input
-              type="file"
-              ref="modelFileInput"
-              accept=".dtdx"
-              style="display: none"
-              @change="handleModelFileChange"
-            />
-            <button
-              type="button"
-              class="btn-ellipsis"
-              @click="modelFileInput?.click()"
-            >
-              ...
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>3D모델 썸네일</label>
-          <div class="file-upload-group">
-            <input
-              type="text"
-              class="form-input file-name-input"
-              :value="thumbnailFileName"
-              readonly
-              placeholder="파일 선택"
-            />
-            <input
-              type="file"
-              ref="thumbnailFileInput"
-              accept=".jpg,.jpeg,.png,.gif"
-              style="display: none"
-              @change="handleThumbnailFileChange"
-            />
-            <button
-              type="button"
-              class="btn-ellipsis"
-              @click="thumbnailFileInput?.click()"
-            >
-              ...
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <button type="button" class="btn-register" @click="handleRegister">
-            등록
+    <div class="filter-bar">
+      <div class="form-group">
+        <label class="required">단위</label>
+        <select v-model="selectedUnit" class="form-select">
+          <option value="">-- 선택 --</option>
+          <option
+            v-for="unit in asset3DStore.unitSystems"
+            :key="unit.unit_system_id"
+            :value="unit.system_code"
+          >
+            {{ unit.system_name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="required">3D ASSET 카테고리</label>
+        <select v-model="selectedCategory" class="form-select">
+          <option value="">-- 선택 --</option>
+          <option value="interior">인테리어</option>
+          <option value="structure">구조물</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="required">3D 모델명</label>
+        <input
+          type="text"
+          v-model="modelName"
+          class="form-input"
+          placeholder="모델명 입력"
+        />
+      </div>
+      <div class="form-group">
+        <label>3D모델 업로드</label>
+        <div class="file-upload-group">
+          <input
+            type="text"
+            class="form-input file-name-input"
+            :value="modelFileName"
+            readonly
+            placeholder="파일 선택"
+          />
+          <input
+            type="file"
+            ref="modelFileInput"
+            accept=".dtdx"
+            style="display: none"
+            @change="handleModelFileChange"
+          />
+          <button
+            type="button"
+            class="btn-ellipsis"
+            @click="modelFileInput?.click()"
+          >
+            ...
           </button>
         </div>
+      </div>
+      <div class="form-group">
+        <label>3D모델 썸네일</label>
+        <div class="file-upload-group">
+          <input
+            type="text"
+            class="form-input file-name-input"
+            :value="thumbnailFileName"
+            readonly
+            placeholder="파일 선택"
+          />
+          <input
+            type="file"
+            ref="thumbnailFileInput"
+            accept=".jpg,.jpeg,.png,.gif"
+            style="display: none"
+            @change="handleThumbnailFileChange"
+          />
+          <button
+            type="button"
+            class="btn-ellipsis"
+            @click="thumbnailFileInput?.click()"
+          >
+            ...
+          </button>
+        </div>
+      </div>
+      <div class="form-group right-align">
+        <button type="button" class="btn-register" @click="handleRegister">
+          등록
+        </button>
       </div>
     </div>
 
@@ -133,12 +121,6 @@ const thumbnailFileName = ref("");
 // 파일 input refs
 const modelFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
-
-// 모델명 검색 핸들러
-const handleModelNameSearch = () => {
-  // TODO: 모델명 검색 기능 구현
-  console.log("모델명 검색");
-};
 
 // 3D 모델 파일 변경 핸들러
 const handleModelFileChange = (e: Event) => {
@@ -296,15 +278,28 @@ const handleRegister = async () => {
   padding: 20px;
 }
 
-.register-form {
-  margin-bottom: 20px;
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  background: #f7f9fc;
+  border: 1px solid #e5e9f2;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  flex-wrap: nowrap;
+
+  // 모바일 크기에서 줄바꿈 허용
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
 }
 
-.form-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  flex-wrap: wrap;
+.register-form {
+  margin-bottom: 20px;
 }
 
 .form-group {
@@ -312,10 +307,29 @@ const handleRegister = async () => {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  flex: 1;
+  flex-shrink: 0;
 
-  &:last-child {
+  // 단위, 카테고리는 고정 폭
+  &:nth-child(1),
+  &:nth-child(2) {
+    width: 150px;
+  }
+
+  // 모델명과 파일 업로드 그룹은 동일한 폭
+  &:nth-child(3),
+  &:nth-child(4),
+  &:nth-child(5) {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+  }
+
+  // 등록 버튼은 우측 정렬
+  &.right-align {
+    justify-content: flex-end;
+    align-items: flex-end;
     flex: 0 0 auto;
+    margin-left: auto;
   }
 }
 

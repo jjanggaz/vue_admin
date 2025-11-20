@@ -1,78 +1,83 @@
 <template>
   <div class="asset3d-preset-register-tab">
     <!-- 등록 폼 -->
-    <div class="register-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="required">단위</label>
-          <select v-model="selectedUnit" class="form-select">
-            <option value="">-- 선택 --</option>
-            <option
-              v-for="unit in asset3DStore.unitSystems"
-              :key="unit.unit_system_id"
-              :value="unit.system_code"
-            >
-              {{ unit.system_name }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="required">연결기계</label>
-          <select v-model="selectedMachine" class="form-select">
-            <option value="">-- 선택 --</option>
-            <option
-              v-for="machine in machineOptions"
-              :key="machine.code_id"
-              :value="machine.code_key"
-            >
-              {{ machine.code_value }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="required">프리셋 명</label>
+    <div class="filter-bar">
+      <div class="form-group">
+        <label class="required">단위</label>
+        <select v-model="selectedUnit" class="form-select">
+          <option value="">-- 선택 --</option>
+          <option
+            v-for="unit in asset3DStore.unitSystems"
+            :key="unit.unit_system_id"
+            :value="unit.system_code"
+          >
+            {{ unit.system_name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="required">연결기계</label>
+        <select v-model="selectedMachine" class="form-select">
+          <option value="">-- 선택 --</option>
+          <option value="pump">펌프</option>
+          <option value="fan">송풍기</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="required">프리셋 명</label>
+        <input
+          type="text"
+          v-model="presetName"
+          class="form-input"
+          placeholder="프리셋 명을 입력해주세요."
+        />
+      </div>
+      <div class="form-group">
+        <label class="required">썸네일 업로드</label>
+        <div class="file-upload-group">
           <input
             type="text"
-            v-model="presetName"
-            class="form-input"
-            placeholder="프리셋 명을 입력해주세요."
+            class="form-input file-name-input"
+            :value="thumbnailFileName"
+            readonly
+            placeholder="파일 선택"
           />
-        </div>
-        <div class="form-group">
-          <label class="required">썸네일 업로드</label>
-          <div class="file-upload-group">
-            <input
-              type="text"
-              class="form-input file-name-input"
-              :value="thumbnailFileName"
-              readonly
-              placeholder="파일 선택"
-            />
-            <input
-              type="file"
-              ref="thumbnailFileInput"
-              accept=".jpg,.jpeg,.png,.gif"
-              style="display: none"
-              @change="handleThumbnailFileChange"
-            />
-            <button
-              type="button"
-              class="btn-ellipsis"
-              @click="thumbnailFileInput?.click()"
-            >
-              ...
-            </button>
-          </div>
-        </div>
-        <div class="form-group button-group">
-          <button type="button" class="btn-add-row" @click="handleAddRow">
-            +행 추가
-          </button>
-          <button type="button" class="btn-delete-row" @click="handleDeleteRow">
-            -행 삭제
+          <input
+            type="file"
+            ref="thumbnailFileInput"
+            accept=".jpg,.jpeg,.png,.gif"
+            style="display: none"
+            @change="handleThumbnailFileChange"
+          />
+          <button
+            type="button"
+            class="btn-ellipsis"
+            @click="thumbnailFileInput?.click()"
+          >
+            ...
           </button>
         </div>
       </div>
+      <div class="form-group right-align">
+        <button
+          type="button"
+          class="btn-register"
+          @click="handleThumbnailRegister"
+          :disabled="!thumbnailFile"
+        >
+          등록
+        </button>
+      </div>
+    </div>
+
+    <!-- 행 추가/삭제 버튼 -->
+    <div class="button-row">
+      <button type="button" class="btn-add-row" @click="handleAddRow">
+        +행 추가
+      </button>
+      <button type="button" class="btn-delete-row" @click="handleDeleteRow">
+        -행 삭제
+      </button>
     </div>
 
     <!-- 데이터 테이블 -->
@@ -161,11 +166,9 @@ import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useAsset3DStore } from "@/stores/asset3DStore";
-import { useMachineStore } from "@/stores/machineStore";
 
 const { t } = useI18n();
 const asset3DStore = useAsset3DStore();
-const machineStore = useMachineStore();
 
 // 폼 데이터
 const selectedUnit = ref("");
@@ -174,9 +177,6 @@ const presetName = ref("");
 const thumbnailFile = ref<File | null>(null);
 const thumbnailFileName = ref("");
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
-
-// 연결기계 옵션
-const machineOptions = ref<any[]>([]);
 
 // 테이블 데이터
 interface TableRow {
@@ -224,9 +224,6 @@ onMounted(async () => {
   // 공통코드 조회
   try {
     await asset3DStore.fetchCommonCodes("");
-    // 연결기계 옵션은 기계 대분류에서 가져옴
-    await machineStore.fetchCommonCodes("");
-    machineOptions.value = machineStore.secondDepth || [];
   } catch (error) {
     console.error("공통코드 조회 실패:", error);
   }
@@ -344,6 +341,29 @@ const handleTypeChange = (item: TableRow) => {
   // 유형 변경 시 필요한 로직이 있으면 여기에 추가
   console.log("유형 변경:", item);
 };
+
+// 썸네일 등록 핸들러
+const handleThumbnailRegister = async () => {
+  if (!thumbnailFile.value) {
+    alert("썸네일 파일을 선택해주세요.");
+    return;
+  }
+
+  try {
+    // TODO: 썸네일 업로드 API 호출
+    // await asset3DStore.uploadThumbnail(thumbnailFile.value);
+    alert("썸네일이 등록되었습니다.");
+    // 등록 성공 후 파일 초기화
+    thumbnailFileName.value = "";
+    thumbnailFile.value = null;
+    if (thumbnailFileInput.value) {
+      thumbnailFileInput.value.value = "";
+    }
+  } catch (error) {
+    console.error("썸네일 등록 실패:", error);
+    alert("썸네일 등록에 실패했습니다.");
+  }
+};
 </script>
 
 <style scoped lang="scss">
@@ -351,15 +371,28 @@ const handleTypeChange = (item: TableRow) => {
   padding: 20px;
 }
 
-.register-form {
-  margin-bottom: 20px;
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  background: #f7f9fc;
+  border: 1px solid #e5e9f2;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  flex-wrap: nowrap;
+
+  // 모바일 크기에서 줄바꿈 허용
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
 }
 
-.form-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  flex-wrap: wrap;
+.register-form {
+  margin-bottom: 20px;
 }
 
 .form-group {
@@ -367,13 +400,28 @@ const handleTypeChange = (item: TableRow) => {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  flex: 1;
+  flex-shrink: 0;
 
-  &.button-group {
-    flex: 0 0 auto;
-    flex-direction: row;
-    gap: 8px;
+  // 단위, 연결기계는 고정 폭
+  &:nth-child(1),
+  &:nth-child(2) {
+    width: 150px;
+  }
+
+  // 프리셋 명과 썸네일 업로드는 동일한 폭
+  &:nth-child(3),
+  &:nth-child(4) {
+    flex: 1;
+    min-width: 250px;
+    max-width: 350px;
+  }
+
+  // 등록 버튼은 우측 정렬
+  &.right-align {
+    justify-content: flex-end;
     align-items: flex-end;
+    flex: 0 0 auto;
+    margin-left: auto;
   }
 }
 
@@ -431,6 +479,7 @@ label {
 
   .form-input {
     flex: 1;
+    min-width: 0;
   }
 }
 
@@ -450,6 +499,28 @@ label {
   &:hover {
     background: #f9fafb;
     border-color: #98a2b3;
+  }
+}
+
+.btn-register {
+  height: 32px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 6px;
+  background: #222e77;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #1a2561;
+  }
+
+  &:active {
+    background: #141b4a;
   }
 }
 
@@ -487,8 +558,16 @@ label {
   }
 }
 
-.table-section {
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
   margin-top: 20px;
+}
+
+.table-section {
+  margin-top: 0;
 }
 
 .table-select,

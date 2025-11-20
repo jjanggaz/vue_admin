@@ -4,7 +4,7 @@
     <div class="register-form">
       <div class="form-row">
         <div class="form-group">
-          <label class="required">단위*</label>
+          <label class="required">단위</label>
           <select v-model="selectedUnit" class="form-select">
             <option value="">-- 선택 --</option>
             <option
@@ -17,7 +17,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="required">3D ASSET 카테고리*</label>
+          <label class="required">3D ASSET 카테고리</label>
           <select v-model="selectedCategory" class="form-select">
             <option value="">-- 선택 --</option>
             <option
@@ -30,7 +30,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="required">3D 모델명 *</label>
+          <label class="required">3D 모델명</label>
           <div class="input-with-button">
             <input
               type="text"

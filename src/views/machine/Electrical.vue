@@ -1798,6 +1798,14 @@ const handleRegisterExcelFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
+    // 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
+
     registerExcelFileName.value = file.name;
     registerExcelFile.value = file;
   }
@@ -1808,6 +1816,14 @@ const handleRegisterBulkFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
+    // ZIP 파일명 검증
+    const validation = validateFileName(file.name);
+    if (!validation.valid) {
+      alert(validation.message);
+      target.value = "";
+      return;
+    }
+
     registerBulkFileName.value = file.name;
     registerBulkFile.value = file;
     await extractRegisterZipContents(file);

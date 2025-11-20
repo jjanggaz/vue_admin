@@ -3074,8 +3074,8 @@ onBeforeUnmount(() => {
 
 .formula-link {
   color: #3b82f6;
-  text-decoration: underline;
-  text-underline-offset: 3px; 
+  text-decoration: none;
+  text-underline-offset: 3.5px; 
   cursor: pointer;
 
   &:hover {

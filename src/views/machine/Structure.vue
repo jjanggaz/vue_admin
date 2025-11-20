@@ -921,12 +921,13 @@ $tablet: 1024px;
 .download-link {
   color: $primary-color;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   transition: color 0.2s ease;
 
   &:hover {
     color: color.scale($primary-color, $lightness: -20%);
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 3.5px;
   }
 }
 </style>

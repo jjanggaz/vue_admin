@@ -202,6 +202,7 @@ const handleLogin = async () => {
 
     input {
       height: 50px;
+      font-weight: 500;
     }
   }
   .form-options {

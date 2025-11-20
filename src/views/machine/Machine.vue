@@ -3066,6 +3066,7 @@ onMounted(async () => {
 
   &:hover {
     text-decoration: underline;
+    text-underline-offset: 3.5px;
     color: color.scale($primary-color, $lightness: -10%);
   }
 }

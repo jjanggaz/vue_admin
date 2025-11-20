@@ -152,8 +152,8 @@ const handleLogin = async () => {
 
 .abs-lang-select {
   position: absolute;
-  top: 24px;
-  right: 32px;
+  top: 20px;
+  right: 20px;
   z-index: 10;
 }
 
@@ -161,16 +161,17 @@ const handleLogin = async () => {
   position: relative;
   width: 100%;
   max-width: 500px;
+  min-height: 700px;
+  padding: 0 40px;
+  padding-bottom: 175px;
   background: $background-color;
-  padding: $spacing-xxl;
-  padding-bottom: 120px;
   border-radius: $border-radius-lg;
   box-shadow: $shadow-xl;
 }
 
 .login-header {
   text-align: center;
-  margin: 80px 0;
+  margin: 145px 0 80px;
 
   .logo {
     font-size: $font-size-xxl;
@@ -188,9 +189,8 @@ const handleLogin = async () => {
   }
 
   .subtitle {
-    margin: 0;
     font-size: $font-size-lg;
-    font-weight: $font-weight-md;
+    font-weight: 600;
     letter-spacing: -1px;
     color: $text-blue;
   }
@@ -213,7 +213,7 @@ const handleLogin = async () => {
     label {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 15px;
       color: #888888;
       font-weight: 600;
@@ -262,7 +262,6 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-top: 10px;
   
   .lang-select {
     position: relative;

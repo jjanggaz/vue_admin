@@ -103,19 +103,28 @@
                   <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <span class="check-edit" :class="{ on: item.is_active, off: !item.is_active }"></span>
+                  <span
+                    class="check-edit"
+                    :class="{ on: item.is_active, off: !item.is_active }"
+                  ></span>
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <span class="check-edit required" :class="{ on: item.is_required, off: !item.is_required }"></span>
+                  <span
+                    class="check-edit required"
+                    :class="{ on: item.is_required, off: !item.is_required }"
+                  ></span>
                 </template>
               </DataTable>
 
-              <div class="action-bar" style="margin: 22px 0 12px;">
+              <div class="action-bar" style="margin: 22px 0 12px">
                 <div class="title">
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
                 <div class="btns">
-                  <button class="btn btn-delete sm" @click="deleteMetricFormula">
+                  <button
+                    class="btn btn-delete sm"
+                    @click="deleteMetricFormula"
+                  >
                     {{ t("inflow.delete") }}
                   </button>
                 </div>
@@ -190,14 +199,20 @@
                   <span v-else>{{ item.parameter_name }}</span>
                 </template>
                 <template #cell-is_active="{ item }: { item: GridRow }">
-                  <span class="check-edit" :class="{ on: item.is_active, off: !item.is_active }"></span>
+                  <span
+                    class="check-edit"
+                    :class="{ on: item.is_active, off: !item.is_active }"
+                  ></span>
                 </template>
                 <template #cell-is_required="{ item }: { item: GridRow }">
-                  <span class="check-edit required" :class="{ on: item.is_required, off: !item.is_required }"></span>
+                  <span
+                    class="check-edit required"
+                    :class="{ on: item.is_required, off: !item.is_required }"
+                  ></span>
                 </template>
               </DataTable>
 
-              <div class="action-bar" style="margin: 22px 0 12px;">
+              <div class="action-bar" style="margin: 22px 0 12px">
                 <div class="title">
                   <h4>{{ t("inflow.formulaList") }}</h4>
                 </div>
@@ -243,8 +258,11 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ t("inflow.registerNew") }}</h3>
-          <button class="close-btn" @click="closeModal" aria-label="Close">
-          </button>
+          <button
+            class="close-btn"
+            @click="closeModal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <!-- 첫 번째 줄: 유입종류명 국문, 유입종류명 영문, 비고 -->
@@ -485,15 +503,15 @@
         </div>
         <div class="modal-footer">
           <button
-          class="btn btn-confirm"
-          @click="createNewTab"
-          :disabled="isCreating"
+            class="btn btn-confirm"
+            @click="createNewTab"
+            :disabled="isCreating"
           >
-          {{ isCreating ? t("common.processing") : t("common.register") }}
-        </button>
-        <button class="btn btn-cancel" @click="closeModal">
-          {{ t("common.cancel") }}
-        </button>
+            {{ isCreating ? t("common.processing") : t("common.register") }}
+          </button>
+          <button class="btn btn-cancel" @click="closeModal">
+            {{ t("common.cancel") }}
+          </button>
         </div>
       </div>
     </div>
@@ -511,8 +529,7 @@
             class="close-btn"
             @click="closeUpdateModal"
             aria-label="Close"
-          >
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <!-- 첫 번째 줄: 유입종류명 국문, 유입종류명 영문, 비고 -->
@@ -620,8 +637,7 @@
                     class="delete-symbol-btn"
                     @click="handleDeleteSymbol"
                     :title="t('common.deleteSymbol')"
-                  >
-                  </button>
+                  ></button>
                 </div>
               </dd>
             </div>
@@ -789,8 +805,7 @@
             class="close-btn"
             @click="closeCodeManagementModal"
             aria-label="Close"
-          >
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <WaterCodeManagement :flowDirection="'INFLUENT'" />
@@ -1447,19 +1462,24 @@ const handleMetricFileUpload = async (event: Event) => {
         response.response.data.input_parameters
       ) {
         const inputParameters = response.response.data.input_parameters;
+        const parameterNames: string[] =
+          response.response.data.analysis?.parameter_names || [];
         const extractedData: GridRow[] = [];
         let idCounter = 1;
 
-        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
-        Object.keys(inputParameters).forEach((parameterCode) => {
-          // waterQualityParameters에서 해당 parameter_code를 찾기
+        // analysis.parameter_names 기준으로 정렬된 순서대로 GridRow 생성
+        parameterNames.forEach((parameterCode) => {
+          const paramData = inputParameters[parameterCode];
+          if (!paramData) {
+            return;
+          }
+
           const matchingParameter = inflowStore.waterQualityParameters.find(
             (param) =>
               param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
           );
 
           if (matchingParameter) {
-            const paramData = inputParameters[parameterCode];
             const gridRow: GridRow = {
               id: idCounter++,
               mapping_id: "",
@@ -1467,7 +1487,7 @@ const handleMetricFileUpload = async (event: Event) => {
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
               influent: paramData.default_value || 0,
-              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
               remarks: paramData.description || "",
@@ -1553,19 +1573,24 @@ const handleUscsFileUpload = async (event: Event) => {
         response.response.data.input_parameters
       ) {
         const inputParameters = response.response.data.input_parameters;
+        const parameterNames: string[] =
+          response.response.data.analysis?.parameter_names || [];
         const extractedData: GridRow[] = [];
         let idCounter = 1;
 
-        // input_parameters의 각 key(parameter_code)를 waterQualityParameters와 비교
-        Object.keys(inputParameters).forEach((parameterCode) => {
-          // waterQualityParameters에서 해당 parameter_code를 찾기
+        // analysis.parameter_names 기준으로 정렬된 순서대로 GridRow 생성
+        parameterNames.forEach((parameterCode) => {
+          const paramData = inputParameters[parameterCode];
+          if (!paramData) {
+            return;
+          }
+
           const matchingParameter = inflowStore.waterQualityParameters.find(
             (param) =>
               param.parameter_code.toLowerCase() === parameterCode.toLowerCase()
           );
 
           if (matchingParameter) {
-            const paramData = inputParameters[parameterCode];
             const gridRow: GridRow = {
               id: idCounter++,
               mapping_id: "",
@@ -1573,7 +1598,7 @@ const handleUscsFileUpload = async (event: Event) => {
               parameter_name: matchingParameter.parameter_name,
               parameter_code: matchingParameter.parameter_code,
               influent: paramData.default_value || 0,
-              unit: paramData.unit || "mg/L", // waterQualityParameters.default_unit 사용할건지 나중에 확인
+              unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
               remarks: paramData.description || "",
@@ -2542,7 +2567,7 @@ onBeforeUnmount(() => {
       border-radius: 20px;
       background-image: url(../../assets/icons/ico_inflow-check.svg);
     }
-    
+
     &.off,
     &.required.off {
       display: none;
@@ -2589,8 +2614,8 @@ onBeforeUnmount(() => {
   }
   &::-webkit-scrollbar-button:start:decrement,
   &::-webkit-scrollbar-button:end:increment {
-    display:block;
-    height:70px;
+    display: block;
+    height: 70px;
     width: 0;
     background-color: transparent;
   }
@@ -2623,11 +2648,11 @@ onBeforeUnmount(() => {
   }
 
   .btn-confirm {
-    background-color: #222E77;
+    background-color: #222e77;
     color: #fff;
 
     &:hover {
-      background-color: #29378C;
+      background-color: #29378c;
     }
   }
 }
@@ -2773,7 +2798,7 @@ dl.column-regist {
     border-radius: 10px 10px 0 0;
     font-size: 15px;
     font-weight: 500;
-    transition: height .3s ease;
+    transition: height 0.3s ease;
 
     &.active {
       height: 40px;
@@ -2852,7 +2877,7 @@ dl.column-regist {
 .formula-link {
   color: #3b82f6;
   text-decoration: none;
-  text-underline-offset: 3.5px; 
+  text-underline-offset: 3.5px;
   cursor: pointer;
 
   &:hover {
@@ -2886,8 +2911,7 @@ dl.column-regist {
   padding: 1px 0 0 0;
   margin: 0;
 
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 8px auto;
+  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 8px
+    auto;
 }
-
-
 </style>

@@ -935,15 +935,14 @@ const handleEdit = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 1rem;
   position: relative;
 
   .total-count {
     position: absolute;
-    left: 1rem;
-    font-size: 0.9rem;
-    color: #374151;
-    font-weight: 500;
+    left: 0;
+    font-size: 13px;
+    color: #333333;
+    font-weight: 400;
   }
 }
 

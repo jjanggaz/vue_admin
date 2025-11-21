@@ -1633,7 +1633,8 @@
       "measurementDeleteFailed": "측정기 삭제에 실패했습니다.",
       "measurementCommonDetailRetrieveFailed": "측정기 공통 상세 조회에 실패했습니다.",
       "measurementFileDetailRetrieveFailed": "측정기 파일 상세 조회에 실패했습니다.",
-      "measurementUpdateFailed": "측정기 수정에 실패했습니다."
+      "measurementUpdateFailed": "측정기 수정에 실패했습니다.",
+      "structureTypeAlreadyExists": "해당 구조물 정보가 이미 존재합니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
@@ -1699,7 +1700,7 @@
       "noAllowedFileInZip": "ZIP 파일에 허용된 형식(.dtdx, .rfa, .svg, 이미지)이 하나도 없습니다. 첨부를 취소합니다.",
       "noAllowedFileInStructureZip": "ZIP 파일에 허용된 형식(.py, .dtdx, .rvt, 이미지)이 하나도 없습니다. 첨부를 취소합니다.",
       "missingRequiredFilesInZip": "ZIP 파일에 필수 파일이 빠졌습니다.\\n\\n필수 파일:\\n- 계산식(.py)\\n- 3D모델(.dtdx)\\n- 썸네일 이미지(.jpg/.jpeg/.png/.gif)\\n\\n선택 파일:\\n- Revit모델(.rvt)\\n\\n누락: {missing}",
-      "invalidFilesInZip": "ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\\n\\n{files}",
+      "invalidFilesInZip": "ZIP 파일에 허용되지 않은 파일이 포함되어 있습니다:\n\n{files}",
       "zipFileReadError": "ZIP 파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다.",
       "imageFileOnly": "이미지 파일만 업로드할 수 있습니다. (png, jpg, gif)",
       "structureRegisterFailed": "구조물 등록에 실패했습니다.",

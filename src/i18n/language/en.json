@@ -1011,9 +1011,9 @@
     "componentList": "Component List",
     "processSymbolPreview": "Process Symbol Preview",
     "selectExcelFileAfterSavePid": "Please save the P&ID file first to select the mapping Excel file.",
-      "deleteSelectedPidConfirm": "Are you sure you want to delete the selected P&ID item?",
-      "processCard": "Process Card",
-      "tabs": {
+    "deleteSelectedPidConfirm": "Are you sure you want to delete the selected P&ID item?",
+    "processCard": "Process Card",
+    "tabs": {
       "P&ID": "P&ID",
       "설계조건": "Design Conditions",
       "컴포넌트": "Components",
@@ -1638,7 +1638,8 @@
       "measurementDeleteFailed": "Failed to delete measurement.",
       "measurementCommonDetailRetrieveFailed": "Failed to retrieve measurement common details.",
       "measurementFileDetailRetrieveFailed": "Failed to retrieve measurement file details.",
-      "measurementUpdateFailed": "Failed to update measurement."
+      "measurementUpdateFailed": "Failed to update measurement.",
+      "structureTypeAlreadyExists": "Structure information already exists."
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",

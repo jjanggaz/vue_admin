@@ -1264,7 +1264,7 @@ const handleEdit = () => {
 
 // Main Content Section
 .main-content {
-  display: flex;
+  // display: flex;
   flex: 1;
   gap: 15px;
 }

@@ -559,7 +559,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
       }
 
       &:hover {
-        background-color: #c0e3f866;
+        background-color: #e6f4fc;
       }
     }
 

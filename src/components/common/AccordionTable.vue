@@ -465,18 +465,28 @@ const toggleSelectRow = (item: any) => {
   }
 
   tbody {
-    tr {
-      border-bottom: 1px solid #e2e8f0;
+    .data-row {
+      transition: $transition-fast;
+
+      & td:nth-of-type(3) {
+        text-align: left;
+      }
 
       &:hover {
-        background-color: #f7fafc;
+        background-color: #e6f4fc;
+      }
+    }
+    
+    tr {
+      &:hover {
+        background-color: #ffffff;
       }
 
       &.child-row {
-        background-color: #f8f9fa;
+        background-color: #fafafb;
 
         &:hover {
-          background-color: #e9ecef;
+          background-color: #e3f1fa;
         }
       }
 
@@ -510,20 +520,12 @@ const toggleSelectRow = (item: any) => {
         .empty-message {
           text-align: center;
           padding: 60px 20px;
-          color: #6b7280;
-          background-color: #f9fafb;
 
           .empty-state {
-            .empty-icon {
-              font-size: 48px;
-              display: block;
-              margin-bottom: 16px;
-            }
-
             p {
-              margin: 0;
-              font-size: 16px;
-              color: #6b7280;
+              color: #aaaaaa;
+              font-size: 13px;
+              font-weight: 400;
             }
           }
         }

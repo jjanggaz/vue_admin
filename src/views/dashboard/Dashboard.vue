@@ -364,7 +364,7 @@ onUnmounted(() => {
 
     .chart-separator {
       height: 20px;
-      // margin: 13px 0;
+      margin: 7.5px 0;
     }
   }
 

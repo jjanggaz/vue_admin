@@ -250,92 +250,104 @@
         <div class="modal-body">
           <!-- 첫 번째 줄: 유출종류명 국문, 유출종류명 영문, 비고 -->
           <dl class="column-regist">
-            <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
-            <dd>
-              <select
-                v-model="selectedOutputType"
-                @change="onOutputTypeChange"
-                class="form-input"
-                required
-              >
-                <option value="">선택</option>
-                <option
-                  v-for="code in outflowStore.commonCodes"
-                  :key="code.code_id"
-                  :value="code.code_key"
+            <div class="column-item">
+              <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
+              <dd>
+                <select
+                  v-model="selectedOutputType"
+                  @change="onOutputTypeChange"
+                  class="form-input"
+                  required
                 >
-                  {{ code.code_value }}
-                </option>
-              </select>
-            </dd>
-            <dt class="essential">{{ t("outflow.typeNameEn") }}</dt>
-            <dd>
-              <input
-                type="text"
-                v-model="newOutflowTypeNameEn"
-                :placeholder="t('placeholder.outflowTypeName')"
-                class="form-input"
-                readonly
-                disabled
-              />
-            </dd>
-            <dt>{{ t("common.etc") }}</dt>
-            <dd>
-              <input
-                type="text"
-                v-model="uploadForm.title"
-                class="form-input"
-              />
-            </dd>
+                  <option value="">선택</option>
+                  <option
+                    v-for="code in outflowStore.commonCodes"
+                    :key="code.code_id"
+                    :value="code.code_key"
+                  >
+                    {{ code.code_value }}
+                  </option>
+                </select>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt class="essential">{{ t("outflow.typeNameEn") }}</dt>
+              <dd>
+                <input
+                  type="text"
+                  v-model="newOutflowTypeNameEn"
+                  :placeholder="t('placeholder.outflowTypeName')"
+                  class="form-input"
+                  readonly
+                  disabled
+                />
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.etc") }}</dt>
+              <dd>
+                <input
+                  type="text"
+                  v-model="uploadForm.title"
+                  class="form-input"
+                />
+              </dd>
+            </div>
           </dl>
           <!-- 두 번째 줄: 심볼색상, 파일 업로드 -->
           <dl class="column-regist">
-            <dt>{{ t("outflow.symbolColor") }}</dt>
-            <dd>
-              <div class="color-picker-container">
-                <input
-                  type="color"
-                  v-model="selectedColor"
-                  class="color-input"
-                  @change="updateColor"
-                />
-                <span class="color-text">{{ selectedColor }}</span>
-              </div>
-            </dd>
-            <dt>{{ t("common.symbolUpload") }}</dt>
-            <dd>
-              <div class="file-upload-row">
-                <input
-                  type="text"
-                  :value="
-                    uploadForm.file
-                      ? uploadForm.file.name
-                      : uploadForm.existingFileName || ''
-                  "
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
+            <div class="column-item">
+              <dt>{{ t("outflow.symbolColor") }}</dt>
+              <dd>
+                <div class="color-picker-container">
                   <input
-                    type="file"
-                    @change="handleFileUpload"
-                    accept=".svg"
-                    style="display: none"
+                    type="color"
+                    v-model="selectedColor"
+                    class="color-input"
+                    @change="updateColor"
                   />
-                </label>
-              </div>
-            </dd>
-            <dt>{{ t("common.symbolImage") }}</dt>
-            <dd>
-              <div class="symbol-image-preview">
-                <span v-if="!symbolImageContent" class="no-symbol-message">{{
-                  t("common.noAttachedSymbolImage")
-                }}</span>
-                <div v-else v-html="symbolImageContent"></div>
-              </div>
-            </dd>
+                  <span class="color-text">{{ selectedColor }}</span>
+                </div>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.symbolUpload") }}</dt>
+              <dd>
+                <div class="file-upload-row">
+                  <input
+                    type="text"
+                    :value="
+                      uploadForm.file
+                        ? uploadForm.file.name
+                        : uploadForm.existingFileName || ''
+                    "
+                    :placeholder="t('placeholder.selectFile')"
+                    readonly
+                    class="file-name-input"
+                  />
+                  <label class="file-select-btn">
+                    {{ t("common.selectFile") }}
+                    <input
+                      type="file"
+                      @change="handleFileUpload"
+                      accept=".svg"
+                      style="display: none"
+                    />
+                  </label>
+                </div>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.symbolImage") }}</dt>
+              <dd>
+                <div class="symbol-image-preview">
+                  <span v-if="!symbolImageContent" class="no-symbol-message">{{
+                    t("common.noAttachedSymbolImage")
+                  }}</span>
+                  <div v-else v-html="symbolImageContent"></div>
+                </div>
+              </dd>
+            </div>
           </dl>
 
           <div class="modal-content-wrapper">
@@ -2579,14 +2591,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 @use "sass:color";
-
-/* 수정 모달 크기 제한 */
-.update-modal-content {
-  max-width: 1700px !important;
-  max-height: 900px !important;
-  overflow-y: auto;
-}
-
 .update-modal-body {
   max-height: 800px;
   overflow-y: auto;
@@ -2620,6 +2624,7 @@ onBeforeUnmount(() => {
   .content-wrapper,
   .modal-content-wrapper {
     display: flex;
+    align-items: flex-start;
     gap: 20px;
     min-width: 0; // flex 컨테이너가 축소될 수 있도록 허용
 
@@ -2696,7 +2701,16 @@ onBeforeUnmount(() => {
     .modal-tab-content-uscs {
       background: transparent;
       box-shadow: none;
-      // border: 1px solid $border-color;
+
+      dl.column-regist {
+        align-items: center;
+        margin-bottom: 8px;
+
+        dt {
+          margin-bottom: 0;
+          font-size: 16px;
+        }
+      }
     }
   }
 
@@ -2761,122 +2775,102 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
 .modal-content {
-  background: white;
-  padding: $spacing-lg;
-  border-radius: $border-radius-md;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
+  width: 100%;
   max-width: 90%;
   max-height: 90vh;
-  width: 100%;
+  padding: 20px 10px 20px 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #dddddd;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #b9b9b9;
+    }
+  }
+  &::-webkit-scrollbar-button:start:decrement,
+  &::-webkit-scrollbar-button:end:increment {
+    display:block;
+    height:70px;
+    width: 0;
+    background-color: transparent;
+  }
 
   // 반응형 처리
   @media (max-width: 768px) {
     max-width: 95%;
-    padding: $spacing-md;
-  }
-}
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid $border-color;
-  padding-bottom: $spacing-sm;
-  margin-bottom: $spacing-sm;
-
-  h3 {
-    margin: 0;
-    font-size: $font-size-lg;
-  }
-
-  .close-btn {
-    width: 24px;
-    height: 24px;
-    background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-    cursor: pointer;
-  }
-}
-
-.modal-body {
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-
-    label {
-      font-weight: $font-weight-bold;
-    }
-
-    .form-input {
-      padding: $spacing-sm;
-      border: 1px solid $border-color;
-      border-radius: $border-radius-sm;
+    .column-regist {
+      flex-wrap: wrap;
     }
   }
 }
 
 .modal-footer {
-  display: flex;
   justify-content: flex-end;
-  gap: $spacing-md;
-  margin-top: $spacing-md;
-  padding-top: $spacing-md;
-  border-top: 1px solid $border-color;
 
   .btn {
-    padding: $spacing-sm $spacing-lg;
-    border-radius: $border-radius-sm;
-    cursor: pointer;
-    border: 1px solid transparent;
+    width: 200px;
+    min-width: 200px;
   }
 
   .btn-cancel {
-    background-color: #fff;
-    border-color: $border-color;
-    color: $text-color;
+    background-color: #707489;
+    color: #ffffff;
+
     &:hover {
-      background-color: $background-light;
+      background-color: #82869d;
     }
   }
 
   .btn-confirm {
-    background-color: $primary-color;
+    background-color: #222E77;
     color: #fff;
+
     &:hover {
-      background-color: color.scale($primary-color, $lightness: -10%);
+      background-color: #29378C;
     }
   }
+}
 
-  .btn-reset {
-    background-color: #f59e0b;
-    color: #fff;
-    &:hover {
-      background-color: #d97706;
-    }
+dl.column-regist {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  align-items: center;
+  margin-bottom: 20px;
+
+  dt {
+    margin-bottom: 4px;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 600;
   }
 
-  .btn-add:disabled {
-    background-color: $background-light;
-    color: $text-light;
-    cursor: not-allowed;
-    opacity: 0.6;
+  dd {
+    flex: 0 0 auto;
   }
+}
+
+.column-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
 }
 
 // 색상 선택기 스타일
@@ -2900,12 +2894,12 @@ onBeforeUnmount(() => {
   }
 
   .color-input {
-    width: 50px;
+    width: 100px;
     height: 40px;
-    border: none;
-    border-radius: $border-radius-sm;
-    cursor: pointer;
+    border: 1px solid #e7e6ed;
+    border-radius: 4px;
     background: transparent;
+    cursor: pointer;
 
     &::-webkit-color-swatch-wrapper {
       padding: 0;
@@ -2913,19 +2907,17 @@ onBeforeUnmount(() => {
     }
 
     &::-webkit-color-swatch {
-      border: 2px solid $border-color;
-      border-radius: $border-radius-sm;
+      border: 1px solid #e7e6ed;
+      border-radius: 4px;
     }
   }
 
   .color-text {
-    font-family: monospace;
-    font-size: $font-size-sm;
-    color: $text-light;
-    background: $background-light;
     padding: $spacing-xs $spacing-sm;
     border-radius: $border-radius-sm;
     border: 1px solid $border-color;
+    color: $text-light;
+    font-size: $font-size-sm;
   }
 }
 
@@ -3046,7 +3038,6 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100px;
   overflow: hidden;
   position: relative;
 
@@ -3109,8 +3100,6 @@ onBeforeUnmount(() => {
   padding: 1px 0 0 0;
   margin: 0;
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
+  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 8px auto;
 }
 </style>

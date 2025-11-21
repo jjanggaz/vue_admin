@@ -447,7 +447,7 @@ const resetForm = () => {
 
   .content-wrapper {
     display: flex;
-    gap: $spacing-md;
+    gap: 20px;
     min-width: 0;
     width: 100%;
     height: 70vh;
@@ -455,16 +455,12 @@ const resetForm = () => {
     // 반응형 처리: 작은 화면에서는 세로 배치
     @media (max-width: 1024px) {
       flex-direction: column;
-      gap: $spacing-sm;
+      gap: 20px;
       height: 80vh;
     }
 
     .table-section {
       flex: 2;
-      background: white;
-      border-radius: $border-radius-md;
-      padding: $spacing-sm;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0;
       overflow: hidden;
       display: flex;
@@ -479,45 +475,50 @@ const resetForm = () => {
         align-items: center;
 
         h3 {
-          margin: 0;
-          color: $primary-color;
-          font-size: $font-size-base;
-          font-weight: $font-weight-bold;
+          color: #202020;
+          font-size: 16px;
+          font-weight: 600;
         }
 
         .header-buttons {
           display: flex;
-          gap: $spacing-xs;
+          gap: 10px;
           align-items: center;
         }
 
         .btn {
-          padding: 6px 12px;
+          width: 45px;
+          height: 32px;
+          padding: 0 8px;
           border-radius: $border-radius-sm;
-          cursor: pointer;
           border: 1px solid transparent;
+          color: #ffffff;
           font-size: 14px;
-          font-weight: $font-weight-md;
+          font-weight: 500;
+          cursor: pointer;
           transition: all 0.2s ease;
 
-          &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
-
           &.btn-update {
-            background-color: $primary-color;
-            color: white;
-            &:hover:not(:disabled) {
-              background-color: darken($primary-color, 10%);
+            background-color: #222e77;
+            
+            &:hover {
+              background-color: #29378c;
+            }
+            &:disabled {
+              background-color: #abaebd;
+              cursor: not-allowed;
             }
           }
 
           &.btn-danger {
-            background-color: $error-color;
-            color: white;
-            &:hover:not(:disabled) {
-              background-color: darken($error-color, 10%);
+            background-color: #3e435e;
+            
+            &:hover {
+              background-color: #3c4973;
+            }
+            &:disabled {
+              background-color: #abaebd;
+              cursor: not-allowed;
             }
           }
         }
@@ -526,14 +527,20 @@ const resetForm = () => {
 
     .form-section {
       flex: 1;
-      background: white;
-      border-radius: $border-radius-md;
-      padding: $spacing-sm;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0;
+      min-height: 0;
       overflow: hidden;
+      overflow: visible;
       display: flex;
       flex-direction: column;
+      padding-top: 12px;
+
+      .form-container {
+        min-width: 0;
+        overflow: hidden;
+        overflow: auto;
+        min-height: 0;
+      }
 
       @media (max-width: 1024px) {
         min-width: 100%;
@@ -541,17 +548,33 @@ const resetForm = () => {
       }
 
       .section-header {
-        margin-bottom: $spacing-xs;
+        margin-bottom: 16px;
         padding-bottom: $spacing-xs;
         border-bottom: 2px solid #000000;
         flex-shrink: 0;
 
         h3 {
-          margin: 0;
-          color: $primary-color;
-          font-size: $font-size-base;
+          color: #202020;
+          font-size: 16px;
           font-weight: $font-weight-bold;
         }
+      }
+
+      input,
+      select,
+      textarea {
+        border: 1px solid #e7e6ed;
+        border-radius: 4px;
+
+        &:focus {
+          border: 1px solid #279bd8;
+          box-shadow: none;
+        }
+      }
+    }
+    @media (max-width: 1024px) {
+      .form-section {
+        padding-top: 0;
       }
     }
 
@@ -577,24 +600,42 @@ const resetForm = () => {
 .parameter-form {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
+  gap: 20px;
   height: 100%;
-  overflow: hidden;
+  padding-right: 6px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #dddddd;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #b9b9b9;
+    }
+  }
 
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
     flex-shrink: 0;
+    margin-bottom: 0;
 
     .form-label {
-      font-weight: $font-weight-bold;
-      color: $text-color;
-      font-size: 14px;
+      color: #333333;
+      font-weight: 600;
+      font-size: 13px;
 
       &.essential::after {
         content: " *";
-        color: $error-color;
+        color: #333333;
       }
     }
 
@@ -633,6 +674,24 @@ const resetForm = () => {
     .form-textarea {
       resize: none;
       height: 80px;
+
+      -webkit-overflow-scrolling: touch;
+
+      &.with-scroll {
+        overflow-y: auto;
+      }
+      &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: #dddddd;
+        border-radius: 3px;
+
+        &:hover {
+          background-color: #b9b9b9;
+        }
+      }
     }
   }
 
@@ -640,18 +699,19 @@ const resetForm = () => {
     display: flex;
     gap: $spacing-sm;
     justify-content: flex-end;
-    margin-top: $spacing-md;
-    padding-top: $spacing-md;
-    border-top: 1px solid $border-color;
+    padding-top: 10px;
+    border-top: 1px solid #000000;
     flex-shrink: 0;
 
     .btn {
-      padding: 10px 20px;
+      width: 45px;
+      height: 32px;
+      padding: 0 8px;
       border-radius: $border-radius-sm;
-      cursor: pointer;
       border: 1px solid transparent;
       font-size: 14px;
-      font-weight: $font-weight-md;
+      font-weight: 500;
+      cursor: pointer;
       transition: all 0.2s ease;
 
       &:disabled {

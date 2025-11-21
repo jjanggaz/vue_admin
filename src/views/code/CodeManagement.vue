@@ -299,11 +299,11 @@
           </dl>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            {{ t("common.cancel") }}
-          </button>
           <button class="btn btn-primary" @click="updateCode">
             {{ t("common.save") }}
+          </button>
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -1298,96 +1298,37 @@ const handleEdit = () => {
   flex: 1;
 }
 
-// Modal Styles
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-container-large {
-  background: white;
-  border-radius: 8px;
-  width: 95%;
-  max-width: 1200px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-}
-
-.modal-body {
-  padding: 20px;
-  flex: 1;
-  overflow-y: auto;
-}
-
 .column-regist {
   dl {
     margin: 0;
   }
 
   dt {
+    margin: 0;
+    font-size: 15px;
     font-weight: 600;
-    margin-bottom: 8px;
-    color: #374151;
+    color: #333333;
   }
 
   dd {
-    margin: 0 0 20px 0;
-
     input,
     textarea {
       width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
+      padding: 0 10px;
+      border: 1px solid #e7e6ed;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 400;
 
       &:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #279bd8;
       }
     }
   }
-}
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
+  input {
+    height: 40px;
+  }
 }
 </style>

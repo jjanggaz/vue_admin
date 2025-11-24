@@ -2,38 +2,38 @@
   <div class="asset3d-preset-register-tab">
     <!-- 등록 폼 -->
     <div class="filter-bar">
-      <div class="form-group">
-        <label class="required">단위</label>
-        <select v-model="selectedUnit" class="form-select">
-          <option value="">-- 선택 --</option>
-          <option
-            v-for="unit in asset3DStore.unitSystems"
-            :key="unit.unit_system_id"
-            :value="unit.system_code"
-          >
-            {{ unit.system_name }}
-          </option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="required">연결기계</label>
-        <select v-model="selectedMachine" class="form-select">
-          <option value="">-- 선택 --</option>
+        <div class="form-group">
+          <label class="required">단위</label>
+          <select v-model="selectedUnit" class="form-select">
+            <option value="">-- 선택 --</option>
+            <option
+              v-for="unit in asset3DStore.unitSystems"
+              :key="unit.unit_system_id"
+              :value="unit.system_code"
+            >
+              {{ unit.system_name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="required">연결기계</label>
+          <select v-model="selectedMachine" class="form-select">
+            <option value="">-- 선택 --</option>
           <option value="pump">펌프</option>
           <option value="fan">송풍기</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="required">프리셋 명</label>
-        <input
-          type="text"
-          v-model="presetName"
-          class="form-input"
-          placeholder="프리셋 명을 입력해주세요."
-        />
-      </div>
-      <div class="form-group">
-        <label class="required">썸네일 업로드</label>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="required">프리셋 명</label>
+          <input
+            type="text"
+            v-model="presetName"
+            class="form-input"
+            placeholder="프리셋 명을 입력해주세요."
+          />
+        </div>
+        <div class="form-group">
+          <label class="required">썸네일 업로드</label>
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
@@ -74,18 +74,18 @@
           :disabled="!thumbnailFile"
         >
           등록
-        </button>
-      </div>
-    </div>
+            </button>
+          </div>
+        </div>
 
     <!-- 행 추가/삭제 버튼 -->
     <div class="button-row">
-      <button type="button" class="btn-add-row" @click="handleAddRow">
-        +행 추가
-      </button>
-      <button type="button" class="btn-delete-row" @click="handleDeleteRow">
-        -행 삭제
-      </button>
+          <button type="button" class="btn-add-row" @click="handleAddRow">
+            +행 추가
+          </button>
+          <button type="button" class="btn-delete-row" @click="handleDeleteRow">
+            -행 삭제
+          </button>
     </div>
 
     <!-- 데이터 테이블 -->
@@ -117,14 +117,24 @@
           </select>
         </template>
         <template #cell-subType="{ item }">
-          <select
-            v-model="item.subType"
-            class="table-select"
-          >
-            <option value="">-- 선택 --</option>
-            <option value="option1">옵션1</option>
-            <option value="option2">옵션2</option>
-          </select>
+          <div class="subtype-cell-wrapper">
+            <select
+              v-model="item.subType"
+              class="table-select"
+            >
+              <option value="">-- 선택 --</option>
+              <option value="option1">옵션1</option>
+              <option value="option2">옵션2</option>
+            </select>
+            <button
+              type="button"
+              class="btn-search-subtype"
+              @click="handleSubTypeSearch(item)"
+              title="자재 선택"
+            >
+              자재 선택
+            </button>
+          </div>
         </template>
         <template #cell-diameter="{ item }">
           <input
@@ -225,7 +235,7 @@ const typeOptions = ref([
 const tableColumns: TableColumn[] = [
   { key: "no", title: "번호", width: "80px", sortable: false },
   { key: "type", title: "유형", width: "150px", sortable: false },
-  { key: "subType", title: "세부유형", width: "150px", sortable: false },
+  { key: "subType", title: "세부유형", width: "200px", sortable: false },
   { key: "diameter", title: "직경", width: "120px", sortable: false },
   { key: "equipmentCode", title: "장비 코드", width: "200px", sortable: false },
   { key: "dtdxModel", title: "Dtdx 모델", width: "200px", sortable: false },
@@ -366,6 +376,13 @@ const handleTypeChange = (item: TableRow) => {
   console.log("유형 변경:", item);
 };
 
+// 세부유형 조회 핸들러
+const handleSubTypeSearch = (item: TableRow) => {
+  // 세부유형 조회 로직
+  console.log("세부유형 조회:", item);
+  // TODO: 세부유형 조회 API 호출 또는 모달 열기
+};
+
 // 썸네일 등록 핸들러
 const handleThumbnailRegister = async () => {
   if (!thumbnailFile.value) {
@@ -436,7 +453,7 @@ const handleThumbnailRegister = async () => {
   // 프리셋 명과 썸네일 업로드는 동일한 폭
   &:nth-child(3),
   &:nth-child(4) {
-    flex: 1;
+  flex: 1;
     min-width: 250px;
     max-width: 350px;
   }
@@ -631,6 +648,35 @@ label {
 
 .table-select {
   cursor: pointer;
+}
+
+.subtype-cell-wrapper {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+}
+
+.btn-search-subtype {
+  padding: 8px 14px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #0056b3;
+  }
+
+  &:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 // 유형과 세부유형 컬럼 헤더 및 셀 중앙정렬

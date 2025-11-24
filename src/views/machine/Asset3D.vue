@@ -67,6 +67,13 @@
               {{ t("common.register") }}
             </button>
             <button
+              class="btn btn-primary btn-edit"
+              @click="handleEdit"
+              :disabled="selectedItems.length === 0"
+            >
+              {{ t("common.edit") }}
+            </button>
+            <button
               class="btn btn-primary btn-delete"
               @click="handleDelete"
               :disabled="selectedItems.length === 0"
@@ -862,6 +869,25 @@ const openRegistModal = () => {
   // '3D 라이브러리 등록' 탭을 기본 선택
   modalActiveTab.value = 0;
   isRegistModalOpen.value = true;
+};
+
+const handleEdit = () => {
+  if (selectedItems.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectItemToEdit"));
+    return;
+  }
+  if (selectedItems.value.length > 1) {
+    alert(t("messages.warning.pleaseSelectOneItemToEdit"));
+    return;
+  }
+
+  // 상세보기 창이 열려있으면 닫기
+  if (isDetailPanelOpen.value) {
+    isDetailPanelOpen.value = false;
+  }
+  
+  // 선택된 항목의 상세 정보를 열기
+  openDetailPanel(selectedItems.value[0]);
 };
 
 const closeRegistModal = async () => {

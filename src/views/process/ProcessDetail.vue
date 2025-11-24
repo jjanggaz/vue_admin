@@ -1894,13 +1894,13 @@ const validateFileName = (
     return { valid: false, message: "파일명은 100자 이내로 입력해주세요." };
   }
 
-  // 영문, 숫자, 특수기호(_ - ())만 허용, 공백 불가
-  const validPattern = /^[a-zA-Z0-9_\-()]+$/;
+  // 영문, 숫자, 특수기호(_ - () .)만 허용, 공백 불가
+  const validPattern = /^[a-zA-Z0-9_\-().]+$/;
   if (!validPattern.test(nameWithoutExtension)) {
     return {
       valid: false,
       message:
-        "파일명은 영문, 숫자, 특수기호(_ - ())만 사용 가능하며 공백은 사용할 수 없습니다.",
+        "파일명은 영문, 숫자, 특수기호(_ - () .)만 사용 가능하며 공백은 사용할 수 없습니다.",
     };
   }
 

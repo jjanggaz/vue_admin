@@ -127,6 +127,10 @@ dl.column-search {
       font-size: 15px;
       font-weight: 400;
       box-sizing: border-box;
+      
+      &:focus {
+        border: 1px solid #3b82f6;
+      }
     }
     &::placeholder {
       color: #767676;
@@ -416,7 +420,6 @@ input[type="file"] {
   &:focus {
     outline: none;
     border-color: #3b82f6;
-    // box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     background-image: url(../assets/icons/ico_select-up.svg);
   }
 }

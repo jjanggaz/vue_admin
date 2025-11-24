@@ -1758,24 +1758,51 @@ onMounted(async () => {
 
 // ProcessDetail 모달 스타일
 .detail-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
 
 .detail-modal-container {
-  width: 90vw;
-  max-width: 1200px;
-  height: 90vh;
-  max-height: 800px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 1200px;
+  max-width: 95vw;
+  min-height: 600px;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 20px 10px 16px 20px;
+  background-color: #ffffff;
 }
 
 .detail-modal-body {
   flex: 1;
-  overflow: auto;
-  padding: 0.5rem 2.5rem 2.5rem 2.5rem;
-  min-height: 400px;
+  overflow-y: auto;
+  padding: 10px 10px 0 0;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #dddddd;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #b9b9b9;
+    }
+  }
 
   .process-page {
     padding: 0;
@@ -1803,116 +1830,109 @@ onMounted(async () => {
   }
 }
 
-.detail-modal-footer {
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid #e0e0e0;
-}
+// // 모달 오버레이 스타일
+// .modal-overlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   background: rgba(0, 0, 0, 0.5);
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   z-index: 9998;
+// }
 
-// 모달 오버레이 스타일
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9998;
-}
+// // 등록 모달 스타일
+// .modal-container {
+//   position: fixed;
+//   top: 50%;
+//   left: 50%;
+//   transform: translate(-50%, -50%);
+//   min-height: 600px;
+//   max-height: 80vh;
+//   min-width: 1200px;
+//   max-width: 95vw;
+//   overflow-y: auto;
+//   overflow-x: auto;
+//   z-index: 9999;
 
-// 등록 모달 스타일
-.modal-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-height: 600px;
-  max-height: 80vh;
-  min-width: 1200px;
-  max-width: 95vw;
-  overflow-y: auto;
-  overflow-x: auto;
-  z-index: 9999;
+//   .modal-header {
+//     cursor: default;
+//     padding: 5px 0 2px 0;
+//     margin: 0;
+//   }
 
-  .modal-header {
-    cursor: default;
-    padding: 5px 0 2px 0;
-    margin: 0;
-  }
+//   .modal-body {
+//     padding: 1rem 2.5rem 2.5rem 2.5rem;
+//     min-height: 400px;
 
-  .modal-body {
-    padding: 1rem 2.5rem 2.5rem 2.5rem;
-    min-height: 400px;
+//     .column-regist {
+//       // 기존 grid 레이아웃 제거
+//       display: block;
 
-    .column-regist {
-      // 기존 grid 레이아웃 제거
-      display: block;
+//       // 공정구분/중분류/공정명 3개 항목을 한 줄에 배치
+//       .process-row-3col {
+//         display: flex;
+//         gap: 2rem;
+//         margin-bottom: 1.5rem;
 
-      // 공정구분/중분류/공정명 3개 항목을 한 줄에 배치
-      .process-row-3col {
-        display: flex;
-        gap: 2rem;
-        margin-bottom: 1.5rem;
+//         .form-group {
+//           flex: 1 1 0;
+//           display: flex;
+//           align-items: center;
+//           gap: 1rem;
 
-        .form-group {
-          flex: 1 1 0;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
+//           dt {
+//             flex: 0 0 auto;
+//             margin: 0;
+//             font-weight: bold;
+//             font-size: 1rem;
+//             line-height: 1.4;
+//             color: #333;
+//             &.essential::after {
+//               content: " *";
+//               color: #dc3545;
+//             }
+//           }
+//           dd {
+//             flex: 1 1 0;
+//             margin: 0;
+//             .form-select {
+//               width: 100%;
+//               max-width: 400px;
+//               border: 1px solid #e7e6ed;
+//               border-radius: 4px;
+//               background-color: white;
+//               font-size: 14px;
+//               height: 40px;
+//               line-height: 1.2;
+//               &:focus {
+//                 outline: none;
+//                 border-color: #007bff;
+//                 box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+//               }
+//             }
+//           }
+//         }
+//       }
 
-          dt {
-            flex: 0 0 auto;
-            margin: 0;
-            font-weight: bold;
-            font-size: 1rem;
-            line-height: 1.4;
-            color: #333;
-            &.essential::after {
-              content: " *";
-              color: #dc3545;
-            }
-          }
-          dd {
-            flex: 1 1 0;
-            margin: 0;
-            .form-select {
-              width: 100%;
-              max-width: 400px;
-              border: 1px solid #e7e6ed;
-              border-radius: 4px;
-              background-color: white;
-              font-size: 14px;
-              height: 40px;
-              line-height: 1.2;
-              &:focus {
-                outline: none;
-                border-color: #007bff;
-                box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-              }
-            }
-          }
-        }
-      }
+//       // 공정심볼을 한 줄에 배치
+//       dt.essential + dd.process-symbol-row {
+//         display: inline-block;
+//         margin-bottom: 1rem;
+//       }
 
-      // 공정심볼을 한 줄에 배치
-      dt.essential + dd.process-symbol-row {
-        display: inline-block;
-        margin-bottom: 1rem;
-      }
-
-      // 공정심볼 라벨을 인라인으로 배치
-      dt.essential {
-        display: inline-block;
-        margin-right: 1rem;
-        margin-bottom: 0;
-      }
-    }
-  }
-}
+//       // 공정심볼 라벨을 인라인으로 배치
+//       dt.essential {
+//         display: inline-block;
+//         margin-right: 1rem;
+//         margin-bottom: 0;
+//       }
+//     }
+//   }
+// }
 
 // 공정심볼 행 스타일
 .process-symbol-row {
@@ -2101,7 +2121,6 @@ onMounted(async () => {
 
       label {
         display: block;
-        margin-bottom: 0.5rem;
         font-weight: 500;
         color: #333;
 

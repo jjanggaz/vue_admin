@@ -127,7 +127,7 @@ dl.column-search {
       font-size: 15px;
       font-weight: 400;
       box-sizing: border-box;
-      
+
       &:focus {
         border: 1px solid #3b82f6;
       }
@@ -233,11 +233,6 @@ dl.column-regist {
       cursor: pointer;
       font-size: 14px;
       transition: background-color 0.3s, border-color 0.3s;
-
-      &:hover {
-        background-color: color.scale($background-light, $lightness: -10%);
-        border-color: color.scale($border-form, $lightness: -10%);
-      }
     }
   }
 }

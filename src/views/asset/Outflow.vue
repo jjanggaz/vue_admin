@@ -3130,24 +3130,18 @@ dl.column-regist {
   position: absolute;
   top: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 0;
-  border: none;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 18px;
-  font-weight: normal;
-  font-family: Arial, sans-serif;
-  line-height: 1;
-  text-align: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 100%;
+  background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center / 8px auto;
+  background-color: rgba(62, 67, 94, .7);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease-in-out;
   z-index: 10;
-  padding: 1px 0 0 0;
-  margin: 0;
 
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 8px
-    auto;
+  &:hover {
+    background-color: rgba(62, 67, 94, 1);
+  }
 }
 </style>

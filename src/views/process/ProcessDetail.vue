@@ -12264,10 +12264,10 @@ watch(
 
 .btn-sm {
   justify-content: center;
-  width: 50px;
+  width: auto;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   border-radius: 4px;
   background-color: #3e435e;
   font-size: 14px;

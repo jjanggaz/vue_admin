@@ -4,9 +4,7 @@
     <div class="search-section">
       <div class="search-filters">
         <div class="filter-group">
-          <label class="filter-label"
-            >{{ t("columns.code.codeGroup") }}</label
-          >
+          <label class="filter-label">{{ t("columns.code.codeGroup") }}</label>
           <select
             v-model="searchCodeGroupInput"
             class="filter-select"
@@ -27,9 +25,9 @@
           </select>
         </div>
         <div class="filter-group">
-          <label class="filter-label"
-            >{{ t("columns.code.majorCategory") }}</label
-          >
+          <label class="filter-label">{{
+            t("columns.code.majorCategory")
+          }}</label>
           <select
             v-model="searchCategory1Input"
             class="filter-select"
@@ -55,9 +53,9 @@
           </select>
         </div>
         <div class="filter-group">
-          <label class="filter-label"
-            >{{ t("columns.code.mediumCategory") }}</label
-          >
+          <label class="filter-label">{{
+            t("columns.code.mediumCategory")
+          }}</label>
           <select
             v-model="searchCategory2Input"
             class="filter-select"
@@ -83,9 +81,9 @@
           </select>
         </div>
         <div class="filter-group">
-          <label class="filter-label"
-            >{{ t("columns.code.minorCategory") }}</label
-          >
+          <label class="filter-label">{{
+            t("columns.code.minorCategory")
+          }}</label>
           <select
             v-model="searchCategory3Input"
             class="filter-select"
@@ -202,8 +200,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("common.registerCode") }}</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-          </button>
+          <button class="btn-close" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -314,8 +311,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("common.editCode") }}</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-          </button>
+          <button class="btn-close" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -786,19 +782,33 @@ const loadData = async () => {
   console.log("searchCategory2.value :", searchCategory2.value);
   console.log("searchCategory3.value :", searchCategory3.value);
 
-  if (searchCodeGroup.value && searchCategory1.value && searchCategory2.value) {
+  if (
+    searchCodeGroup.value &&
+    searchCategory1.value &&
+    searchCategory2.value &&
+    searchCategory3.value
+  ) {
+    // 소분류까지 모두 선택된 경우 소분류로 검색
+    queryParams.search_field = "parent_key";
+    queryParams.search_value = searchCategory3.value;
+  } else if (
+    searchCodeGroup.value &&
+    searchCategory1.value &&
+    searchCategory2.value
+  ) {
+    // 중분류까지 선택된 경우 중분류로 검색
     queryParams.search_field = "parent_key";
     queryParams.search_value = searchCategory2.value;
   } else if (searchCodeGroup.value && searchCategory1.value) {
-    // searchCodeGroup과 searchCategory1 모두 있으면 searchCategory1로 검색
+    // 대분류까지 선택된 경우 대분류로 검색
     queryParams.search_field = "parent_key";
     queryParams.search_value = searchCategory1.value;
   } else if (searchCodeGroup.value) {
-    // searchCodeGroup만 있으면 searchCodeGroup으로 검색
+    // 코드그룹만 선택된 경우 코드그룹으로 검색
     queryParams.search_field = "parent_key";
     queryParams.search_value = searchCodeGroup.value;
   } else {
-    // 둘 다 없으면 기본값
+    // 선택된 값이 없으면 기본값
     queryParams.search_field = "parent_key";
     queryParams.search_value = "";
   }

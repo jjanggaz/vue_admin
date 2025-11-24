@@ -3479,6 +3479,30 @@ onMounted(async () => {
 .search-filter-bar {
   border-radius: 8px;
   margin-bottom: 20px;
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: $text-color;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  #search {
+    min-width: 350px;
+  }
 }
 
 // 상세검색 패널 스타일

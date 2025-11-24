@@ -535,101 +535,113 @@
         <div class="modal-body">
           <!-- 첫 번째 줄: 유출종류명 국문, 유출종류명 영문, 비고 -->
           <dl class="column-regist">
-            <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
-            <dd>
-              <select
-                v-model="selectedOutputType"
-                @change="onOutputTypeChange"
-                class="form-input"
-                required
-                disabled
-              >
-                <option value="">선택</option>
-                <option
-                  v-for="code in outflowStore.commonCodes"
-                  :key="code.code_id"
-                  :value="code.code_key"
+            <div class="column-item">
+              <dt class="essential">{{ t("outflow.typeNameKo") }}</dt>
+              <dd>
+                <select
+                  v-model="selectedOutputType"
+                  @change="onOutputTypeChange"
+                  class="form-input"
+                  required
+                  disabled
                 >
-                  {{ code.code_value }}
-                </option>
-              </select>
-            </dd>
-            <dt class="essential">{{ t("outflow.typeNameEn") }}</dt>
-            <dd>
-              <input
-                type="text"
-                v-model="newOutflowTypeNameEn"
-                :placeholder="t('placeholder.outflowTypeName')"
-                class="form-input"
-                readonly
-                disabled
-              />
-            </dd>
-            <dt>{{ t("common.etc") }}</dt>
-            <dd>
-              <input
-                type="text"
-                v-model="uploadForm.title"
-                class="form-input"
-              />
-            </dd>
+                  <option value="">선택</option>
+                  <option
+                    v-for="code in outflowStore.commonCodes"
+                    :key="code.code_id"
+                    :value="code.code_key"
+                  >
+                    {{ code.code_value }}
+                  </option>
+                </select>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt class="essential">{{ t("outflow.typeNameEn") }}</dt>
+              <dd>
+                <input
+                  type="text"
+                  v-model="newOutflowTypeNameEn"
+                  :placeholder="t('placeholder.outflowTypeName')"
+                  class="form-input"
+                  readonly
+                  disabled
+                />
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.etc") }}</dt>
+              <dd>
+                <input
+                  type="text"
+                  v-model="uploadForm.title"
+                  class="form-input"
+                />
+              </dd>
+            </div>
           </dl>
           <!-- 두 번째 줄: 심볼색상, 파일 업로드, 심볼이미지 -->
           <dl class="column-regist">
-            <dt>{{ t("outflow.symbolColor") }}</dt>
-            <dd>
-              <div class="color-picker-container">
-                <input
-                  type="color"
-                  v-model="selectedColor"
-                  class="color-input"
-                  @change="updateColor"
-                />
-                <span class="color-text">{{ selectedColor }}</span>
-              </div>
-            </dd>
-            <dt>{{ t("common.symbolUpload") }}</dt>
-            <dd>
-              <div class="file-upload-row">
-                <input
-                  type="text"
-                  :value="
-                    uploadForm.file
-                      ? uploadForm.file.name
-                      : uploadForm.existingFileName || ''
-                  "
-                  :placeholder="t('placeholder.selectFile')"
-                  readonly
-                  class="file-name-input"
-                />
-                <label class="file-select-btn">
-                  {{ t("common.selectFile") }}
+            <div class="column-item">
+              <dt>{{ t("outflow.symbolColor") }}</dt>
+              <dd>
+                <div class="color-picker-container">
                   <input
-                    type="file"
-                    @change="handleFileUpload"
-                    accept=".svg"
-                    style="display: none"
+                    type="color"
+                    v-model="selectedColor"
+                    class="color-input"
+                    @change="updateColor"
                   />
-                </label>
-              </div>
-            </dd>
-            <dt>{{ t("common.symbolImage") }}</dt>
-            <dd>
-              <div class="symbol-image-preview">
-                <div class="symbol-content">
-                  <span v-if="!symbolImageContent" class="no-symbol-message">
-                    {{ t("common.noSymbolImage") }}
-                  </span>
-                  <div v-else v-html="symbolImageContent"></div>
+                  <span class="color-text">{{ selectedColor }}</span>
                 </div>
-                <button
-                  v-if="symbolImageContent && isExistingSymbol"
-                  class="delete-symbol-btn"
-                  @click="handleDeleteSymbol"
-                  :title="t('common.deleteSymbol')"
-                ></button>
-              </div>
-            </dd>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.symbolUpload") }}</dt>
+              <dd>
+                <div class="file-upload-row">
+                  <input
+                    type="text"
+                    :value="
+                      uploadForm.file
+                        ? uploadForm.file.name
+                        : uploadForm.existingFileName || ''
+                    "
+                    :placeholder="t('placeholder.selectFile')"
+                    readonly
+                    class="file-name-input"
+                  />
+                  <label class="file-select-btn">
+                    {{ t("common.selectFile") }}
+                    <input
+                      type="file"
+                      @change="handleFileUpload"
+                      accept=".svg"
+                      style="display: none"
+                    />
+                  </label>
+                </div>
+              </dd>
+            </div>
+            <div class="column-item">
+              <dt>{{ t("common.symbolImage") }}</dt>
+              <dd>
+                <div class="symbol-image-preview">
+                  <div class="symbol-content">
+                    <span v-if="!symbolImageContent" class="no-symbol-message">
+                      {{ t("common.noSymbolImage") }}
+                    </span>
+                    <div v-else v-html="symbolImageContent"></div>
+                  </div>
+                  <button
+                    v-if="symbolImageContent && isExistingSymbol"
+                    class="delete-symbol-btn"
+                    @click="handleDeleteSymbol"
+                    :title="t('common.deleteSymbol')"
+                  ></button>
+                </div>
+              </dd>
+            </div>
           </dl>
 
           <div class="modal-content-wrapper">

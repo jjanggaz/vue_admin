@@ -204,7 +204,10 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("columns.code.codeGroup") }}</dt>
+            <dt>
+              {{ t("columns.code.codeGroup") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-group"
@@ -227,7 +230,10 @@
                 :placeholder="t('placeholder.codeLevel')"
               />
             </dd>
-            <dt>{{ t("columns.code.code") }}</dt>
+            <dt>
+              {{ t("columns.code.code") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-name"
@@ -236,7 +242,10 @@
                 :placeholder="t('placeholder.codeCodeName')"
               />
             </dd>
-            <dt>{{ t("columns.code.codeNameKorean") }}</dt>
+            <dt>
+              {{ t("columns.code.codeNameKorean") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-name-korean"
@@ -245,7 +254,10 @@
                 :placeholder="t('placeholder.codeCodeName')"
               />
             </dd>
-            <dt>{{ t("columns.code.codeNameEnglish") }}</dt>
+            <dt>
+              {{ t("columns.code.codeNameEnglish") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-name-english"
@@ -315,7 +327,10 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("columns.code.codeGroup") }}</dt>
+            <dt>
+              {{ t("columns.code.codeGroup") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-group"
@@ -338,7 +353,10 @@
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>{{ t("columns.code.code") }}</dt>
+            <dt>
+              {{ t("columns.code.code") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-name"
@@ -348,7 +366,10 @@
                 :disabled="isEditMode"
               />
             </dd>
-            <dt>{{ t("columns.code.codeNameKorean") }}</dt>
+            <dt>
+              {{ t("columns.code.codeNameKorean") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
                 id="code-name-korean"
@@ -357,10 +378,13 @@
                 :placeholder="t('placeholder.codeCodeName')"
               />
             </dd>
-            <dt>{{ t("columns.code.codeNameEnglish") }}</dt>
+            <dt>
+              {{ t("columns.code.codeNameEnglish") }}
+              <span class="required">*</span>
+            </dt>
             <dd>
               <input
-                id="code-name-korean"
+                id="code-name-english"
                 v-model="newCode.code_value_en"
                 type="text"
                 :placeholder="t('placeholder.codeCodeName')"
@@ -1061,7 +1085,8 @@ const updateCode = async () => {
   if (
     !newCode.value.code_group ||
     !newCode.value.code_key ||
-    !newCode.value.code_value
+    !newCode.value.code_value ||
+    !newCode.value.code_value_en
   ) {
     alert(t("messages.warning.pleaseCompleteAllFields"));
     return;
@@ -1318,6 +1343,11 @@ const handleEdit = () => {
     font-size: 15px;
     font-weight: 600;
     color: #333333;
+
+    .required {
+      color: #e74c3c;
+      margin-left: 4px;
+    }
   }
 
   dd {

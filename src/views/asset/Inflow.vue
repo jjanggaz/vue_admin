@@ -1490,7 +1490,7 @@ const handleMetricFileUpload = async (event: Event) => {
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
-              remarks: paramData.description || "",
+              remarks: paramData.remark || "",
             };
             extractedData.push(gridRow);
           }
@@ -1601,7 +1601,7 @@ const handleUscsFileUpload = async (event: Event) => {
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
-              remarks: paramData.description || "",
+              remarks: paramData.remark || "",
             };
             extractedData.push(gridRow);
           }
@@ -2898,8 +2898,9 @@ dl.column-regist {
   height: 18px;
   padding: 0;
   border-radius: 100%;
-  background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center / 8px auto;
-  background-color: rgba(62, 67, 94, .7);
+  background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center /
+    8px auto;
+  background-color: rgba(62, 67, 94, 0.7);
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
   z-index: 10;

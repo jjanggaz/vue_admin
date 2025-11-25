@@ -48,6 +48,9 @@
           v-html="'' + t('common.integratedFile').replace(/,/g, ',<br />')"
         ></span>
         <div class="file-input-wrapper">
+          <button class="btn-file" @click="allFileInput?.click()">
+            {{ t("common.fileSelect") }}
+          </button>
           <input
             type="text"
             class="input"
@@ -61,9 +64,6 @@
             style="display: none"
             @change="handleAllFileChange"
           />
-          <button class="btn-file" @click="allFileInput?.click()">
-            {{ t("common.fileSelect") }}
-          </button>
         </div>
       </div>
 
@@ -691,27 +691,50 @@ $desktop: 1200px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 12px 16px;
-  align-items: center;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
+  align-items: end;
+  gap: 20px 10px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+  input,
+  select {
+    appearance: none;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0 32px 0 10px;
+    border: 1px solid #e7e6ed;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 400;
+    background-color: transparent;
+    background-image: url(../../../assets/icons/ico_select-down.svg);
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px auto;
+
+    &:disabled {
+      border: 1px solid #dfdfdf;
+      background-color: #f0f0f0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background-image: url(../../../assets/icons/ico_select-up.svg);
+    }
+  }
 
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 10px 12px;
-    padding: 12px;
+    gap: 20px 10px;
   }
 
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+    gap: 20px;
   }
 }
 
@@ -730,9 +753,9 @@ $desktop: 1200px;
   }
 
   &.inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 
     @media (max-width: $mobile) {
       flex-direction: column;
@@ -743,14 +766,15 @@ $desktop: 1200px;
 }
 
 .label {
+  color: #333333;
   font-size: 13px;
-  color: #475467;
+  font-weight: 600;
   min-width: 100px;
   flex-shrink: 0;
 
   &.required::after {
-    content: " (＊)";
-    color: #e74c3c;
+    content: "*";
+    color: #333333;
     margin-left: 4px;
   }
 
@@ -773,21 +797,6 @@ $desktop: 1200px;
 
 .label .req {
   display: none;
-}
-
-.input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  width: 100%;
-  min-width: 0; // input이 축소될 수 있도록 함
-
-  @media (max-width: $mobile) {
-    height: 28px;
-    font-size: 12px;
-  }
 }
 
 .select-sm {
@@ -875,24 +884,20 @@ $desktop: 1200px;
 }
 
 .btn-file {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+  width: 88px;
+  background: #3e435e;
   white-space: nowrap;
-  transition: background-color 0.2s ease;
   flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background: #2563eb;
+    background: #3c4973;
   }
 
   &:active {
-    background: #1d4ed8;
+    background: #3c4973;
   }
 
   @media (max-width: $mobile) {
@@ -950,7 +955,7 @@ $desktop: 1200px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 10px 0;
+  margin: 20px 0 10px;
   flex-wrap: wrap;
   gap: 8px;
 

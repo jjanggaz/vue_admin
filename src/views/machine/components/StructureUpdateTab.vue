@@ -43,6 +43,9 @@
       <div class="group-form inline">
         <span class="label">{{ t("common.formulaFile") }}</span>
         <div class="file-input-wrapper">
+          <button class="btn-file" @click="formulaFileInput?.click()">
+            {{ t("common.fileSelect") }}
+          </button>
           <input
             type="text"
             class="input"
@@ -56,14 +59,14 @@
             style="display: none"
             @change="handleFormulaFileChange"
           />
-          <button class="btn-file" @click="formulaFileInput?.click()">
-            {{ t("common.fileSelect") }}
-          </button>
         </div>
       </div>
       <div class="group-form inline">
         <span class="label">{{ t("common.dtdModel") }}</span>
         <div class="file-input-wrapper">
+          <button class="btn-file" @click="dtdFileInput?.click()">
+            {{ t("common.fileSelect") }}
+          </button>
           <input
             type="text"
             class="input"
@@ -77,14 +80,14 @@
             style="display: none"
             @change="handleDtdFileChange"
           />
-          <button class="btn-file" @click="dtdFileInput?.click()">
-            {{ t("common.fileSelect") }}
-          </button>
         </div>
       </div>
       <div class="group-form inline">
         <span class="label">{{ t("common.modelThumbnail") }}</span>
         <div class="file-input-wrapper">
+          <button class="btn-file" @click="thumbnailFileInput?.click()">
+            {{ t("common.fileSelect") }}
+          </button>
           <input
             type="text"
             class="input"
@@ -98,15 +101,15 @@
             style="display: none"
             @change="handleThumbnailFileChange"
           />
-          <button class="btn-file" @click="thumbnailFileInput?.click()">
-            {{ t("common.fileSelect") }}
-          </button>
         </div>
       </div>
 
       <div class="group-form inline">
         <span class="label">{{ t("common.revitModel3D") }}</span>
         <div class="file-input-wrapper">
+          <button class="btn-file" @click="revitFileInput?.click()">
+            {{ t("common.fileSelect") }}
+          </button>
           <input
             type="text"
             class="input"
@@ -120,9 +123,6 @@
             style="display: none"
             @change="handleRevitFileChange"
           />
-          <button class="btn-file" @click="revitFileInput?.click()">
-            {{ t("common.fileSelect") }}
-          </button>
         </div>
       </div>
       <div class="group-form inline">
@@ -641,27 +641,61 @@ $desktop: 1200px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 12px 16px;
-  align-items: center;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
+  align-items: end;
+  gap: 20px 10px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+  input,
+  select {
+    appearance: none;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    border: 1px solid #e7e6ed;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 400;
+
+    &:disabled {
+      border: 1px solid #dfdfdf;
+      background-color: #f0f0f0;
+    }
+  }
+
+  input {
+    padding: 0 10px;
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+  }
+
+  select {
+    padding: 0 32px 0 10px;
+    background-color: transparent;
+    background-image: url(../../../assets/icons/ico_select-down.svg);
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px auto;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background-image: url(../../../assets/icons/ico_select-up.svg);
+    }
+  }
 
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 10px 12px;
-    padding: 12px;
+    gap: 20px 10px;
   }
 
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+    gap: 20px;
   }
 }
 
@@ -680,9 +714,9 @@ $desktop: 1200px;
   }
 
   &.inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 
     @media (max-width: $mobile) {
       flex-direction: column;
@@ -694,19 +728,15 @@ $desktop: 1200px;
 
 .label {
   font-size: 13px;
+  font-weight: 600;
   color: #475467;
   min-width: 100px;
   flex-shrink: 0;
 
   &.required::after {
-    content: " (＊)";
-    color: #e74c3c;
+    content: "*";
+    color: #333333;
     margin-left: 4px;
-  }
-
-  @media (max-width: $mobile) {
-    min-width: auto;
-    font-size: 12px;
   }
 }
 
@@ -762,16 +792,20 @@ $desktop: 1200px;
 }
 
 .btn-outline {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  background: #3e435e;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
+  transition: background-color .2s ease-in-out;
 
-  @media (max-width: $mobile) {
-    padding: 4px 8px;
-    font-size: 12px;
+  &:hover {
+    background-color: #3c4973;
   }
 }
 
@@ -814,29 +848,20 @@ $desktop: 1200px;
 }
 
 .btn-file {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+  width: 88px;
+  background: #3e435e;
   white-space: nowrap;
-  transition: background-color 0.2s ease;
   flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background: #2563eb;
+    background: #3c4973;
   }
 
   &:active {
-    background: #1d4ed8;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
+    background: #3c4973;
   }
 }
 
@@ -887,16 +912,14 @@ $desktop: 1200px;
 
 .section-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  margin: 10px 0;
+  margin: 20px 0 10px;
   flex-wrap: wrap;
   gap: 8px;
 
   @media (max-width: $mobile) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    margin: 40px 0 10px;
   }
 }
 

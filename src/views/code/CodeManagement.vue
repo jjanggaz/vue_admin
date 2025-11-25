@@ -1334,9 +1334,7 @@ const handleEdit = () => {
 }
 
 .column-regist {
-  dl {
-    margin: 0;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
 
   dt {
     margin: 0;

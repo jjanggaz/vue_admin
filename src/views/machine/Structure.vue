@@ -176,7 +176,7 @@
 
     <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%">
+      <div class="modal-container" style="max-width: 1600px; width: 90%">
         <div class="modal-header">
           <h3>{{ isEditMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -640,7 +640,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  // padding: 1rem;
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -685,24 +684,6 @@ onMounted(async () => {
   gap: 0.5rem;
 }
 
-.btn {
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s;
-  
-  &.btn-secondary {
-    background-color: $background-light;
-    color: $text-color;
-    border: 1px solid $border-color;
-
-    &:hover {
-      background-color: color.scale($background-light, $lightness: -5%);
-    }
-  }
-}
-
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -722,88 +703,48 @@ onMounted(async () => {
 $mobile: 768px;
 $tablet: 1024px;
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
+.modal-footer {
+  justify-content: flex-end;
 
   @media (max-width: $mobile) {
-    padding: 0.5rem;
-    align-items: flex-start;
-    padding-top: 2rem;
-  }
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 98%;
-  max-width: 1600px;
-  max-height: 100vh;
-  margin: 0; /* 상/하 여백 제거 */
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: $tablet) {
-    width: 95%;
-    max-width: 95vw;
+    justify-content: center;
+    padding: 10px 10px 0 0;
   }
 
-  @media (max-width: $mobile) {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 90vh;
-    border-radius: 4px;
-  }
-}
+  .btn {
+    width: 200px;
+    min-width: 200px;
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid $border-color;
-  flex-shrink: 0;
-
-  h3 {
-    margin: 0;
-    color: $text-color;
-    font-size: 1.25rem;
-
-    @media (max-width: $mobile) {
-      font-size: 1.1rem;
+    &:first-child {
+      @media (max-width: $mobile) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: $mobile) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
     }
   }
 
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
+  .btn-confirm {
+    background-color: #222e77;
+    color: #fff;
+
+    &:hover {
+      background-color: #29378c;
+    }
   }
-}
 
-.close-btn {
-  width: 24px;
-  height: 24px;
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-  cursor: pointer;
-}
+  .btn-secondary {
+    background-color: #707489;
+    color: #ffffff;
 
-.modal-body {
-  padding: 0 1rem 1rem 1rem;
-  flex: 1;
-  min-height: 0; // flex 아이템이 축소될 수 있도록 함
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    padding: 0 0.75rem 0.75rem 0.75rem;
+    &:hover {
+      background-color: #82869d;
+    }
   }
 }
 
@@ -897,22 +838,6 @@ $tablet: 1024px;
   @media (max-width: $mobile) {
     padding: 0.4rem;
     font-size: 0.8rem;
-  }
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid $border-color;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
-    gap: 0.4rem;
-    justify-content: center;
   }
 }
 

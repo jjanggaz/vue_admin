@@ -88,13 +88,23 @@
 
   .btn:first-child {
     min-width: 370px;
+
+    @media (max-width: 768px) {
+      width: calc(65% - 5px);
+      min-width: calc(65% - 5px);
+    }
   }
   .btn:last-child {
     background-color: #707489;
     color: #ffffff;
-
+    
     &:hover {
       background-color: #82869d;
+    }
+
+    @media (max-width: 768px) {
+      width: calc(35% - 5px);
+      min-width: calc(35% - 5px);
     }
   }
 }

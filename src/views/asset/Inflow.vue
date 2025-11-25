@@ -810,8 +810,8 @@
         <div class="modal-body">
           <WaterCodeManagement :flowDirection="'INFLUENT'" />
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-cancel" @click="closeCodeManagementModal">
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button class="btn btn-cancel" @click="closeCodeManagementModal" style="width: 200px; min-width: 200px;">
             {{ t("common.close") }}
           </button>
         </div>
@@ -2633,9 +2633,27 @@ onBeforeUnmount(() => {
 .modal-footer {
   justify-content: flex-end;
 
+  @media (max-width: 768px) {
+    justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
   .btn {
     width: 200px;
     min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
   }
 
   .btn-cancel {

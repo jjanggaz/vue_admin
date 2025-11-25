@@ -503,15 +503,15 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-cancel" @click="closeModal">
-            {{ t("common.cancel") }}
-          </button>
           <button
             class="btn btn-confirm"
             @click="createNewTab"
             :disabled="isCreating"
           >
             {{ isCreating ? t("common.processing") : t("common.register") }}
+          </button>
+          <button class="btn btn-cancel" @click="closeModal">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -795,15 +795,15 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-cancel" @click="closeUpdateModal">
-            {{ t("common.cancel") }}
-          </button>
           <button
             class="btn btn-confirm"
             @click="updateTab"
             :disabled="isUpdating"
           >
             {{ isUpdating ? t("common.processing") : t("common.save") }}
+          </button>
+          <button class="btn btn-cancel" @click="closeUpdateModal">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -827,8 +827,8 @@
         <div class="modal-body">
           <WaterCodeManagement :flowDirection="'EFFLUENT'" />
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-cancel" @click="closeCodeManagementModal">
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button class="btn btn-cancel" @click="closeCodeManagementModal" style="width: 200px; min-width: 200px;">
             {{ t("common.close") }}
           </button>
         </div>
@@ -2869,9 +2869,27 @@ onBeforeUnmount(() => {
 .modal-footer {
   justify-content: flex-end;
 
+  @media (max-width: 768px) {
+    justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
   .btn {
     width: 200px;
     min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
   }
 
   .btn-cancel {

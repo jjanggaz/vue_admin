@@ -112,6 +112,19 @@
               >
                 {{ t("common.selectFile") }}
               </button>
+              <button
+                v-if="
+                  processStore.processDetail.symbolId &&
+                  processStore.processDetail.symbolId !==
+                    '00000000-0000-0000-0000-000000000000'
+                "
+                @click="downloadProcessSymbol"
+                class="btn btn-sm btn-outline-primary download-btn"
+                :title="t('processDetail.downloadProcessSymbol')"
+                style="vertical-align: middle"
+              >
+                <span class="ico-download"></span>
+              </button>
               <span class="selected-file">
                 <div style="position: relative; display: inline-block">
                   <span
@@ -119,7 +132,6 @@
                     style="
                       display: block;
                       text-align: center;
-                      /* padding: 40px 10px; */
                       color: #aaaaaa;
                       font-size: 13px;
                       font-weight: 400;
@@ -132,10 +144,10 @@
                     :src="processStore.processSymbolPreviewUrl"
                     :alt="t('processDetail.processSymbolPreview')"
                     style="
-                      max-width: 100px;
-                      max-height: 100px;
-                      vertical-align: middle;
                       display: block;
+                      max-width: 40px;
+                      max-height: 40px;
+                      vertical-align: middle;
                     "
                   />
                   <button
@@ -179,19 +191,7 @@
                     ×
                   </button>
                 </div>
-                <button
-                  v-if="
-                    processStore.processDetail.symbolId &&
-                    processStore.processDetail.symbolId !==
-                      '00000000-0000-0000-0000-000000000000'
-                  "
-                  @click="downloadProcessSymbol"
-                  class="btn btn-sm btn-outline-primary download-btn"
-                  :title="t('processDetail.downloadProcessSymbol')"
-                  style="vertical-align: middle"
-                >
-                  <span class="ico-download"></span>
-                </button>
+                
               </span>
             </div>
           </div>
@@ -12012,6 +12012,7 @@ watch(
 }
 
 .form-group {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -12050,7 +12051,6 @@ watch(
 
 .file-input-group {
   display: flex;
-  align-items: center;
   gap: 10px;
   width: 100%;
   min-width: 160px;
@@ -12749,9 +12749,12 @@ watch(
 .selected-file {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-direction: row-reverse;
   gap: 10px;
   color: #333;
   font-size: 14px;
+  
 }
 
 .no-file {

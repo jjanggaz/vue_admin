@@ -29,11 +29,7 @@
       :columns="tableColumns"
       :data="paginatedProjectList"
       :loading="false"
-      :selectable="true"
-      selectionMode="single"
-      :showSelectAll="false"
-      :selected-items="selectedItems"
-      @selection-change="handleSelectionChange"
+      :selectable="false"
       @sort-change="handleSortChange"
     />
 
@@ -60,7 +56,7 @@ import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
-import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
+import { useProjectStore } from "@/stores/projectStore";
 
 const { t } = useI18n();
 
@@ -68,7 +64,6 @@ const { t } = useI18n();
 const translateMessage = useTranslateMessage();
 const projectStore = useProjectStore();
 const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
-const selectedItems = ref<ProjectItem[]>([]);
 
 const tableColumns: TableColumn[] = [
   {
@@ -171,10 +166,6 @@ const handlePageChange = async (page: number) => {
     );
     alert(errorMessage);
   }
-};
-
-const handleSelectionChange = (items: ProjectItem[]) => {
-  selectedItems.value = items;
 };
 
 const handleSearch = async () => {

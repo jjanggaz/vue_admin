@@ -170,7 +170,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "site_capacity",
-    title: t("columns.project.siteCapacity") + " (m³/d)",
+    title: t("columns.project.siteCapacity"),
     width: "120px",
     sortable: false,
   },

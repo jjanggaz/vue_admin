@@ -2,6 +2,28 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { request } from "@/utils/request";
 
+export interface RecommenderInfo {
+  full_name: string;
+  is_active: boolean;
+  user_id: string;
+  email: string;
+  username: string;
+}
+
+export interface ProjectRecommended {
+  approval_reason: string | null;
+  approval_date: string | null;
+  recommendation_reason: string | null;
+  is_active: boolean;
+  recommender_id: string;
+  approver_id: string | null;
+  priority_order: number | null;
+  request_date: string;
+  recommendation_id: string;
+  recommender_info: RecommenderInfo;
+  status: string;
+}
+
 export interface ProjectItem {
   id: string;
   project_name: string;
@@ -15,6 +37,7 @@ export interface ProjectItem {
   project_status: string;
   start_date?: string;
   end_date?: string;
+  project_recommended?: ProjectRecommended | null; // 추천 프로젝트 정보
 }
 
 // API 응답 인터페이스
@@ -44,6 +67,7 @@ interface ApiProjectItem {
   orderer: string;
   site_id: string;
   updated_by: string;
+  project_recommended?: ProjectRecommended | null; // 추천 프로젝트 정보
   client: {
     contact_person: string;
     location: string | null;
@@ -112,6 +136,7 @@ export const useProjectStore = defineStore("project", () => {
       project_status: item.project_status_info?.code_value || "",
       start_date: item.start_date || "",
       end_date: item.end_date || "",
+      project_recommended: item.project_recommended || null,
     }));
   };
 
@@ -257,6 +282,41 @@ export const useProjectStore = defineStore("project", () => {
     return res;
   };
 
+  // 추천 프로젝트 생성
+  const createRecommendation = async (params: { project_id: string }) => {
+    try {
+      const res = await request(`/api/project/createRec`, undefined, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: params.project_id,
+        }),
+      });
+      return res;
+    } catch (error) {
+      console.error("추천 프로젝트 생성 실패:", error);
+      throw error;
+    }
+  };
+
+  // 추천 프로젝트 삭제
+  const deleteRecommendation = async (recommendationId: string) => {
+    try {
+      const res = await request(
+        `/api/project/deleteRec/${recommendationId}`,
+        undefined,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return res;
+    } catch (error) {
+      console.error("추천 프로젝트 삭제 실패:", error);
+      throw error;
+    }
+  };
+
   return {
     // 상태
     projectList,
@@ -281,5 +341,7 @@ export const useProjectStore = defineStore("project", () => {
     changePage,
     resetState,
     deleteProject,
+    createRecommendation,
+    deleteRecommendation,
   };
 });

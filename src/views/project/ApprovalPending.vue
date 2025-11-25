@@ -149,14 +149,40 @@ const approvalPendingCount = computed(() => {
   return projectStore.totalCount || 0;
 });
 
+const loadData = async (params?: {
+  page?: number;
+  search_value?: string;
+  order_by?: string;
+  order_direction?: "asc" | "desc" | "";
+}) => {
+  try {
+    await projectStore.fetchProjectList({
+      page: params?.page ?? projectStore.currentPage,
+      pageSize: projectStore.pageSize,
+      search_value: params?.search_value ?? searchQueryInput.value,
+      order_by: params?.order_by,
+      order_direction: params?.order_direction,
+      project_status: "SC_WAITAPPR",
+    });
+  } catch (error: any) {
+    console.error("데이터 로드 실패:", error);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.loadFailed"
+    );
+    alert(errorMessage);
+    throw error;
+  }
+};
+
 const handlePageChange = async (page: number) => {
   try {
     // 현재 검색 조건과 정렬 조건을 유지하면서 페이지 변경
-    await projectStore.changePage(page, {
+    await loadData({
+      page,
       search_value: searchQueryInput.value,
       order_by: projectStore.sortField,
       order_direction: projectStore.sortOrder,
-      project_status: "SC_WAITAPPR",
     });
   } catch (error: any) {
     console.error("페이지 변경 실패:", error);
@@ -176,11 +202,9 @@ const handleSearch = async () => {
 
   // 서버 측 검색 실행
   try {
-    await projectStore.fetchProjectList({
+    await loadData({
       page: 1, // 검색 시 첫 페이지로 이동
-      pageSize: projectStore.pageSize,
       search_value: searchQueryInput.value,
-      project_status: "SC_WAITAPPR",
       // 정렬 조건 제거 (초기화)
     });
   } catch (error: any) {
@@ -198,11 +222,14 @@ const handleSortChange = async (sortInfo: {
   direction: "asc" | "desc" | null;
 }) => {
   try {
-    const params: any = {
+    const params: {
+      page?: number;
+      search_value?: string;
+      order_by?: string;
+      order_direction?: "asc" | "desc" | "";
+    } = {
       page: projectStore.currentPage, // 현재 페이지 유지
-      pageSize: projectStore.pageSize,
       search_value: searchQueryInput.value,
-      project_status: "SC_WAITAPPR",
     };
 
     // 정렬 조건 처리 (정렬 해제 포함)
@@ -216,7 +243,7 @@ const handleSortChange = async (sortInfo: {
       params.order_direction = "" as const;
     }
 
-    await projectStore.fetchProjectList(params);
+    await loadData(params);
   } catch (error: any) {
     console.error("정렬 실패:", error);
     const errorMessage = error?.message || "정렬에 실패했습니다.";
@@ -226,11 +253,9 @@ const handleSortChange = async (sortInfo: {
 
 onMounted(async () => {
   try {
-    await projectStore.fetchProjectList({
+    await loadData({
       page: 1,
-      pageSize: projectStore.pageSize,
       search_value: "",
-      project_status: "SC_WAITAPPR",
     });
   } catch (error) {
     console.error("초기 데이터 로드 실패:", error);

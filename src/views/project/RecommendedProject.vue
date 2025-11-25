@@ -10,22 +10,24 @@
             <input
               type="text"
               id="recommended-search"
-              class="input search-input"
-              v-model="searchQuery"
-              placeholder="검색 조건 입력"
-              @keyup.enter="onSearch"
+              placeholder="프로젝트명을 입력하세요"
+              v-model="searchQueryInput"
+              @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="onSearch">
+          <button class="btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
       </div>
     </div>
     <DataTable
-      :columns="projectColumns"
-      :data="paginatedRows"
+      ref="dataTableRef"
+      :columns="tableColumns"
+      :data="paginatedProjectList"
+      :loading="false"
       :selectable="false"
+      @sort-change="handleSortChange"
     >
       <template #cell-recommended="{ item }">
         <input
@@ -37,7 +39,11 @@
     </DataTable>
     <div class="pagination-container">
       <div class="total-count">
-        {{ t("common.totalCount", { count: totalCount }) }}
+        {{
+          t("common.totalCount", {
+            count: projectStore.totalCount || 0,
+          })
+        }}
       </div>
       <Pagination
         :current-page="currentPage"
@@ -49,115 +55,299 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useTranslateMessage } from "@/utils/translateMessage";
 import Pagination from "@/components/common/Pagination.vue";
+import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
+import { useProjectStore, type ProjectItem } from "@/stores/projectStore";
+
 const { t } = useI18n();
-const searchQuery = ref("");
-const onSearch = () => {
-  // TODO: 검색 기능 연동 시 API 호출 또는 필터링 구현
-  // 현재는 UI만 구성
-};
 
-const onToggleRecommended = (e: Event, row: ItemRow) => {
-  const checkbox = e.target as HTMLInputElement;
-  const nextValue = checkbox.checked;
+// 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
+const translateMessage = useTranslateMessage();
+const projectStore = useProjectStore();
+const dataTableRef = ref<InstanceType<typeof DataTable> | null>(null);
+const searchQueryInput = ref("");
 
-  if (nextValue) {
-    if (!confirm("추천을 설정하시겠습니까?")) {
-      checkbox.checked = row.recommended; // 취소 시 원상복구
-      return;
-    } else {
-      alert("추천을 설정했습니다.");
-    }
-  } else {
-    if (!confirm("추천을 해제하시겠습니까?")) {
-      checkbox.checked = row.recommended; // 취소 시 원상복구
-      return;
-    } else {
-      alert("추천을 해제했습니다.");
-    }
-  }
-
-  row.recommended = nextValue;
-};
-
-interface ItemRow {
-  id: string;
-  no?: number;
-  project_name: string;
-  client_name: string;
-  contact_person: string;
-  inflow_type: string;
-  site_capacity: string | number;
-  solution: string;
-  created_at: string;
-  country_code: string;
-  recommended: boolean;
-}
-
-const projectColumns: TableColumn[] = [
-  { key: "no", title: "순번", width: "50px" },
-  { key: "project_name", title: "프로젝트명", width: "200px" },
-  { key: "client_name", title: "고객사", width: "150px" },
-  { key: "contact_person", title: "설계 담당자", width: "100px" },
-  { key: "inflow_type", title: "유입종류", width: "120px" },
-  { key: "site_capacity", title: "시설용량", width: "100px" },
-  { key: "solution", title: "솔루션", width: "150px" },
-  { key: "created_at", title: "생성일", width: "100px" },
-  { key: "country_code", title: "국가", width: "50px" },
-  { key: "recommended", title: "추천여부", width: "50px" },
+const tableColumns: TableColumn[] = [
+  {
+    key: "no",
+    title: "순번",
+    width: "80px",
+    sortable: false,
+  },
+  {
+    key: "project_name",
+    title: "프로젝트명",
+    width: "180px",
+    sortable: false,
+  },
+  {
+    key: "client_name",
+    title: "고객사",
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "contact_person",
+    title: "설계 담당자",
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "unit_system",
+    title: "단위",
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "site_capacity",
+    title: "시설용량",
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "solution",
+    title: "솔루션",
+    width: "120px",
+    sortable: false,
+  },
+  {
+    key: "created_at",
+    title: "생성일",
+    width: "120px",
+    sortable: false,
+    dateFormat: "YYYY-MM-DD",
+  },
+  {
+    key: "country_code",
+    title: "국가",
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "project_status",
+    title: "상태",
+    width: "100px",
+    sortable: false,
+  },
+  {
+    key: "recommended",
+    title: "추천여부",
+    width: "100px",
+    sortable: false,
+  },
 ];
 
-const projectRows = ref<ItemRow[]>([
-  {
-    id: "1",
-    project_name: "프로젝트 A",
-    client_name: "고객사 A",
-    contact_person: "홍길동",
-    inflow_type: "생활하수",
-    site_capacity: 1000,
-    solution: "솔루션1",
-    created_at: "2025-01-01",
-    country_code: "KR",
-    recommended: false,
-  },
-  {
-    id: "2",
-    project_name: "프로젝트 B",
-    client_name: "고객사 B",
-    contact_person: "김영희",
-    inflow_type: "산업폐수",
-    site_capacity: 2000,
-    solution: "솔루션2",
-    created_at: "2025-01-05",
-    country_code: "KR",
-    recommended: true,
-  },
-]);
+// store에서 상태 가져오기 (computed로 반응성 보장)
+const currentPage = computed(() => projectStore.currentPage);
+const totalPages = computed(() => projectStore.totalPages);
+const paginatedProjectList = computed(() => {
+  const pageSize = projectStore.pageSize;
+  const startIndex = (currentPage.value - 1) * pageSize;
 
-// 선택 컬럼 제거로 선택 상태 관리 불필요
-
-// Pagination state (local)
-const currentPage = ref(1);
-const pageSize = 10;
-const totalCount = computed(() => projectRows.value.length);
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(totalCount.value / pageSize))
-);
-const paginatedRows = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return projectRows.value.slice(start, start + pageSize).map((row, idx) => ({
-    ...row,
-    no: start + idx + 1,
+  return projectStore.paginatedProjectList.map((item, index) => ({
+    ...item,
+    no: startIndex + index + 1,
+    // project_recommended 값이 있으면 true, 없으면 false
+    recommended: !!item.project_recommended,
   }));
 });
 
-const handlePageChange = (page: number) => {
-  if (page < 1 || page > totalPages.value) return;
-  currentPage.value = page;
+const loadData = async (params?: {
+  page?: number;
+  search_value?: string;
+  order_by?: string;
+  order_direction?: "asc" | "desc" | "";
+}) => {
+  try {
+    await projectStore.fetchProjectList({
+      page: params?.page ?? projectStore.currentPage,
+      pageSize: projectStore.pageSize,
+      search_value: params?.search_value ?? searchQueryInput.value,
+      order_by: params?.order_by,
+      order_direction: params?.order_direction,
+      project_status: "SC_APPROVED",
+    });
+  } catch (error: any) {
+    console.error("데이터 로드 실패:", error);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.loadFailed"
+    );
+    alert(errorMessage);
+    throw error;
+  }
 };
+
+const handlePageChange = async (page: number) => {
+  try {
+    // 현재 검색 조건과 정렬 조건을 유지하면서 페이지 변경
+    await loadData({
+      page,
+      search_value: searchQueryInput.value,
+      order_by: projectStore.sortField,
+      order_direction: projectStore.sortOrder,
+    });
+  } catch (error: any) {
+    console.error("페이지 변경 실패:", error);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.pageChangeFailed"
+    );
+    alert(errorMessage);
+  }
+};
+
+const handleSearch = async () => {
+  // 검색시 정렬 상태 초기화
+  if (dataTableRef.value) {
+    dataTableRef.value.resetSort();
+  }
+
+  // 서버 측 검색 실행
+  try {
+    await loadData({
+      page: 1, // 검색 시 첫 페이지로 이동
+      search_value: searchQueryInput.value,
+      // 정렬 조건 제거 (초기화)
+    });
+  } catch (error: any) {
+    console.error("검색 실패:", error);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.searchFailed"
+    );
+    alert(errorMessage);
+  }
+};
+
+const handleSortChange = async (sortInfo: {
+  key: string | null;
+  direction: "asc" | "desc" | null;
+}) => {
+  try {
+    const params: {
+      page?: number;
+      search_value?: string;
+      order_by?: string;
+      order_direction?: "asc" | "desc" | "";
+    } = {
+      page: projectStore.currentPage, // 현재 페이지 유지
+      search_value: searchQueryInput.value,
+    };
+
+    // 정렬 조건 처리 (정렬 해제 포함)
+    if (sortInfo.key && sortInfo.direction) {
+      // 정렬 적용
+      params.order_by = sortInfo.key;
+      params.order_direction = sortInfo.direction;
+    } else if (sortInfo.key === null && sortInfo.direction === null) {
+      // 정렬 해제 - 빈 문자열로 전송하여 서버에서 정렬 없음을 인식
+      params.order_by = "";
+      params.order_direction = "" as const;
+    }
+
+    await loadData(params);
+  } catch (error: any) {
+    console.error("정렬 실패:", error);
+    const errorMessage = error?.message || "정렬에 실패했습니다.";
+    alert(errorMessage);
+  }
+};
+
+const onToggleRecommended = async (
+  e: Event,
+  item: ProjectItem & { recommended?: boolean }
+) => {
+  const checkbox = e.target as HTMLInputElement;
+  const nextValue = checkbox.checked;
+
+  try {
+    if (nextValue) {
+      // 추천 설정
+      if (!confirm(t("messages.confirm.confirmRecommendationSet"))) {
+        checkbox.checked = item.recommended || false; // 취소 시 원상복구
+        return;
+      }
+
+      const result = await projectStore.createRecommendation({
+        project_id: item.id,
+      });
+
+      if (result?.success) {
+        alert(t("messages.success.recommendationSetSuccess"));
+        // 데이터 다시 로드
+        await loadData({
+          page: currentPage.value,
+          search_value: searchQueryInput.value,
+          order_by: projectStore.sortField,
+          order_direction: projectStore.sortOrder,
+        });
+      } else {
+        checkbox.checked = item.recommended || false; // 실패 시 원상복구
+        const errorMessage = translateMessage(
+          result?.message,
+          "messages.error.recommendationCreateFailed"
+        );
+        alert(errorMessage);
+      }
+    } else {
+      // 추천 해제
+      if (!confirm(t("messages.confirm.confirmRecommendationRemove"))) {
+        checkbox.checked = item.recommended || false; // 취소 시 원상복구
+        return;
+      }
+
+      const recommendationId = item.project_recommended?.recommendation_id;
+      if (!recommendationId) {
+        checkbox.checked = item.recommended || false; // recommendation_id가 없으면 원상복구
+        alert(t("messages.error.recommendationNotFound"));
+        return;
+      }
+
+      const result = await projectStore.deleteRecommendation(recommendationId);
+
+      if (result?.success) {
+        alert(t("messages.success.recommendationRemoveSuccess"));
+        // 데이터 다시 로드
+        await loadData({
+          page: currentPage.value,
+          search_value: searchQueryInput.value,
+          order_by: projectStore.sortField,
+          order_direction: projectStore.sortOrder,
+        });
+      } else {
+        checkbox.checked = item.recommended || false; // 실패 시 원상복구
+        const errorMessage = translateMessage(
+          result?.message,
+          "messages.error.recommendationDeleteFailed"
+        );
+        alert(errorMessage);
+      }
+    }
+  } catch (error: any) {
+    console.error("추천 상태 변경 실패:", error);
+    checkbox.checked = item.recommended || false; // 에러 시 원상복구
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.recommendationUpdateFailed"
+    );
+    alert(errorMessage);
+  }
+};
+
+onMounted(async () => {
+  try {
+    await loadData({
+      page: 1,
+      search_value: "",
+    });
+  } catch (error) {
+    console.error("초기 데이터 로드 실패:", error);
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -169,12 +359,12 @@ const handlePageChange = (page: number) => {
   .form-item {
     input {
       width: 240px;
-      height:40px;
+      height: 40px;
     }
   }
 }
 
- input[type="checkbox"] {
+input[type="checkbox"] {
   appearance: none;
   width: 20px;
   height: 20px;
@@ -190,5 +380,5 @@ const handlePageChange = (page: number) => {
   &:checked {
     background-image: url(../../assets/icons/ico_check-on.svg);
   }
- }
+}
 </style>

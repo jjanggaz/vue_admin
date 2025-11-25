@@ -254,6 +254,31 @@ const handleSelectionChange = (items: ProjectItem[]) => {
   selectedItems.value = items;
 };
 
+const loadData = async (params?: {
+  page?: number;
+  search_value?: string;
+  order_by?: string;
+  order_direction?: "asc" | "desc" | "";
+}) => {
+  try {
+    await projectStore.fetchProjectList({
+      page: params?.page ?? projectStore.currentPage,
+      pageSize: projectStore.pageSize,
+      search_value: params?.search_value ?? searchQueryInput.value,
+      order_by: params?.order_by,
+      order_direction: params?.order_direction,
+    });
+  } catch (error: any) {
+    console.error("데이터 로드 실패:", error);
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.loadFailed"
+    );
+    alert(errorMessage);
+    throw error;
+  }
+};
+
 const handleSearch = async () => {
   // 검색시 정렬 상태 초기화
   if (dataTableRef.value) {
@@ -262,9 +287,8 @@ const handleSearch = async () => {
 
   // 서버 측 검색 실행
   try {
-    await projectStore.fetchProjectList({
+    await loadData({
       page: 1, // 검색 시 첫 페이지로 이동
-      pageSize: projectStore.pageSize,
       search_value: searchQueryInput.value,
       // 정렬 조건 제거 (초기화)
     });
@@ -283,9 +307,13 @@ const handleSortChange = async (sortInfo: {
   direction: "asc" | "desc" | null;
 }) => {
   try {
-    const params: any = {
-      page: projectStore.currentPage, // 현재 페이지 유지 (AccountManagement.vue와 동일)
-      pageSize: projectStore.pageSize,
+    const params: {
+      page?: number;
+      search_value?: string;
+      order_by?: string;
+      order_direction?: "asc" | "desc" | "";
+    } = {
+      page: projectStore.currentPage, // 현재 페이지 유지
       search_value: searchQueryInput.value,
     };
 
@@ -300,7 +328,7 @@ const handleSortChange = async (sortInfo: {
       params.order_direction = "" as const;
     }
 
-    await projectStore.fetchProjectList(params);
+    await loadData(params);
   } catch (error: any) {
     console.error("정렬 실패:", error);
     const errorMessage = error?.message || "정렬에 실패했습니다.";
@@ -447,7 +475,10 @@ const closeProjectDetail = () => {
 
 onMounted(async () => {
   try {
-    await projectStore.loadInitialData();
+    await loadData({
+      page: 1,
+      search_value: "",
+    });
   } catch (error) {
     console.error("초기 데이터 로드 실패:", error);
   }

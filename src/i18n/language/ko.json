@@ -1491,7 +1491,9 @@
       "roleUpdateSuccessNoMenuData": "권한이 성공적으로 수정되었습니다. (메뉴 데이터 없음)",
       "updateComplete": "수정 완료되었습니다.",
       "parameterUpdateSuccess": "파라미터 수정에 성공했습니다.",
-      "parameterCreateSuccess": "파라미터 등록에 성공했습니다."
+      "parameterCreateSuccess": "파라미터 등록에 성공했습니다.",
+      "recommendationSetSuccess": "추천을 설정했습니다.",
+      "recommendationRemoveSuccess": "추천을 해제했습니다."
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
@@ -1634,7 +1636,11 @@
       "measurementCommonDetailRetrieveFailed": "측정기 공통 상세 조회에 실패했습니다.",
       "measurementFileDetailRetrieveFailed": "측정기 파일 상세 조회에 실패했습니다.",
       "measurementUpdateFailed": "측정기 수정에 실패했습니다.",
-      "structureTypeAlreadyExists": "해당 구조물 정보가 이미 존재합니다."
+      "structureTypeAlreadyExists": "해당 구조물 정보가 이미 존재합니다.",
+      "recommendationCreateFailed": "추천 프로젝트 생성에 실패했습니다.",
+      "recommendationDeleteFailed": "추천 프로젝트 삭제에 실패했습니다.",
+      "recommendationUpdateFailed": "추천 상태 변경에 실패했습니다.",
+      "recommendationNotFound": "추천 정보를 찾을 수 없습니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
@@ -1645,7 +1651,9 @@
       "deleteUscsFormula": "선택한 Uscs 계산식을 삭제하시겠습니까?",
       "deleteSymbol": "심볼을 삭제하시겠습니까?",
       "deleteFormula": "계산식 \"{name}\"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
-      "deleteStructure": "구조물 \"{name}\"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다."
+      "deleteStructure": "구조물 \"{name}\"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
+      "confirmRecommendationSet": "추천을 설정하시겠습니까?",
+      "confirmRecommendationRemove": "추천을 해제하시겠습니까?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "삭제할 항목을 선택하세요.",

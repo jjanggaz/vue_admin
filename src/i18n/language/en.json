@@ -1496,7 +1496,9 @@
       "roleUpdateSuccessNoMenuData": "Role successfully updated. (No menu data)",
       "updateComplete": "Update completed.",
       "parameterUpdateSuccess": "Parameter successfully updated.",
-      "parameterCreateSuccess": "Parameter successfully created."
+      "parameterCreateSuccess": "Parameter successfully created.",
+      "recommendationSetSuccess": "Recommendation has been set.",
+      "recommendationRemoveSuccess": "Recommendation has been removed."
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
@@ -1639,7 +1641,11 @@
       "measurementCommonDetailRetrieveFailed": "Failed to retrieve measurement common details.",
       "measurementFileDetailRetrieveFailed": "Failed to retrieve measurement file details.",
       "measurementUpdateFailed": "Failed to update measurement.",
-      "structureTypeAlreadyExists": "Structure information already exists."
+      "structureTypeAlreadyExists": "Structure information already exists.",
+      "recommendationCreateFailed": "Failed to create recommendation.",
+      "recommendationDeleteFailed": "Failed to delete recommendation.",
+      "recommendationUpdateFailed": "Failed to update recommendation status.",
+      "recommendationNotFound": "Recommendation information not found."
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",
@@ -1650,7 +1656,9 @@
       "deleteUscsFormula": "Are you sure you want to delete the selected Uscs formula?",
       "deleteSymbol": "Are you sure you want to delete the symbol?",
       "deleteFormula": "Are you sure you want to delete formula \"{name}\"?\n\nThis action cannot be undone.",
-      "deleteStructure": "Are you sure you want to delete structure \"{name}\"?\n\nThis action cannot be undone."
+      "deleteStructure": "Are you sure you want to delete structure \"{name}\"?\n\nThis action cannot be undone.",
+      "confirmRecommendationSet": "Are you sure you want to set as recommended?",
+      "confirmRecommendationRemove": "Are you sure you want to remove recommendation?"
     },
     "warning": {
       "pleaseSelectItemToDelete": "Please select items to delete.",

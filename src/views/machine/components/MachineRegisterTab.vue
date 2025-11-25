@@ -24,6 +24,13 @@
       <div class="group-form inline">
         <span class="label required">{{ t("common.excelUpload") }}</span>
         <div class="file-upload-group">
+          <button
+            type="button"
+            class="btn-file"
+            @click="excelFileInput?.click()"
+          >
+            {{ t("common.selectFile") }}
+          </button>
           <input
             type="text"
             class="input file-name-input"
@@ -38,13 +45,6 @@
             style="display: none"
             @change="handleExcelFileChange"
           />
-          <button
-            type="button"
-            class="btn-file"
-            @click="excelFileInput?.click()"
-          >
-            {{ t("common.selectFile") }}
-          </button>
         </div>
       </div>
       <div class="group-form inline right-align">
@@ -70,6 +70,13 @@
       <div class="section-title">{{ t("common.machineUpload") }}</div>
       <div class="section-actions">
         <div class="file-upload-group">
+          <button
+            type="button"
+            class="btn-file"
+            @click="bulkFileInput?.click()"
+          >
+            {{ t("common.bulkModelUpload") }}
+          </button>
           <input
             type="text"
             class="input file-name-input"
@@ -84,13 +91,6 @@
             style="display: none"
             @change="handleBulkFileChange"
           />
-          <button
-            type="button"
-            class="btn-file"
-            @click="bulkFileInput?.click()"
-          >
-            {{ t("common.bulkModelUpload") }}
-          </button>
           <button
             type="button"
             class="btn-register"
@@ -804,76 +804,69 @@ $desktop: 1200px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 12px 16px;
-  align-items: center;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  gap: 20px 10px;
+  align-items: flex-end;
 
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 10px 12px;
-    padding: 12px;
   }
 
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
   }
 }
 
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
 
   &.wide {
     grid-column: span 2;
 
-    @media (max-width: $tablet) {
-      grid-column: span 1;
-    }
+    // @media (max-width: $tablet) {
+    //   grid-column: span 1;
+    // }
   }
 
   &.inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
 
     @media (max-width: $mobile) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
     }
   }
 
+  &.inline:last-child {
+    flex-direction: row;
+  }
+
   &.right-align {
-    justify-content: flex-end;
+    justify-content: flex-start;
+
+    @media (max-width: $mobile) {
+      justify-content: flex-end;
+    }
   }
 }
 
 .label {
+  color: #333333;
   font-size: 13px;
-  color: #475467;
+  font-weight: 600;
   min-width: 100px;
   flex-shrink: 0;
 
   &.required::after {
-    content: " (＊)";
-    color: #e74c3c;
+    content: "*";
+    color: #333333;
     margin-left: 4px;
-  }
-
-  @media (max-width: $mobile) {
-    min-width: auto;
-    font-size: 12px;
   }
 }
 
@@ -882,7 +875,7 @@ $desktop: 1200px;
 }
 
 .input {
-  height: 32px;
+  height: 40px;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
   padding: 0 8px;
@@ -890,9 +883,11 @@ $desktop: 1200px;
   width: 100%;
   min-width: 0; // input이 축소될 수 있도록 함
 
-  @media (max-width: $mobile) {
-    height: 28px;
-    font-size: 12px;
+  &:disabled,
+  &:read-only {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+    pointer-events: none;
   }
 }
 
@@ -929,23 +924,23 @@ $desktop: 1200px;
 }
 
 .btn-outline {
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  color: #344054;
+  height: 40px;
+  background: #222e77;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background .2s ease;
 
   &:hover {
-    background: #f9fafb;
-    border-color: #98a2b3;
+    background: #29378c;
   }
 
   &:active {
-    background: #f2f4f7;
+    background: #29378c;
   }
 
   @media (max-width: $mobile) {
@@ -957,20 +952,21 @@ $desktop: 1200px;
 .file-upload-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   min-width: 0; // flex 컨테이너가 축소될 수 있도록 함
 
   @media (max-width: $mobile) {
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
-    gap: 6px;
+    gap: 10px;
   }
 }
 
 .file-name-input {
   flex: 1;
   min-width: 120px;
+  height: 40px;
   padding: 8px 12px;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
@@ -993,51 +989,46 @@ $desktop: 1200px;
 }
 
 .btn-file {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
   flex-shrink: 0;
+  white-space: nowrap;
+  height: 40px;
+  padding: 0 10px;
+  background: #3e435e;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  cursor: pointer;
 
   &:hover {
-    background: #2563eb;
+    background: #3c4973;
   }
 
   &:active {
-    background: #1d4ed8;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
+    background: #3c4973;
   }
 }
 
 .btn-register {
-  background: #10b981;
+  height: 40px;
+  background: #222e77;
   color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
   flex-shrink: 0;
 
   &:hover {
-    background: #059669;
-  }
+    background: #29378c;
+  } 
 
   &:active {
-    background: #047857;
+    background: #29378c;
   }
 
   @media (max-width: $mobile) {
@@ -1047,28 +1038,23 @@ $desktop: 1200px;
 }
 
 .section-title {
-  margin: 10px 0;
   font-weight: 600;
   font-size: 16px;
-
-  @media (max-width: $mobile) {
-    font-size: 14px;
-    margin: 8px 0;
-  }
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 10px 0;
+  margin: 20px 0 10px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 
   @media (max-width: $mobile) {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
+    margin: 40px 0 10px;
   }
 }
 

@@ -3053,6 +3053,25 @@ dl.column-regist {
     display: none; // Chrome/Safari
   }
 
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 12px;
+    height: 40px;
+    overflow: hidden;
+    z-index: 10;
+  }
+  &::before {
+    left: 20px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  }
+  &::after {
+    right: 20px;
+    background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  }
+
   .tab {
     flex-shrink: 0;
     white-space: nowrap; // 텍스트 줄바꿈 방지

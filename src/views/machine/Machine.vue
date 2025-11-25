@@ -693,7 +693,7 @@
             <MachineFormulaRegisterTab v-if="modalActiveTab === 1" />
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer code-modal">
           <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
@@ -3094,46 +3094,37 @@ $tablet: 1024px;
 
 .tabs-wrapper {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
   overflow-x: auto; // 탭이 많을 때 스크롤 가능
-
-  @media (max-width: $mobile) {
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-  }
+  padding: 0;
 }
 
 .tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: border 0.2s, color 0.2s;
-  white-space: nowrap;
   flex-shrink: 0;
+  height: 40px;
+  line-height: 40px;
+  white-space: nowrap;
+  padding: 0 20px;
+  border-radius: 10px 10px 0 0;
+  background: #e7e6ed;
+  cursor: pointer;
+  transition: background .1s ease-in-out;
+  color: #484848;
+  font-size: 15px;
+  font-weight: 500;
 
-  @media (max-width: $mobile) {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
+  // @media (max-width: $mobile) {
+  //   padding: 0.5rem 1rem;
+  //   font-size: 1rem;
+  // }
 }
 
 .tab.active {
-  color: #1a73e8;
-  border-bottom: 2px solid #1a73e8;
-  font-weight: bold;
+  color: #ffffff;
+  background: #0863e2;
 }
 
 .tab-content {
-  margin-top: 1.5rem;
-
-  @media (max-width: $mobile) {
-    margin-top: 1rem;
-  }
+  margin-top: 20px;
 }
 
 .column-regist {
@@ -3183,6 +3174,62 @@ $tablet: 1024px;
   @media (max-width: $mobile) {
     padding: 0.4rem;
     font-size: 0.8rem;
+  }
+}
+
+.modal-footer {
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
+  .btn {
+    width: 200px;
+    min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
+  }
+
+  .btn-cancel {
+    background-color: #707489;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #82869d;
+    }
+  }
+
+  .btn-confirm {
+    background-color: #222e77;
+    color: #fff;
+
+    &:hover {
+      background-color: #29378c;
+    }
+  }
+}
+
+.modal-footer.code-modal {
+  .btn {
+    &:first-child {
+      @media (max-width: 768px) {
+        width: 100%;
+        min-width: 100%;
+      }
+    }
   }
 }
 </style>

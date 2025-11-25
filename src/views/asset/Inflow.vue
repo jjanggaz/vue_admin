@@ -331,6 +331,15 @@
               <dt>{{ t("common.symbolUpload") }}</dt>
               <dd>
                 <div class="file-upload-row">
+                  <label class="file-select-btn">
+                    {{ t("common.selectFile") }}
+                    <input
+                      type="file"
+                      @change="handleFileUpload"
+                      accept=".svg"
+                      style="display: none"
+                    />
+                  </label>
                   <input
                     type="text"
                     :value="
@@ -342,15 +351,6 @@
                     readonly
                     class="file-name-input"
                   />
-                  <label class="file-select-btn">
-                    {{ t("common.selectFile") }}
-                    <input
-                      type="file"
-                      @change="handleFileUpload"
-                      accept=".svg"
-                      style="display: none"
-                    />
-                  </label>
                 </div>
               </dd>
             </div>
@@ -376,13 +376,6 @@
                 <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="metricFileUpload">
-                    <input
-                      type="text"
-                      :value="metricFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
                     <label class="file-select-btn">
                       {{ t("common.selectFile") }}
                       <input
@@ -392,6 +385,13 @@
                         style="display: none"
                       />
                     </label>
+                    <input
+                      type="text"
+                      :value="metricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
                   </div>
                 </dd>
               </dl>
@@ -443,13 +443,6 @@
                 <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="uscsFileUpload">
-                    <input
-                      type="text"
-                      :value="uscsFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
                     <label class="file-select-btn">
                       {{ t("common.selectFile") }}
                       <input
@@ -459,6 +452,13 @@
                         style="display: none"
                       />
                     </label>
+                    <input
+                      type="text"
+                      :value="uscsFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
                   </div>
                 </dd>
               </dl>
@@ -599,6 +599,15 @@
               <dt>{{ t("common.symbolUpload") }}</dt>
               <dd>
                 <div class="file-upload-row">
+                  <label class="file-select-btn">
+                    {{ t("common.selectFile") }}
+                    <input
+                      type="file"
+                      @change="handleFileUpload"
+                      accept=".svg"
+                      style="display: none"
+                    />
+                  </label>
                   <input
                     type="text"
                     :value="
@@ -610,15 +619,6 @@
                     readonly
                     class="file-name-input"
                   />
-                  <label class="file-select-btn">
-                    {{ t("common.selectFile") }}
-                    <input
-                      type="file"
-                      @change="handleFileUpload"
-                      accept=".svg"
-                      style="display: none"
-                    />
-                  </label>
                 </div>
               </dd>
             </div>
@@ -652,13 +652,6 @@
                 <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="updateMetricFileUpload">
-                    <input
-                      type="text"
-                      :value="metricFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
                     <label class="file-select-btn">
                       {{ t("common.selectFile") }}
                       <input
@@ -668,6 +661,13 @@
                         style="display: none"
                       />
                     </label>
+                    <input
+                      type="text"
+                      :value="metricFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
                   </div>
                 </dd>
               </dl>
@@ -719,13 +719,6 @@
                 <dt class="essential">{{ t("inflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="updateUscsFileUpload">
-                    <input
-                      type="text"
-                      :value="uscsFileName || ''"
-                      :placeholder="t('placeholder.selectFile')"
-                      readonly
-                      class="file-name-input"
-                    />
                     <label class="file-select-btn">
                       {{ t("common.selectFile") }}
                       <input
@@ -735,6 +728,13 @@
                         style="display: none"
                       />
                     </label>
+                    <input
+                      type="text"
+                      :value="uscsFileName || ''"
+                      :placeholder="t('placeholder.selectFile')"
+                      readonly
+                      class="file-name-input"
+                    />
                   </div>
                 </dd>
               </dl>
@@ -778,15 +778,15 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-cancel" @click="closeUpdateModal">
-            {{ t("common.cancel") }}
-          </button>
           <button
             class="btn btn-confirm"
             @click="updateTab"
             :disabled="isUpdating"
           >
             {{ isUpdating ? t("common.processing") : t("common.save") }}
+          </button>
+          <button class="btn btn-cancel" @click="closeUpdateModal">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -1490,7 +1490,7 @@ const handleMetricFileUpload = async (event: Event) => {
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
-              remarks: paramData.description || "",
+              remarks: paramData.remark || "",
             };
             extractedData.push(gridRow);
           }
@@ -1601,7 +1601,7 @@ const handleUscsFileUpload = async (event: Event) => {
               unit: paramData.unit || "mg/L",
               is_active: true,
               is_required: !!paramData.is_required,
-              remarks: paramData.description || "",
+              remarks: paramData.remark || "",
             };
             extractedData.push(gridRow);
           }
@@ -2894,24 +2894,19 @@ dl.column-regist {
   position: absolute;
   top: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 0;
-  border: none;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 18px;
-  font-weight: normal;
-  font-family: Arial, sans-serif;
-  line-height: 1;
-  text-align: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 100%;
+  background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center /
+    8px auto;
+  background-color: rgba(62, 67, 94, 0.7);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease-in-out;
   z-index: 10;
-  padding: 1px 0 0 0;
-  margin: 0;
 
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 8px
-    auto;
+  &:hover {
+    background-color: rgba(62, 67, 94, 1);
+  }
 }
 </style>

@@ -117,12 +117,12 @@
                   <span
                     v-if="!processStore.processSymbolPreviewUrl"
                     style="
-                      color: #6b7280;
-                      font-size: 14px;
-                      font-style: italic;
                       display: block;
-                      padding: 40px 10px;
                       text-align: center;
+                      /* padding: 40px 10px; */
+                      color: #aaaaaa;
+                      font-size: 13px;
+                      font-weight: 400;
                     "
                   >
                     {{ t("common.noFile") }}
@@ -154,9 +154,9 @@
                       right: 0;
                       width: 20px;
                       height: 20px;
-                      border-radius: 0;
+                      border-radius: 100%;
                       border: none;
-                      background-color: rgba(0, 0, 0, 0.5);
+                      background-color: #3e435e;
                       color: white;
                       font-size: 18px;
                       font-weight: normal;
@@ -188,9 +188,9 @@
                   @click="downloadProcessSymbol"
                   class="btn btn-sm btn-outline-primary download-btn"
                   :title="t('processDetail.downloadProcessSymbol')"
-                  style="margin-left: 10px; vertical-align: middle"
+                  style="vertical-align: middle"
                 >
-                  <i class="fas fa-download"></i>
+                  <span class="ico-download"></span>
                 </button>
               </span>
             </div>
@@ -207,15 +207,10 @@
     </div>
 
     <!-- 파일명 규칙 안내 -->
-    <div
-      style="
-        color: red;
-        padding: 10px 15px;
-        margin-bottom: 15px;
-        text-align: center;
-      "
-    >
-      ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
+    <div class="caution-message">
+      <span class="caution-ico">
+        {{ t("messages.warning.invalidFormulaFileNameFormat") }}
+      </span>
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -309,7 +304,7 @@
                     class="btn btn-sm btn-outline-primary download-btn"
                     :title="t('processDetail.downloadFormula')"
                   >
-                    <i class="fas fa-download"></i>
+                    <span class="ico-download"></span>
                   </button>
                 </span>
               </div>
@@ -455,7 +450,7 @@
                       class="btn btn-sm btn-outline-primary download-btn"
                       :title="t('processDetail.downloadPfd')"
                     >
-                      <i class="fas fa-download"></i>
+                      <span class="ico-download"></span>
                     </button>
                   </span>
                 </div>
@@ -485,7 +480,7 @@
                     class="btn btn-sm btn-outline-primary download-btn"
                     title="Svg 파일 다운로드"
                   >
-                    <i class="fas fa-download"></i>
+                    <span class="ico-download"></span>
                   </button>
                 </span>
               </div>
@@ -576,7 +571,7 @@
                   class="btn btn-sm btn-outline-primary download-btn"
                   title="P&ID 다운로드"
                 >
-                  <i class="fas fa-download"></i>
+                  <span class="ico-download"></span>
                 </button>
               </span>
               <span v-else class="no-file">{{ t("common.noFile") }}</span>
@@ -616,7 +611,7 @@
                   class="btn btn-sm btn-outline-primary download-btn"
                   :title="t('processDetail.downloadMappingExcel')"
                 >
-                  <i class="fas fa-download"></i>
+                  <span class="ico-download"></span>
                 </button>
                 <span
                   v-else-if="
@@ -667,7 +662,7 @@
                   class="btn btn-sm btn-outline-primary download-btn"
                   :title="t('processDetail.downloadMappingSvg')"
                 >
-                  <i class="fas fa-download"></i>
+                  <span class="ico-download"></span>
                 </button>
                 <span
                   v-else-if="
@@ -818,10 +813,13 @@
 
     <!-- 용량계산서 등록 섹션 -->
     <div class="capacity-calculation-section">
-      <div class="tab-header">
-        <div class="grid-title">
-          <h4>{{ t("processDetail.capacityCalculationRegistration") }}</h4>
+      <div class="capacity-calculation-item">
+        <div class="tab-header">
+          <div class="grid-title">
+            <h4>{{ t("processDetail.capacityCalculationRegistration") }}</h4>
+          </div>
         </div>
+<<<<<<< HEAD
       </div>
       <div class="file-upload-container">
         <div class="file-input-group">
@@ -883,6 +881,71 @@
           >
             등록
           </button>
+=======
+        <div class="file-upload-container">
+          <div class="file-input-group">
+            <input
+              type="file"
+              ref="capacityCalculationFileInput"
+              accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+              @change="handleCapacityCalculationFileChange"
+              style="display: none"
+              :disabled="!hasFormulaData"
+            />
+            <button
+              type="button"
+              @click="capacityCalculationFileInput?.click()"
+              class="file-select-btn"
+              :disabled="!hasFormulaData"
+            >
+              {{ t("common.selectFile") }}
+            </button>
+            <input
+              type="text"
+              class="form-control"
+              :value="
+                processStore.capacityCalculationFileName ||
+                processStore.processDetail.ccs_file_name ||
+                ''
+              "
+              placeholder="파일을 선택해주세요"
+              readonly
+            />
+            <button
+              v-if="processStore.processDetail.ccs_file_id"
+              type="button"
+              class="btn btn-sm btn-outline-primary download-btn"
+              @click="handleCapacityCalculationDownload"
+              :disabled="!hasFormulaData"
+              :title="t('processDetail.downloadCapacityCalculation')"
+              style="margin-left: 10px; vertical-align: middle"
+            >
+              <span class="ico-download"></span>
+            </button>
+            
+            <button
+              type="button"
+              class="file-select-btn"
+              @click="handleCapacityCalculationRegister"
+              :disabled="!processStore.capacityCalculationFile || !hasFormulaData"
+            >
+              등록
+            </button>
+            <button
+              type="button"
+              class="file-select-btn"
+              @click="handleCapacityCalculationFileDelete"
+              :disabled="
+                (!processStore.capacityCalculationFile &&
+                  !processStore.processDetail.ccs_file_name) ||
+                !hasFormulaData
+              "
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+>>>>>>> 0d981954b00626c9b507ae3bcf34d98d2fa4b81f
       </div>
     </div>
   </div>
@@ -11662,50 +11725,50 @@ watch(
 </script>
 
 <style scoped>
-.process-detail {
-  padding: 5px 20px 5px 20px;
-}
-
 .process-info-section {
-  margin-bottom: 8px;
-  padding: 8px 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.process-info-section h3 {
-  margin-bottom: 0;
-  color: #333;
+  margin-bottom: 20px;
 }
 
 .form-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+
+  .download-btn {
+    margin-left: 0;
+  }
 }
 
 .form-grid {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 15px;
-  align-items: flex-start;
-  width: 100%;
   flex: 1;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
 }
 
 .register-button-container {
   display: flex;
-  align-items: flex-start;
-  padding-top: 5px; /* 더 위로 이동 */
+  align-items: flex-end;
+  height: 64px;
 }
 
 .register-button-container .save-btn {
-  width: 60px; /* 버튼 폭 줄임 */
-  padding: 14px 12px; /* 세로 패딩 더 늘림 */
-  font-size: 13px; /* 폰트 크기 줄임 */
-  background-color: #0056b3 !important;
-  border-color: #0056b3 !important;
+  position: relative;
+  padding: 8px 16px 8px 35px;
+ 
+  &::before {
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    width: 13px;
+    height: 13px;
+    background: url(../../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+    aspect-ratio: 1/1;
+  }
 
   &:hover {
     background-color: #004085 !important;
@@ -11719,14 +11782,31 @@ watch(
   }
 }
 
+.caution-message {
+  position: relative;
+  text-align: center;
+  padding: 20px 0;
+
+  .caution-ico {
+    display: inline-block;
+    padding: 2px 0 1.5px 18px;
+    color: #FF3B30;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Noto Sans KR";
+    letter-spacing: -0.056px;
+    background: url(../../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
+  }
+}
+
 /* 필수 입력 표시 스타일 */
 .required {
   font-weight: 600;
 }
 
 .required-mark {
-  color: #dc3545;
-  font-weight: bold;
+  color: #333333;
+  font-weight: 600;
   margin-left: 2px;
 }
 
@@ -11751,23 +11831,36 @@ watch(
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  margin-bottom: 0;
 }
 
 .form-group label {
-  margin-bottom: 5px;
   font-weight: 600;
-  color: #555;
-  font-size: 0.9rem;
+  color: #333333;
+  font-size: 13px;
   white-space: nowrap;
 }
 
 .form-group select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+  appearance: none;
   width: 100%;
   min-width: 140px;
+  height: 40px;
+  padding: 0 32px 0 10px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: none;
+    background-image: url(../../assets/icons/ico_select-up.svg);
+  }
 }
 
 .file-input-group {
@@ -11779,24 +11872,28 @@ watch(
 }
 
 .file-select-btn {
-  padding: 8px 14px;
-  background: #007bff;
+  text-align: center;
+  width: 88px;
+  height: 40px;
+  line-height: 40px;
+  background: #3e435e;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 500;
   white-space: nowrap;
+  transition: background .2s ease;
 }
 
 .file-select-btn:hover {
-  background: #0056b3;
+  background: #3c4973;
 }
 
 .file-select-btn:disabled {
-  background: #6c757d;
+  background: #abaebd;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .selected-file {
@@ -11811,8 +11908,6 @@ watch(
 
 .pfd-section {
   margin-top: 20px;
-  padding-top: 10px;
-  border-top: 2px solid #e9ecef;
 }
 
 .components-section {
@@ -11836,7 +11931,7 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+
 }
 
 .grid-title {
@@ -11844,10 +11939,10 @@ watch(
 }
 
 .grid-title h4 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  width: 160px;
   color: #333;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .tab-header h3 {
@@ -11857,6 +11952,23 @@ watch(
 .tab-actions {
   display: flex;
   gap: 10px;
+  margin-bottom: 10px;
+
+  .btn {
+    text-align: center;
+    width: 45px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 10px;
+    font-weight: 500;
+
+    &:disabled {
+      opacity: 1;
+      border: none;
+      background-color: #abaebd;
+      color: #ffffff;
+    }
+  }
 }
 
 .btn {
@@ -11877,41 +11989,34 @@ watch(
 
 .save-btn {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   width: 80px;
 }
 
 .btn-danger {
-  background: #0056b3;
+  background-color: #3e435e;
   color: white;
+  transition: background .3s ease-in-out;
+
+  &:hover {
+    background-color: #3c4973;
+  }
 }
 
 .btn-success {
-  background: #0056b3;
+  background-color: #0863e2;
   color: white;
-}
+  transition: background .3s ease-in-out;
 
-.btn-success:hover {
-  background: #004085;
-}
-
-.btn-danger:hover {
-  background: #004085;
-}
-
-.btn-danger:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
+  &:hover {
+    background-color: #0067f5;
+  }
 }
 
 .btn-secondary {
-  background: #0056b3;
+  background-color: #0056b3;
   color: white;
-}
-
-.btn-secondary:hover {
-  background: #004085;
 }
 
 .modal-overlay {
@@ -12113,9 +12218,22 @@ watch(
 }
 
 .btn-sm {
-  padding: 4px 8px;
-  font-size: 12px;
+  justify-content: center;
+  width: auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 10px;
   border-radius: 4px;
+  background-color: #3e435e;
+  font-size: 14px;
+
+  :hover {
+    background-color: #3c4973;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: #3c4973;
+  }
 }
 
 /* 컴포넌트 버튼 스타일 */
@@ -12162,23 +12280,17 @@ watch(
 
 /* 계산식 영역 안내 메시지 스타일 */
 .formula-placeholder {
-  padding: 40px 20px;
+  padding: 40px 0;
   text-align: center;
-  background-color: #f8f9fa;
-  border: 2px dashed #dee2e6;
+  border: 2px dashed #e7e6ed;
   border-radius: 8px;
-  margin: 20px 0;
+  margin-top: 10px;
 }
 
 .placeholder-message {
-  color: #6c757d;
-  font-size: 16px;
+  color: #aaaaaa;
+  font-size: 13px;
   font-weight: 500;
-}
-
-.placeholder-message p {
-  margin: 0;
-  padding: 0;
 }
 
 /* 비활성화된 버튼 스타일 */
@@ -12372,19 +12484,30 @@ watch(
 
 /* 공정심볼 다운로드 버튼 스타일 */
 .download-btn {
-  margin-left: 10px;
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 40px;
   padding: 4px 8px;
   font-size: 12px;
-  border: 1px solid #007bff;
-  background-color: transparent;
-  color: #007bff;
+  background-color: #3e435e;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease-in-out;
+
+  .ico-download {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: url(../../assets/icons/ico_download.svg) no-repeat center / 24px auto;
+  }
 }
 
 .download-btn:hover {
-  background-color: #007bff;
+  background-color: #3c4973;
   color: white;
 }
 
@@ -12422,14 +12545,26 @@ watch(
 .file-selection-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+
+  .file-select-btn {
+    width: 80px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 14px;
+  }
+
+  .download-btn {
+    width: 36px;
+    height: 32px;
+  }
 }
 
 .selected-file {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   color: #333;
   font-size: 14px;
 }
@@ -12457,23 +12592,53 @@ watch(
 
 /* 용량계산서 등록 섹션 */
 .capacity-calculation-section {
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 2px solid #e9ecef;
+  margin: 20px 0;
+
+  .capacity-calculation-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
 .file-upload-container {
   display: flex;
   align-items: center;
   gap: 12px;
+  
+  .file-input-group {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+  
+    .file-select-btn {
+      width: 70px;
+      height: 32px;
+      line-height: 32px;
+      font-size: 14px;
+      transition: background 0.2s ease-in-out;
+    }
+    
+    .file-select-btn:nth-of-type(2) {
+      background-color: #222E77;
+  
+      &:hover {
+        background-color: #29378C;
+      }
+  
+      &:disabled {
+        background-color: #abaebd;
+      }
+    }
+  
+    .file-select-btn:nth-of-type(2),
+    .file-select-btn:nth-of-type(3) {
+      width: 45px;
+    }
+  }
 }
 
-.file-input-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
 
 .file-input-group .form-control {
   flex: 1;
@@ -12482,12 +12647,18 @@ watch(
 .capacity-calculation-section
   .file-input-group
   input[type="text"].form-control {
-  flex: 0.3 !important;
-  padding: 6.4px 8px !important;
-  min-height: unset !important;
+  flex: 1;
+  width: 400px;
+  height: 32px;
+  padding: 0 10px;
+  /* min-height: unset !important;
   height: calc(1.4em + 12.8px) !important;
-  line-height: 1.4 !important;
-  box-sizing: border-box !important;
+  line-height: 1.4 !important; */
+  border-radius: 4px;
+  padding: 0 10px;
+  border-radius: 4px;
+  border: 1px solid #e7e6ed;;
+  font-size: 15px;
 }
 
 .btn-register:hover:not(:disabled) {
@@ -12498,5 +12669,26 @@ watch(
   background-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+input[type="radio"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px auto;
+  background-image: url(../../assets/icons/ico_radio-off.svg);
+  cursor: pointer;
+
+  &:checked {
+    background-image: url(../../assets/icons/ico_radio-on.svg);
+  }
+
+  &:disabled {
+    background-image: url(../../assets/icons/ico_radio-disabled.svg);
+  }
 }
 </style>

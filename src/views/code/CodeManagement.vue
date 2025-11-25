@@ -39,7 +39,9 @@
           >
             <option value="">
               {{
-                uniqueCategories1.length === 0 ? "내용없음" : t("common.select")
+                uniqueCategories1.length === 0
+                  ? t("common.noContent")
+                  : t("common.select")
               }}
             </option>
             <option
@@ -67,7 +69,9 @@
           >
             <option value="">
               {{
-                uniqueCategories2.length === 0 ? "내용없음" : t("common.select")
+                uniqueCategories2.length === 0
+                  ? t("common.noContent")
+                  : t("common.select")
               }}
             </option>
             <option
@@ -92,7 +96,9 @@
           >
             <option value="">
               {{
-                uniqueCategories3.length === 0 ? "내용없음" : t("common.select")
+                uniqueCategories3.length === 0
+                  ? t("common.noContent")
+                  : t("common.select")
               }}
             </option>
             <option
@@ -278,15 +284,15 @@
             <dt>{{ t("columns.code.usageStatus") }}</dt>
             <dd>
               <select v-model="newCode.is_active" class="filter-select">
-                <option :value="true">사용</option>
-                <option :value="false">미사용</option>
+                <option :value="true">{{ t("common.used") }}</option>
+                <option :value="false">{{ t("common.unused") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.isLeaf") }}</dt>
             <dd>
               <select v-model="newCode.is_leaf" class="filter-select">
-                <option :value="true">Y</option>
-                <option :value="false">N</option>
+                <option :value="true">{{ t("common.yesShort") }}</option>
+                <option :value="false">{{ t("common.noShort") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.isAdminOnly") }}</dt>
@@ -402,15 +408,15 @@
             <dt>{{ t("columns.code.usageStatus") }}</dt>
             <dd>
               <select v-model="newCode.is_active" class="filter-select">
-                <option :value="true">사용</option>
-                <option :value="false">미사용</option>
+                <option :value="true">{{ t("common.used") }}</option>
+                <option :value="false">{{ t("common.unused") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.isLeaf") }}</dt>
             <dd>
               <select v-model="newCode.is_leaf" class="filter-select">
-                <option :value="true">Y</option>
-                <option :value="false">N</option>
+                <option :value="true">{{ t("common.yesShort") }}</option>
+                <option :value="false">{{ t("common.noShort") }}</option>
               </select>
             </dd>
             <dt>{{ t("columns.code.isAdminOnly") }}</dt>
@@ -703,14 +709,16 @@ const tableColumns: TableColumn[] = [
     title: t("columns.code.usageStatus"),
     width: "100px",
     sortable: true,
-    formatter: (value: boolean) => (value ? "사용" : "미사용"),
+    formatter: (value: boolean) =>
+      value ? t("common.used") : t("common.unused"),
   },
   {
     key: "is_leaf",
     title: t("columns.code.isLeaf"),
     width: "100px",
     sortable: true,
-    formatter: (value: boolean) => (value ? "Y" : "N"),
+    formatter: (value: boolean) =>
+      value ? t("common.yesShort") : t("common.noShort"),
   },
   {
     key: "is_admin_only",
@@ -718,7 +726,7 @@ const tableColumns: TableColumn[] = [
     width: "100px",
     sortable: true,
     formatter: (value: boolean | undefined | null) =>
-      value === true ? "Y" : "N",
+      value === true ? t("common.yesShort") : t("common.noShort"),
   },
   {
     key: "description",
@@ -1022,7 +1030,7 @@ const handleSingleRegist = () => {
 const handleMultiRegist = () => {
   // 코드그룹이 선택되지 않았으면 경고
   if (!searchCodeGroupInput.value) {
-    alert("다건등록을 위해서는 코드그룹을 먼저 선택해주세요.");
+    alert(t("messages.warning.pleaseSelectCodeGroupForMultiRegister"));
     return;
   }
 
@@ -1043,7 +1051,7 @@ const handleMultiRegist = () => {
 
   // 선택된 코드그룹 정보 확인
   if (!selectedGroup) {
-    alert("선택된 코드그룹 정보를 찾을 수 없습니다.");
+    alert(t("messages.warning.codeGroupInfoNotFound"));
     return;
   }
 
@@ -1194,7 +1202,7 @@ const handleDelete = async () => {
   const confirmMessage =
     deleteCount === 1
       ? t("messages.confirm.deleteItem")
-      : `${deleteCount}개의 항목을 삭제하시겠습니까?`;
+      : t("messages.confirm.deleteItems", { count: deleteCount });
 
   if (confirm(confirmMessage)) {
     console.log("삭제할 항목:", selectedItems.value);
@@ -1226,7 +1234,12 @@ const handleDelete = async () => {
       } else if (successCount === 0) {
         alert(t("messages.error.deleteFailed"));
       } else {
-        alert(`${successCount}개 삭제 성공, ${failCount}개 삭제 실패`);
+        alert(
+          t("messages.success.deletePartialSuccess", {
+            successCount,
+            failCount,
+          })
+        );
       }
 
       // 모든 selectbox 데이터 refresh
@@ -1334,7 +1347,10 @@ const handleEdit = () => {
 }
 
 .column-regist {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr) minmax(200px, 2fr)
+  );
 
   dt {
     margin: 0;

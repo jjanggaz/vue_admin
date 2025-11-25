@@ -36,7 +36,9 @@
       "thisMonth": "이번달",
       "projectApproval": "프로젝트 승인",
       "processApproval": "프로세스 승인",
-      "modelApproval": "3D모델 등록승인"
+      "modelApproval": "3D모델 등록승인",
+      "pendingRequest": "승인요청이 {count}건 있습니다",
+      "pendingRequestExists": "승인요청이 있습니다"
     },
     "serverStatus": {
       "title": "서버 상태",
@@ -104,19 +106,26 @@
     },
     "project": {
       "id": "순번",
+      "no": "순번",
       "name": "프로젝트명",
       "client": "고객사",
       "manager": "설계담당자",
+      "contactPerson": "설계 담당자",
       "type": "유입종류",
       "capacity": "시설용량",
+      "siteCapacity": "시설용량",
+      "unitSystem": "단위",
+      "solution": "솔루션",
       "process": "적용 공정",
       "createdAt": "생성일",
       "country": "국가",
+      "status": "상태",
       "detail": "상세정보",
       "detailItem": "세부 항목",
       "inputType": "입력방식",
       "required": "필수여부",
-      "visible": "표시여부"
+      "visible": "표시여부",
+      "recommended": "추천여부"
     },
     "projectDetail": {
       "project": "프로젝트명",
@@ -461,6 +470,9 @@
     "no": "순번",
     "yes": "예",
     "noOption": "아니오",
+    "yesShort": "Y",
+    "noShort": "N",
+    "noContent": "내용없음",
     "search": "검색",
     "delete": "삭제",
     "edit": "수정",
@@ -958,6 +970,7 @@
   "placeholder": {
     "search": "검색어를 입력하세요",
     "searchQuery": "검색어를 입력하세요",
+    "projectName": "프로젝트명을 입력하세요",
     "machineSearch": "키워드 검색(코드/모델/업체/유형)",
     "asset3DSearch": "키워드 검색(프리셋명/모델명/직경)",
     "pipeSearch": "키워드 검색(코드/모델/업체/유형)",
@@ -1493,7 +1506,8 @@
       "parameterUpdateSuccess": "파라미터 수정에 성공했습니다.",
       "parameterCreateSuccess": "파라미터 등록에 성공했습니다.",
       "recommendationSetSuccess": "추천을 설정했습니다.",
-      "recommendationRemoveSuccess": "추천을 해제했습니다."
+      "recommendationRemoveSuccess": "추천을 해제했습니다.",
+      "deletePartialSuccess": "{successCount}건 삭제 성공, {failCount}건 삭제 실패"
     },
     "error": {
       "excelParseError": "Excel 파일 파싱 중 오류가 발생했습니다.",
@@ -1640,7 +1654,10 @@
       "recommendationCreateFailed": "추천 프로젝트 생성에 실패했습니다.",
       "recommendationDeleteFailed": "추천 프로젝트 삭제에 실패했습니다.",
       "recommendationUpdateFailed": "추천 상태 변경에 실패했습니다.",
-      "recommendationNotFound": "추천 정보를 찾을 수 없습니다."
+      "recommendationNotFound": "추천 정보를 찾을 수 없습니다.",
+      "sortFailed": "정렬에 실패했습니다.",
+      "pageChangeFailed": "페이지 변경에 실패했습니다.",
+      "searchFailed": "검색에 실패했습니다."
     },
     "confirm": {
       "deleteItems": "선택된 {count}개의 항목을 삭제하시겠습니까?",
@@ -1668,6 +1685,8 @@
       "pleaseEnterUsername": "사용자명을 입력하세요.",
       "selectOneItemToEdit": "수정할 항목을 하나만 선택하세요.",
       "pleaseCompleteRequiredFields": "필수 필드를 입력해주세요.",
+      "pleaseSelectCodeGroupForMultiRegister": "다건등록을 위해서는 코드그룹을 먼저 선택해주세요.",
+      "codeGroupInfoNotFound": "선택된 코드그룹 정보를 찾을 수 없습니다.",
       "pleaseEnterTabName": "탭 이름을 입력하세요.",
       "pythonFileOnly": "Python 파일(.py)만 업로드 가능합니다.",
       "fileReadError": "파일을 읽는 중 오류가 발생했습니다.",

@@ -10,9 +10,9 @@
         <div class="search-section">
           <div class="search-filters">
             <div class="filter-group">
-              <label class="filter-label"
-                >{{ t("columns.code.codeGroup") }}</label
-              >
+              <label class="filter-label">{{
+                t("columns.code.codeGroup")
+              }}</label>
               <select
                 v-model="searchCodeGroupInput"
                 class="filter-select"
@@ -29,16 +29,16 @@
               </select>
             </div>
             <div v-if="props.selectedCategory1" class="filter-group">
-              <label class="filter-label"
-                >{{ t("columns.code.majorCategory") }}</label
-              >
+              <label class="filter-label">{{
+                t("columns.code.majorCategory")
+              }}</label>
               <select
                 v-model="searchCategory1Input"
                 class="filter-select"
                 disabled
               >
                 <option value="">
-                  {{ props.selectedCategory1?.value || "내용없음" }}
+                  {{ props.selectedCategory1?.value || t("common.noContent") }}
                 </option>
                 <option
                   v-if="props.selectedCategory1"
@@ -52,16 +52,16 @@
               </select>
             </div>
             <div v-if="props.selectedCategory2" class="filter-group">
-              <label class="filter-label"
-                >{{ t("columns.code.mediumCategory") }}</label
-              >
+              <label class="filter-label">{{
+                t("columns.code.mediumCategory")
+              }}</label>
               <select
                 v-model="searchCategory2Input"
                 class="filter-select"
                 disabled
               >
                 <option value="">
-                  {{ props.selectedCategory2?.value || "내용없음" }}
+                  {{ props.selectedCategory2?.value || t("common.noContent") }}
                 </option>
                 <option
                   v-if="props.selectedCategory2"
@@ -75,16 +75,16 @@
               </select>
             </div>
             <div v-if="props.selectedCategory3" class="filter-group">
-              <label class="filter-label"
-                >{{ t("columns.code.minorCategory") }}</label
-              >
+              <label class="filter-label">{{
+                t("columns.code.minorCategory")
+              }}</label>
               <select
                 v-model="searchCategory3Input"
                 class="filter-select"
                 disabled
               >
                 <option value="">
-                  {{ props.selectedCategory3?.value || "내용없음" }}
+                  {{ props.selectedCategory3?.value || t("common.noContent") }}
                 </option>
                 <option
                   v-if="props.selectedCategory3"

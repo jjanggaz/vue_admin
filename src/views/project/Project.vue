@@ -11,7 +11,7 @@
             <input
               type="text"
               id="search"
-              placeholder="검색어를 입력하세요"
+              :placeholder="t('placeholder.search')"
               v-model="searchQueryInput"
               @keyup.enter="handleSearch"
             />
@@ -24,7 +24,7 @@
             class="blink-alert"
             @click="goToApprovalPending"
           >
-            승인요청이 있습니다
+            {{ t("dashboard.approvalStatus.pendingRequestExists") }}
           </span>
         </div>
       </div>
@@ -140,68 +140,68 @@ const selectedItems = ref<ProjectItem[]>([]);
 const tableColumns: TableColumn[] = [
   {
     key: "no",
-    title: "순번",
+    title: t("columns.project.no"),
     width: "80px",
     sortable: false,
   },
   {
     key: "project_name",
-    title: "프로젝트명",
+    title: t("columns.project.name"),
     width: "180px",
     sortable: false,
   },
   {
     key: "client_name",
-    title: "고객사",
+    title: t("columns.project.client"),
     width: "120px",
     sortable: false,
   },
   {
     key: "contact_person",
-    title: "설계 담당자",
+    title: t("columns.project.contactPerson"),
     width: "120px",
     sortable: false,
   },
   {
     key: "unit_system",
-    title: "단위",
+    title: t("columns.project.unitSystem"),
     width: "100px",
     sortable: false,
   },
   {
     key: "site_capacity",
-    title: "시설용량 (m³/d)",
+    title: t("columns.project.siteCapacity") + " (m³/d)",
     width: "120px",
     sortable: false,
   },
   {
     key: "solution",
-    title: "솔루션",
+    title: t("columns.project.solution"),
     width: "120px",
     sortable: false,
   },
   {
     key: "created_at",
-    title: "생성일",
+    title: t("columns.project.createdAt"),
     width: "120px",
     sortable: false,
     dateFormat: "YYYY-MM-DD",
   },
   {
     key: "country_code",
-    title: "국가",
+    title: t("columns.project.country"),
     width: "100px",
     sortable: false,
   },
   {
     key: "project_status",
-    title: "상태",
+    title: t("columns.project.status"),
     width: "100px",
     sortable: false,
   },
   {
     key: "detail",
-    title: "상세정보",
+    title: t("columns.project.detail"),
     width: "100px",
     sortable: false,
     hidden: true,
@@ -331,7 +331,10 @@ const handleSortChange = async (sortInfo: {
     await loadData(params);
   } catch (error: any) {
     console.error("정렬 실패:", error);
-    const errorMessage = error?.message || "정렬에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.sortFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -386,7 +389,12 @@ const handleDelete = async () => {
 
   if (successCount > 0) {
     if (failCount > 0) {
-      alert(`${successCount}건 삭제 성공, ${failCount}건 삭제 실패`);
+      alert(
+        t("messages.success.deletePartialSuccess", {
+          successCount,
+          failCount,
+        })
+      );
     } else {
       alert(t("messages.success.deleted"));
     }

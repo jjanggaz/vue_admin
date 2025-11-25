@@ -36,7 +36,9 @@
       "thisMonth": "This Month",
       "projectApproval": "Project Approval",
       "processApproval": "Process Approval",
-      "modelApproval": "3D Model Registration Approval"
+      "modelApproval": "3D Model Registration Approval",
+      "pendingRequest": "There are {count} approval requests",
+      "pendingRequestExists": "There are approval requests"
     },
     "serverStatus": {
       "title": "Server Status",
@@ -104,19 +106,26 @@
     },
     "project": {
       "id": "ID",
+      "no": "No",
       "name": "Project Name",
       "client": "Client",
       "manager": "Manager",
+      "contactPerson": "Design Manager",
       "type": "Type",
       "capacity": "Capacity",
+      "siteCapacity": "Facility Capacity",
+      "unitSystem": "Unit",
+      "solution": "Solution",
       "process": "Process",
       "createdAt": "Created At",
       "country": "Country",
+      "status": "Status",
       "detail": "Detail",
       "detailItem": "Detail Item",
       "inputType": "Input Type",
       "required": "Required",
-      "visible": "Visible"
+      "visible": "Visible",
+      "recommended": "Recommended"
     },
     "projectDetail": {
       "project": "Project Name",
@@ -461,6 +470,9 @@
     "no": "No",
     "yes": "Yes",
     "noOption": "No",
+    "yesShort": "Y",
+    "noShort": "N",
+    "noContent": "No content",
     "search": "Search",
     "delete": "Delete",
     "edit": "Edit",
@@ -691,6 +703,7 @@
   "placeholder": {
     "search": "Enter search term",
     "searchQuery": "Enter search term",
+    "projectName": "Enter project name",
     "machineSearch": "Keyword search (code/model/manufacturer/type)",
     "asset3DSearch": "Keyword search (preset name/model name/diameter)",
     "pipeSearch": "Keyword search (code/model/manufacturer/type)",
@@ -1498,7 +1511,8 @@
       "parameterUpdateSuccess": "Parameter successfully updated.",
       "parameterCreateSuccess": "Parameter successfully created.",
       "recommendationSetSuccess": "Recommendation has been set.",
-      "recommendationRemoveSuccess": "Recommendation has been removed."
+      "recommendationRemoveSuccess": "Recommendation has been removed.",
+      "deletePartialSuccess": "{successCount} items deleted successfully, {failCount} items failed to delete"
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
@@ -1645,7 +1659,10 @@
       "recommendationCreateFailed": "Failed to create recommendation.",
       "recommendationDeleteFailed": "Failed to delete recommendation.",
       "recommendationUpdateFailed": "Failed to update recommendation status.",
-      "recommendationNotFound": "Recommendation information not found."
+      "recommendationNotFound": "Recommendation information not found.",
+      "sortFailed": "Failed to sort.",
+      "pageChangeFailed": "Failed to change page.",
+      "searchFailed": "Search failed."
     },
     "confirm": {
       "deleteItems": "Are you sure you want to delete the selected {count} items?",
@@ -1673,6 +1690,8 @@
       "pleaseEnterUsername": "Please enter username.",
       "selectOneItemToEdit": "Please select one item to edit.",
       "pleaseCompleteRequiredFields": "Please complete required fields.",
+      "pleaseSelectCodeGroupForMultiRegister": "Please select a code group first for multi-registration.",
+      "codeGroupInfoNotFound": "Selected code group information not found.",
       "pleaseEnterTabName": "Please enter tab name.",
       "pythonFileOnly": "Only Python files (.py) can be uploaded.",
       "fileReadError": "An error occurred while reading the file.",

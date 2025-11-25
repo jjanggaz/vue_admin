@@ -145,9 +145,9 @@
                     :alt="t('processDetail.processSymbolPreview')"
                     style="
                       display: block;
-                      max-width: 40px;
-                      max-height: 40px;
-                      vertical-align: middle;
+                      width: 60px;
+                      height: 60px;
+                      vertical-align: top;
                     "
                   />
                   <button

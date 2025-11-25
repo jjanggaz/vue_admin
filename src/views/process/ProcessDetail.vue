@@ -993,6 +993,63 @@
       </div>
     </div>
   </div>
+
+  <!-- P&ID 파일 첨부 모달 -->
+  <div
+    v-if="showPidModal"
+    class="modal-overlay"
+    @click="closePidModal"
+  >
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
+        <h3>P&ID 파일 첨부</h3>
+        <button @click="closePidModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="file-input-group">
+          <input
+            type="file"
+            multiple
+            accept=".dwg,.pdf,.png,.jpg,.jpeg"
+            @change="handlePidFilesSelected"
+            style="display: none"
+            ref="pidModalFileInput"
+          />
+          <button @click="pidModalFileInput?.click()" class="btn btn-primary">
+            {{ t("common.selectFiles") }}
+          </button>
+          <span class="selected-files-info">
+            {{
+              selectedPidFiles.length > 0
+                ? t("processDetail.filesSelected", { count: selectedPidFiles.length })
+                : t("common.noFilesSelected")
+            }}
+          </span>
+        </div>
+
+        <div v-if="selectedPidFiles.length > 0" class="selected-files-list">
+          <h4>{{ t("common.selectedFiles") }}:</h4>
+          <ul>
+            <li v-for="file in selectedPidFiles" :key="file.name">
+              {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          @click="uploadPidFiles"
+          class="btn btn-primary"
+          :disabled="!selectedPidFiles.length"
+        >
+          {{ t("common.upload") }}
+        </button>
+        <button @click="closePidModal" class="btn btn-secondary">
+          {{ t("common.cancel") }}
+        </button>
+      </div>
+    </div>
+  </div>
   </div>
 </template>
 
@@ -1056,9 +1113,11 @@ const selectedFormulaItems = ref<any[]>([]);
 const selectedPfdItems = ref<any | null>(null);
 const selectedFormulaFiles = ref<File[]>([]);
 const selectedPfdFiles = ref<File[]>([]);
+const selectedPidFiles = ref<File[]>([]);
 const processSymbolInput = ref<HTMLInputElement | null>(null);
 const formulaFileInput = ref<HTMLInputElement | null>(null);
 const pfdFileInput = ref<HTMLInputElement | null>(null);
+const pidModalFileInput = ref<HTMLInputElement | null>(null);
 const capacityCalculationFileInput = ref<HTMLInputElement | null>(null);
 
 // P&ID 매핑 관련 상태
@@ -1973,6 +2032,7 @@ const closeFormulaModal = () => {
 };
 
 const showPfdModal = ref(false);
+const showPidModal = ref(false);
 
 const openPfdModal = () => {
   showPfdModal.value = true;
@@ -1982,6 +2042,16 @@ const openPfdModal = () => {
 const closePfdModal = () => {
   showPfdModal.value = false;
   selectedPfdFiles.value = [];
+};
+
+const openPidModal = () => {
+  showPidModal.value = true;
+  selectedPidFiles.value = [];
+};
+
+const closePidModal = () => {
+  showPidModal.value = false;
+  selectedPidFiles.value = [];
 };
 
 // Components 그리드 관련 함수들
@@ -2226,6 +2296,65 @@ const handlePfdFilesSelected = (event: Event) => {
   }
 };
 
+const handlePidFilesSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const fileArray = Array.from(target.files);
+
+    // 파일명 검증
+    const invalidFiles: string[] = [];
+    const validFiles = fileArray.filter((file) => {
+      const validation = validateFileName(file.name);
+      if (!validation.valid) {
+        invalidFiles.push(`${file.name}: ${validation.message}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (invalidFiles.length > 0) {
+      alert(
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
+      );
+      target.value = "";
+      return;
+    }
+
+    // P&ID 관련 파일만 필터링
+    const pidFiles = validFiles.filter((file) => {
+      const fileName = file.name.toLowerCase();
+      return (
+        fileName.endsWith(".dwg") ||
+        fileName.endsWith(".pdf") ||
+        fileName.endsWith(".png") ||
+        fileName.endsWith(".jpg") ||
+        fileName.endsWith(".jpeg")
+      );
+    });
+
+    const unsupportedFiles = validFiles.filter((file) => {
+      const fileName = file.name.toLowerCase();
+      return (
+        !fileName.endsWith(".dwg") &&
+        !fileName.endsWith(".pdf") &&
+        !fileName.endsWith(".png") &&
+        !fileName.endsWith(".jpg") &&
+        !fileName.endsWith(".jpeg")
+      );
+    });
+
+    if (unsupportedFiles.length > 0) {
+      alert(
+        `P&ID 관련 파일(.dwg, .pdf, .png, .jpg, .jpeg)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles
+          .map((f) => f.name)
+          .join("\n")}`
+      );
+    }
+
+    selectedPidFiles.value = pidFiles;
+  }
+};
+
 // 용량계산서 파일 선택 핸들러
 const handleCapacityCalculationFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -2420,6 +2549,38 @@ const uploadPfdFiles = () => {
   processStore.setPfdList(updatedPfdList);
 
   closePfdModal();
+};
+
+const uploadPidFiles = () => {
+  if (selectedPidFiles.value.length === 0) {
+    alert("업로드할 파일을 선택해주세요.");
+    return;
+  }
+
+  const parentDrawingId = currentPfdItemForMapping.value?.drawing_id;
+
+  const newPidItems = selectedPidFiles.value.map((file, index) => {
+    return {
+      id: `mapping_${Date.now()}_${index}`,
+      no: mappingPidList.value.length + index + 1,
+      pidFileName: file.name,
+      excelFileName: "",
+      parent_drawing_id: parentDrawingId,
+      excel_drawing_id: null,
+      svg_drawing_id: null,
+      _file: file,
+    };
+  });
+
+  mappingPidList.value.push(...newPidItems);
+
+  // 마지막으로 추가된 항목을 현재 선택된 항목으로 설정
+  if (newPidItems.length > 0) {
+    currentPidItemForMapping.value = newPidItems[newPidItems.length - 1];
+    (selectedMappingPidItems.value as any) = newPidItems[newPidItems.length - 1];
+  }
+
+  closePidModal();
 };
 
 // 선택 관련 함수들
@@ -9377,16 +9538,19 @@ const confirmMappingPid = async () => {
     const validMappings = mappingPidList.value.filter((item) => {
       const isNewItem = !item.drawing_id;
       const hasPidFile = !!(item as any).pidFile;
+      const hasPidFileFromUpload = !!(item as any)._file; // uploadPidFiles에서 추가된 파일
       const hasSvgFile = !!(item as any).svgFile;
-      const hasAnyFile = hasPidFile || hasSvgFile;
+      const hasAnyFile = hasPidFile || hasPidFileFromUpload || hasSvgFile;
 
       console.log(`항목 필터링 체크 - ${item.pidFileName || "no name"}:`, {
         drawing_id: item.drawing_id,
         isNewItem,
         hasPidFile,
+        hasPidFileFromUpload,
         hasSvgFile,
         hasAnyFile,
         pidFileObject: (item as any).pidFile,
+        fileObject: (item as any)._file,
         svgFileObject: (item as any).svgFile,
       });
 
@@ -9648,7 +9812,9 @@ const confirmMappingPid = async () => {
       // 필수 입력 검증 (새로 추가된 항목들에 대해서만)
       const invalidItems = validMappings.filter((item) => {
         const hasPfdFile = !!item.pidFile;
+        const hasPfdFileFromUpload = !!(item as any)._file; // uploadPidFiles에서 추가된 파일
         const hasSvgFile = !!(item as any).svgFile;
+        const hasAnyPidFile = hasPfdFile || hasPfdFileFromUpload;
         const isNewItem = !item.drawing_id; // drawing_id가 없으면 새로 추가된 항목
         const hasExistingData =
           item.pidFileName && item.pidFileName.trim() !== ""; // 기존 데이터가 있는지 확인
@@ -9657,14 +9823,14 @@ const confirmMappingPid = async () => {
         if (isNewItem) {
           // PFD 파일이 있는 경우에만 파일명 검증
           if (
-            hasPfdFile &&
+            hasAnyPidFile &&
             (!item.pidFileName || item.pidFileName.trim() === "")
           ) {
             return true;
           }
 
           // 새 항목인데 PFD 파일도 Svg 파일도 없는 경우는 유효하지 않음
-          if (!hasPfdFile && !hasSvgFile) {
+          if (!hasAnyPidFile && !hasSvgFile) {
             return true;
           }
         }
@@ -9725,10 +9891,13 @@ const confirmMappingPid = async () => {
 
           const isNewItem = !item.drawing_id;
 
+          // uploadPidFiles에서 추가된 파일은 _file 속성에 있음
+          const pidFile = item.pidFile || (item as any)._file;
+
           console.log("P&ID 매핑 아이템 저장:", {
             item: item,
             parent_drawing_id: item.parent_drawing_id,
-            pidFile: item.pidFile?.name,
+            pidFile: pidFile?.name,
             excelFile: item.excelFile?.name || "",
             svgFile: (item as any).svgFile?.name || "",
             isNewItem: isNewItem,
@@ -9743,13 +9912,13 @@ const confirmMappingPid = async () => {
           formData.append("remarks", item.remarks || "");
 
           // P&ID 파일 추가 (있는 경우에만)
-          if (item.pidFile) {
+          if (pidFile) {
             console.log("P&ID 파일 추가:", {
-              fileName: item.pidFile.name,
-              fileSize: item.pidFile.size,
-              fileType: item.pidFile.type,
+              fileName: pidFile.name,
+              fileSize: pidFile.size,
+              fileType: pidFile.type,
             });
-            formData.append("siteFile", item.pidFile);
+            formData.append("siteFile", pidFile);
           }
 
           // Excel 파일 추가 (있는 경우에만)
@@ -10668,36 +10837,7 @@ const loadMappingPidList = async (pfdItem: any) => {
 
 // P&ID 매핑 모달 추가 함수들
 const addMappingPidRow = () => {
-  const parentDrawingId = currentPfdItemForMapping.value?.drawing_id;
-  console.log("새 행 추가 - parent_drawing_id:", parentDrawingId);
-
-  const newRow = {
-    id: `mapping_${Date.now()}`,
-    no: mappingPidList.value.length + 1,
-    pidFileName: "",
-    excelFileName: "",
-    parent_drawing_id: parentDrawingId, // 현재 PFD의 drawing_id를 parent_drawing_id로 전달
-    excel_drawing_id: null, // Hidden 변수 추가
-    svg_drawing_id: null, // Hidden 변수 추가
-  };
-
-  mappingPidList.value.push(newRow);
-
-  // 새로 추가된 행을 현재 선택된 항목으로 설정
-  currentPidItemForMapping.value = newRow;
-  
-  // 새로 추가된 행을 선택된 상태로 표시
-  (selectedMappingPidItems.value as any) = newRow;
-
-  console.log("새 행 추가 완료:", newRow);
-  console.log(
-    "새 행을 currentPidItemForMapping으로 설정:",
-    currentPidItemForMapping.value?.id
-  );
-  console.log(
-    "새 행을 selectedMappingPidItems로 설정:",
-    selectedMappingPidItems.value?.id
-  );
+  openPidModal();
 };
 
 const selectPidFile = (item: any) => {

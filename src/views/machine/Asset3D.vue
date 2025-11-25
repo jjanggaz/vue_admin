@@ -34,7 +34,6 @@
                 class="form-select"
                 @change="handleAsset3DCategoryChange"
               >
-                <option value="">{{ t("common.select") }}</option>
                 <option value="preset">프리셋</option>
                 <option value="library">3D 라이브러리</option>
               </select>
@@ -577,7 +576,7 @@ const selectedItems = ref<Asset3DItem[]>([]);
 const searchQueryInput = ref("");
 // 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거
 const selectedUnit = ref("");
-const selectedAsset3DCategory = ref("");
+const selectedAsset3DCategory = ref("preset");
 const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<Asset3DItem | null>(null);
@@ -2208,7 +2207,7 @@ $tablet: 1024px;
 }
 
 .form-input {
-  width: 240px;
+  width: 350px;
   padding: 0.5rem;
   border: 1px solid #e7e6ed;
   border-radius: 4px;

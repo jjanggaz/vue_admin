@@ -2,6 +2,15 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { request } from "@/utils/request";
 
+interface Asset3DTreeNode {
+  code_key: string;
+  code_value: string;
+  code_level?: number;
+  code_order?: number;
+  children?: Asset3DTreeNode[];
+  [key: string]: unknown;
+}
+
 export const useAsset3DStore = defineStore("asset3d", () => {
   // 상태
   const langCodes = ref<
@@ -126,6 +135,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const codeTreeCache = ref<Record<string, Asset3DTreeNode[]>>({});
 
   // 3D Asset 검색 결과 데이터
   const searchResults = ref<{
@@ -149,7 +159,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/common/code", undefined, {
+      const response = await request("/api/asset3D/common/code", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,7 +199,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/depth", undefined, {
+      const response = await request("/api/asset3D/depth", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +238,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/search", undefined, {
+      const response = await request("/api/asset3D/search", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -258,7 +268,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/common/code/${searchValue}`,
+        `/api/asset3D/common/code/${searchValue}`,
         undefined,
         {
           method: "GET",
@@ -320,13 +330,229 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     }
   };
 
-  // 상세 깊이 코드 조회 (/api/machine/depth/detail)
+  // 코드 트리 조회 함수
+  const buildTreeFromCodeGroups = (rawData: unknown): Asset3DTreeNode[] => {
+    if (!rawData || typeof rawData !== "object") {
+      console.warn("[asset3DStore] codeTree raw 데이터가 객체가 아닙니다:", rawData);
+      return [];
+    }
+
+    const unwrapped =
+      (rawData as { data?: Record<string, unknown> })?.data || rawData;
+
+    const responseData = unwrapped as {
+      code_groups?: Record<
+        string,
+        {
+          level_2?: Array<Record<string, unknown>>;
+          level_3?: Array<Record<string, unknown>>;
+          level_4?: Array<Record<string, unknown>>;
+        }
+      >;
+    };
+
+    const codeGroups = responseData.code_groups;
+    if (!codeGroups) {
+      console.warn("[asset3DStore] codeTree 응답에 code_groups가 없습니다:", rawData);
+      return [];
+    }
+
+    const roots: Asset3DTreeNode[] = [];
+
+    Object.entries(codeGroups).forEach(([groupKey, group]) => {
+      const level3Items = Array.isArray(group?.level_3) ? group.level_3 : [];
+      const level4Items = Array.isArray(group?.level_4) ? group.level_4 : [];
+
+      console.log("[asset3DStore] codeTree 그룹 파싱:", {
+        groupKey,
+        level3Count: level3Items.length,
+        level4Count: level4Items.length,
+      });
+
+      const level3Map: Record<string, Asset3DTreeNode> = {};
+
+      level3Items.forEach((item) => {
+        const codeKeyRaw = item?.code_key;
+        const codeValueRaw = item?.code_value ?? item?.code_value_en;
+        const codeKey =
+          typeof codeKeyRaw === "string"
+            ? codeKeyRaw
+            : codeKeyRaw != null
+            ? String(codeKeyRaw)
+            : "";
+        const codeValue =
+          typeof codeValueRaw === "string"
+            ? codeValueRaw
+            : codeValueRaw != null
+            ? String(codeValueRaw)
+            : "";
+
+        if (!codeKey || !codeValue) {
+          return;
+        }
+
+        const node: Asset3DTreeNode = {
+          code_key: codeKey,
+          code_value: codeValue,
+          code_level:
+            typeof (item as Record<string, unknown>)["code_level"] === "number"
+              ? ((item as Record<string, number>).code_level as number)
+              : undefined,
+          code_order:
+            typeof (item as Record<string, unknown>)["code_order"] === "number"
+              ? ((item as Record<string, number>).code_order as number)
+              : undefined,
+          children: [],
+        };
+
+        level3Map[codeKey] = node;
+        roots.push(node);
+      });
+
+      level4Items.forEach((item) => {
+        const codeKeyRaw = item?.code_key;
+        const codeValueRaw = item?.code_value ?? item?.code_value_en;
+        const parentKeyRaw = item?.parent_key;
+
+        const codeKey =
+          typeof codeKeyRaw === "string"
+            ? codeKeyRaw
+            : codeKeyRaw != null
+            ? String(codeKeyRaw)
+            : "";
+        const codeValue =
+          typeof codeValueRaw === "string"
+            ? codeValueRaw
+            : codeValueRaw != null
+            ? String(codeValueRaw)
+            : "";
+        const parentKey =
+          typeof parentKeyRaw === "string"
+            ? parentKeyRaw
+            : parentKeyRaw != null
+            ? String(parentKeyRaw)
+            : "";
+
+        if (!codeKey || !codeValue) {
+          return;
+        }
+
+        const childNode: Asset3DTreeNode = {
+          code_key: codeKey,
+          code_value: codeValue,
+          code_level:
+            typeof (item as Record<string, unknown>)["code_level"] === "number"
+              ? ((item as Record<string, number>).code_level as number)
+              : undefined,
+          code_order:
+            typeof (item as Record<string, unknown>)["code_order"] === "number"
+              ? ((item as Record<string, number>).code_order as number)
+              : undefined,
+        };
+
+        if (parentKey && level3Map[parentKey]) {
+          const parentNode = level3Map[parentKey];
+          if (!parentNode.children) {
+            parentNode.children = [];
+          }
+          parentNode.children.push(childNode);
+        } else {
+          console.warn(
+            "[asset3DStore] level4 parent 미존재, 루트로 추가:",
+            childNode
+          );
+          roots.push(childNode);
+        }
+      });
+    });
+
+    const sortTreeNodes = (nodes: Asset3DTreeNode[]) => {
+      nodes.sort((a, b) => {
+        const orderA = a.code_order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b.code_order ?? Number.MAX_SAFE_INTEGER;
+        if (orderA === orderB) {
+          return a.code_value.localeCompare(b.code_value, "ko");
+        }
+        return orderA - orderB;
+      });
+      nodes.forEach((node) => {
+        if (node.children && node.children.length) {
+          sortTreeNodes(node.children);
+        }
+      });
+    };
+
+    sortTreeNodes(roots);
+
+    console.log("[asset3DStore] buildTreeFromCodeGroups 결과:", {
+      rootCount: roots.length,
+      sample: roots.slice(0, 5),
+    });
+
+    return roots;
+  };
+
+  const fetchAsset3DCodeTree = async (
+    codeGroup: string,
+    forceReload = false
+  ) => {
+    if (!forceReload && codeTreeCache.value[codeGroup]) {
+      console.log("[asset3DStore] codeTree 캐시 사용:", {
+        codeGroup,
+        treeLength: codeTreeCache.value[codeGroup].length,
+      });
+      return codeTreeCache.value[codeGroup];
+    }
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await request("/api/asset3D/common/codeTree", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code_group: codeGroup }),
+      });
+
+      const treeData = buildTreeFromCodeGroups(response?.response);
+      console.log("[asset3DStore] codeTree 응답:", response);
+      console.log("[asset3DStore] codeTree 응답 요약:", {
+        codeGroup,
+        raw: response?.response,
+        treeLength: treeData.length,
+        samples: {
+          nodes: treeData.slice(0, 5),
+          firstChildren:
+            treeData.length > 0 && treeData[0].children
+              ? treeData[0].children.slice(0, 3)
+              : [],
+        },
+      });
+
+      codeTreeCache.value[codeGroup] = treeData;
+
+      return codeTreeCache.value[codeGroup];
+    } catch (err) {
+      console.error("3D Asset 코드 트리 조회 실패:", err);
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "3D Asset 코드 트리 조회에 실패했습니다.";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 상세 깊이 코드 조회 (/api/asset3D/depth/detail)
   const fetchDepthDetail = async (codeGroup: string, codeLevel: number = 4) => {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await request("/api/machine/depth/detail", undefined, {
+      const response = await request("/api/asset3D/depth/detail", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +583,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/depth/detail/searchType/${encodeURIComponent(searchKey)}`,
+        `/api/asset3D/depth/detail/searchType/${encodeURIComponent(searchKey)}`,
         undefined,
         {
           method: "GET",
@@ -383,7 +609,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/tempExcel/${encodeURIComponent(asset3dName)}`,
+        `/api/asset3D/tempExcel/${encodeURIComponent(asset3dName)}`,
         undefined,
         {
           method: "GET",
@@ -413,7 +639,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       formData.append("excel_file", excelFile);
 
       const response = await request(
-        `/api/machine/uploadModelExcel/${encodeURIComponent(asset3dName)}`,
+        `/api/asset3D/uploadModelExcel/${encodeURIComponent(asset3dName)}`,
         undefined,
         {
           method: "POST",
@@ -444,7 +670,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       formData.append("all_file", zipFile);
 
       const response = await request(
-        `/api/machine/uploadModelZip/${encodeURIComponent(asset3dName)}`,
+        `/api/asset3D/uploadModelZip/${encodeURIComponent(asset3dName)}`,
         undefined,
         {
           method: "POST",
@@ -478,7 +704,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/delete/${encodeURIComponent(equipmentId)}`,
+        `/api/asset3D/delete/${encodeURIComponent(equipmentId)}`,
         undefined,
         {
           method: "POST",
@@ -504,9 +730,9 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       equipment_type?: string;
       vendor_id?: string;
       model_number?: string;
-      output_values?: Record<string, any>;
-      search_criteria?: Record<string, any>;
-      specifications?: Record<string, any>;
+      output_values?: Record<string, unknown>;
+      search_criteria?: Record<string, unknown>;
+      specifications?: Record<string, unknown>;
       dtd_model_file?: File;
       thumbnail_file?: File;
       revit_model_file?: File;
@@ -520,7 +746,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       const formData = new FormData();
 
       // updateParams 객체 생성
-      const updateParams: any = {};
+      const updateParams: Record<string, unknown> = {};
       if (params.equipment_type) {
         updateParams.equipment_type = params.equipment_type;
       }
@@ -558,7 +784,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       }
 
       const response = await request(
-        `/api/machine/update/${encodeURIComponent(equipmentId)}`,
+        `/api/asset3D/update/${encodeURIComponent(equipmentId)}`,
         undefined,
         {
           method: "POST",
@@ -583,7 +809,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/detail/common/${encodeURIComponent(equipmentType)}`,
+        `/api/asset3D/detail/common/${encodeURIComponent(equipmentType)}`,
         undefined,
         { method: "POST" }
       );
@@ -617,7 +843,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/detail/files/${encodeURIComponent(equipmentId)}`,
+        `/api/asset3D/detail/files/${encodeURIComponent(equipmentId)}`,
         undefined,
         {
           method: "POST",
@@ -644,7 +870,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     error.value = null;
 
     try {
-      const response = await request("/api/machine/search/formula", undefined, {
+      const response = await request("/api/asset3D/search/formula", undefined, {
         method: "POST",
         body: JSON.stringify({ equipment_type: equipmentType }),
         headers: { "Content-Type": "application/json" },
@@ -679,7 +905,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
         formData.append("equipment_type", params.equipment_type);
       }
 
-      const response = await request("/api/machine/create/formula", undefined, {
+      const response = await request("/api/asset3D/create/formula", undefined, {
         method: "POST",
         body: formData,
       });
@@ -701,7 +927,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
 
     try {
       const response = await request(
-        `/api/machine/delete/formula/${encodeURIComponent(formulaId)}`,
+        `/api/asset3D/delete/formula/${encodeURIComponent(formulaId)}`,
         undefined,
         {
           method: "DELETE",
@@ -726,14 +952,14 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     price_type?: string;
     price_unit_code?: string;
     price_unit_symbol?: string;
-    price_value?: any;
+    price_value?: number | string;
     price_reference?: string;
   }) => {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await request("/api/machine/price/history", undefined, {
+      const response = await request("/api/asset3D/price/history", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -773,6 +999,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     fetchThirdDepth,
     fetchSearchList,
     fetchAsset3DCommonCode,
+    fetchAsset3DCodeTree,
     fetchDepthDetail,
     fetchDepthDetailBySearchType,
     downloadExcelTemplate,

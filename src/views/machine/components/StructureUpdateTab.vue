@@ -717,19 +717,13 @@ $desktop: 1200px;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-
-    @media (max-width: $mobile) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
   }
 }
 
 .label {
+  color: #333333;
   font-size: 13px;
   font-weight: 600;
-  color: #475467;
   min-width: 100px;
   flex-shrink: 0;
 

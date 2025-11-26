@@ -702,21 +702,32 @@ $desktop: 1200px;
     width: 100%;
     min-width: 0;
     height: 40px;
-    padding: 0 32px 0 10px;
     border: 1px solid #e7e6ed;
     border-radius: 4px;
     font-size: 15px;
     font-weight: 400;
-    background-color: transparent;
-    background-image: url(../../../assets/icons/ico_select-down.svg);
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px auto;
 
     &:disabled {
       border: 1px solid #dfdfdf;
       background-color: #f0f0f0;
     }
+  }
+
+  input {
+    padding: 0 10px;
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+  }
+
+  select {
+    padding: 0 32px 0 10px;
+    background-color: transparent;
+    background-image: url(../../../assets/icons/ico_select-down.svg);
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px auto;
 
     &:focus {
       outline: none;
@@ -756,12 +767,6 @@ $desktop: 1200px;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-
-    @media (max-width: $mobile) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
   }
 }
 

@@ -804,8 +804,8 @@ $desktop: 1200px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 20px 10px;
   align-items: flex-end;
+  gap: 10px;
 
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
@@ -815,32 +815,27 @@ $desktop: 1200px;
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
 
   &.wide {
     grid-column: span 2;
 
-    // @media (max-width: $tablet) {
-    //   grid-column: span 1;
-    // }
+    @media (max-width: $tablet) {
+      grid-column: span 1;
+    }
   }
 
   &.inline {
     flex-direction: column;
     align-items: flex-start;
-
-    @media (max-width: $mobile) {
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-    }
   }
 
   &.inline:last-child {
@@ -874,20 +869,44 @@ $desktop: 1200px;
   display: none;
 }
 
-.input {
-  height: 40px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
+input,
+select {
+  appearance: none;
+  position: relative;
   width: 100%;
-  min-width: 0; // input이 축소될 수 있도록 함
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
 
-  &:disabled,
-  &:read-only {
+  &:disabled {
     border: 1px solid #dfdfdf;
     background-color: #f0f0f0;
-    pointer-events: none;
+  }
+}
+
+input {
+  padding: 0 10px;
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+}
+
+select {
+  padding: 0 32px 0 10px;
+  background-color: transparent;
+  background-image: url(../../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-image: url(../../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -1053,7 +1072,7 @@ $desktop: 1200px;
   @media (max-width: $mobile) {
     flex-direction: column;
     align-items: stretch;
-    gap: 6px;
+    gap: 4px 10px;
     margin: 40px 0 10px;
   }
 }

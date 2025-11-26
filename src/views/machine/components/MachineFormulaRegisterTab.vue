@@ -628,14 +628,8 @@ $desktop: 1200px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 12px 16px;
-  align-items: start;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  gap: 20px 10px;
+  align-items: flex-end;
 
   // 계산식 파일 그룹 (전체 너비 사용)
   .formula-file-group {
@@ -645,8 +639,7 @@ $desktop: 1200px;
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 10px 12px;
-    padding: 12px;
+    gap: 10px;
 
     .formula-file-group {
       grid-column: 1 / -1;
@@ -656,8 +649,7 @@ $desktop: 1200px;
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+    gap: 20px;
 
     .formula-file-group {
       grid-column: 1;
@@ -668,15 +660,13 @@ $desktop: 1200px;
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
   width: 100%; // 전체 너비 사용
 
   &.inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: nowrap; // 한 줄로 유지
+    flex-direction: column;
+    align-items: flex-start;
 
     .label {
       flex-shrink: 0; // 라벨은 축소되지 않음
@@ -685,40 +675,27 @@ $desktop: 1200px;
 
     .input,
     select {
-      flex: 1; // input/select가 남은 공간 차지
       min-width: 0;
     }
 
     .file-upload-group {
-      flex: 1;
-    }
-
-    @media (max-width: $mobile) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-      flex-wrap: wrap;
+      // flex: 1;
+      width: 100%;
     }
   }
 }
 
 .label {
+  color: #333333;
   font-size: 13px;
-  color: #475467;
-  min-width: 110px;
+  font-weight: 600;
+  min-width: 100px;
   flex-shrink: 0;
-  white-space: nowrap;
 
   &.required::after {
-    content: " (＊)";
-    color: #e74c3c;
+    content: "*";
+    color: #333333;
     margin-left: 4px;
-  }
-
-  @media (max-width: $mobile) {
-    min-width: auto;
-    font-size: 12px;
-    white-space: normal;
   }
 }
 
@@ -726,18 +703,44 @@ $desktop: 1200px;
   display: none;
 }
 
-.input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
+input,
+select {
+  appearance: none;
+  position: relative;
   width: 100%;
-  min-width: 0; // input이 축소될 수 있도록 함
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
 
-  @media (max-width: $mobile) {
-    height: 28px;
-    font-size: 12px;
+  &:disabled {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+  }
+}
+
+input {
+  padding: 0 10px;
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+}
+
+select {
+  padding: 0 32px 0 10px;
+  background-color: transparent;
+  background-image: url(../../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-image: url(../../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -774,42 +777,38 @@ $desktop: 1200px;
 }
 
 .btn-danger {
-  background: #e74c3c;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
+  text-align: center;
   white-space: nowrap;
-
-  @media (max-width: $mobile) {
-    padding: 4px 8px;
-    font-size: 12px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0px 10px;
+  background: #3e435e;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .2s ease-in-out;
+ 
+  &:hover {
+    background-color: #3c4973;
   }
 }
 
 .section-title {
-  margin: 10px 0;
   font-weight: 600;
   font-size: 16px;
-
-  @media (max-width: $mobile) {
-    font-size: 14px;
-    margin: 8px 0;
-  }
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 10px 0;
+  margin: 20px 0 10px;
   flex-wrap: wrap;
   gap: 8px;
 
   @media (max-width: $mobile) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    margin: 40px 0 10px;
   }
 }
 
@@ -869,14 +868,14 @@ $desktop: 1200px;
 .file-upload-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 
   @media (max-width: $mobile) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
 }
 
@@ -895,29 +894,46 @@ $desktop: 1200px;
 }
 
 .btn-file {
-  background: #6b7280;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
+  flex-shrink: 0;
   white-space: nowrap;
+  height: 40px;
+  padding: 0 10px;
+  background: #3e435e;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.2s ease;
   cursor: pointer;
-  font-size: 14px;
 
   &:hover {
-    background: #5a6268;
+    background: #3c4973;
   }
 
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
+  &:active {
+    background: #3c4973;
   }
 }
 
 .btn-register {
-  @media (max-width: $mobile) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
+  height: 40px;
+  background: #222e77;
+  color: white;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #29378c;
+  } 
+
+  &:active {
+    background: #29378c;
   }
 }
 

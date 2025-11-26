@@ -550,36 +550,38 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
-          <h3>{{ t("common.detailInfo") }}</h3>
-          <div class="header-buttons">
-            <button
-              v-if="!isDetailEditMode"
-              class="btn-edit"
-              @click="toggleEditMode"
-            >
-              {{ t("common.edit") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-save"
-              @click="saveDetailChanges"
-            >
-              {{ t("common.save") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-cancel"
-              @click="cancelEditMode"
-            >
-              {{ t("common.cancel") }}
-            </button>
-            <button
-              class="btn-close"
-              @click="closeDetailPanel"
-              aria-label="Close"
-            >
-            </button>
+          <div class="detail-panel-head">
+            <h3>{{ t("common.detailInfo") }}</h3>
+            <div class="header-buttons">
+              <button
+                v-if="!isDetailEditMode"
+                class="btn-edit"
+                @click="toggleEditMode"
+              >
+                {{ t("common.edit") }}
+              </button>
+              <button
+                v-if="isDetailEditMode"
+                class="btn-save"
+                @click="saveDetailChanges"
+              >
+                {{ t("common.save") }}
+              </button>
+              <button
+                v-if="isDetailEditMode"
+                class="btn-cancel"
+                @click="cancelEditMode"
+              >
+                {{ t("common.cancel") }}
+              </button>
+            </div>
           </div>
+          <button
+            class="btn-close"
+            @click="closeDetailPanel"
+            aria-label="Close"
+          >
+          </button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -696,7 +698,7 @@
 
     <!-- 등록 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%">
+      <div class="modal-container" style="max-width: 1600px; width: 90%">
         <div class="modal-header">
           <h3>{{ t("common.register") }}</h3>
           <button
@@ -712,25 +714,16 @@
             <!-- 상단 검색/필터 영역 -->
             <div
               class="filter-bar"
-              style="
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: nowrap;
-                overflow: hidden;
-              "
             >
-              <div class="group-form inline" style="flex-shrink: 0; gap: 4px">
+              <div class="group-form inline">
                 <span
                   class="label required"
-                  style="min-width: auto; white-space: nowrap"
                   >{{ t("common.unit") }}</span
                 >
                 <select
                   class="input select-md"
                   v-model="registerSelectedUnit"
                   :disabled="registerIsRegistered"
-                  style="max-width: 70px; width: 70px; flex-shrink: 0"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -742,17 +735,15 @@
                   </option>
                 </select>
               </div>
-              <div class="group-form inline" style="flex-shrink: 0; gap: 4px">
+              <div class="group-form inline">
                 <span
                   class="label required"
-                  style="min-width: auto; white-space: nowrap"
                   >{{ t("pipe.materialType") }}</span
                 >
                 <select
                   class="input select-md"
                   v-model="registerSelectedPipeName"
                   :disabled="registerIsRegistered"
-                  style="max-width: 80px; width: 80px; flex-shrink: 0"
                 >
                   <option value="">{{ t("common.select") }}</option>
                   <option
@@ -766,24 +757,27 @@
               </div>
               <div
                 class="group-form inline"
-                style="flex: 1; min-width: 0; gap: 6px"
               >
                 <span
                   class="label required"
-                  style="min-width: auto; white-space: nowrap"
                   >{{ t("common.excelUpload") }}</span
                 >
                 <div
                   class="file-upload-group"
-                  style="display: flex; gap: 6px; flex: 1; min-width: 0"
                 >
+                <button
+                  type="button"
+                  class="btn-file"
+                  @click="registerExcelFileInput?.click()"
+                >
+                  {{ t("common.selectFile") }}
+                </button>
                   <input
                     type="text"
                     class="input file-name-input"
                     :value="registerExcelFileName"
                     readonly
                     :placeholder="t('placeholder.selectFile')"
-                    style="flex: 1; min-width: 0; width: 0"
                   />
                   <input
                     type="file"
@@ -792,19 +786,10 @@
                     style="display: none"
                     @change="handleRegisterExcelFileChange"
                   />
-                  <button
-                    type="button"
-                    class="btn-file"
-                    @click="registerExcelFileInput?.click()"
-                    style="flex-shrink: 0; white-space: nowrap"
-                  >
-                    {{ t("common.selectFile") }}
-                  </button>
                 </div>
               </div>
               <div
                 class="group-form inline right-align"
-                style="flex-shrink: 0; gap: 6px"
               >
                 <button
                   type="button"
@@ -860,7 +845,9 @@
               </div>
             </div>
             <div class="model-register-warning">
-              ⚠️ {{ t("messages.warning.invalidFormulaFileNameFormat") }}
+              <span class="caution-ico">
+                {{ t("messages.warning.invalidFormulaFileNameFormat") }}
+              </span>
             </div>
 
             <!-- ZIP 파일 내부 파일 목록 테이블 -->
@@ -912,7 +899,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer code-modal">
           <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
@@ -3628,7 +3615,7 @@ onMounted(async () => {
   height: calc(100vh - #{$spacing-lg * 2});
   width: 100%;
   overflow: hidden;
-  gap: 8px;
+  gap: 10px;
   grid-template-columns: 1fr; // 기본: 전체 너비
   transition: grid-template-columns 0.3s ease;
 
@@ -3639,17 +3626,18 @@ onMounted(async () => {
 
 .main-content {
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   box-sizing: border-box;
   min-width: 0;
   padding-top: 40px;
 }
 
 .detail-panel {
-  background: white;
-  border-left: 1px solid $border-color;
+  background: #ffffff;
+  border-left: 1px solid #b2bbd2;
   display: flex;
   flex-direction: column;
+  min-width: 320px;
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -3658,74 +3646,95 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid $border-color;
-    background: $background-light;
+    padding: 15px 20px 8px;
     flex-shrink: 0;
 
+    .detail-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
     h3 {
-      margin: 0;
-      color: $text-color;
-      font-size: 1.25rem;
+      color: #202020;
+      font-size: 20px;
+      font-weight: 600;
     }
 
     .header-buttons {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
 
       .btn-edit,
       .btn-save,
       .btn-cancel {
-        padding: 0.5rem 1rem;
-        border: 1px solid $border-color;
+        width: 45px;
+        height: 32px;
+        line-height: 32px;
         border-radius: 4px;
-        background: $background-light;
-        color: $text-color;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
+        transition: background 0.2s ease-in-out;
+      }
+
+      .btn-edit {
+        background: #222e77;
 
         &:hover {
-          background: color.scale($background-light, $lightness: -5%);
+          background: #29378c;
         }
       }
 
       .btn-save {
-        background: $success-color;
-        color: white;
-        border-color: $success-color;
+        background: #0863e2;
 
         &:hover {
-          background: color.scale($success-color, $lightness: -10%);
+          background: #0067f5;
         }
       }
 
       .btn-cancel {
-        background: $error-color;
-        color: white;
-        border-color: $error-color;
+        background: #3e435e;
 
         &:hover {
-          background: color.scale($error-color, $lightness: -10%);
+          background: #3c4973;
         }
-      }
-
-      .btn-close {
-        width: 24px;
-        height: 24px;
-        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-        cursor: pointer;
       }
     }
   }
 
   .detail-panel-body {
     flex: 1;
-    padding: 1rem;
+    padding: 10px 20px 20px;
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+    -webkit-overflow-scrolling: touch;
+
+    &.with-scroll {
+      overflow-y: auto;
+    }
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #e7e6ed;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: #d7d5e4;
+      }
+    }
+    &::-webkit-scrollbar-button:end:increment {
+      display: block;
+      height: 20px;
+      width: 0;
+      background-color: transparent;
+    }
 
     .model-thumbnail-section {
       width: 100%;
@@ -3785,14 +3794,13 @@ onMounted(async () => {
       }
 
       .thumbnail-placeholder {
-        width: 200px;
-        height: 150px;
-        border: 2px dashed $border-color;
-        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: $background-light;
+        width: 200px;
+        height: 150px;
+        border: 2px dashed #888888;
+        border-radius: 8px;
 
         .thumbnail-text {
           color: $text-light;
@@ -3809,7 +3817,7 @@ onMounted(async () => {
     }
 
     .edit-fields-section {
-      margin-top: 1.5rem;
+      margin-top: 20px;
       padding: 1rem;
       border: 1px solid $border-color;
       border-radius: 8px;
@@ -3909,19 +3917,17 @@ onMounted(async () => {
   width: 100%;
 
   .section-title {
-    margin: 0 0 12px 0;
-    padding: 8px 12px;
-    background: $background-light;
-    border-left: 4px solid $primary-color;
-    font-size: 1rem;
+    margin-bottom: 10px;
+    padding-left: 16px;
+    border-left: 4px solid #32ade6;
+    color: #333333;
+    font-size: 16px;
     font-weight: 600;
-    color: $text-color;
-    border-radius: 4px;
   }
 }
 
 .price-history-section {
-  margin-top: 1.5rem;
+  margin-top: 24px;
 
   :deep(.data-table-container) {
     max-height: 250px;
@@ -3938,8 +3944,7 @@ onMounted(async () => {
 
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
 }
 
 .detail-section :deep(.vertical-data-table) {
@@ -3947,8 +3952,8 @@ onMounted(async () => {
 
   .column-name {
     background-color: #f8f9fa;
+    color: #333333;
     font-weight: 500;
-    color: $text-color;
     width: 35%;
   }
 
@@ -4300,91 +4305,6 @@ onMounted(async () => {
 $mobile: 768px;
 $tablet: 1024px;
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
-
-  @media (max-width: $mobile) {
-    padding: 0.5rem;
-    align-items: flex-start;
-    padding-top: 2rem;
-  }
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 98%;
-  max-width: 1600px;
-  max-height: 100vh;
-  margin: 0; /* 상/하 여백 제거 */
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: $tablet) {
-    width: 95%;
-    max-width: 95vw;
-  }
-
-  @media (max-width: $mobile) {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 90vh;
-    border-radius: 4px;
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid $border-color;
-  flex-shrink: 0;
-
-  h3 {
-    margin: 0;
-    color: $text-color;
-    font-size: 1.25rem;
-
-    @media (max-width: $mobile) {
-      font-size: 1.1rem;
-    }
-  }
-
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
-  }
-}
-
-.close-btn {
-  width: 24px;
-  height: 24px;
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 0 1rem 1rem 1rem;
-  flex: 1;
-  min-height: 0; // flex 아이템이 축소될 수 있도록 함
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    padding: 0 0.75rem 0.75rem 0.75rem;
-  }
-}
-
 .column-regist {
   display: grid;
   grid-template-columns: 120px 1fr;
@@ -4436,22 +4356,6 @@ $tablet: 1024px;
   }
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid $border-color;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
-    gap: 0.4rem;
-    justify-content: center;
-  }
-}
-
 // 등록 폼 스타일
 .pipe-register-form {
   width: 100%;
@@ -4459,35 +4363,27 @@ $tablet: 1024px;
 
 .filter-bar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 12px 16px;
+  grid-template-columns: repeat(2, minmax(200px, 1fr));
   align-items: center;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  gap: 20px 10px;
 
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 10px 12px;
-    padding: 12px;
+    gap: 20px 10px;
   }
 
   // 모바일 크기에서 1열로 변경
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 10px;
+    gap: 20px 10px;
   }
 }
 
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
 
   &.wide {
@@ -4499,52 +4395,110 @@ $tablet: 1024px;
   }
 
   &.inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-
-    @media (max-width: $mobile) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   &.right-align {
-    justify-content: flex-end;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+
+    @media (max-width: $mobile) {
+      justify-content: flex-end;
+    }
+  }
+  .btn-register {
+    height: 40px;
+    background: #222e77;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  
+    &:hover {
+      background: #29378c;
+    } 
+  
+    &:active {
+      background: #29378c;
+    }
   }
 }
 
 .label {
+  color: #333333;
   font-size: 13px;
-  color: #475467;
+  font-weight: 600;
   min-width: 100px;
   flex-shrink: 0;
 
   &.required::after {
-    content: " (＊)";
-    color: #e74c3c;
+    content: "*";
+    color: #333333;
     margin-left: 4px;
+  }
+
+  &.long-label {
+    line-height: 1.4;
+    white-space: normal;
+    min-width: 120px;
+    text-align: left;
   }
 
   @media (max-width: $mobile) {
     min-width: auto;
     font-size: 12px;
+
+    &.long-label {
+      min-width: auto;
+    }
   }
 }
 
-.input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
+input,
+select {
+  appearance: none;
+  position: relative;
   width: 100%;
-  min-width: 0; // input이 축소될 수 있도록 함
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
 
-  @media (max-width: $mobile) {
-    height: 28px;
-    font-size: 12px;
+  &:disabled {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+  }
+}
+
+input {
+  padding: 0 10px;
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+}
+
+select {
+  padding: 0 32px 0 10px;
+  background-color: transparent;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-image: url(../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -4562,59 +4516,68 @@ $tablet: 1024px;
 
 .file-upload-group {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 10px;
   flex: 1;
 
   .file-name-input {
     flex: 1;
   }
 
+  button {
+    height: 40px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background .2s ease-in-out;
+  }
+
   .btn-file {
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-size: 0.875rem;
+    flex-shrink: 0;
     white-space: nowrap;
+    height: 40px;
+    padding: 0 10px;
+    background: #3e435e;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+    cursor: pointer;
 
     &:hover {
-      background-color: #e5e7eb;
+      background: #3c4973;
     }
 
-    @media (max-width: $mobile) {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.75rem;
+    &:active {
+      background: #3c4973;
     }
   }
 }
 
 .btn-outline {
-  background: transparent;
-  color: #475467;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.875rem;
+  height: 40px;
+  background: #222e77;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background .2s ease;
 
   &:hover {
-    background-color: #f9fafb;
+    background: #29378c;
+  }
+
+  &:active {
+    background: #29378c;
   }
 
   @media (max-width: $mobile) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-  }
-}
-
-.btn-register {
-  @media (max-width: $mobile) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
+    padding: 4px 8px;
+    font-size: 12px;
   }
 }
 
@@ -4622,14 +4585,20 @@ $tablet: 1024px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #e5e9f2;
+  gap: 10px;
+  margin: 20px 0 10px;
+
+  @media (max-width: $mobile) {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 40px;
+    gap: 4px;
+  }
 
   .section-title {
-    font-size: 1rem;
     font-weight: 600;
-    color: #101828;
+    font-size: 16px;
+    color: #333333;
   }
 
   .section-actions {
@@ -4640,10 +4609,20 @@ $tablet: 1024px;
 }
 
 .model-register-warning {
-  margin-top: 0.5rem;
+  position: relative;
   text-align: center;
-  font-size: 0.85rem;
-  color: #b54708;
+  padding: 20px 0;
+
+  .caution-ico {
+    display: inline-block;
+    padding: 2px 0 1.5px 18px;
+    color: #FF3B30;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Noto Sans KR";
+    letter-spacing: -0.056px;
+    background: url(../../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
+  }
 }
 
 .zip-contents-section {
@@ -4674,5 +4653,61 @@ $tablet: 1024px;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+}
+
+.modal-footer {
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
+  .btn {
+    width: 200px;
+    min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
+  }
+
+  .btn-cancel {
+    background-color: #707489;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #82869d;
+    }
+  }
+
+  .btn-confirm {
+    background-color: #222e77;
+    color: #fff;
+
+    &:hover {
+      background-color: #29378c;
+    }
+  }
+}
+
+.modal-footer.code-modal {
+  .btn {
+    &:first-child {
+      @media (max-width: 768px) {
+        width: 100%;
+        min-width: 100%;
+      }
+    }
+  }
 }
 </style>

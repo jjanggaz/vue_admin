@@ -196,7 +196,7 @@ const getRowKey = (item: any, index: number) => {
   td {
     text-align: left;
     height: 40px;
-    padding: 2px 10px;
+    padding: 3px 10px;
     color: #333333;
     font-size: 15px;
     font-weight: 500;
@@ -361,7 +361,6 @@ const getRowKey = (item: any, index: number) => {
 @media (max-width: $breakpoint-md) {
   .vertical-data-table {
     td {
-      padding: $spacing-sm $spacing-md;
       font-size: 12px;
     }
   }

@@ -2457,9 +2457,9 @@ onMounted(async () => {
 .detail-panel {
   background: #ffffff;
   border-left: 1px solid #b2bbd2;
-  // border-right: 1px solid #b2bbd2;
   display: flex;
   flex-direction: column;
+  min-width: 320px;
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -2741,11 +2741,10 @@ onMounted(async () => {
   .section-title {
     margin-bottom: 10px;
     padding-left: 16px;
-    background: $background-light;
-    border-left: 4px solid $primary-color;
-    font-size: 1rem;
+    border-left: 4px solid #32ade6;
+    color: #333333;
+    font-size: 16px;
     font-weight: 600;
-    color: $text-color;
   }
 }
 
@@ -2775,8 +2774,8 @@ onMounted(async () => {
 
   .column-name {
     background-color: #f8f9fa;
+    color: #333333;
     font-weight: 500;
-    color: $text-color;
     width: 35%;
   }
 

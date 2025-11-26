@@ -183,8 +183,7 @@
             class="btn-close"
             @click="closeRegistModal"
             aria-label="Close"
-          >
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <template v-if="!isEditMode">
@@ -245,6 +244,7 @@ const updateTabRef = ref<InstanceType<typeof StructureUpdateTab> | null>(null);
 interface StructureItem {
   structure_id: string;
   structure_name: string;
+  root_structure_type: string;
   structure_type: string;
   unit_system_code: string;
   formula_file_name: string;
@@ -287,6 +287,12 @@ interface RegistForm {
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
+  {
+    key: "root_structure_type",
+    title: t("common.structureMajorCategory"),
+    width: "140px",
+    sortable: false,
+  },
   {
     key: "structure_type",
     title: t("columns.machine.structureType"),
@@ -567,6 +573,7 @@ const loadData = async () => {
       structureList.value = apiData.map((item: any) => ({
         structure_id: item.structure_id,
         structure_name: item.structure_name,
+        root_structure_type: item.root_structure_type || "-",
         structure_type: item.structure_type,
         unit_system_code: item.unit_system_code,
         formula_file_name: item.formula?.original_filename || "-",

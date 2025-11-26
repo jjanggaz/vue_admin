@@ -56,7 +56,9 @@
               />
               <button class="btn-detail-search" @click="toggleDetailSearch">
                 {{ t("common.detailCondition") }}
-                <span :class="['arrow-icon', { open: isDetailSearchOpen }]"></span>
+                <span
+                  :class="['arrow-icon', { open: isDetailSearchOpen }]"
+                ></span>
               </button>
               <button class="btn-search" @click="handleSearch">
                 {{ t("common.search") }}
@@ -548,8 +550,7 @@
               class="btn-close"
               @click="closeDetailPanel"
               aria-label="Close"
-            >
-            </button>
+            ></button>
           </div>
         </div>
         <div class="detail-panel-body">
@@ -674,8 +675,7 @@
             class="btn-close"
             @click="closeRegistModal"
             aria-label="Close"
-          >
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <div class="tabs-wrapper">
@@ -1004,7 +1004,7 @@ const specVerticalData = computed(() => {
     value: isDetailEditMode.value
       ? editData.value.modelNumber || "-"
       : item.model_number || "-",
-    editable: false,
+    editable: true,
     fieldType: "input",
   });
 
@@ -2520,7 +2520,8 @@ onMounted(async () => {
       .btn-close {
         width: 24px;
         height: 24px;
-        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
+        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center /
+          18px auto;
         cursor: pointer;
       }
     }
@@ -2797,7 +2798,7 @@ onMounted(async () => {
     padding-bottom: 10px;
 
     h3 {
-      font-size: 20PX;
+      font-size: 20px;
       font-weight: 500;
       color: #000000;
     }
@@ -2977,7 +2978,7 @@ onMounted(async () => {
   width: auto;
   height: 40px;
   padding: 8px 34px 8px 16px;
-  background-color: #3E435E;
+  background-color: #3e435e;
   color: white;
   border: none;
   border-radius: 4px;
@@ -2986,7 +2987,7 @@ onMounted(async () => {
 
   .arrow-icon {
     position: relative;
-    
+
     &::after {
       content: "";
       position: absolute;
@@ -3005,8 +3006,6 @@ onMounted(async () => {
     &.open {
       &::after {
         margin-top: -12px;
-
-
 
         transform: rotate(180deg);
       }
@@ -3090,8 +3089,6 @@ onMounted(async () => {
 $mobile: 768px;
 $tablet: 1024px;
 
-
-
 .tabs-wrapper {
   display: flex;
   overflow-x: auto; // 탭이 많을 때 스크롤 가능
@@ -3107,7 +3104,7 @@ $tablet: 1024px;
   border-radius: 10px 10px 0 0;
   background: #e7e6ed;
   cursor: pointer;
-  transition: background .1s ease-in-out;
+  transition: background 0.1s ease-in-out;
   color: #484848;
   font-size: 15px;
   font-weight: 500;

@@ -34,8 +34,8 @@
                 class="form-select"
                 @change="handleAsset3DCategoryChange"
               >
-                <option value="preset">프리셋</option>
-                <option value="library">3D 라이브러리</option>
+                <option value="PRESET">프리셋</option>
+                <option value="3D_LIBRARY">3D 라이브러리</option>
               </select>
             </div>
             <div class="filter-item">
@@ -103,27 +103,13 @@
           </template>
 
           <!-- 3D 모델구분 슬롯 -->
-          <template #cell-model3d_type="{ item }">
-            {{ item.equipment_type_name || item.equipment_type || "-" }}
+          <template #cell-model3d_type>
+            {{ getModel3dTypeName(selectedAsset3DCategory) }}
           </template>
 
           <!-- 연결기계 슬롯 -->
           <template #cell-connected_machine="{ item }">
-            {{
-              (() => {
-                // 연결기계 정보는 API 응답 구조에 따라 조정 필요
-                // 예: hierarchy_info 또는 다른 필드에서 추출
-                if (item.hierarchy_info) {
-                  const hierarchyInfo = item.hierarchy_info;
-                  const connected =
-                    hierarchyInfo && typeof hierarchyInfo === "object"
-                      ? hierarchyInfo.connected_machine
-                      : null;
-                  return connected ? String(connected) : "-";
-                }
-                return "-";
-              })()
-            }}
+            {{ getConnectedMachineName(item.root_equipment_type) }}
           </template>
 
           <!-- 명칭 슬롯 -->
@@ -133,51 +119,17 @@
 
           <!-- 직경 슬롯 -->
           <template #cell-diameter="{ item }">
-            {{
-              (() => {
-                // 직경 정보는 output_values 또는 specifications에서 추출
-                if (item.output_values) {
-                  const diameterKeys = Object.keys(item.output_values).filter(
-                    (key) =>
-                      key.toLowerCase().includes("diameter") ||
-                      key.toLowerCase().includes("dia")
-                  );
-                  if (diameterKeys.length > 0) {
-                    const diameterKey = diameterKeys[0];
-                    const diameterValue = item.output_values[diameterKey];
-                    if (
-                      diameterValue &&
-                      typeof diameterValue === "object" &&
-                      "value" in diameterValue
-                    ) {
-                      const value = diameterValue.value;
-                      const unit = diameterValue.unit_symbol || "";
-                      return value ? `${value} ${unit}`.trim() : "-";
-                    }
-                  }
-                }
-                return "-";
-              })()
-            }}
+            {{ item.diameter_display || "-" }}
           </template>
 
           <!-- 단위 슬롯 -->
           <template #cell-unit="{ item }">
-            {{
-              item.capacity_unit ||
-              item.pressure_unit ||
-              item.power_unit ||
-              "-"
-            }}
+            {{ item.unit_system_code || "-" }}
           </template>
 
-          <!-- 최종 수정일 슬롯 -->
-          <template #cell-updated_at="{ item }">
-            {{
-              item.updated_at
-                ? new Date(item.updated_at).toLocaleDateString()
-                : "-"
-            }}
+          <!-- 등록일자 슬롯 -->
+          <template #cell-created_at="{ item }">
+            {{ formatDateTime(item.created_at) }}
           </template>
 
           <!-- 상세정보 액션 슬롯 -->
@@ -400,6 +352,7 @@ import Asset3DPresetTab from "./components/Asset3DPresetTab.vue";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import { useAsset3DStore } from "@/stores/asset3DStore";
+import { request } from "@/utils/request";
 
 const { t, locale } = useI18n();
 
@@ -471,6 +424,12 @@ interface Asset3DItem {
     download_url?: string;
     is_ownship_formula?: boolean;
   };
+  // 검색 API 응답 필드
+  preset_name_ko?: string;
+  preset_name_en?: string;
+  diameter_value?: number | string;
+  diameter_unit?: string;
+  unit_system_code?: string;
 }
 
 // 테이블 컬럼 설정
@@ -507,9 +466,9 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
-    key: "updated_at",
-    title: t("columns.asset3D.lastModified"),
-    width: "120px",
+    key: "created_at",
+    title: "등록일자",
+    width: "140px",
     sortable: false,
   },
   {
@@ -576,7 +535,7 @@ const selectedItems = ref<Asset3DItem[]>([]);
 const searchQueryInput = ref("");
 // 검색어는 서버에서 처리하므로 클라이언트 사이드 searchQuery 제거
 const selectedUnit = ref("");
-const selectedAsset3DCategory = ref("preset");
+const selectedAsset3DCategory = ref("PRESET");
 const isRegistModalOpen = ref(false);
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<Asset3DItem | null>(null);
@@ -1559,6 +1518,8 @@ const handleFileDownload = (fieldName: string) => {
 // 데이터 로드 (RoleManagement.vue 패턴 적용)
 const loadData = async () => {
   try {
+    loading.value = true;
+    
     // 상세정보창이 열려있으면 닫기
     if (isDetailPanelOpen.value) {
       closeDetailPanel();
@@ -1567,34 +1528,141 @@ const loadData = async () => {
     // 체크된 row 초기화
     selectedItems.value = [];
 
-    // 기본 검색 파라미터
-    const searchParams: any = {
-      keyword: searchQueryInput.value,
-      root_equipment_type: selectedAsset3DCategory.value,
-      unit_system_code: selectedUnit.value,
-      model3d_type: selectedAsset3DCategory.value,
+    // 검색 파라미터 구성
+    const searchParams: Record<string, unknown> = {
       page: currentPage.value,
       page_size: pageSize.value,
     };
 
-    // 테스트를 위해 API 호출 비활성화
-    // // API 호출로 Asset3D 검색 리스트 조회
-    // await asset3DStore.fetchSearchList(searchParams);
+    // 3D 모델 구분 (PRESET, 3D_LIBRARY)
+    if (selectedAsset3DCategory.value) {
+      searchParams.root_equipment_type = selectedAsset3DCategory.value;
+    }
 
-    // // API 응답 데이터를 asset3dList에 설정
-    // if (asset3DStore.searchResults?.items) {
-    //   asset3dList.value = asset3DStore.searchResults
-    //     .items as unknown as Asset3DItem[];
-    // } else {
-    //   asset3dList.value = [];
-    // }
+    // 단위
+    if (selectedUnit.value) {
+      searchParams.unit_system_code = selectedUnit.value;
+    }
 
-    // 테스트용: 빈 배열로 설정
-    asset3dList.value = [];
+    // 검색어 (명칭)
+    if (searchQueryInput.value) {
+      searchParams.preset_name_ko = searchQueryInput.value;
+    }
+
+    // API 호출
+    const response = await request("/api/asset3D/search", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(searchParams),
+    });
+
+    console.log("[Asset3D] 검색 API 응답:", response);
+
+    if (response.success && response.response) {
+      const data = response.response;
+      
+      // 응답 데이터 파싱
+      let items: Asset3DItem[] = [];
+      
+      if (Array.isArray(data)) {
+        items = data;
+      } else if (data.items && Array.isArray(data.items)) {
+        items = data.items;
+      } else if (data.data && Array.isArray(data.data)) {
+        items = data.data;
+      }
+
+      // 그리드에 표시할 데이터 매핑
+      asset3dList.value = items.map((item: any) => ({
+        ...item,
+        equipment_id: item.equipment_id || item.preset_id || item.id || "",
+        equipment_name: item.preset_name_ko || item.equipment_name || item.name || "",
+        equipment_type: item.root_equipment_type || item.equipment_type || "",
+        equipment_type_name: getEquipmentTypeName(item.root_equipment_type),
+        // 직경: diameter_value + " " + diameter_unit
+        diameter_display: item.diameter_value 
+          ? `${item.diameter_value}${item.diameter_unit ? " " + item.diameter_unit : ""}`
+          : "-",
+        unit_system_code: item.unit_system_code || "",
+      }));
+
+      // 페이징 정보 업데이트
+      if (data.total_pages) {
+        asset3DStore.searchResults = {
+          ...asset3DStore.searchResults,
+          total_pages: data.total_pages,
+          total: data.total_count || data.total || items.length,
+        };
+      }
+    } else {
+      asset3dList.value = [];
+    }
   } catch (error) {
     console.error("데이터 로드 실패:", error);
     // 에러 발생 시 빈 배열로 초기화
     asset3dList.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 장비 유형명 변환 함수
+const getEquipmentTypeName = (type: string | undefined): string => {
+  if (!type) return "-";
+  
+  const typeMap: Record<string, string> = {
+    "PRESET": "프리셋",
+    "3D_LIBRARY": "3D 라이브러리",
+    "M_PUMP": "펌프",
+    "M_AEBL": "송풍기",
+  };
+  
+  return typeMap[type] || type;
+};
+
+// 3D 모델구분 이름 변환 함수 (검색옵션 기준)
+const getModel3dTypeName = (type: string | undefined): string => {
+  if (!type) return "-";
+  
+  const typeMap: Record<string, string> = {
+    "PRESET": "프리셋",
+    "3D_LIBRARY": "3D 라이브러리",
+  };
+  
+  return typeMap[type] || type;
+};
+
+// 연결기계 이름 변환 함수 (root_equipment_type 기준)
+const getConnectedMachineName = (type: string | undefined): string => {
+  if (!type) return "-";
+  
+  const typeMap: Record<string, string> = {
+    "M_PUMP": "펌프",
+    "M_AEBL": "송풍기",
+  };
+  
+  return typeMap[type] || type;
+};
+
+// 날짜/시간 포맷 함수 (YYYY-MM-DD HH:MI 형태)
+const formatDateTime = (dateString: string | undefined): string => {
+  if (!dateString) return "-";
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  } catch {
+    return "-";
   }
 };
 

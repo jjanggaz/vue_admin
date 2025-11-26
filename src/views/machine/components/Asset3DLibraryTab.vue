@@ -19,8 +19,8 @@
         <label class="required">3D ASSET 카테고리</label>
         <select v-model="selectedCategory" class="form-select">
           <option value="">-- 선택 --</option>
-          <option value="interior">인테리어</option>
-          <option value="structure">구조물</option>
+          <option value="INTERIOR">인테리어</option>
+          <option value="STRUCTURE">구조물</option>
         </select>
       </div>
       <div class="form-group">

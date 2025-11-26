@@ -137,10 +137,11 @@
             </div>
             <button
               type="button"
-              class="btn-search-subtype"
+              class="btn-search-subtype btn-search-icon"
               title="자재 선택"
+              :disabled="!item.subType"
             >
-              자재 선택
+              <span class="search-icon"></span>
             </button>
           </div>
           <div v-else class="subtype-cell-wrapper">
@@ -161,28 +162,32 @@
             </select>
             <button
               type="button"
-              class="btn-search-subtype"
+              class="btn-search-subtype btn-search-icon"
               @click="handleSubTypeSearch(item)"
               title="자재 선택"
+              :disabled="!item.subType"
             >
-              자재 선택
+              <span class="search-icon"></span>
             </button>
           </div>
         </template>
         <template #cell-diameter="{ item }">
           <span class="table-text">{{ item.diameter || "-" }}</span>
         </template>
-        <template #cell-equipmentCode="{ item }">
-          <span class="table-text">{{ item.equipmentCode || "-" }}</span>
+        <template #cell-diameterAfter="{ item }">
+          <span class="table-text">{{ item.diameterAfter || "-" }}</span>
+        </template>
+        <template #cell-pipeType="{ item }">
+          <span class="table-text">{{ item.pipeType || "-" }}</span>
+        </template>
+        <template #cell-supplierName="{ item }">
+          <span class="table-text">{{ item.supplierName || "-" }}</span>
+        </template>
+        <template #cell-pipeCode="{ item }">
+          <span class="table-text">{{ item.pipeCode || "-" }}</span>
         </template>
         <template #cell-dtdxModel="{ item }">
           <span class="table-text">{{ item.dtdxModel || "-" }}</span>
-        </template>
-        <template #cell-unitPrice="{ item }">
-          <span class="table-text">{{ item.unitPrice || "-" }}</span>
-        </template>
-        <template #cell-length="{ item }">
-          <span class="table-text">{{ item.length || "-" }}</span>
         </template>
         <template #cell-remarks="{ item }">
           <input
@@ -295,10 +300,11 @@ interface TableRow {
   subType: string;
   subTypeLabel?: string;
   diameter: string;
-  equipmentCode: string;
+  diameterAfter: string;
+  pipeType: string;
+  supplierName: string;
+  pipeCode: string;
   dtdxModel: string;
-  unitPrice: string;
-  length: string;
   remarks: string;
   subTypeOptions?: Array<{ value: string; label: string }>;
 }
@@ -384,13 +390,14 @@ const typeOptions = ref([
 // 테이블 컬럼 정의
 const tableColumns: TableColumn[] = [
   { key: "no", title: "번호", width: "50px", sortable: false },
-  { key: "type", title: "유형", width: "120px", sortable: false },
-  { key: "subType", title: "세부유형", width: "310px", sortable: false },
-  { key: "diameter", title: "직경", width: "70px", sortable: false },
-  { key: "equipmentCode", title: "장비 코드", width: "120px", sortable: false },
-  { key: "dtdxModel", title: "Dtdx 모델", width: "120px", sortable: false },
-  { key: "unitPrice", title: "단가", width: "80px", sortable: false },
-  { key: "length", title: "길이", width: "70px", sortable: false },
+  { key: "type", title: "구분", width: "100px", sortable: false },
+  { key: "subType", title: "세부구분", width: "300px", sortable: false },
+  { key: "diameter", title: "직경", width: "50px", sortable: false },
+  { key: "diameterAfter", title: "직경후", width: "50px", sortable: false },
+  { key: "pipeType", title: "배관 유형(장비유형)", width: "140px", sortable: false },
+  { key: "supplierName", title: "공급업체명", width: "100px", sortable: false },
+  { key: "pipeCode", title: "배관 코드", width: "100px", sortable: false },
+  { key: "dtdxModel", title: "Dtdx 모델", width: "100px", sortable: false },
   { key: "remarks", title: "비고", width: "100px", sortable: false },
 ];
 
@@ -473,10 +480,11 @@ const handleAddRow = () => {
     subType: "",
     subTypeLabel: "",
     diameter: "",
-    equipmentCode: "",
+    diameterAfter: "",
+    pipeType: "",
+    supplierName: "",
+    pipeCode: "",
     dtdxModel: "",
-    unitPrice: "",
-    length: "",
     remarks: "",
     subTypeOptions: [],
   });
@@ -1371,6 +1379,22 @@ label {
     background: #6c757d;
     cursor: not-allowed;
     opacity: 0.6;
+  }
+
+  &.btn-search-icon {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .search-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background: url("@/assets/images/common/ico_search.svg") no-repeat center center;
+      background-size: contain;
+      filter: brightness(0) invert(1);
+    }
   }
 }
 

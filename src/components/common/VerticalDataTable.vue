@@ -187,7 +187,6 @@ const getRowKey = (item: any, index: number) => {
 .vertical-data-table-container {
   border-top: 2px solid #000000;
   border-bottom: 1px solid #000000;
-
 }
 
 .vertical-data-table {
@@ -236,22 +235,36 @@ const getRowKey = (item: any, index: number) => {
         .edit-field-select,
         .edit-field-input {
           width: 100%;
-          padding: 0.25rem 0.5rem;
-          border: 1px solid $border-color;
+          height: 36px;
+          padding: 0 10px;
+          border: 1px solid #e7e6ed;
           border-radius: 4px;
-          background: white;
-          color: $text-color;
-          font-size: $font-size-sm;
+          background: #ffffff;
+          color: #333333;
+          font-size: 400;
 
           &:focus {
             outline: none;
-            border-color: $primary-color;
+            border-color: #3b82f6;
+          }
+        }
+
+        .edit-field-select {
+          appearance: none;
+          padding: 0 32px 0 10px;
+          background-image: url(../assets/icons/ico_select-down.svg);
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 12px auto;
+          
+          &:focus {
+            background-image: url(../assets/icons/ico_select-up.svg);
           }
         }
 
         .file-input-group {
           display: flex;
-          gap: 0.25rem;
+          gap: 10px;
           align-items: center;
 
           .edit-field-input {
@@ -259,19 +272,19 @@ const getRowKey = (item: any, index: number) => {
           }
 
           .btn-attach-small {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid $border-color;
+            height: 36px;
+            padding: 0 10px;
             border-radius: 4px;
-            background: $background-light;
-            color: $text-color;
-            cursor: pointer;
-            font-size: 0.75rem;
+            background: #3e435e;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
             white-space: nowrap;
+            cursor: pointer;
+            transition: background .2s ease-in-out;
 
             &:hover {
-              background: $primary-color;
-              color: white;
-              border-color: $primary-color;
+              background: #3c4973;
             }
           }
         }
@@ -284,6 +297,7 @@ const getRowKey = (item: any, index: number) => {
 
           &:hover {
             text-decoration: underline;
+            text-underline-offset: 3.5px;
             color: #1557b0;
           }
 

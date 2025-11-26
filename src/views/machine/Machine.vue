@@ -2457,6 +2457,7 @@ onMounted(async () => {
 .detail-panel {
   background: #ffffff;
   border-left: 1px solid #b2bbd2;
+  // border-right: 1px solid #b2bbd2;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -2529,7 +2530,7 @@ onMounted(async () => {
 
   .detail-panel-body {
     flex: 1;
-    padding: 20px;
+    padding: 10px 20px 20px;
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
@@ -2546,13 +2547,13 @@ onMounted(async () => {
       background-color: #e7e6ed;
       border-radius: 3px;
 
-    &:hover {
-      background-color: #d7d5e4;
-    }
+      &:hover {
+        background-color: #d7d5e4;
+      }
     }
     &::-webkit-scrollbar-button:end:increment {
-      display:block;
-      height:20px;
+      display: block;
+      height: 20px;
       width: 0;
       background-color: transparent;
     }
@@ -2799,6 +2800,10 @@ onMounted(async () => {
 .search-filter-bar {
   border-radius: 8px;
   margin-bottom: 20px;
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
 }
 
 // 상세검색 패널 스타일

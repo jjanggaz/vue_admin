@@ -30,21 +30,25 @@
               >{{ t("process.processType") }}
               <span class="required-mark">*</span></label
             >
-            <select
-              :value="processStore.processDetail.processType || ''"
-              @change="handleProcessTypeChange"
-              :key="`processType-${filteredProcessTypeOptions?.length || 0}`"
-              :disabled="!props.isRegisterMode"
-            >
-              <option value="">{{ t("common.select") }}</option>
-              <option
-                v-for="option in filteredProcessTypeOptions || []"
-                :key="option.value"
-                :value="option.value"
+            <template v-if="props.isRegisterMode">
+              <select
+                :value="processStore.processDetail.processType || ''"
+                @change="handleProcessTypeChange"
+                :key="`processType-${filteredProcessTypeOptions?.length || 0}`"
               >
-                {{ option.label }}
-              </option>
-            </select>
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in filteredProcessTypeOptions || []"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
+            <template v-else>
+              <span class="form-text-display">{{ processStore.processDetail.level2_code_value || '-' }}</span>
+            </template>
           </div>
 
           <div class="form-group">
@@ -52,23 +56,27 @@
               >{{ t("process.subCategory") }}
               <span class="required-mark">*</span></label
             >
-            <select
-              :value="processStore.processDetail.subCategory || ''"
-              @change="handleSubCategoryChange"
-              :key="`subCategory-${
-                processStore.searchSubCategoryOptions?.length || 0
-              }`"
-              :disabled="!props.isRegisterMode"
-            >
-              <option value="">{{ t("common.select") }}</option>
-              <option
-                v-for="option in processStore.searchSubCategoryOptions || []"
-                :key="option.value"
-                :value="option.value"
+            <template v-if="props.isRegisterMode">
+              <select
+                :value="processStore.processDetail.subCategory || ''"
+                @change="handleSubCategoryChange"
+                :key="`subCategory-${
+                  processStore.searchSubCategoryOptions?.length || 0
+                }`"
               >
-                {{ option.label }}
-              </option>
-            </select>
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in processStore.searchSubCategoryOptions || []"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
+            <template v-else>
+              <span class="form-text-display">{{ processStore.processDetail.level3_code_value || '-' }}</span>
+            </template>
           </div>
 
           <div class="form-group">
@@ -76,23 +84,27 @@
               >{{ t("process.processName") }}
               <span class="required-mark">*</span></label
             >
-            <select
-              :value="processStore.processDetail.processName || ''"
-              @change="handleProcessNameChange"
-              :key="`processName-${
-                processStore.searchProcessNameOptions?.length || 0
-              }`"
-              :disabled="!props.isRegisterMode"
-            >
-              <option value="">{{ t("common.select") }}</option>
-              <option
-                v-for="option in processStore.searchProcessNameOptions || []"
-                :key="option.value"
-                :value="option.value"
+            <template v-if="props.isRegisterMode">
+              <select
+                :value="processStore.processDetail.processName || ''"
+                @change="handleProcessNameChange"
+                :key="`processName-${
+                  processStore.searchProcessNameOptions?.length || 0
+                }`"
               >
-                {{ option.label }}
-              </option>
-            </select>
+                <option value="">{{ t("common.select") }}</option>
+                <option
+                  v-for="option in processStore.searchProcessNameOptions || []"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
+            <template v-else>
+              <span class="form-text-display">{{ processStore.processDetail.level4_code_value || '-' }}</span>
+            </template>
           </div>
 
           <div class="form-group">
@@ -12047,6 +12059,20 @@ watch(
     box-shadow: none;
     background-image: url(../../assets/icons/ico_select-up.svg);
   }
+}
+
+.form-text-display {
+  display: block;
+  width: 100%;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 38px;
+  background-color: #f9fafb;
+  color: #344054;
 }
 
 .file-input-group {

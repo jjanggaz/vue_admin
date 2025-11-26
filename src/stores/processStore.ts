@@ -39,6 +39,9 @@ export interface ProcessDetail {
   siteFile?: File | null;  // 공정심볼 파일 (업로드용)
   ccs_file_id?: string | null;  // 용량계산서 파일 ID
   ccs_file_name?: string | null;  // 용량계산서 파일명
+  level2_code_value?: string | null;  // 공정구분 텍스트 (상세 모드 표시용)
+  level3_code_value?: string | null;  // 공정 중분류 텍스트 (상세 모드 표시용)
+  level4_code_value?: string | null;  // 공정명 텍스트 (상세 모드 표시용)
 }
 
 // ProcessDetail.vue에서 사용하는 추가 인터페이스들
@@ -767,6 +770,9 @@ export const useProcessStore = defineStore("process", () => {
             unit_system_code: processData.unit_system_code || null,  // 단위 시스템 코드
             ccs_file_id: processData.ccs_file_id || null,  // 용량계산서 파일 ID
             ccs_file_name: processData.ccs_file_name || null,  // 용량계산서 파일명
+            level2_code_value: processData.level2_code_value || null,  // 공정구분 텍스트
+            level3_code_value: processData.level3_code_value || null,  // 공정 중분류 텍스트
+            level4_code_value: processData.level4_code_value || null,  // 공정명 텍스트
           });
 
 

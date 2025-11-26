@@ -138,7 +138,6 @@
             <button
               type="button"
               class="btn-search-subtype"
-              @click.stop="toggleTreeDropdown(item, $event)"
               title="자재 선택"
             >
               자재 선택
@@ -171,44 +170,19 @@
           </div>
         </template>
         <template #cell-diameter="{ item }">
-          <input
-            type="text"
-            v-model="item.diameter"
-            class="table-input"
-            placeholder="직경"
-          />
+          <span class="table-text">{{ item.diameter || "-" }}</span>
         </template>
         <template #cell-equipmentCode="{ item }">
-          <input
-            type="text"
-            v-model="item.equipmentCode"
-            class="table-input"
-            placeholder="장비 코드"
-          />
+          <span class="table-text">{{ item.equipmentCode || "-" }}</span>
         </template>
         <template #cell-dtdxModel="{ item }">
-          <input
-            type="text"
-            v-model="item.dtdxModel"
-            class="table-input"
-            placeholder="Dtdx 모델"
-          />
+          <span class="table-text">{{ item.dtdxModel || "-" }}</span>
         </template>
         <template #cell-unitPrice="{ item }">
-          <input
-            type="text"
-            v-model="item.unitPrice"
-            class="table-input"
-            placeholder="단가"
-          />
+          <span class="table-text">{{ item.unitPrice || "-" }}</span>
         </template>
         <template #cell-length="{ item }">
-          <input
-            type="text"
-            v-model="item.length"
-            class="table-input"
-            placeholder="길이"
-          />
+          <span class="table-text">{{ item.length || "-" }}</span>
         </template>
         <template #cell-remarks="{ item }">
           <input
@@ -226,7 +200,7 @@
         v-if="openTreeDropdownRowId !== null && activeManualValveRow"
         class="tree-dropdown-portal"
         :style="{
-          top: `${treeDropdownPosition.top}px`,
+          bottom: `${treeDropdownPosition.bottom}px`,
           left: `${treeDropdownPosition.left}px`,
           width: `${treeDropdownPosition.width}px`,
         }"
@@ -357,7 +331,7 @@ const manualValveSelectedCode = ref<string>("");
 const manualValveExpandedKeys = ref<Set<string>>(new Set());
 const treeDropdownAnchor = ref<HTMLElement | null>(null);
 const treeDropdownPortalRef = ref<HTMLElement | null>(null);
-const treeDropdownPosition = ref({ top: 0, left: 0, width: 0 });
+const treeDropdownPosition = ref({ bottom: 0, left: 0, width: 0 });
 
 const getTreeDropdownAnchorElement = (event?: MouseEvent) => {
   const target = event?.currentTarget as HTMLElement | null;
@@ -375,8 +349,11 @@ const updateTreeDropdownPosition = (target?: HTMLElement | null) => {
   if (!anchor) return;
 
   const rect = anchor.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  
+  // 위 방향으로 펼쳐지도록 bottom 위치 계산 (viewport 기준)
   treeDropdownPosition.value = {
-    top: rect.bottom + window.scrollY,
+    bottom: viewportHeight - rect.top,
     left: rect.left + window.scrollX,
     width: rect.width,
   };
@@ -406,15 +383,15 @@ const typeOptions = ref([
 
 // 테이블 컬럼 정의
 const tableColumns: TableColumn[] = [
-  { key: "no", title: "번호", width: "80px", sortable: false },
-  { key: "type", title: "유형", width: "150px", sortable: false },
-  { key: "subType", title: "세부유형", width: "450px", sortable: false },
-  { key: "diameter", title: "직경", width: "120px", sortable: false },
-  { key: "equipmentCode", title: "장비 코드", width: "200px", sortable: false },
-  { key: "dtdxModel", title: "Dtdx 모델", width: "200px", sortable: false },
-  { key: "unitPrice", title: "단가", width: "120px", sortable: false },
-  { key: "length", title: "길이", width: "120px", sortable: false },
-  { key: "remarks", title: "비고", width: "150px", sortable: false },
+  { key: "no", title: "번호", width: "50px", sortable: false },
+  { key: "type", title: "유형", width: "120px", sortable: false },
+  { key: "subType", title: "세부유형", width: "310px", sortable: false },
+  { key: "diameter", title: "직경", width: "70px", sortable: false },
+  { key: "equipmentCode", title: "장비 코드", width: "120px", sortable: false },
+  { key: "dtdxModel", title: "Dtdx 모델", width: "120px", sortable: false },
+  { key: "unitPrice", title: "단가", width: "80px", sortable: false },
+  { key: "length", title: "길이", width: "70px", sortable: false },
+  { key: "remarks", title: "비고", width: "100px", sortable: false },
 ];
 
 // 썸네일 파일 변경 핸들러
@@ -785,9 +762,8 @@ const toggleTreeDropdown = async (item: TableRow, event?: MouseEvent) => {
   activeManualValveRow.value = item;
   openTreeDropdownRowId.value = item.id;
   manualValveSelectedCode.value = item.subType || "";
-  if (manualValveSelectedCode.value) {
-    expandManualValvePath(manualValveSelectedCode.value);
-  }
+  // 트리 열릴 때: 기존 선택값이 있으면 해당 경로만 펼치고, 없으면 모두 닫음
+  expandManualValvePath(manualValveSelectedCode.value, true);
   const anchor = getTreeDropdownAnchorElement(event) || null;
   if (anchor) {
     treeDropdownAnchor.value = anchor;
@@ -865,15 +841,24 @@ const findPathToManualValveCode = (
   return [];
 };
 
-const expandManualValvePath = (codeKey: string) => {
+const expandManualValvePath = (codeKey: string, exclusive = false) => {
   if (!codeKey) {
+    if (exclusive) {
+      manualValveExpandedKeys.value = new Set();
+    }
     return;
   }
   const path = findPathToManualValveCode(manualValveTree.value, codeKey);
   if (path.length <= 1) {
+    if (exclusive) {
+      manualValveExpandedKeys.value = new Set();
+    }
     return;
   }
-  const nextSet = new Set(manualValveExpandedKeys.value);
+  // exclusive=true: 기존값이 속한 노드만 펼치고 나머지는 닫음
+  const nextSet = exclusive
+    ? new Set<string>()
+    : new Set(manualValveExpandedKeys.value);
   path.slice(0, -1).forEach((key) => nextSet.add(key));
   manualValveExpandedKeys.value = nextSet;
 };
@@ -1171,6 +1156,26 @@ label {
 
 .table-section {
   margin-top: 0;
+  width: 100%;
+  overflow-x: hidden;
+
+  :deep(.data-table) {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  :deep(.data-table th),
+  :deep(.data-table td) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :deep(.data-table th.checkbox-cell),
+  :deep(.data-table td.checkbox-cell) {
+    text-overflow: clip;
+    overflow: visible;
+  }
 }
 
 .table-select,
@@ -1191,6 +1196,15 @@ label {
 
 .table-select {
   cursor: pointer;
+}
+
+.table-text {
+  display: block;
+  width: 100%;
+  padding: 0 6px;
+  font-size: 13px;
+  line-height: 28px;
+  color: #344054;
 }
 
 .subtype-cell-wrapper {
@@ -1230,21 +1244,22 @@ label {
 }
 
 .tree-dropdown-portal {
-  position: absolute;
+  position: fixed;
   z-index: 2000;
-  width: 100%;
   pointer-events: none;
 }
 
 .tree-dropdown-panel {
   position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
   max-height: 320px;
   overflow-y: auto;
   background: #fff;
   border: 1px solid #e4e7ec;
   border-radius: 6px;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 -12px 24px rgba(15, 23, 42, 0.2);
   padding: 8px 0;
   pointer-events: auto;
 }

@@ -245,6 +245,11 @@ interface StructureItem {
   structure_id: string;
   structure_name: string;
   root_structure_type: string;
+  root_structure_type_info?: {
+    code_key: string;
+    code_value: string;
+    code_value_en: string;
+  };
   structure_type: string;
   unit_system_code: string;
   formula_file_name: string;
@@ -573,7 +578,7 @@ const loadData = async () => {
       structureList.value = apiData.map((item: any) => ({
         structure_id: item.structure_id,
         structure_name: item.structure_name,
-        root_structure_type: item.root_structure_type || "-",
+        root_structure_type: item.root_structure_type_info?.code_value || "-",
         structure_type: item.structure_type,
         unit_system_code: item.unit_system_code,
         formula_file_name: item.formula?.original_filename || "-",

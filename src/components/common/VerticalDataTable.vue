@@ -185,11 +185,9 @@ const getRowKey = (item: any, index: number) => {
 
 <style scoped lang="scss">
 .vertical-data-table-container {
-  background: $background-color;
-  border-radius: $border-radius-lg;
-  overflow: hidden;
-  box-shadow: $shadow-sm;
-  border: 1px solid $border-color;
+  border-top: 2px solid #000000;
+  border-bottom: 1px solid #000000;
+
 }
 
 .vertical-data-table {
@@ -197,16 +195,23 @@ const getRowKey = (item: any, index: number) => {
   border-collapse: collapse;
 
   td {
-    padding: $spacing-sm $spacing-md;
-    text-align: center;
-    border: 1px solid $border-color;
-    font-size: $font-size-sm;
-    color: $text-color;
+    text-align: left;
+    height: 40px;
+    padding: 2px 10px;
+    color: #333333;
+    font-size: 15px;
+    font-weight: 500;
   }
 
   tbody {
     .data-row {
       transition: $transition-base;
+
+      td {
+        &:first-child {
+          border-right: 1px solid #000000;
+        }
+      }
 
       &.selected {
         background-color: rgba($primary-color, 0.1);
@@ -219,11 +224,13 @@ const getRowKey = (item: any, index: number) => {
       .column-name {
         font-weight: $font-weight-md;
         background-color: $background-light;
-        width: 40%;
+        width: 120px;
+        max-width: 120px;
+        min-width: 120px;
       }
 
       .column-value {
-        width: 60%;
+        width: 100%;
         word-break: break-all;
 
         .edit-field-select,
@@ -270,13 +277,18 @@ const getRowKey = (item: any, index: number) => {
         }
 
         .file-download-link {
-          color: $primary-color;
+          color: #1a73e8;
+          text-decoration: none;
           cursor: pointer;
-          text-decoration: underline;
+          transition: all 0.2s;
 
           &:hover {
-            color: darken($primary-color, 10%);
-            font-weight: 500;
+            text-decoration: underline;
+            color: #1557b0;
+          }
+
+          &:visited {
+            color: #1a73e8;
           }
         }
       }

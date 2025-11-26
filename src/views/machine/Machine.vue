@@ -523,35 +523,37 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
-          <h3>{{ t("common.detailInfo") }}</h3>
-          <div class="header-buttons">
-            <button
-              v-if="!isDetailEditMode"
-              class="btn-edit"
-              @click="toggleEditMode"
-            >
-              {{ t("common.edit") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-save"
-              @click="saveDetailChanges"
-            >
-              {{ t("common.save") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-cancel"
-              @click="cancelEditMode"
-            >
-              {{ t("common.cancel") }}
-            </button>
-            <button
-              class="btn-close"
-              @click="closeDetailPanel"
-              aria-label="Close"
-            ></button>
+          <div class="detail-panel-head">
+            <h3>{{ t("common.detailInfo") }}</h3>
+            <div class="header-buttons">
+              <button
+                v-if="!isDetailEditMode"
+                class="btn-edit"
+                @click="toggleEditMode"
+              >
+                {{ t("common.edit") }}
+              </button>
+              <button
+                v-if="isDetailEditMode"
+                class="btn-save"
+                @click="saveDetailChanges"
+              >
+                {{ t("common.save") }}
+              </button>
+              <button
+                v-if="isDetailEditMode"
+                class="btn-cancel"
+                @click="cancelEditMode"
+              >
+                {{ t("common.cancel") }}
+              </button>
+            </div>
           </div>
+          <button
+            class="btn-close"
+            @click="closeDetailPanel"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -2424,7 +2426,7 @@ onMounted(async () => {
 @use "sass:color";
 
 .machine-page {
-  padding: 40px 24px;
+  padding: 0 24px;
   height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
@@ -2435,7 +2437,7 @@ onMounted(async () => {
   height: calc(100vh - #{$spacing-lg * 2});
   width: 100%;
   overflow: hidden;
-  gap: 8px;
+  gap: 10px;
   grid-template-columns: 1fr; // 기본: 전체 너비
   transition: grid-template-columns 0.3s ease;
 
@@ -2449,11 +2451,12 @@ onMounted(async () => {
   overflow-x: auto;
   box-sizing: border-box;
   min-width: 0;
+  padding-top: 40px;
 }
 
 .detail-panel {
-  background: white;
-  border-left: 1px solid $border-color;
+  background: #ffffff;
+  border-left: 1px solid #b2bbd2;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -2464,75 +2467,95 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid $border-color;
-    background: $background-light;
+    padding: 15px 20px 8px;
     flex-shrink: 0;
 
+    .detail-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
     h3 {
-      margin: 0;
-      color: $text-color;
-      font-size: 1.25rem;
+      color: #202020;
+      font-size: 20px;
+      font-weight: 600;
     }
 
     .header-buttons {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
 
       .btn-edit,
       .btn-save,
       .btn-cancel {
-        padding: 0.5rem 1rem;
-        border: 1px solid $border-color;
+        width: 45px;
+        height: 32px;
+        line-height: 32px;
         border-radius: 4px;
-        background: $background-light;
-        color: $text-color;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
+        transition: background 0.2s ease-in-out;
+      }
+
+      .btn-edit {
+        background: #222e77;
 
         &:hover {
-          background: color.scale($background-light, $lightness: -5%);
+          background: #29378c;
         }
       }
 
       .btn-save {
-        background: $success-color;
-        color: white;
-        border-color: $success-color;
+        background: #0863e2;
 
         &:hover {
-          background: color.scale($success-color, $lightness: -10%);
+          background: #0067f5;
         }
       }
 
       .btn-cancel {
-        background: $error-color;
-        color: white;
-        border-color: $error-color;
+        background: #3e435e;
 
         &:hover {
-          background: color.scale($error-color, $lightness: -10%);
+          background: #3c4973;
         }
-      }
-
-      .btn-close {
-        width: 24px;
-        height: 24px;
-        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center /
-          18px auto;
-        cursor: pointer;
       }
     }
   }
 
   .detail-panel-body {
     flex: 1;
-    padding: 1rem;
+    padding: 20px;
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+    -webkit-overflow-scrolling: touch;
+
+    &.with-scroll {
+      overflow-y: auto;
+    }
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #e7e6ed;
+      border-radius: 3px;
+
+    &:hover {
+      background-color: #d7d5e4;
+    }
+    }
+    &::-webkit-scrollbar-button:end:increment {
+      display:block;
+      height:20px;
+      width: 0;
+      background-color: transparent;
+    }
 
     .model-thumbnail-section {
       width: 100%;
@@ -2592,14 +2615,13 @@ onMounted(async () => {
       }
 
       .thumbnail-placeholder {
-        width: 200px;
-        height: 150px;
-        border: 2px dashed $border-color;
-        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: $background-light;
+        width: 200px;
+        height: 150px;
+        border: 2px dashed #888888;
+        border-radius: 8px;
 
         .thumbnail-text {
           color: $text-light;
@@ -2616,7 +2638,7 @@ onMounted(async () => {
     }
 
     .edit-fields-section {
-      margin-top: 1.5rem;
+      margin-top: 20px;
       padding: 1rem;
       border: 1px solid $border-color;
       border-radius: 8px;
@@ -2716,19 +2738,18 @@ onMounted(async () => {
   width: 100%;
 
   .section-title {
-    margin: 0 0 12px 0;
-    padding: 8px 12px;
+    margin-bottom: 10px;
+    padding-left: 16px;
     background: $background-light;
     border-left: 4px solid $primary-color;
     font-size: 1rem;
     font-weight: 600;
     color: $text-color;
-    border-radius: 4px;
   }
 }
 
 .price-history-section {
-  margin-top: 1.5rem;
+  margin-top: 24px;
 
   :deep(.data-table-container) {
     max-height: 250px;
@@ -2745,8 +2766,7 @@ onMounted(async () => {
 
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
 }
 
 .detail-section :deep(.vertical-data-table) {

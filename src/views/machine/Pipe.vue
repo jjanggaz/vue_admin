@@ -3617,7 +3617,7 @@ onMounted(async () => {
 @use "sass:color";
 
 .pipe-page {
-  padding: 40px 24px;
+  padding: 0 24px;
   height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
@@ -3642,6 +3642,7 @@ onMounted(async () => {
   overflow-x: hidden;
   box-sizing: border-box;
   min-width: 0;
+  padding-top: 40px;
 }
 
 .detail-panel {
@@ -3975,13 +3976,13 @@ onMounted(async () => {
   .filter-group {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 15px;
     flex-wrap: wrap;
 
     .filter-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
 
       label {
         font-size: 0.9rem;

@@ -1534,11 +1534,6 @@ const loadData = async () => {
       page_size: pageSize.value,
     };
 
-    // 3D 모델 구분 (PRESET, 3D_LIBRARY)
-    if (selectedAsset3DCategory.value) {
-      searchParams.root_equipment_type = selectedAsset3DCategory.value;
-    }
-
     // 단위
     if (selectedUnit.value) {
       searchParams.unit_system_code = selectedUnit.value;
@@ -1549,8 +1544,9 @@ const loadData = async () => {
       searchParams.preset_name_ko = searchQueryInput.value;
     }
 
-    // API 호출
-    const response = await request("/api/asset3D/search", undefined, {
+    // API 호출 - 3D 모델 구분을 URL path에 type으로 전달
+    const modelType = selectedAsset3DCategory.value || "PRESET";
+    const response = await request(`/api/asset3D/search/${modelType}`, undefined, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1575,10 +1571,14 @@ const loadData = async () => {
       }
 
       // 그리드에 표시할 데이터 매핑
+      // 3D 라이브러리인 경우 model_name을 명칭에 출력
+      const isLibrary = modelType === "3D_LIBRARY";
       asset3dList.value = items.map((item: any) => ({
         ...item,
         equipment_id: item.equipment_id || item.preset_id || item.id || "",
-        equipment_name: item.preset_name_ko || item.equipment_name || item.name || "",
+        equipment_name: isLibrary 
+          ? (item.model_name || item.equipment_name || item.name || "")
+          : (item.preset_name_ko || item.equipment_name || item.name || ""),
         equipment_type: item.root_equipment_type || item.equipment_type || "",
         equipment_type_name: getEquipmentTypeName(item.root_equipment_type),
         // 직경: diameter_value + " " + diameter_unit

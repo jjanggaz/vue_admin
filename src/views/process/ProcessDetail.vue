@@ -126,85 +126,53 @@
               </button>
               <button
                 v-if="
-                  processStore.processDetail.symbolId &&
-                  processStore.processDetail.symbolId !==
-                    '00000000-0000-0000-0000-000000000000'
+                  (
+                    // 서버에 저장된 심볼이 있고 실제 미리보기 URL이 존재할 때만 다운로드 버튼 표시
+                    processStore.processDetail.symbolId &&
+                    processStore.processDetail.symbolId !==
+                    '00000000-0000-0000-0000-000000000000' &&
+                    processStore.processSymbolPreviewUrl
+                  ) ||
+                  // 또는 현재 선택된 로컬 파일이 있을 때 (등록 전 선택된 파일 다운 가능)
+                  processStore.selectedFiles['processSymbol']
                 "
-                @click="downloadProcessSymbol"
-                class="btn btn-sm btn-outline-primary download-btn"
-                :title="t('processDetail.downloadProcessSymbol')"
-                style="vertical-align: middle"
-              >
+                 @click="downloadProcessSymbol"
+                 class="btn btn-sm btn-outline-primary download-btn"
+                 :title="t('processDetail.downloadProcessSymbol')"
+                 style="vertical-align: middle"
+               >
                 <span class="ico-download"></span>
               </button>
-              <span class="selected-file">
-                <div style="position: relative; display: inline-block">
+              <div class="selected-file">
+                <div class="symbol-state">
                   <span
+                    class="symbol-txt"
                     v-if="!processStore.processSymbolPreviewUrl"
-                    style="
-                      display: block;
-                      text-align: center;
-                      color: #aaaaaa;
-                      font-size: 13px;
-                      font-weight: 400;
-                    "
                   >
                     {{ t("common.noFile") }}
                   </span>
                   <img
+                    class="symbol-img"
                     v-else
                     :src="processStore.processSymbolPreviewUrl"
                     :alt="t('processDetail.processSymbolPreview')"
-                    style="
-                      display: block;
-                      width: 60px;
-                      height: 60px;
-                      vertical-align: top;
-                    "
                   />
                   <button
+                    class="symbol-close-btn"
                     v-if="
-                      (processStore.processDetail.symbolId &&
+                      processStore.processSymbolPreviewUrl &&
+                      ((processStore.processDetail.symbolId &&
                         processStore.processDetail.symbolId !==
                           '00000000-0000-0000-0000-000000000000') ||
-                      (processStore.processSymbolPreviewUrl &&
-                        processStore.selectedFiles['processSymbol'])
+                        (processStore.processSymbolPreviewUrl &&
+                          processStore.selectedFiles['processSymbol']))
                     "
                     @click="handleDeleteProcessSymbol"
                     :title="t('processDetail.deleteSymbol')"
-                    style="
-                      position: absolute;
-                      top: 0;
-                      right: 0;
-                      width: 20px;
-                      height: 20px;
-                      border-radius: 100%;
-                      border: none;
-                      background-color: #3e435e;
-                      color: white;
-                      font-size: 18px;
-                      font-weight: normal;
-                      font-family: Arial, sans-serif;
-                      line-height: 1;
-                      text-align: center;
-                      cursor: pointer;
-                      transition: background-color 0.2s;
-                      z-index: 10;
-                      padding: 1px 0 0 0;
-                      margin: 0;
-                    "
-                    @mouseover="
-                      $event.target.style.backgroundColor = 'rgba(0,0,0,0.7)'
-                    "
-                    @mouseout="
-                      $event.target.style.backgroundColor = 'rgba(0,0,0,0.5)'
-                    "
-                  >
-                    ×
+                    >
                   </button>
                 </div>
-                
-              </span>
+              </div>
             </div>
           </div>
         </div>
@@ -12780,7 +12748,6 @@ watch(
   gap: 10px;
   color: #333;
   font-size: 14px;
-  
 }
 
 .no-file {
@@ -12903,6 +12870,69 @@ input[type="radio"] {
 
   &:disabled {
     background-image: url(../../assets/icons/ico_radio-disabled.svg);
+  }
+}
+
+.symbol-state {
+  position: relative;
+  visibility: visible;
+
+  .symbol-txt {
+    color: #aaaaaa;
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .symbol-img {
+    display: block;
+    width: 100%;
+    height: 40px;
+    margin-left: 10px;
+    object-fit: contain;
+    object-position: left;
+  }
+
+  .symbol-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(62, 67, 94, .6);
+    transition: background-color .2s ease-in-out, opacity .2s ease-in-out;;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+
+    &::after {
+      content: "x";
+      display: inline-block;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      color: #ffffff;
+    }
+  }
+
+  .symbol-img:hover ~ .symbol-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:hover .symbol-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .symbol-close-btn:hover {
+    background-color: rgba(62, 67, 94, 1);
   }
 }
 </style>

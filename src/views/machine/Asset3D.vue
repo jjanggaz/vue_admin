@@ -68,7 +68,7 @@
             <button
               class="btn btn-primary btn-edit"
               @click="handleEdit"
-              :disabled="selectedItems.length === 0"
+              :disabled="selectedItems.length !== 1"
             >
               {{ t("common.edit") }}
             </button>
@@ -304,11 +304,11 @@
       </div>
     </div>
 
-    <!-- 등록 모달: 내부 탭 구성 -->
+    <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
       <div class="modal-container" style="max-width: 1600px; width: 98%">
         <div class="modal-header">
-          <h3>{{ t("common.register") }}</h3>
+          <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
             class="btn-close"
             @click="closeRegistModal"
@@ -321,15 +321,23 @@
             <div
               v-for="(tab, idx) in modalTabs"
               :key="tab.key"
-              :class="['tab', { active: modalActiveTab === idx }]"
-              @click="modalActiveTab = idx"
+              :class="['tab', { active: modalActiveTab === idx }, { disabled: isEditModalMode && modalActiveTab !== idx }]"
+              @click="!isEditModalMode && (modalActiveTab = idx)"
             >
               {{ tab.label }}
             </div>
           </div>
           <div class="tab-content">
-            <Asset3DLibraryTab v-if="modalActiveTab === 0" />
-            <Asset3DPresetTab v-if="modalActiveTab === 1" />
+            <Asset3DLibraryTab 
+              v-if="modalActiveTab === 0" 
+              :is-edit-mode="isEditModalMode"
+              :edit-item="editTargetItem"
+            />
+            <Asset3DPresetTab 
+              v-if="modalActiveTab === 1" 
+              :is-edit-mode="isEditModalMode"
+              :edit-item="editTargetItem"
+            />
           </div>
         </div>
         <div class="modal-footer">
@@ -430,6 +438,9 @@ interface Asset3DItem {
   diameter_value?: number | string;
   diameter_unit?: string;
   unit_system_code?: string;
+  model_type?: string; // PRESET 또는 3D_LIBRARY
+  model_name?: string; // 3D 라이브러리 모델명
+  thumbnail_file_name?: string; // 썸네일 파일명
 }
 
 // 테이블 컬럼 설정
@@ -537,6 +548,8 @@ const searchQueryInput = ref("");
 const selectedUnit = ref("");
 const selectedAsset3DCategory = ref("PRESET");
 const isRegistModalOpen = ref(false);
+const isEditModalMode = ref(false); // 수정 모드 여부
+const editTargetItem = ref<Asset3DItem | null>(null); // 수정 대상 항목
 const isDetailPanelOpen = ref(false);
 const detailItemData = ref<Asset3DItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
@@ -824,6 +837,9 @@ const openRegistModal = () => {
   if (isDetailPanelOpen.value) {
     isDetailPanelOpen.value = false;
   }
+  // 등록 모드로 초기화
+  isEditModalMode.value = false;
+  editTargetItem.value = null;
   // '3D 라이브러리 등록' 탭을 기본 선택
   modalActiveTab.value = 0;
   isRegistModalOpen.value = true;
@@ -844,12 +860,26 @@ const handleEdit = () => {
     isDetailPanelOpen.value = false;
   }
   
-  // 선택된 항목의 상세 정보를 열기
-  openDetailPanel(selectedItems.value[0]);
+  // 수정 모드로 등록 팝업 열기
+  isEditModalMode.value = true;
+  editTargetItem.value = selectedItems.value[0];
+  
+  // 선택된 항목의 타입에 따라 탭 선택
+  const selectedItem = selectedItems.value[0];
+  if (selectedItem.model_type === "3D_LIBRARY") {
+    modalActiveTab.value = 0; // 3D 라이브러리 탭
+  } else {
+    modalActiveTab.value = 1; // 프리셋 탭
+  }
+  
+  isRegistModalOpen.value = true;
 };
 
 const closeRegistModal = async () => {
   isRegistModalOpen.value = false;
+  // 수정 모드 초기화
+  isEditModalMode.value = false;
+  editTargetItem.value = null;
   // 등록 모달 닫을 때 데이터 새로고침
   await loadData();
 };
@@ -1586,6 +1616,8 @@ const loadData = async () => {
           ? `${item.diameter_value}${item.diameter_unit ? " " + item.diameter_unit : ""}`
           : "-",
         unit_system_code: item.unit_system_code || "",
+        // 3D 모델구분 저장 (수정 시 탭 분기에 사용)
+        model_type: modelType,
       }));
 
       // 페이징 정보 업데이트
@@ -2233,6 +2265,12 @@ $tablet: 1024px;
   color: #1a73e8;
   border-bottom: 2px solid #1a73e8;
   font-weight: bold;
+}
+
+.tab.disabled {
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .tab-content {

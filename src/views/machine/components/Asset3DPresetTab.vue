@@ -449,13 +449,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, onActivated } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, onActivated, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
 import { useAsset3DStore } from "@/stores/asset3DStore";
 import { usePipeStore } from "@/stores/pipeStore";
 import { request } from "@/utils/request";
+
+// Props 정의
+interface Props {
+  isEditMode?: boolean;
+  editItem?: Record<string, unknown> | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isEditMode: false,
+  editItem: null,
+});
 
 const { t } = useI18n();
 const asset3DStore = useAsset3DStore();
@@ -1792,6 +1803,45 @@ onMounted(async () => {
 onActivated(() => {
   resetManualValveTreeState();
 });
+
+// 수정 모드 데이터 초기화
+watch(
+  () => props.editItem,
+  async (newItem) => {
+    if (props.isEditMode && newItem) {
+      console.log("[Asset3DPresetTab] 수정 모드 데이터 초기화:", newItem);
+      
+      // 연결기계 설정
+      selectedMachine.value = String(newItem.root_equipment_type || "");
+      
+      // 명칭 설정
+      presetName.value = String(newItem.preset_name_ko || newItem.equipment_name || "");
+      
+      // 단위 설정
+      selectedUnit.value = String(newItem.unit_system_code || "");
+      
+      // 썸네일 미리보기 로드
+      if (newItem.thumbnail_id) {
+        try {
+          const response = await fetch(`/api/file/download/${newItem.thumbnail_id}`);
+          if (response.ok) {
+            const blob = await response.blob();
+            thumbnailPreviewUrl.value = URL.createObjectURL(blob);
+            thumbnailFileName.value = String(newItem.thumbnail_file_name || "썸네일 이미지");
+          }
+        } catch (error) {
+          console.error("썸네일 로드 실패:", error);
+          thumbnailPreviewUrl.value = "";
+          thumbnailFileName.value = "";
+        }
+      } else {
+        thumbnailPreviewUrl.value = "";
+        thumbnailFileName.value = "";
+      }
+    }
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleGlobalClick);

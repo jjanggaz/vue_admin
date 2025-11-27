@@ -106,6 +106,17 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAsset3DStore } from "@/stores/asset3DStore";
 
+// Props 정의
+interface Props {
+  isEditMode?: boolean;
+  editItem?: Record<string, unknown> | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isEditMode: false,
+  editItem: null,
+});
+
 const { t } = useI18n();
 const asset3DStore = useAsset3DStore();
 

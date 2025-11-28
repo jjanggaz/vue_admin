@@ -811,7 +811,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "equipment_code",
-    title: t("columns.machine.mcId"),
+    title: t("columns.machine.code"),
     width: "150px",
     sortable: false,
   },
@@ -2769,7 +2769,6 @@ onMounted(async () => {
 
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
-  
 }
 
 .detail-section :deep(.vertical-data-table) {

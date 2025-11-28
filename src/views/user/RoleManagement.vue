@@ -834,22 +834,6 @@ const closeMenuPermissionsModal = () => {
   gap: 10px;
 }
 
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 0;
-    font-size: 13px;
-    color: #333333;
-    font-weight: 400;
-  }
-}
-
 .modal-container {
   min-width: 900px;
   max-width: 1200px;

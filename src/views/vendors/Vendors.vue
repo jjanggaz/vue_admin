@@ -1205,21 +1205,6 @@ onMounted(() => {
   }
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 0;
-    font-size: 13px;
-    color: #333333;
-    font-weight: 400;
-  }
-}
-
 .modal-overlay {
   position: fixed;
   top: 0;

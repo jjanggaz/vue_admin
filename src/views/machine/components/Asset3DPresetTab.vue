@@ -81,7 +81,7 @@
     <!-- 행 삭제/저장 버튼 -->
     <div class="table-header-row">
       <h3 class="table-title">선택 항목</h3>
-      <div class="button-group">
+      <div class="button-group" v-if="isSelectionGridEnabled">
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
             -행 삭제
           </button>
@@ -93,21 +93,31 @@
 
     <!-- 데이터 테이블 -->
     <div class="table-section">
+      <!-- 등록 모드에서 preset_id가 없을 때 메시지 표시 -->
+      <div v-if="!props.isEditMode && !isSelectionGridEnabled" class="empty-message">
+        마스터 정보를 먼저 저장하세요
+      </div>
+      
+      <!-- 그리드 표시 (수정 모드이거나 등록 모드에서 preset_id가 있을 때) -->
       <DataTable
+        v-else
         :columns="tableColumns"
         :data="tableRows"
-        :selectable="true"
+        :selectable="isSelectionGridEnabled"
         :selection-mode="'multiple'"
-        :show-select-all="true"
+        :show-select-all="isSelectionGridEnabled"
         :selected-items="selectedRows"
         @selection-change="handleSelectionChange"
         row-key="id"
       >
-        <template #cell-type="{ item }">
-          <span class="table-text">{{ getTypeLabel(item.type) || "-" }}</span>
+        <template #cell-pipeCategory="{ item }">
+          <span class="table-text">{{ item.pipeCategory || "-" }}</span>
         </template>
-        <template #cell-subType="{ item }">
-          <span class="table-text">{{ item.subTypeLabel || item.subType || "-" }}</span>
+        <template #cell-subCategory="{ item }">
+          <span class="table-text">{{ item.subCategory || "-" }}</span>
+        </template>
+        <template #cell-fittingType="{ item }">
+          <span class="table-text">{{ item.fittingType || "-" }}</span>
         </template>
         <template #cell-diameter="{ item }">
           <span class="table-text">{{ item.diameter || "-" }}</span>
@@ -118,28 +128,17 @@
         <template #cell-pipeType="{ item }">
           <span class="table-text">{{ item.pipeType || "-" }}</span>
         </template>
-        <template #cell-supplierName="{ item }">
-          <span class="table-text">{{ item.supplierName || "-" }}</span>
+        <template #cell-code="{ item }">
+          <span class="table-text">{{ item.code || "-" }}</span>
         </template>
-        <template #cell-pipeCode="{ item }">
-          <span class="table-text">{{ item.pipeCode || "-" }}</span>
-        </template>
-        <template #cell-dtdxModel="{ item }">
-          <span class="table-text">{{ item.dtdxModel || "-" }}</span>
-        </template>
-        <template #cell-remarks="{ item }">
-          <input
-            type="text"
-            v-model="item.remarks"
-            class="table-input"
-            placeholder="비고"
-          />
+        <template #cell-cellName="{ item }">
+          <span class="table-text">{{ item.cellName || "-" }}</span>
         </template>
       </DataTable>
     </div>
 
     <!-- 선택 항목 섹션 -->
-    <div class="selection-section">
+    <div class="selection-section" v-if="isSelectionGridEnabled">
       <!-- 필터 바 -->
       <div class="selection-filter-bar">
         <div class="filter-group">
@@ -148,6 +147,7 @@
           <select
               v-model="selectionFilter.pipeCategory" 
               class="form-select"
+              :disabled="!isSelectionGridEnabled"
               @change="handleFilterCategoryChange"
             >
               <option value="">{{ t("common.select") }}</option>
@@ -169,7 +169,8 @@
             >
               <div
                 class="tree-select-display"
-                :class="{ open: isFilterTreeDropdownOpen }"
+                :class="{ open: isFilterTreeDropdownOpen, disabled: !isSelectionGridEnabled }"
+                :style="{ pointerEvents: isSelectionGridEnabled ? 'auto' : 'none', opacity: isSelectionGridEnabled ? 1 : 0.6 }"
                 @click.stop="toggleFilterTreeDropdown($event)"
               >
                 <span>{{
@@ -182,7 +183,7 @@
               v-else
               v-model="selectionFilter.fittingType" 
               class="form-select"
-              :disabled="!selectionFilter.pipeCategory"
+              :disabled="!isSelectionGridEnabled || !selectionFilter.pipeCategory"
               @change="handleFilterSubTypeChange"
             >
               <option value="">전체</option>
@@ -202,6 +203,7 @@
               v-model="selectionFilter.diameter"
               class="form-input"
             placeholder="직경 (숫자만 입력)"
+              :disabled="!isSelectionGridEnabled"
               @input="handleDiameterInput"
               @change="handleDiameterChange"
               @keyup.enter="handleDiameterEnter"
@@ -214,16 +216,17 @@
               v-model="selectionFilter.searchText"
               class="form-input"
               placeholder="원본 전체 텍스트 검색 (예: 엘보 & 150A)"
+              :disabled="!isSelectionGridEnabled"
               @keyup.enter="handleSelectionSearch"
               @change="handleKeywordChange"
             />
           </div>
         </div>
         <div class="button-group">
-          <button type="button" class="btn-reset" @click="handleResetSelectionFilter">
+          <button type="button" class="btn-reset" :disabled="!isSelectionGridEnabled" @click="handleResetSelectionFilter">
             필터 초기화
           </button>
-          <button type="button" class="btn-add-selection" @click="handleAddSelection">
+          <button type="button" class="btn-add-selection" :disabled="!isSelectionGridEnabled" @click="handleAddSelection">
             선택 항목 추가
           </button>
         </div>
@@ -471,6 +474,19 @@ const { t } = useI18n();
 const asset3DStore = useAsset3DStore();
 const pipeStore = usePipeStore();
 
+// 프리셋 ID (등록 모드에서 preset_id 응답을 받은 후 저장)
+const currentPresetId = ref<string | null>(null);
+
+// 선택 항목 그리드 활성화 여부
+// 수정 모드: 바로 활성화
+// 등록 모드: preset_id 응답을 받은 경우에만 활성화
+const isSelectionGridEnabled = computed(() => {
+  if (props.isEditMode) {
+    return true; // 수정 모드: 바로 활성화
+  }
+  return currentPresetId.value !== null; // 등록 모드: preset_id가 있을 때만 활성화
+});
+
 // 폼 데이터
 const selectedUnit = ref("");
 const selectedMachine = ref("");
@@ -480,21 +496,19 @@ const thumbnailFileName = ref("");
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailPreviewUrl = ref<string>("");
 
-// 테이블 데이터
+// 테이블 데이터 (자재 리스트와 동일한 구조)
 interface TableRow {
   id: number;
   no: number;
-  type: string;
-  subType: string;
-  subTypeLabel?: string;
+  pipeCategory: string;
+  subCategory: string;
+  fittingType: string;
   diameter: string;
   diameterAfter: string;
   pipeType: string;
-  supplierName: string;
-  pipeCode: string;
-  dtdxModel: string;
-  remarks: string;
-  subTypeOptions?: Array<{ value: string; label: string }>;
+  code: string;
+  cellName: string;
+  [key: string]: unknown;
 }
 
 interface ManualValveTreeNode {
@@ -619,12 +633,14 @@ const materialListData = computed(() => {
   if (selectionFilter.value.pipeCategory === "P_VALV") {
     // 수동 밸브: 트리에서 선택한 세부구분 라벨
     subCategoryLabel = filterSubTypeLabel.value || "";
-  } else if (selectionFilter.value.pipeCategory === "FIT_PIPE") {
-    // 배관: 셀렉트에서 선택한 세부구분 라벨
-    const selectedOption = filterSubTypeOptions.value.find(
-      opt => opt.value === selectionFilter.value.fittingType
-    );
-    subCategoryLabel = selectedOption?.label || selectionFilter.value.fittingType || "";
+  } else if (selectionFilter.value.pipeCategory) {
+    // 배관 또는 기타 구분: 셀렉트에서 선택한 세부구분 라벨
+    if (selectionFilter.value.fittingType) {
+      const selectedOption = filterSubTypeOptions.value.find(
+        opt => opt.value === selectionFilter.value.fittingType
+      );
+      subCategoryLabel = selectedOption?.label || selectionFilter.value.fittingType || "";
+    }
   }
   
   return materialListItems.value.map((item, index) => ({
@@ -713,18 +729,17 @@ const getTypeLabel = (typeValue: string) => {
   return found ? found.label : typeValue;
 };
 
-// 테이블 컬럼 정의
+// 테이블 컬럼 정의 (자재 리스트와 동일한 구성)
 const tableColumns: TableColumn[] = [
-  { key: "no", title: "번호", width: "50px", sortable: false },
-  { key: "type", title: "구분", width: "100px", sortable: false },
-  { key: "subType", title: "세부구분", width: "300px", sortable: false },
-  { key: "diameter", title: "직경", width: "50px", sortable: false },
-  { key: "diameterAfter", title: "직경후", width: "50px", sortable: false },
-  { key: "pipeType", title: "배관 유형(장비유형)", width: "140px", sortable: false },
-  { key: "supplierName", title: "공급업체명", width: "100px", sortable: false },
-  { key: "pipeCode", title: "배관 코드", width: "100px", sortable: false },
-  { key: "dtdxModel", title: "Dtdx 모델", width: "100px", sortable: false },
-  { key: "remarks", title: "비고", width: "100px", sortable: false },
+  { key: "no", title: "순번", width: "50px", sortable: false },
+  { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
+  { key: "subCategory", title: "세부구분", width: "150px", sortable: false },
+  { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
+  { key: "diameter", title: "직경", width: "80px", sortable: false },
+  { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
+  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
+  { key: "code", title: "코드", width: "auto", sortable: false },
+  { key: "cellName", title: "썸네일", width: "100px", sortable: false },
 ];
 
 // 썸네일 파일 변경 핸들러
@@ -802,17 +817,14 @@ const handleAddRow = () => {
   tableRows.value.push({
     id: nextRowId++,
     no: tableRows.value.length + 1,
-    type: "",
-    subType: "",
-    subTypeLabel: "",
+    pipeCategory: "",
+    subCategory: "",
+    fittingType: "",
     diameter: "",
     diameterAfter: "",
     pipeType: "",
-    supplierName: "",
-    pipeCode: "",
-    dtdxModel: "",
-    remarks: "",
-    subTypeOptions: [],
+    code: "",
+    cellName: "",
   });
   // 번호 재정렬
   updateRowNumbers();
@@ -841,10 +853,84 @@ const handleSaveSelectedItems = async () => {
     return;
   }
 
+  // preset_id 확인
+  if (!currentPresetId.value) {
+    alert("프리셋 ID가 없습니다. 마스터 정보를 먼저 저장해주세요.");
+    return;
+  }
+
   try {
-    // TODO: 저장 API 호출
-    console.log("저장할 항목:", tableRows.value);
+    // 각 행을 개별적으로 API 호출 (백엔드가 단일 객체를 기대함)
+    const requests = tableRows.value.map((row) => {
+      // 원본 데이터에서 equipment_id와 equipment_code 가져오기
+      const equipmentId = (row as Record<string, unknown>).equipment_id || null;
+      const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
+      
+      // 원본 코드 값 사용 (한글 라벨이 아닌 코드 값)
+      const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
+      const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
+      
+      // 직경에서 숫자만 추출 (예: "1000 mm" -> "1000", 빈 값은 빈 문자열)
+      const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
+      const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+
+      return {
+        sequence_order: row.no,
+        preset_category: originalPipeCategoryCode || "",
+        preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
+        diameter_before: diameterBefore || "",
+        diameter_after: diameterAfter || "",
+        length: "",
+        equipment_code: equipmentCode,
+        equipment_id: equipmentId,
+        remarks: "",
+      };
+    });
+
+    // 저장 요청 파라미터 출력
+    console.log("========================================");
+    console.log("[Asset3DPreset] 선택 항목 그리드 저장 요청");
+    console.log("========================================");
+    console.log("preset_id:", currentPresetId.value);
+    console.log("요청 항목 수:", requests.length);
+    console.log("요청 데이터:", requests);
+    requests.forEach((req, index) => {
+      console.log(`[${index + 1}] 요청 데이터:`, req);
+    });
+    console.log("========================================");
+
+    // 각 행을 개별적으로 API 호출 (백엔드가 단일 객체를 기대함)
+    const responses = await Promise.all(
+      requests.map(async (requestData, index) => {
+        try {
+          const response = await request(
+            `/api/asset3D/preset/${currentPresetId.value}/detail`,
+            undefined,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(requestData),
+            }
+          );
+          console.log(`[${index + 1}] 저장 응답:`, response);
+          return response;
+        } catch (error) {
+          console.error(`[${index + 1}] 저장 실패:`, error);
+          throw error;
+        }
+      })
+    );
+
+    // 모든 응답 확인
+    const failedResponses = responses.filter((res) => !res || !res.response);
+    if (failedResponses.length > 0) {
+      throw new Error(`${failedResponses.length}개의 항목 저장에 실패했습니다.`);
+    }
+
     alert("저장되었습니다.");
+    console.log("저장 성공:", responses);
   } catch (error) {
     console.error("저장 실패:", error);
     alert("저장에 실패했습니다.");
@@ -1050,18 +1136,18 @@ const handleTypeChange = async (item: TableRow) => {
     return;
   }
 
-  if (item.type === "P_VALV") {
+  if (item.pipeCategory === "P_VALV") {
     console.log("[Asset3DPreset] 수동 밸브 트리 조회 시도");
     await ensureManualValveTree();
     return;
   }
 
   try {
-    await asset3DStore.fetchThirdDepth(item.type, 3);
+    await asset3DStore.fetchThirdDepth(String(item.pipeCategory || ""), 3);
     const depthItems =
       (asset3DStore.thirdDepth as CodeKeyValue[] | undefined) || [];
     console.log("[Asset3DPreset] 세부유형 API 응답:", {
-      type: item.type,
+      type: item.pipeCategory,
       count: depthItems.length,
       itemsPreview: depthItems.slice(0, 5),
     });
@@ -1081,20 +1167,15 @@ const handleTypeChange = async (item: TableRow) => {
   }
 };
 
-const handleStandardSubTypeChange = (item: TableRow) => {
-  if (!item.subTypeOptions) {
-    item.subTypeLabel = "";
-    return;
-  }
-
-  const matched = item.subTypeOptions.find(
-    (option) => option.value === item.subType
-  );
-  item.subTypeLabel = matched?.label || "";
+// 세부구분 변경 핸들러 (사용되지 않음)
+const handleStandardSubTypeChange = (_item: TableRow) => {
+  // 새로운 구조에서는 사용되지 않음
+  // subCategory는 자재 리스트에서 가져온 값 사용
 };
 
+// 트리 드롭다운 토글 (사용되지 않음 - 주석 처리)
 const toggleTreeDropdown = async (item: TableRow, event?: MouseEvent) => {
-  if (item.type !== "P_VALV") {
+  if (item.pipeCategory !== "P_VALV") {
     closeManualValveDropdown();
     return;
   }
@@ -1112,7 +1193,7 @@ const toggleTreeDropdown = async (item: TableRow, event?: MouseEvent) => {
 
   activeManualValveRow.value = item;
   openTreeDropdownRowId.value = item.id;
-  manualValveSelectedCode.value = item.subType || "";
+  manualValveSelectedCode.value = String(item.subCategory || "");
   // 트리 열릴 때: 기존 선택값이 있으면 해당 경로만 펼치고, 없으면 모두 닫음
   expandManualValvePath(manualValveSelectedCode.value, true);
   const anchor = getTreeDropdownAnchorElement(event) || null;
@@ -1531,20 +1612,67 @@ const expandFilterPath = (codeKey: string, exclusive = false) => {
   filterExpandedKeys.value = nextSet;
 };
 
-// 선택 항목 추가
+// 선택 항목 추가 (자재 리스트에서 선택한 항목을 선택 항목 그리드에 순차 추가)
 const handleAddSelection = () => {
-  // 샘플 데이터 추가 (실제로는 선택된 데이터를 추가)
-  const newItem: SelectionItem = {
-    id: nextSelectionId++,
-    pipeCategory: selectionFilter.value.pipeCategory || "배관",
-    fittingType: selectionFilter.value.fittingType || "FIT_SELBOW",
-    diameter: selectionFilter.value.diameter || "80",
-    diameterAfter: "",
-    pipeType: "KSD3576_STS304",
-    code: `KSD3576_STS304_VM_0000_80_90_10_FIT_SELBOW_J_WELD`,
-    cellName: "",
-  };
-  selectedSelectionItems.value.push(newItem);
+  if (selectedMaterialItems.value.length === 0) {
+    alert("자재 리스트에서 추가할 항목을 선택해주세요.");
+    return;
+  }
+
+  // 세부구분 값 검증
+  if (selectionFilter.value.pipeCategory === "P_VALV") {
+    // 수동 밸브인 경우: 트리에서 선택한 세부구분 필요
+    if (!filterSelectedCode.value && !filterSubTypeLabel.value) {
+      alert("세부구분을 선택해주세요.");
+      return;
+    }
+  } else if (selectionFilter.value.pipeCategory) {
+    // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 필요
+    if (!selectionFilter.value.fittingType) {
+      alert("세부구분을 선택해주세요.");
+      return;
+    }
+  } else {
+    // 구분이 선택되지 않은 경우
+    alert("구분을 선택해주세요.");
+    return;
+  }
+
+  // 선택된 자재 리스트 항목들을 선택 항목 그리드에 순차 추가
+  selectedMaterialItems.value.forEach((materialItem, index) => {
+    // 원본 데이터에서 equipment_id와 equipment_code 가져오기
+    const equipmentId = (materialItem as Record<string, unknown>).equipment_id || null;
+    const equipmentCode = (materialItem as Record<string, unknown>).equipment_code || materialItem.code || "";
+
+    const newRow: TableRow = {
+      id: nextRowId++,
+      no: tableRows.value.length + index + 1, // 순차적으로 번호 할당
+      pipeCategory: String(materialItem.pipeCategory || ""),
+      subCategory: String(materialItem.subCategory || ""),
+      fittingType: String(materialItem.fittingType || ""),
+      diameter: String(materialItem.diameter || ""),
+      diameterAfter: String(materialItem.diameterAfter || ""),
+      pipeType: String(materialItem.pipeType || ""),
+      code: String(materialItem.code || ""),
+      cellName: String(materialItem.cellName || ""),
+      // 원본 데이터 보존 (equipment_id, equipment_code 포함)
+      equipment_id: equipmentId,
+      equipment_code: equipmentCode,
+      // 원본 코드 값 저장 (한글 라벨이 아닌 코드 값)
+      _originalPipeCategoryCode: selectionFilter.value.pipeCategory || "",
+      _originalSubCategoryCode: selectionFilter.value.pipeCategory === "P_VALV" 
+        ? filterSelectedCode.value 
+        : selectionFilter.value.fittingType || "",
+      ...(materialItem as Record<string, unknown>),
+    };
+    tableRows.value.push(newRow);
+  });
+
+  // 번호 재정렬 (최종 확인)
+  updateRowNumbers();
+  
+  // 자재 리스트 선택 초기화
+  selectedMaterialItems.value = [];
 };
 
 // 선택 항목 삭제
@@ -1902,6 +2030,25 @@ const handleDeleteMaterialItem = (id: string | number) => {
   );
 };
 
+// 수정 모드일 때 editItem에서 preset_id 추출
+watch(
+  () => props.editItem,
+  (newItem) => {
+    if (props.isEditMode && newItem) {
+      const editItemAny = newItem as any;
+      const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
+      if (presetId) {
+        currentPresetId.value = String(presetId);
+        console.log("✅ 수정 모드: preset_id 설정:", currentPresetId.value);
+      }
+    } else if (!props.isEditMode) {
+      // 등록 모드로 전환 시 초기화
+      currentPresetId.value = null;
+    }
+  },
+  { immediate: true }
+);
+
 onMounted(async () => {
   resetManualValveTreeState();
   try {
@@ -1927,6 +2074,14 @@ watch(
   async (newItem) => {
     if (props.isEditMode && newItem) {
       console.log("[Asset3DPresetTab] 수정 모드 데이터 초기화:", newItem);
+      
+      // preset_id 추출 및 저장
+      const editItemAny = newItem as any;
+      const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
+      if (presetId) {
+        currentPresetId.value = String(presetId);
+        console.log("✅ 수정 모드: preset_id 설정:", currentPresetId.value);
+      }
       
       // 연결기계 설정
       selectedMachine.value = String(newItem.root_equipment_type || "");
@@ -1955,6 +2110,9 @@ watch(
         thumbnailPreviewUrl.value = "";
         thumbnailFileName.value = "";
       }
+    } else if (!props.isEditMode) {
+      // 등록 모드로 전환 시 초기화
+      currentPresetId.value = null;
     }
   },
   { immediate: true }
@@ -2052,7 +2210,7 @@ const handleThumbnailRegister = async () => {
     // 프리셋 생성/수정 요청 데이터 구성
     const presetData: Record<string, unknown> = {
       root_equipment_type: selectedMachine.value,
-      equipment_type: firstRow ? (firstRow.subType || firstRow.type || "") : "",
+      equipment_type: firstRow ? (firstRow.subCategory || firstRow.pipeCategory || "") : "",
       preset_category: "PRESET",
       total_unit_count: tableRows.value.length > 0 ? tableRows.value.length : 1,
       preset_name_ko: presetName.value.trim(),
@@ -2060,7 +2218,7 @@ const handleThumbnailRegister = async () => {
       unit_system_code: selectedUnit.value,
       diameter_value: diameterValue,
       diameter_unit: "mm",
-      note: firstRow ? (firstRow.remarks || "") : "",
+      note: firstRow ? (firstRow.code || "") : "",
       metadata: {},
       is_active: true,
     };
@@ -2167,22 +2325,19 @@ const handleThumbnailRegister = async () => {
       console.log("📥 프리셋 생성 API 응답:", response);
 
       if (response && response.success) {
+        // preset_id 추출 및 저장
+        const responseData = response.response as any;
+        const presetId = responseData?.preset_id || responseData?.id || null;
+        if (presetId) {
+          currentPresetId.value = String(presetId);
+          console.log("✅ preset_id 저장:", currentPresetId.value);
+        }
+        
         alert("프리셋이 등록되었습니다.");
         
-        // 등록 성공 후 폼 초기화
-        selectedUnit.value = "";
-        selectedMachine.value = "";
-        presetName.value = "";
-        thumbnailFileName.value = "";
-        thumbnailFile.value = null;
-        thumbnailPreviewUrl.value = "";
-        tableRows.value = [];
-        selectedRows.value = [];
-        nextRowId = 1;
-        
-        if (thumbnailFileInput.value) {
-          thumbnailFileInput.value.value = "";
-        }
+        // 등록 성공 후 상단 폼은 초기화하지 않음 (선택 항목 그리드 활성화를 위해 유지)
+        // tableRows는 유지 (선택 항목 그리드에 표시)
+        // thumbnailFileInput.value.value = ""; // 썸네일은 유지
       } else {
         const errorMessage = response?.message || "프리셋 등록에 실패했습니다.";
         alert(errorMessage);
@@ -2974,7 +3129,8 @@ select {
 
 .loading-message,
 .error-message,
-.no-data-message {
+.no-data-message,
+.empty-message {
   padding: 20px;
   text-align: center;
   color: #475467;
@@ -2992,6 +3148,19 @@ select {
   color: #aaaaaa;
   font-size: 13px;
   font-weight: 400;
+}
+
+.empty-message {
+  color: #aaaaaa;
+  font-size: 14px;
+  font-weight: 400;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
 }
 
 .material-table-wrapper {

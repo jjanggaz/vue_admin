@@ -2431,6 +2431,9 @@ onMounted(async () => {
   overflow: hidden;
   box-sizing: border-box;
 }
+.machine-page:has(.page-layout.detail-open) {
+  padding-right: 4px;
+}
 
 .page-layout {
   display: grid;
@@ -2797,7 +2800,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  border-radius: 8px;
   margin-bottom: 20px;
 
   .filter-group {
@@ -3067,7 +3069,7 @@ onMounted(async () => {
 .machine-list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 20px;
 
   h2 {

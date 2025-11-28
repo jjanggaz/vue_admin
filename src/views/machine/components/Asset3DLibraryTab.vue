@@ -36,25 +36,24 @@
         <label>3D모델 업로드</label>
         <div class="file-upload-group">
           <input
-            type="text"
-            class="form-input file-name-input"
-            :value="modelFileName"
-            readonly
-            placeholder="파일 선택"
+          type="text"
+          class="form-input file-name-input"
+          :value="modelFileName"
+          readonly
+          placeholder="파일 선택"
           />
           <input
-            type="file"
-            ref="modelFileInput"
-            accept=".dtdx"
-            style="display: none"
-            @change="handleModelFileChange"
+          type="file"
+          ref="modelFileInput"
+          accept=".dtdx"
+          style="display: none"
+          @change="handleModelFileChange"
           />
           <button
             type="button"
             class="btn-ellipsis"
             @click="modelFileInput?.click()"
           >
-            ...
           </button>
         </div>
       </div>
@@ -62,25 +61,24 @@
         <label>3D모델 썸네일</label>
         <div class="file-upload-group">
           <input
-            type="text"
-            class="form-input file-name-input"
-            :value="thumbnailFileName"
-            readonly
-            placeholder="파일 선택"
+          type="text"
+          class="form-input file-name-input"
+          :value="thumbnailFileName"
+          readonly
+          placeholder="파일 선택"
           />
           <input
-            type="file"
-            ref="thumbnailFileInput"
-            accept=".jpg,.jpeg,.png,.gif"
-            style="display: none"
-            @change="handleThumbnailFileChange"
+          type="file"
+          ref="thumbnailFileInput"
+          accept=".jpg,.jpeg,.png,.gif"
+          style="display: none"
+          @change="handleThumbnailFileChange"
           />
           <button
             type="button"
             class="btn-ellipsis"
             @click="thumbnailFileInput?.click()"
           >
-            ...
           </button>
         </div>
       </div>
@@ -93,8 +91,7 @@
 
     <!-- 파일명 규칙 경고 메시지 -->
     <div class="warning-message">
-      <span class="warning-icon">⚠</span>
-      <span class="warning-text">
+      <span class="caution-ico">
         {{ t("messages.warning.invalidFormulaFileNameFormat") }}
       </span>
     </div>
@@ -285,109 +282,98 @@ const handleRegister = async () => {
 </script>
 
 <style scoped lang="scss">
-.asset3d-library-register-tab {
-  padding: 20px;
-}
+$mobile: 768px;
+$tablet: 1024px;
 
 .filter-bar {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
   align-items: flex-end;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-  flex-wrap: nowrap;
+  gap: 20px 10px;
 
-  // 모바일 크기에서 줄바꿈 허용
-  @media (max-width: 768px) {
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
+  // 태블릿 크기에서 2열로 변경
+  @media (max-width: $tablet) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
-}
 
-.register-form {
-  margin-bottom: 20px;
+  // 모바일 크기에서 1열로 변경
+  @media (max-width: $mobile) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   flex-shrink: 0;
+  margin-bottom: 0;
+  width: 100%;
 
-  // 단위, 카테고리는 고정 폭
-  &:nth-child(1),
-  &:nth-child(2) {
-    width: 150px;
-  }
-
-  // 모델명과 파일 업로드 그룹은 동일한 폭
-  &:nth-child(3),
-  &:nth-child(4),
-  &:nth-child(5) {
-    flex: 1;
-    min-width: 200px;
-    max-width: 300px;
-  }
-
-  // 등록 버튼은 우측 정렬
   &.right-align {
     justify-content: flex-end;
-    align-items: flex-end;
+    align-items: flex-start;
     flex: 0 0 auto;
     margin-left: auto;
   }
 }
 
 label {
+  display: inline-block;
+  margin-bottom: 0;
+  color: #333333;
   font-size: 13px;
-  color: #475467;
-  font-weight: 500;
+  font-weight: 600;
+  min-width: 100px;
+  flex-shrink: 0;
 
   &.required::after {
     content: "*";
-    color: #e74c3c;
-    margin-left: 2px;
+    color: #333333;
+    margin-left: 4px;
   }
 }
 
-.form-select {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  font-size: 14px;
-  min-width: 150px;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-}
-
-.form-input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  font-size: 14px;
+input,
+select {
+  appearance: none;
+  position: relative;
   width: 100%;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
+
+  &:disabled {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+  }
+}
+
+input {
+  padding: 0 10px;
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+}
+
+select {
+  padding: 0 32px 0 10px;
+  background-color: transparent;
+  background-image: url(../../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
 
   &:focus {
     outline: none;
     border-color: #3b82f6;
-  }
-
-  &.file-name-input {
-    background-color: #f9fafb;
-    cursor: default;
+    background-image: url(../../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -412,62 +398,71 @@ label {
 }
 
 .btn-ellipsis {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  background: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  white-space: nowrap;
+  width: 44px;
+  height: 40px;
+  padding: 0 10px;
+  background: url(../../../assets/icons/ico_ellipsis-btn.svg) no-repeat center / 18px auto;
+  background-color: #3e435e;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
 
-  &:hover {
-    background: #f9fafb;
-    border-color: #98a2b3;
+  &:hover,
+  &:active {
+    background-color: #3c4973;
   }
 }
 
 .btn-register {
-  height: 32px;
-  padding: 0 24px;
-  border: none;
-  border-radius: 6px;
+  height: 40px;
   background: #222e77;
-  color: white;
-  font-size: 14px;
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
 
   &:hover {
-    background: #1a2561;
-  }
+    background: #29378c;
+  } 
 
   &:active {
-    background: #141b4a;
+    background: #29378c;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
 .warning-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-}
+  position: relative;
+  text-align: center;
+  padding: 20px 0;
 
-.warning-icon {
-  font-size: 18px;
-  color: #f59e0b;
-  flex-shrink: 0;
-}
+  .caution-ico {
+    display: inline-block;
+    padding: 2px 0 1.5px 18px;
+    color: #FF3B30;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Noto Sans KR";
+    letter-spacing: -0.056px;
+    background: url(../../../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
 
-.warning-text {
-  font-size: 13px;
-  color: #ef4444;
-  line-height: 1.5;
+    @media (max-width: 550px) {
+      font-size: 13px; 
+    }
+  }
 }
 </style>

@@ -160,6 +160,7 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
+        <div class="detail-panel-head">
           <h3>{{ t("common.detailInfo") }}</h3>
           <div class="header-buttons">
             <button
@@ -183,13 +184,14 @@
             >
               {{ t("common.cancel") }}
             </button>
-            <button
-              class="btn-close"
-              @click="closeDetailPanel"
-              aria-label="Close"
-            >
-            </button>
           </div>
+        </div>
+          <button
+            class="btn-close"
+            @click="closeDetailPanel"
+            aria-label="Close"
+          >
+          </button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -306,7 +308,7 @@
 
     <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%">
+      <div class="modal-container" style="max-width: 1600px; width: 90%">
         <div class="modal-header">
           <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -340,7 +342,7 @@
             />
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer code-modal">
           <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
@@ -1717,10 +1719,13 @@ onMounted(async () => {
 @use "sass:color";
 
 .asset3d-page {
-  padding: 40px 24px;
+  padding: 0 24px;
   height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
+}
+.asset3d-page:has(.page-layout.detail-open) {
+  padding-right: 4px;
 }
 
 .page-layout {
@@ -1728,7 +1733,7 @@ onMounted(async () => {
   height: calc(100vh - #{$spacing-lg * 2});
   width: 100%;
   overflow: hidden;
-  gap: 8px;
+  gap: 10px;
   grid-template-columns: 1fr; // 기본: 전체 너비
   transition: grid-template-columns 0.3s ease;
 
@@ -1742,13 +1747,15 @@ onMounted(async () => {
   overflow-x: auto;
   box-sizing: border-box;
   min-width: 0;
+  padding-top: 40px;
 }
 
 .detail-panel {
-  background: white;
-  border-left: 1px solid $border-color;
+  background: #ffffff;
+  border-left: 1px solid #b2bbd2;
   display: flex;
   flex-direction: column;
+  min-width: 320px;
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -1757,74 +1764,95 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid $border-color;
-    background: $background-light;
+    padding: 15px 20px 8px;
     flex-shrink: 0;
 
+    .detail-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
     h3 {
-      margin: 0;
-      color: $text-color;
-      font-size: 1.25rem;
+      color: #202020;
+      font-size: 20px;
+      font-weight: 600;
     }
 
     .header-buttons {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
 
       .btn-edit,
       .btn-save,
       .btn-cancel {
-        padding: 0.5rem 1rem;
-        border: 1px solid $border-color;
+        width: 45px;
+        height: 32px;
+        line-height: 32px;
         border-radius: 4px;
-        background: $background-light;
-        color: $text-color;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
+        transition: background 0.2s ease-in-out;
+      }
+
+      .btn-edit {
+        background: #222e77;
 
         &:hover {
-          background: color.scale($background-light, $lightness: -5%);
+          background: #29378c;
         }
       }
 
       .btn-save {
-        background: $success-color;
-        color: white;
-        border-color: $success-color;
+        background: #0863e2;
 
         &:hover {
-          background: color.scale($success-color, $lightness: -10%);
+          background: #0067f5;
         }
       }
 
       .btn-cancel {
-        background: $error-color;
-        color: white;
-        border-color: $error-color;
+        background: #3e435e;
 
         &:hover {
-          background: color.scale($error-color, $lightness: -10%);
+          background: #3c4973;
         }
-      }
-
-      .btn-close {
-        width: 24px;
-        height: 24px;
-        background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-        cursor: pointer;
       }
     }
   }
 
   .detail-panel-body {
     flex: 1;
-    padding: 1rem;
+    padding: 10px 20px 20px;
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+    -webkit-overflow-scrolling: touch;
+
+    &.with-scroll {
+      overflow-y: auto;
+    }
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #e7e6ed;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: #d7d5e4;
+      }
+    }
+    &::-webkit-scrollbar-button:end:increment {
+      display: block;
+      height: 20px;
+      width: 0;
+      background-color: transparent;
+    }
 
     .model-thumbnail-section {
       width: 100%;
@@ -1884,14 +1912,13 @@ onMounted(async () => {
       }
 
       .thumbnail-placeholder {
-        width: 200px;
-        height: 150px;
-        border: 2px dashed $border-color;
-        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: $background-light;
+        width: 200px;
+        height: 150px;
+        border: 2px dashed #888888;
+        border-radius: 8px;
 
         .thumbnail-text {
           color: $text-light;
@@ -1908,7 +1935,7 @@ onMounted(async () => {
     }
 
     .edit-fields-section {
-      margin-top: 1.5rem;
+      margin-top: 20px;
       padding: 1rem;
       border: 1px solid $border-color;
       border-radius: 8px;
@@ -2008,19 +2035,17 @@ onMounted(async () => {
   width: 100%;
 
   .section-title {
-    margin: 0 0 12px 0;
-    padding: 8px 12px;
-    background: $background-light;
-    border-left: 4px solid $primary-color;
-    font-size: 1rem;
+    margin-bottom: 10px;
+    padding-left: 16px;
+    border-left: 4px solid #32ade6;
+    color: #333333;
+    font-size: 16px;
     font-weight: 600;
-    color: $text-color;
-    border-radius: 4px;
   }
 }
 
 .price-history-section {
-  margin-top: 1.5rem;
+  margin-top: 24px;
 
   :deep(.data-table-container) {
     max-height: 250px;
@@ -2037,8 +2062,7 @@ onMounted(async () => {
 
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
 }
 
 .detail-section :deep(.vertical-data-table) {
@@ -2046,8 +2070,8 @@ onMounted(async () => {
 
   .column-name {
     background-color: #f8f9fa;
+    color: #333333;
     font-weight: 500;
-    color: $text-color;
     width: 35%;
   }
 
@@ -2069,10 +2093,12 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  border-radius: 8px;
   margin-bottom: 20px;
-}
 
+  .filter-group {
+    flex-wrap: wrap;
+  }
+}
 
 .form-select {
   appearance: none;
@@ -2100,8 +2126,8 @@ onMounted(async () => {
 .asset3d-list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  align-items: flex-end;
+  margin-bottom: 20px;
 
   h2 {
     color: #000000;
@@ -2146,125 +2172,35 @@ onMounted(async () => {
 $mobile: 768px;
 $tablet: 1024px;
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
-
-  @media (max-width: $mobile) {
-    padding: 0.5rem;
-    align-items: flex-start;
-    padding-top: 2rem;
-  }
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 98%;
-  max-width: 1600px;
-  max-height: 100vh;
-  margin: 0; /* 상/하 여백 제거 */
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: $tablet) {
-    width: 95%;
-    max-width: 95vw;
-  }
-
-  @media (max-width: $mobile) {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 90vh;
-    border-radius: 4px;
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid $border-color;
-  flex-shrink: 0;
-
-  h3 {
-    margin: 0;
-    color: $text-color;
-    font-size: 1.25rem;
-
-    @media (max-width: $mobile) {
-      font-size: 1.1rem;
-    }
-  }
-
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
-  }
-}
-
-.btn-close {
-  width: 24px;
-  height: 24px;
-  background: url(../../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 0 1rem 1rem 1rem;
-  flex: 1;
-  min-height: 0; // flex 아이템이 축소될 수 있도록 함
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    padding: 0 0.75rem 0.75rem 0.75rem;
-  }
-}
-
 .tabs-wrapper {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
   overflow-x: auto; // 탭이 많을 때 스크롤 가능
-
-  @media (max-width: $mobile) {
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-  }
+  padding: 0;
 }
 
 .tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: border 0.2s, color 0.2s;
-  white-space: nowrap;
   flex-shrink: 0;
+  height: 40px;
+  line-height: 40px;
+  white-space: nowrap;
+  padding: 0 20px;
+  border-radius: 10px 10px 0 0;
+  background: #e7e6ed;
+  cursor: pointer;
+  transition: background 0.1s ease-in-out;
+  color: #484848;
+  font-size: 15px;
+  font-weight: 500;
 
-  @media (max-width: $mobile) {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
+  // @media (max-width: $mobile) {
+  //   padding: 0.5rem 1rem;
+  //   font-size: 1rem;
+  // }
 }
 
 .tab.active {
-  color: #1a73e8;
-  border-bottom: 2px solid #1a73e8;
-  font-weight: bold;
+  color: #ffffff;
+  background: #0863e2;
 }
 
 .tab.disabled {
@@ -2274,11 +2210,7 @@ $tablet: 1024px;
 }
 
 .tab-content {
-  margin-top: 1.5rem;
-
-  @media (max-width: $mobile) {
-    margin-top: 1rem;
-  }
+  margin-top: 20px;
 }
 
 .column-regist {
@@ -2313,7 +2245,8 @@ $tablet: 1024px;
 }
 
 .form-input {
-  width: 350px;
+  width: 240px;
+  height: 40px;
   padding: 0.5rem;
   border: 1px solid #e7e6ed;
   border-radius: 4px;
@@ -2331,18 +2264,58 @@ $tablet: 1024px;
 }
 
 .modal-footer {
-  display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid $border-color;
-  flex-shrink: 0;
-  flex-wrap: wrap;
 
-  @media (max-width: $mobile) {
-    padding: 0.75rem;
-    gap: 0.4rem;
+  @media (max-width: 768px) {
     justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
+  .btn {
+    width: 200px;
+    min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
+  }
+
+  .btn-cancel {
+    background-color: #707489;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #82869d;
+    }
+  }
+
+  .btn-confirm {
+    background-color: #222e77;
+    color: #fff;
+
+    &:hover {
+      background-color: #29378c;
+    }
+  }
+}
+
+.modal-footer.code-modal {
+  .btn {
+    &:first-child {
+      @media (max-width: 768px) {
+        width: 100%;
+        min-width: 100%;
+      }
+    }
   }
 }
 </style>

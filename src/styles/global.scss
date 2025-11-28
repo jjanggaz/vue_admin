@@ -171,7 +171,6 @@ body {
     &:focus {
       outline: none;
       border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
     }
 
     &::placeholder {
@@ -416,7 +415,7 @@ body {
   }
   &::-webkit-scrollbar-button:start:decrement {
     display:block;
-    height:171px;
+    height:155px;
     width: 0;
     background-color: transparent;
   }

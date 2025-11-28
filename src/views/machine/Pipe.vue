@@ -813,6 +813,13 @@
               <div class="section-title">{{ t("common.pipeUpload") }}</div>
               <div class="section-actions">
                 <div class="file-upload-group">
+                  <button
+                    type="button"
+                    class="btn-file"
+                    @click="registerBulkFileInput?.click()"
+                  >
+                    {{ t("common.bulkModelUpload") }}
+                  </button>
                   <input
                     type="text"
                     class="input file-name-input"
@@ -827,13 +834,6 @@
                     style="display: none"
                     @change="handleRegisterBulkFileChange"
                   />
-                  <button
-                    type="button"
-                    class="btn-file"
-                    @click="registerBulkFileInput?.click()"
-                  >
-                    {{ t("common.bulkModelUpload") }}
-                  </button>
                   <button
                     type="button"
                     class="btn-register"
@@ -3609,6 +3609,9 @@ onMounted(async () => {
   overflow: hidden;
   box-sizing: border-box;
 }
+.pipe-page:has(.page-layout.detail-open) {
+  padding-right: 4px;
+}
 
 .page-layout {
   display: grid;
@@ -3975,7 +3978,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  border-radius: 8px;
   margin-bottom: 20px;
 
   .filter-group {
@@ -4271,7 +4273,7 @@ onMounted(async () => {
 .pipe-list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 1rem;
 
   h2 {
@@ -4364,7 +4366,7 @@ $tablet: 1024px;
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(2, minmax(200px, 1fr));
-  align-items: center;
+  align-items: flex-end;
   gap: 20px 10px;
 
   // 태블릿 크기에서 2열로 변경
@@ -4519,6 +4521,7 @@ select {
   align-items: center;
   gap: 10px;
   flex: 1;
+  width: 100%;
 
   .file-name-input {
     flex: 1;
@@ -4540,7 +4543,7 @@ select {
     background: #3e435e;
     border-radius: 4px;
     color: white;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     transition: background 0.2s ease;
     cursor: pointer;
@@ -4622,6 +4625,10 @@ select {
     font-family: "Noto Sans KR";
     letter-spacing: -0.056px;
     background: url(../../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
+
+    @media (max-width: 550px) {
+      font-size: 13px; 
+    }
   }
 }
 

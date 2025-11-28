@@ -37,25 +37,24 @@
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
-              type="text"
-              class="form-input file-name-input"
-              :value="thumbnailFileName"
-              readonly
-              placeholder="파일 선택"
+            type="text"
+            class="form-input file-name-input"
+            :value="thumbnailFileName"
+            readonly
+            placeholder="파일 선택"
             />
             <input
-              type="file"
-              ref="thumbnailFileInput"
-              accept=".jpg,.jpeg,.png,.gif"
-              style="display: none"
-              @change="handleThumbnailFileChange"
+            type="file"
+            ref="thumbnailFileInput"
+            accept=".jpg,.jpeg,.png,.gif"
+            style="display: none"
+            @change="handleThumbnailFileChange"
             />
             <button
               type="button"
               class="btn-ellipsis"
               @click="thumbnailFileInput?.click()"
             >
-              ...
             </button>
           </div>
           <img
@@ -77,7 +76,6 @@
           </button>
           </div>
         </div>
-
     <!-- 행 삭제/저장 버튼 -->
     <div class="table-header-row">
       <h3 class="table-title">선택 항목</h3>
@@ -1875,109 +1873,97 @@ const handleThumbnailRegister = async () => {
 </script>
 
 <style scoped lang="scss">
-.asset3d-preset-register-tab {
-  padding: 20px;
-}
+$mobile: 768px;
+$tablet: 1024px;
 
 .filter-bar {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 14px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-  flex-wrap: nowrap;
-
-  // 모바일 크기에서 줄바꿈 허용
-  @media (max-width: 768px) {
-  flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  align-items: flex-end;
+  gap: 20px 10px;
+  // 태블릿 크기에서 2열로 변경
+  @media (max-width: $tablet) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
-}
-
-.register-form {
-  margin-bottom: 20px;
+  // 모바일 크기에서 1열로 변경
+  @media (max-width: $mobile) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   flex-shrink: 0;
+  margin-bottom: 0;
+  width: 100%;
+  grid-template-columns: 1 -1;
 
-  // 단위, 연결기계는 고정 폭
-  &:nth-child(1),
-  &:nth-child(2) {
-    width: 150px;
-  }
-
-  // 프리셋 명과 썸네일 업로드는 동일한 폭
-  &:nth-child(3),
-  &:nth-child(4) {
-  flex: 1;
-    min-width: 250px;
-    max-width: 350px;
-  }
-
-  // 등록 버튼은 우측 정렬
   &.right-align {
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: flex-start;
     flex: 0 0 auto;
     margin-left: auto;
-    padding-top: 26px; // label(13px) + gap(6px) + 컨트롤 높이(32px) - 등록 버튼 높이(32px) = 19px, 하지만 정확히 맞추기 위해 26px
   }
 }
 
 label {
+  display: inline-block;
+  margin-bottom: 0;
+  color: #333333;
   font-size: 13px;
-  color: #475467;
-  font-weight: 500;
+  font-weight: 600;
+  min-width: 100px;
+  flex-shrink: 0;
 
   &.required::after {
     content: "*";
-    color: #e74c3c;
-    margin-left: 2px;
+    color: #333333;
+    margin-left: 4px;
   }
 }
 
-.form-select {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  font-size: 14px;
-  min-width: 150px;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-}
-
-.form-input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  font-size: 14px;
+input,
+select {
+  appearance: none;
+  position: relative;
   width: 100%;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #e7e6ed;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 400;
+
+  &:disabled {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+  }
+}
+
+input {
+  padding: 0 10px;
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+}
+
+select {
+  padding: 0 32px 0 10px;
+  background-color: transparent;
+  background-image: url(../../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
 
   &:focus {
     outline: none;
     border-color: #3b82f6;
-  }
-
-  &.file-name-input {
-    background-color: #f9fafb;
-    cursor: default;
+    background-image: url(../../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -2010,85 +1996,90 @@ label {
 }
 
 .btn-ellipsis {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  background: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  white-space: nowrap;
+  width: 44px;
+  height: 40px;
+  padding: 0 10px;
+  background: url(../../../assets/icons/ico_ellipsis-btn.svg) no-repeat center / 18px auto;
+  background-color: #3e435e;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
 
-  &:hover {
-    background: #f9fafb;
-    border-color: #98a2b3;
+  &:hover,
+  &:active {
+    background-color: #3c4973;
   }
 }
 
 .btn-register {
-  height: 32px;
-  padding: 0 24px;
-  border: none;
-  border-radius: 6px;
+  height: 40px;
   background: #222e77;
-  color: white;
-  font-size: 14px;
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.2s ease;
   flex-shrink: 0;
 
   &:hover {
-    background: #1a2561;
-  }
+    background: #29378c;
+  } 
 
   &:active {
-    background: #141b4a;
+    background: #29378c;
+  }
+
+  @media (max-width: $mobile) {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
 .btn-add-row,
 .btn-delete-row {
   height: 32px;
-  padding: 0 16px;
+  padding: 0 10px;
   border: none;
-  border-radius: 6px;
-  background: #222e77;
-  color: white;
+  border-radius: 4px;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background .2s ease-in-out;
+}
 
-  &:hover {
-    background: #1a2561;
-  }
+.btn-add-row {
+  background: #222e77;
 
+  &:hover,
   &:active {
-    background: #141b4a;
+    background: #29378c;
   }
 }
 
 .btn-delete-row {
-  background: #e74c3c;
-
-  &:hover {
-    background: #c0392b;
-  }
-
+  background: #3e435e;
+ 
+  &:hover,
   &:active {
-    background: #a93226;
+    background: #3c4973;
   }
 }
 
 .btn-save {
   height: 32px;
-  padding: 0 16px;
+  padding: 0 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: #222e77;
   color: white;
   font-size: 14px;
@@ -2107,9 +2098,9 @@ label {
 
 .table-header-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
   margin-top: 20px;
 
   .table-title {
@@ -2151,22 +2142,43 @@ label {
 
 .table-select,
 .table-input {
+  appearance: none;
+  position: relative;
   width: 100%;
-  height: 28px;
-  border: 1px solid #d0d5dd;
+  min-width: 0;
+  height: 32px;
+  border: 1px solid #e7e6ed;
   border-radius: 4px;
-  padding: 0 6px;
-  background: #fff;
   font-size: 13px;
+  font-weight: 400;
+
+  &:disabled {
+    border: 1px solid #dfdfdf;
+    background-color: #f0f0f0;
+  }
+}
+
+.table-input {
+  padding: 0 10px;
 
   &:focus {
-    outline: none;
     border-color: #3b82f6;
   }
 }
 
 .table-select {
-  cursor: pointer;
+  padding: 0 28px 0 10px;
+  background-color: transparent;
+  background-image: url(../../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px auto;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-image: url(../../../assets/icons/ico_select-up.svg);
+  }
 }
 
 .table-text {
@@ -2180,7 +2192,7 @@ label {
 
 .subtype-cell-wrapper {
   display: flex;
-  gap: 4px;
+  gap: 10px;
   align-items: center;
   width: 100%;
 }
@@ -2190,20 +2202,19 @@ label {
   align-items: stretch;
 
   .tree-select-display {
-    flex: 1;
-    border: 1px solid #d0d5dd;
-    border-radius: 4px;
-    padding: 4px 8px;
-    background: #fff;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex: 1;
+    border: 1px solid #e7e6ed;
+    border-radius: 4px;
+    padding: 0 10px;
+    background: #ffffff;
     font-size: 13px;
+    cursor: pointer;
 
     &.open {
       border-color: #3b82f6;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
     }
 
     .arrow {
@@ -2325,7 +2336,7 @@ label {
 }
 .btn-search-subtype {
   padding: 8px 14px;
-  background: #007bff;
+  background: #0863e2;
   color: white;
   border: none;
   border-radius: 4px;
@@ -2333,19 +2344,20 @@ label {
   font-size: 13px;
   white-space: nowrap;
   flex-shrink: 0;
+  transition: background .2s ease-in-out;
 
   &:hover {
-    background: #0056b3;
+    background: #0067f5;
   }
 
   &:disabled {
-    background: #6c757d;
+    background: #abaebd;
     cursor: not-allowed;
-    opacity: 0.6;
   }
 
   &.btn-search-icon {
-    padding: 6px 10px;
+    height: 32px;
+    padding: 0 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2354,7 +2366,7 @@ label {
       display: inline-block;
       width: 18px;
       height: 18px;
-      background: url("@/assets/images/common/ico_search.svg") no-repeat center center;
+      background: url("../../../assets/images/common/ico_search.svg") no-repeat center center;
       background-size: contain;
       filter: brightness(0) invert(1);
     }

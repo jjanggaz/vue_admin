@@ -652,7 +652,6 @@ onMounted(async () => {
 }
 
 .search-filter-bar {
-  border-radius: 8px;
   margin-bottom: 20px;
 }
 
@@ -681,8 +680,8 @@ onMounted(async () => {
 .structure-list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  align-items: flex-end;
+  margin-bottom: 20px;
 
   h2 {
     color: #000000;

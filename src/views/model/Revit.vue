@@ -620,12 +620,6 @@ onMounted(() => {
   }
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  margin-top: $spacing-lg;
-}
-
 // Modal 스타일
 .modal-overlay {
   position: fixed;

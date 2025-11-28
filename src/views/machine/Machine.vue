@@ -3033,7 +3033,7 @@ onMounted(async () => {
       &::after {
         margin-top: -12px;
 
-        transform: rotate(180deg);
+        transform: rotate(-180deg);
       }
     }
   }
@@ -3093,21 +3093,6 @@ onMounted(async () => {
     text-decoration: underline;
     text-underline-offset: 3.5px;
     color: color.scale($primary-color, $lightness: -10%);
-  }
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 0;
-    font-size: 13px;
-    color: #333333;
-    font-weight: 400;
   }
 }
 

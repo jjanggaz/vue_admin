@@ -101,6 +101,12 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
+    key: "inflow",
+    title: t("columns.project.type"),
+    width: "120px",
+    sortable: false,
+  },
+  {
     key: "site_capacity",
     title: t("columns.project.siteCapacity"),
     width: "120px",

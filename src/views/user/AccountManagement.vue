@@ -115,7 +115,7 @@
         <div class="modal-body">
           <dl class="column-regist">
             <dt>{{ t("columns.user.id") }}</dt>
-            <dd>
+            <dd class="user-id-check">
               <input
                 id="user-username"
                 v-model="newUser.username"
@@ -246,7 +246,7 @@
               />
             </dd>
             <dt>{{ t("columns.user.description") }}</dt>
-            <dd>
+            <dd class="textarea-dd">
               <textarea
                 id="user-description"
                 v-model="newUser.description"
@@ -288,11 +288,11 @@
           </dl>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            {{ t("common.cancel") }}
-          </button>
           <button class="btn btn-primary" @click="saveUser">
             {{ t("common.save") }}
+          </button>
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -919,31 +919,55 @@ const handleEdit = () => {
   font-style: italic;
 }
 
+dl.column-regist{
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
+
+  dt,
+  dd {
+    height: auto;
+  }
+
+  dd {
+    display: block;
+
+  }
+  
+  .textarea-dd {
+    height: 40px;
+  }
+
+  .user-id-check {
+    display: flex;
+    gap: 10px;
+
+    .btn-check-id {
+      width: 88px;
+      min-width: 88px;
+      height: 40px;
+      padding: 0 10px;
+      background: #3e435e;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background .2s ease-in-out;
+ 
+      &:hover {
+        background: #3c4973;
+      }
+    }
+  }
+}
+
 // 비밀번호 변경 버튼 스타일
 .btn-change-password,
 .btn-cancel-password {
-  margin-left: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
+  width: 100%;
+  padding: 0 10px;
+  font-size: 13px;
 }
 
 .btn-cancel-password {
-  margin-top: 4px;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 0;
-    font-size: 13px;
-    color: #333333;
-    font-weight: 400;
-  }
+  margin-top: 10px;
 }
 
 .form-item {

@@ -625,11 +625,6 @@ onMounted(() => {
   }
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
-}
-
 .modal-overlay {
   position: fixed;
   top: 0;

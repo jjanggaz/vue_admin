@@ -8,7 +8,7 @@
       <div class="menu-type-section">
         <h3>{{ t("menuManagement.menuType") }}</h3>
         <div class="radio-group">
-          <label class="radio-label">
+          <label class="radio-label" :class="{ active: selectedMenuType === 'WAI_WEB_VIEW' }">
             <input
               type="radio"
               v-model="selectedMenuType"
@@ -19,7 +19,7 @@
               t("menuManagement.waiDesignMenu")
             }}</span>
           </label>
-          <label class="radio-label">
+          <label class="radio-label" :class="{ active: selectedMenuType === 'WAI_WEB_ADMIN' }">
             <input
               type="radio"
               v-model="selectedMenuType"
@@ -81,38 +81,44 @@
         </div>
         <div class="modal-body">
           <dl class="column-regist">
-            <dt>{{ t("menuManagement.columns.menuName") }}</dt>
-            <dd>
-              <input
-                v-model="editingMenu.menu_name"
-                type="text"
-                :placeholder="t('placeholder.enterMenuName')"
-                disabled
-              />
-            </dd>
-            <dt>{{ t("menuManagement.columns.menuOrder") }}</dt>
-            <dd>
-              <input
-                v-model="editingMenu.menu_order"
-                type="number"
-                :placeholder="t('placeholder.enterMenuOrder')"
-              />
-            </dd>
-            <dt>{{ t("menuManagement.columns.isActive") }}</dt>
-            <dd>
-              <select v-model="editingMenu.is_active">
-                <option :value="true">{{ t("menuManagement.used") }}</option>
-                <option :value="false">{{ t("menuManagement.unused") }}</option>
-              </select>
-            </dd>
+            <div class="regist-item">
+              <dt>{{ t("menuManagement.columns.menuName") }}</dt>
+              <dd>
+                <input
+                  v-model="editingMenu.menu_name"
+                  type="text"
+                  :placeholder="t('placeholder.enterMenuName')"
+                  disabled
+                />
+              </dd>
+            </div>
+            <div class="regist-item">
+              <dt>{{ t("menuManagement.columns.menuOrder") }}</dt>
+              <dd>
+                <input
+                  v-model="editingMenu.menu_order"
+                  type="number"
+                  :placeholder="t('placeholder.enterMenuOrder')"
+                />
+              </dd>
+            </div>
+            <div class="regist-item">
+              <dt>{{ t("menuManagement.columns.isActive") }}</dt>
+              <dd>
+                <select v-model="editingMenu.is_active">
+                  <option :value="true">{{ t("menuManagement.used") }}</option>
+                  <option :value="false">{{ t("menuManagement.unused") }}</option>
+                </select>
+              </dd>
+            </div>
           </dl>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isEditModalOpen = false">
-            {{ t("common.cancel") }}
-          </button>
           <button class="btn btn-primary" @click="saveMenu">
             {{ t("common.save") }}
+          </button>
+          <button class="btn btn-secondary" @click="isEditModalOpen = false">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>
@@ -292,29 +298,25 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-// .menu-management {
-//   padding: 20px;
-// }
-
 .header-section {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 .page-title {
-  font-size: 1.5rem;
+  font-size: 22px;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 20px 0;
+  color: #000000;
+  margin-bottom: 20px;
 }
 
 .menu-type-section {
   margin-bottom: 20px;
 
   h3 {
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
-    color: #555;
-    margin: 0 0 10px 0;
+    color: #333333;
+    margin-bottom: 4px;
   }
 }
 
@@ -362,84 +364,61 @@ onMounted(() => {
   }
 }
 
-// 모달 스타일
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-container {
-  background: white;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-}
-
-.modal-body {
-  padding: 20px;
-}
-
 .column-regist {
-  dl {
-    margin: 0;
+  grid-template-columns: repeat(1, minmax(150px, 1fr));
+  gap: 20px 10px;
+  margin-bottom: 0;
+
+  .regist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
   }
 
   dt {
+    min-width: 80px;
+    color: #333333;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 8px;
-    color: #374151;
-  }
-
-  dd {
-    margin: 0 0 20px 0;
-
-    input,
-    select {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      font-size: 14px;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-    }
   }
 }
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
+  padding: 10px 10px 0 0;
+
+  .btn {
+    width: 100%;
+    padding: 8px 16px;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .btn:first-child {
+    min-width: 370px;
+
+    @media (max-width: 768px) {
+      width: calc(65% - 5px);
+      min-width: calc(65% - 5px);
+    }
+  }
+  .btn:last-child {
+    background-color: #707489;
+    color: #ffffff;
+    
+    &:hover {
+      background-color: #82869d;
+    }
+
+    @media (max-width: 768px) {
+      width: calc(35% - 5px);
+      min-width: calc(35% - 5px);
+    }
+  }
 }
 
 .btn {
@@ -457,6 +436,34 @@ onMounted(() => {
 
     &:hover {
       background-color: #4b5563;
+    }
+  }
+}
+
+.radio-group {
+  gap: 0;
+
+  .radio-label {
+    background-color: #e7e6ed;
+    border-radius: 10px 10px 0 0;
+    height: 40px;
+    padding: 0 20px;
+    color: #484848;
+    font-size: 15px;
+    font-weight: 500;
+    gap: 0;
+    transition: background-color .2s ease-in-out;
+  
+    input[type="radio"] {
+      display: none;
+    }
+
+    &.active {
+      background-color: #0863e2;
+      
+      .radio-text {
+        color: #ffffff;
+      }
     }
   }
 }

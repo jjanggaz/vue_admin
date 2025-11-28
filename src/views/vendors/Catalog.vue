@@ -391,12 +391,6 @@ onUnmounted(() => {
   line-height: 1.6;
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
 .footer-actions {
   margin-top: 20px;
   display: flex;

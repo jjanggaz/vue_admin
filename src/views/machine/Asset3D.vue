@@ -2234,21 +2234,6 @@ onMounted(async () => {
   }
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-
-  .total-count {
-    position: absolute;
-    left: 0;
-    font-size: 13px;
-    color: #333333;
-    font-weight: 400;
-  }
-}
-
 // 반응형 브레이크포인트
 $mobile: 768px;
 $tablet: 1024px;

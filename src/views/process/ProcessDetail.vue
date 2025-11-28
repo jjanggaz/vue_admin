@@ -12883,7 +12883,9 @@ input[type="radio"] {
   .symbol-img {
     display: block;
     width: 100%;
+    min-width: 40px;
     height: 40px;
+    min-height: 40px;
     margin-left: 10px;
     object-fit: contain;
     object-position: left;

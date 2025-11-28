@@ -81,7 +81,7 @@
       <h3 class="table-title">선택 항목</h3>
       <div class="button-group">
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
-            -행 삭제
+            - 행 삭제
           </button>
         <button type="button" class="btn-save" @click="handleSaveSelectedItems">
           저장
@@ -2080,34 +2080,35 @@ select {
   padding: 0 10px;
   border: none;
   border-radius: 4px;
-  background: #222e77;
+  background: #0863e2;
   color: white;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition: background .2s ease-in-out;
 
-  &:hover {
-    background: #1a2561;
-  }
-
+  &:hover,
   &:active {
-    background: #141b4a;
+    background: #0067F5;
   }
 }
 
 .table-header-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: flex-end;
   gap: 10px;
-  margin-bottom: 10px;
-  margin-top: 20px;
+  margin: 20px 0 10px;
+
+  @media (max-width: $mobile) {
+    margin: 40px 0 10px;
+  }
 
   .table-title {
+    color: #333333;
     font-size: 15px;
     font-weight: 600;
-    color: #344054;
-    margin: 0;
   }
 
   .button-group {
@@ -2129,7 +2130,7 @@ select {
   :deep(.data-table th),
   :deep(.data-table td) {
     white-space: nowrap;
-    overflow: hidden;
+    // overflow: hidden; //"직경 후" 영역 텍스트 짤림
     text-overflow: ellipsis;
   }
 
@@ -2385,25 +2386,19 @@ select {
 
 // 선택 항목 섹션
 .selection-section {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e9f2;
+  margin-top: 50px;
 }
 
 .selection-filter-bar {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 16px;
-  margin-bottom: 16px;
-  background: #f7f9fc;
-  border: 1px solid #e5e9f2;
-  border-radius: 8px;
-  padding: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
 
   .filter-group {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-end;
     flex-wrap: wrap;
     flex: 1;
@@ -2412,6 +2407,7 @@ select {
   .filter-item {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 4px;
 
     label {
@@ -2528,7 +2524,7 @@ select {
 
   .button-group {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-shrink: 0;
   }
 }
@@ -2536,36 +2532,34 @@ select {
 .btn-reset,
 .btn-toggle-all {
   height: 32px;
-  padding: 0 16px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  background: #fff;
-  color: #344054;
-  font-size: 13px;
+  padding: 0 10px;
+  border-radius: 4px;
+  background: #3e435e;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
   white-space: nowrap;
+  transition: background .2s ease-in-out;
 
   &:hover {
-    background: #f9fafb;
-    border-color: #98a2b3;
+    background: #3C4973;
   }
 }
 
 .btn-add-selection {
   height: 32px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 6px;
+  padding: 0 10px;
+  border-radius: 4px;
   background: #222e77;
   color: white;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition: background .2s ease-in-out;
 
   &:hover {
-    background: #1a2561;
+    background: #29378c;
   }
 }
 
@@ -2575,15 +2569,18 @@ select {
   .material-list-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-end;
+    margin: 20px 0 10px;
+
+    @media (max-width: $mobile) {
+      margin: 40px 0 10px;
+    }
   }
 
   .section-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
-    color: #344054;
-    margin: 0;
+    color: #333333;
   }
   
   .debug-search {
@@ -2638,20 +2635,37 @@ select {
 }
 
 .no-data-message {
-  color: #98a2b3;
-  font-style: italic;
-  line-height: 1.6;
+  color: #aaaaaa;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .material-table-wrapper {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   width: 100%;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #e7e6ed;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #d7d5e4;
+    }
+  }
 
   :deep(.data-table-container) {
-    overflow-x: visible;
-    overflow-y: visible;
+    overflow-x: auto;
+    overflow-y: auto;
     width: 100%;
   }
 

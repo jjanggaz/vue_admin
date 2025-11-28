@@ -795,14 +795,15 @@ select {
 }
 
 .section-title {
+  color: #333333;
+  font-size: 15px;
   font-weight: 600;
-  font-size: 16px;
 }
 
 .section-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: flex-end;
   margin: 20px 0 10px;
   flex-wrap: wrap;
   gap: 8px;

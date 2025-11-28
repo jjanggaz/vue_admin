@@ -306,7 +306,7 @@
 
     <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%">
+      <div class="modal-container" style="max-width: 1600px; width: 98%; max-height: 95vh; height: 95vh; display: flex; flex-direction: column;">
         <div class="modal-header">
           <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -316,7 +316,7 @@
           >
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="flex: 1; overflow-y: auto; min-height: 0;">
           <div class="tabs-wrapper">
             <div
               v-for="(tab, idx) in modalTabs"
@@ -899,20 +899,47 @@ const handleDelete = async () => {
     try {
       // 선택된 항목들에 대해 삭제 API 호출
       for (const item of selectedItems.value) {
-        const deleteParams: any = {
-          equipment_type: item.equipment_type,
-          model_file_id: item.model_file_id,
-          rfa_file_id: item.rfa_file_id,
-          symbol_id: item.symbol_id,
-          thumbnail_id: item.thumbnail_id,
-        };
+        // 프리셋인 경우 프리셋 삭제 API 호출
+        if (item.model_type === "PRESET") {
+          const presetId = item.equipment_id || (item as any).preset_id || (item as any).id;
+          if (!presetId) {
+            console.error("프리셋 ID를 찾을 수 없습니다:", item);
+            continue;
+          }
 
-        // is_ownship_formula가 true인 경우에만 formula_id 추가
-        if (item.formula?.is_ownship_formula === true) {
-          deleteParams.formula_id = item.formula.formula_id;
+          console.log("프리셋 삭제 API 호출:", `/api/asset3D/preset/delete/${presetId}`);
+          
+          const response = await request(
+            `/api/asset3D/preset/delete/${presetId}`,
+            undefined,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response || !response.success) {
+            throw new Error(response?.message || "프리셋 삭제에 실패했습니다.");
+          }
+        } else {
+          // 3D 라이브러리인 경우 기존 로직 사용
+          const deleteParams: any = {
+            equipment_type: item.equipment_type,
+            model_file_id: item.model_file_id,
+            rfa_file_id: item.rfa_file_id,
+            symbol_id: item.symbol_id,
+            thumbnail_id: item.thumbnail_id,
+          };
+
+          // is_ownship_formula가 true인 경우에만 formula_id 추가
+          if (item.formula?.is_ownship_formula === true) {
+            deleteParams.formula_id = item.formula.formula_id;
+          }
+
+          await asset3DStore.deleteAsset3D(item.equipment_id, deleteParams);
         }
-
-        await asset3DStore.deleteAsset3D(item.equipment_id, deleteParams);
       }
 
       selectedItems.value = [];
@@ -1569,9 +1596,9 @@ const loadData = async () => {
       searchParams.unit_system_code = selectedUnit.value;
     }
 
-    // 검색어 (명칭)
+    // 검색어
     if (searchQueryInput.value) {
-      searchParams.preset_name_ko = searchQueryInput.value;
+      searchParams.keyword = searchQueryInput.value;
     }
 
     // API 호출 - 3D 모델 구분을 URL path에 type으로 전달
@@ -1632,11 +1659,33 @@ const loadData = async () => {
       }));
 
       // 페이징 정보 업데이트
-      if (data.total_pages) {
+      if (data.pagination) {
+        asset3DStore.searchResults = {
+          total: data.pagination.total || items.length,
+          total_pages: data.pagination.total_pages || 1,
+          page: data.pagination.page || currentPage.value,
+          page_size: data.pagination.page_size || pageSize.value,
+          items: items as unknown as Record<string, unknown>[],
+          search_info: data.applied_filters || {},
+        };
+      } else if (data.total_pages) {
+        // 하위 호환성을 위해 기존 방식도 지원
         asset3DStore.searchResults = {
           ...asset3DStore.searchResults,
           total_pages: data.total_pages,
           total: data.total_count || data.total || items.length,
+          page: data.page || currentPage.value,
+          page_size: data.page_size || pageSize.value,
+          items: items as unknown as Record<string, unknown>[],
+        };
+      } else {
+        // 페이징 정보가 없는 경우 기본값 설정
+        asset3DStore.searchResults = {
+          total: items.length,
+          total_pages: 1,
+          page: currentPage.value,
+          page_size: pageSize.value,
+          items: items as unknown as Record<string, unknown>[],
         };
       }
     } else {

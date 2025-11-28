@@ -71,9 +71,9 @@
           type="button"
           class="btn-register"
           @click="handleThumbnailRegister"
-          :disabled="!thumbnailFile"
+          :disabled="!selectedUnit || !selectedMachine || !presetName"
         >
-          등록
+          {{ isEditMode ? "저장" : "등록" }}
           </button>
           </div>
         </div>
@@ -204,6 +204,7 @@
             placeholder="직경 (숫자만 입력)"
               @input="handleDiameterInput"
               @change="handleDiameterChange"
+              @keyup.enter="handleDiameterEnter"
           />
           </div>
           <div class="filter-item search-item">
@@ -1303,8 +1304,8 @@ const resetMaterialListGrid = () => {
 
 // 필터 세부구분 변경 핸들러 (배관용)
 const handleFilterSubTypeChange = () => {
-  // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
-  if (isSelectionSearchEnabled.value) {
+  // 구분이 선택된 상태에서 세부구분이 변경되면 자동 재조회
+  if (selectionFilter.value.pipeCategory) {
     fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
 };
@@ -1328,6 +1329,14 @@ const handleDiameterInput = (event: Event) => {
 const handleDiameterChange = () => {
   // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
   if (isSelectionSearchEnabled.value) {
+    fetchMaterialList(1, selectionFilter.value.pipeCategory);
+  }
+};
+
+// 직경 입력 Enter 키 핸들러
+const handleDiameterEnter = () => {
+  // 구분이 선택된 상태에서 Enter 키 입력 시 재조회
+  if (selectionFilter.value.pipeCategory) {
     fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
 };
@@ -1598,8 +1607,14 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
         requestData.search_value = equipmentType;
       }
     } else if (selectionFilter.value.fittingType) {
-      // 다른 구분에서 세부구분이 선택된 경우 (필요시 사용)
-      // 현재는 수동 밸브만 search_field/search_value를 사용하도록 요구사항에 맞춤
+      // 구분이 '수동 밸브' 이외 다른 값인 경우 세부구분 선택값을 search_criteria.fitting으로 추가
+      // search_criteria 객체가 없으면 생성
+      if (!requestData.search_criteria) {
+        requestData.search_criteria = {};
+      }
+      const searchCriteria = requestData.search_criteria as Record<string, unknown>;
+      searchCriteria.fitting = selectionFilter.value.fittingType;
+      console.log("📤 세부구분(fitting) 값 추가:", selectionFilter.value.fittingType);
     }
     
     // 키워드 입력 시 keyword 파라미터 추가
@@ -1607,7 +1622,7 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
       requestData.keyword = selectionFilter.value.searchText.trim();
     }
     
-    // 직경 입력 시 search_criteria에 dia_phi_mm 추가
+    // 직경 입력 시 search_criteria에 diaa_phi_mm 추가 (기존 search_criteria가 있으면 그대로 사용)
     if (selectionFilter.value.diameter && selectionFilter.value.diameter.trim()) {
       const diameterValue = parseFloat(selectionFilter.value.diameter.trim());
       if (!isNaN(diameterValue)) {
@@ -1616,8 +1631,8 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           requestData.search_criteria = {};
         }
         const searchCriteria = requestData.search_criteria as Record<string, unknown>;
-        searchCriteria.dia_phi_mm = diameterValue;
-        console.log("📤 직경 값 추가:", diameterValue);
+        searchCriteria.diaa_phi_mm = diameterValue;
+        console.log("📤 직경 값 추가 (diaa_phi_mm):", diameterValue);
       }
     }
     
@@ -2001,12 +2016,15 @@ const handleThumbnailRegister = async () => {
     return;
   }
 
-  if (tableRows.value.length === 0) {
-    alert("선택 항목을 추가해주세요.");
-    return;
-  }
-
   try {
+    // 수정 모드인지 확인 (가장 먼저 체크)
+    console.log("========================================");
+    console.log("[Asset3DPreset] 등록/수정 모드 확인");
+    console.log("========================================");
+    console.log("isEditMode:", props.isEditMode);
+    console.log("editItem:", props.editItem);
+    console.log("========================================");
+
     // 썸네일 파일 업로드 (있는 경우)
     let thumbnailId: string | null = null;
     if (thumbnailFile.value) {
@@ -2019,30 +2037,30 @@ const handleThumbnailRegister = async () => {
       console.log("썸네일 업로드 완료, thumbnail_id:", thumbnailId);
     }
 
-    // tableRows에서 첫 번째 행의 데이터 추출
-    const firstRow = tableRows.value[0];
+    // tableRows에서 첫 번째 행의 데이터 추출 (있는 경우)
+    const firstRow = tableRows.value.length > 0 ? tableRows.value[0] : null;
     
     // 직경 값 추출 (숫자만)
     let diameterValue = 0;
-    if (firstRow.diameter) {
+    if (firstRow && firstRow.diameter) {
       const diameterNum = parseFloat(firstRow.diameter.replace(/[^0-9.]/g, ""));
       if (!isNaN(diameterNum)) {
         diameterValue = diameterNum;
       }
     }
 
-    // 프리셋 생성 요청 데이터 구성
+    // 프리셋 생성/수정 요청 데이터 구성
     const presetData: Record<string, unknown> = {
       root_equipment_type: selectedMachine.value,
-      equipment_type: firstRow.subType || firstRow.type || "",
+      equipment_type: firstRow ? (firstRow.subType || firstRow.type || "") : "",
       preset_category: "PRESET",
-      total_unit_count: tableRows.value.length,
+      total_unit_count: tableRows.value.length > 0 ? tableRows.value.length : 1,
       preset_name_ko: presetName.value.trim(),
       preset_name_en: presetName.value.trim(), // 영문명이 없으면 한글명 사용
       unit_system_code: selectedUnit.value,
       diameter_value: diameterValue,
       diameter_unit: "mm",
-      note: firstRow.remarks || "",
+      note: firstRow ? (firstRow.remarks || "") : "",
       metadata: {},
       is_active: true,
     };
@@ -2055,43 +2073,120 @@ const handleThumbnailRegister = async () => {
     // set_dtdx_file_id 추가 (있는 경우)
     // TODO: dtdx 파일 업로드 및 ID 추출 로직 필요 시 추가
 
+    // 수정 모드인지 확인
+    const isEditMode = props.isEditMode === true;
+    const hasEditItem = props.editItem !== null && props.editItem !== undefined;
+    
     console.log("========================================");
-    console.log("[Asset3DPreset] 프리셋 생성 API 호출");
+    console.log("[Asset3DPreset] 수정 모드 체크");
     console.log("========================================");
-    console.log("📤 프리셋 생성 요청 데이터:", JSON.stringify(presetData, null, 2));
+    console.log("isEditMode (boolean):", isEditMode);
+    console.log("hasEditItem:", hasEditItem);
+    console.log("editItem 전체:", JSON.stringify(props.editItem, null, 2));
     console.log("========================================");
 
-    // 프리셋 생성 API 호출
-    const response = await request("/api/asset3D/preset/create", undefined, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(presetData),
-    });
-
-    console.log("📥 프리셋 생성 API 응답:", response);
-
-    if (response && response.success) {
-      alert("프리셋이 등록되었습니다.");
+    if (isEditMode && hasEditItem) {
+      // 수정 모드: 프리셋 업데이트 API 호출
+      const editItemAny = props.editItem as any;
+      const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
       
-      // 등록 성공 후 폼 초기화
-      selectedUnit.value = "";
-      selectedMachine.value = "";
-      presetName.value = "";
-      thumbnailFileName.value = "";
-      thumbnailFile.value = null;
-      thumbnailPreviewUrl.value = "";
-      tableRows.value = [];
-      selectedRows.value = [];
-      nextRowId = 1;
+      console.log("========================================");
+      console.log("[Asset3DPreset] 프리셋 ID 추출");
+      console.log("========================================");
+      console.log("preset_id:", editItemAny.preset_id);
+      console.log("equipment_id:", editItemAny.equipment_id);
+      console.log("id:", editItemAny.id);
+      console.log("presetId:", editItemAny.presetId);
+      console.log("최종 presetId:", presetId);
+      console.log("========================================");
       
-      if (thumbnailFileInput.value) {
-        thumbnailFileInput.value.value = "";
+      if (!presetId) {
+        console.error("프리셋 ID를 찾을 수 없습니다. editItem:", editItemAny);
+        alert("프리셋 ID를 찾을 수 없습니다.");
+        return;
+      }
+
+      console.log("========================================");
+      console.log("[Asset3DPreset] 프리셋 수정 API 호출");
+      console.log("========================================");
+      console.log("📤 API 엔드포인트:", `/api/asset3D/preset/update/${presetId}`);
+      console.log("📤 프리셋 수정 요청 데이터:", JSON.stringify(presetData, null, 2));
+      console.log("📤 프리셋 ID:", presetId);
+      console.log("========================================");
+
+      const response = await request(`/api/asset3D/preset/update/${presetId}`, undefined, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(presetData),
+      });
+
+      console.log("📥 프리셋 수정 API 응답:", response);
+
+      if (response && response.success) {
+        alert("프리셋이 수정되었습니다.");
+        
+        // 수정 성공 후 폼 초기화
+        selectedUnit.value = "";
+        selectedMachine.value = "";
+        presetName.value = "";
+        thumbnailFileName.value = "";
+        thumbnailFile.value = null;
+        thumbnailPreviewUrl.value = "";
+        tableRows.value = [];
+        selectedRows.value = [];
+        nextRowId = 1;
+        
+        if (thumbnailFileInput.value) {
+          thumbnailFileInput.value.value = "";
+        }
+      } else {
+        const errorMessage = response?.message || "프리셋 수정에 실패했습니다.";
+        alert(errorMessage);
       }
     } else {
-      const errorMessage = response?.message || "프리셋 등록에 실패했습니다.";
-      alert(errorMessage);
+      console.log("========================================");
+      console.log("[Asset3DPreset] 등록 모드로 처리");
+      console.log("========================================");
+      // 등록 모드: 프리셋 생성 API 호출
+      console.log("========================================");
+      console.log("[Asset3DPreset] 프리셋 생성 API 호출");
+      console.log("========================================");
+      console.log("📤 프리셋 생성 요청 데이터:", JSON.stringify(presetData, null, 2));
+      console.log("========================================");
+
+      const response = await request("/api/asset3D/preset/create", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(presetData),
+      });
+
+      console.log("📥 프리셋 생성 API 응답:", response);
+
+      if (response && response.success) {
+        alert("프리셋이 등록되었습니다.");
+        
+        // 등록 성공 후 폼 초기화
+        selectedUnit.value = "";
+        selectedMachine.value = "";
+        presetName.value = "";
+        thumbnailFileName.value = "";
+        thumbnailFile.value = null;
+        thumbnailPreviewUrl.value = "";
+        tableRows.value = [];
+        selectedRows.value = [];
+        nextRowId = 1;
+        
+        if (thumbnailFileInput.value) {
+          thumbnailFileInput.value.value = "";
+        }
+      } else {
+        const errorMessage = response?.message || "프리셋 등록에 실패했습니다.";
+        alert(errorMessage);
+      }
     }
   } catch (error) {
     console.error("프리셋 등록 실패:", error);
@@ -2109,9 +2204,9 @@ $tablet: 1024px;
 
 .filter-bar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  grid-template-columns: 180px 180px 1fr 1fr 100px; // 단위, 연결기계, 프리셋명, 썸네일, 등록버튼 (프리셋명과 썸네일 같은 폭)
   align-items: flex-end;
-  gap: 20px 10px;
+  gap: 10px;
   // 태블릿 크기에서 2열로 변경
   @media (max-width: $tablet) {
     grid-template-columns: repeat(2, minmax(180px, 1fr));

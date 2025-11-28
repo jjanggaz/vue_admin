@@ -91,8 +91,7 @@
                     @click.stop="toggleExpand(item, $event)"
                     @click.prevent
                     :class="{ expanded: isExpanded(item) }"
-                  >
-                    ▼
+                    >
                   </button>
                   <span v-else class="expand-placeholder"></span>
                   <slot
@@ -423,15 +422,29 @@ const toggleSelectRow = (item: any) => {
   border-collapse: collapse;
 
   .checkbox-cell {
-    width: 50px;
+    width: 40px;
     text-align: center;
-    padding: 8px 4px;
 
     input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      margin: 0;
+      appearance: none;
+      // vertical-align: middle;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background-color: transparent;
+      background-image: url(../../assets/icons/ico_check-off.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 20px auto;
       cursor: pointer;
+
+      &:checked {
+        background-image: url(../../assets/icons/ico_check-on.svg);
+      }
+
+      &:disabled {
+        background-image: url(../../assets/icons/ico_check-disabled.svg);
+      }
     }
 
     .select-header-text {
@@ -550,18 +563,22 @@ const toggleSelectRow = (item: any) => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  color: #666;
-  padding: 2px;
+  padding: 0;
+  width: 12px;
+  height: 12px;
+  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-repeat: no-repeat;
+  background-position: 0 center;
+  background-size: 12px auto;
   transition: transform 0.2s;
   min-width: 16px;
 
   &.expanded {
-    transform: rotate(180deg);
+    transform: rotate(-180deg);
   }
 
   &:hover {
-    color: #333;
+    background-image: url(../../assets/icons/ico_select-down.svg);
   }
 }
 

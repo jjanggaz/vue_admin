@@ -116,43 +116,51 @@
         <div class="modal-body">
           <form @submit.prevent="handleSubmit">
             <dl class="column-regist">
-              <dt>{{ t("columns.roleGroup.roleCode") }}</dt>
-              <dd>
-                <input
-                  id="role-code"
-                  v-model="roleForm.role_code"
-                  type="text"
-                  :placeholder="t('placeholder.enterRoleCode')"
-                  :disabled="isEditMode"
-                  required
-                />
-              </dd>
-              <dt>{{ t("columns.roleGroup.roleName") }}</dt>
-              <dd>
-                <input
-                  id="role-name"
-                  v-model="roleForm.role_name"
-                  type="text"
-                  :placeholder="t('placeholder.enterRoleName')"
-                  required
-                />
-              </dd>
-              <dt>{{ t("columns.roleGroup.description") }}</dt>
-              <dd>
-                <input
-                  id="role-description"
-                  v-model="roleForm.description"
-                  type="text"
-                  :placeholder="t('placeholder.enterDescription')"
-                />
-              </dd>
-              <dt>{{ t("columns.roleGroup.status") }}</dt>
-              <dd>
-                <select v-model="roleForm.is_active" required>
-                  <option :value="true">{{ t("common.active") }}</option>
-                  <option :value="false">{{ t("common.inactive") }}</option>
-                </select>
-              </dd>
+              <div class="regist-item">
+                <dt>{{ t("columns.roleGroup.roleCode") }}</dt>
+                <dd>
+                  <input
+                    id="role-code"
+                    v-model="roleForm.role_code"
+                    type="text"
+                    :placeholder="t('placeholder.enterRoleCode')"
+                    :disabled="isEditMode"
+                    required
+                  />
+                </dd>
+              </div>
+              <div class="regist-item">
+                <dt>{{ t("columns.roleGroup.roleName") }}</dt>
+                <dd>
+                  <input
+                    id="role-name"
+                    v-model="roleForm.role_name"
+                    type="text"
+                    :placeholder="t('placeholder.enterRoleName')"
+                    required
+                  />
+                </dd>
+              </div>
+              <div class="regist-item">
+                <dt>{{ t("columns.roleGroup.description") }}</dt>
+                <dd>
+                  <input
+                    id="role-description"
+                    v-model="roleForm.description"
+                    type="text"
+                    :placeholder="t('placeholder.enterDescription')"
+                  />
+                </dd>
+              </div>
+              <div class="regist-item">
+                <dt>{{ t("columns.roleGroup.status") }}</dt>
+                <dd>
+                  <select v-model="roleForm.is_active" required>
+                    <option :value="true">{{ t("common.active") }}</option>
+                    <option :value="false">{{ t("common.inactive") }}</option>
+                  </select>
+                </dd>
+              </div>
             </dl>
 
             <!-- 메뉴 권한 선택 섹션 -->
@@ -772,10 +780,6 @@ const closeMenuPermissionsModal = () => {
 </script>
 
 <style scoped>
-/* .role-management {
-  padding: 20px;
-} */
-
 .title-section {
   margin-bottom: 20px;
 }
@@ -787,8 +791,8 @@ const closeMenuPermissionsModal = () => {
 }
 
 .search-bar {
-  flex: 1; /* Search bar takes available space */
-  margin-right: 20px; /* Space between search bar and buttons */
+  flex: 1;
+  margin-right: 20px;
 }
 
 .search-inputs {
@@ -846,54 +850,27 @@ const closeMenuPermissionsModal = () => {
   }
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
 .modal-container {
-  background: white;
-  border-radius: 8px;
   min-width: 900px;
   max-width: 1200px;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.column-regist {
+  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  gap: 20px 10px;
+  margin-bottom: 0;
 
-.modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.modal-body {
-  padding: 20px;
+  .regist-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 .column-regist dt {
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.column-regist dd {
-  margin-bottom: 15px;
+  color: #333333;
 }
 
 .column-regist input,
@@ -918,33 +895,35 @@ const closeMenuPermissionsModal = () => {
 }
 
 .modal-footer {
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
+  .btn {
+    &:first-child {
+      min-width: 770px;
+
+      @media (max-width: 1200px) {
+        width: calc(70% - 5px);
+        min-width: calc(70% - 5px);
+      }
+    }
+  }
 }
 
 .menu-permissions {
   margin-top: 20px;
 }
 
-.menu-permissions-section h4 {
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
 .menu-permissions-section + .menu-permissions-section {
-  margin-top: 30px;
+  margin-top: 40px;
+}
+
+.menu-permissions-section.first-section {
+  margin-top: 20px;
 }
 
 .menu-permissions-section h4 {
-  margin: 0 0 15px 0;
+  margin-bottom: 10px;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #333333;
 }
 
 .menu-tables-container {

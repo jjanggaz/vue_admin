@@ -3033,7 +3033,7 @@ onMounted(async () => {
       &::after {
         margin-top: -12px;
 
-        transform: rotate(180deg);
+        transform: rotate(-180deg);
       }
     }
   }

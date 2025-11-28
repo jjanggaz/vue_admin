@@ -476,6 +476,8 @@
     "search": "검색",
     "delete": "삭제",
     "edit": "수정",
+    "accountRegister": "계정 등록",
+    "accountEdit": "계정 수정",
     "multiRegister": "다건등록",
     "register": "등록",
     "add": "추가",

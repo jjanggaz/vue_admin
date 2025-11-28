@@ -104,13 +104,10 @@
         <div class="modal-header">
           <h3>
             {{
-              isEditMode
-                ? t("common.edit") + " " + t("common.user")
-                : t("common.register") + " " + t("common.user")
+              isEditMode ? t("common.accountEdit") : t("common.accountRegister")
             }}
           </h3>
-          <button class="btn-close" @click="isRegistModalOpen = false">
-          </button>
+          <button class="btn-close" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -919,8 +916,11 @@ const handleEdit = () => {
   font-style: italic;
 }
 
-dl.column-regist{
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
+dl.column-regist {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr) minmax(200px, 2fr)
+  );
 
   dt,
   dd {
@@ -929,9 +929,8 @@ dl.column-regist{
 
   dd {
     display: block;
-
   }
-  
+
   .textarea-dd {
     height: 40px;
   }
@@ -949,8 +948,8 @@ dl.column-regist{
       color: #ffffff;
       font-size: 16px;
       font-weight: 500;
-      transition: background .2s ease-in-out;
- 
+      transition: background 0.2s ease-in-out;
+
       &:hover {
         background: #3c4973;
       }

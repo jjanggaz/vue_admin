@@ -476,6 +476,8 @@
     "search": "Search",
     "delete": "Delete",
     "edit": "Edit",
+    "accountRegister": "Account Register",
+    "accountEdit": "Account Edit",
     "multiRegister": "Multi Register",
     "register": "Register",
     "add": "Add",

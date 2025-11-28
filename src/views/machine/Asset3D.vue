@@ -160,7 +160,6 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
-        <div class="detail-panel-head">
           <h3>{{ t("common.detailInfo") }}</h3>
           <div class="header-buttons">
             <button
@@ -184,14 +183,13 @@
             >
               {{ t("common.cancel") }}
             </button>
+            <button
+              class="btn-close"
+              @click="closeDetailPanel"
+              aria-label="Close"
+            >
+            </button>
           </div>
-        </div>
-          <button
-            class="btn-close"
-            @click="closeDetailPanel"
-            aria-label="Close"
-          >
-          </button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -308,7 +306,7 @@
 
     <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 90%">
+      <div class="modal-container" style="max-width: 1600px; width: 98%">
         <div class="modal-header">
           <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -342,7 +340,7 @@
             />
           </div>
         </div>
-        <div class="modal-footer code-modal">
+        <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
@@ -1578,7 +1576,18 @@ const loadData = async () => {
 
     // API 호출 - 3D 모델 구분을 URL path에 type으로 전달
     const modelType = selectedAsset3DCategory.value || "PRESET";
-    const response = await request(`/api/asset3D/search/${modelType}`, undefined, {
+    const apiEndpoint = `/api/asset3D/search/${modelType}`;
+    
+    console.log("========================================");
+    console.log("[Asset3D] 데이터 로드 시작");
+    console.log("========================================");
+    console.log("📥 검색 파라미터:", JSON.stringify(searchParams, null, 2));
+    console.log("📥 선택된 카테고리:", selectedAsset3DCategory.value);
+    console.log("📥 modelType:", modelType);
+    console.log("📤 API 엔드포인트:", apiEndpoint);
+    console.log("========================================");
+    
+    const response = await request(apiEndpoint, undefined, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1633,8 +1642,31 @@ const loadData = async () => {
     } else {
       asset3dList.value = [];
     }
-  } catch (error) {
-    console.error("데이터 로드 실패:", error);
+  } catch (error: unknown) {
+    console.error("========================================");
+    console.error("[Asset3D] 데이터 로드 실패");
+    console.error("========================================");
+    console.error("에러 상세:", error);
+    
+    // 에러 객체에서 상세 정보 추출
+    if (error && typeof error === "object" && "status" in error) {
+      const errorStatus = (error as { status?: number }).status;
+      const errorMessage = (error as { message?: string }).message || "";
+      const errorPath = (error as { path?: string }).path || "";
+      
+      console.error("에러 상태 코드:", errorStatus);
+      console.error("에러 메시지:", errorMessage);
+      console.error("에러 경로:", errorPath);
+      
+      // 404 에러인 경우 사용자에게 알림
+      if (errorStatus === 404) {
+        console.error("⚠️ API 엔드포인트를 찾을 수 없습니다:", errorPath);
+        alert(`API 엔드포인트를 찾을 수 없습니다.\n경로: ${errorPath}\n\n서버에서 해당 엔드포인트가 구현되어 있는지 확인해주세요.`);
+      }
+    }
+    
+    console.error("========================================");
+    
     // 에러 발생 시 빈 배열로 초기화
     asset3dList.value = [];
   } finally {

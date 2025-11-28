@@ -18,7 +18,7 @@
               >
                 <option value="">{{ t("common.select") }}</option>
                 <option
-                  v-for="unit in unitSystems"
+                  v-for="unit in pipeStore.unitSystems"
                   :key="unit.unit_system_id"
                   :value="unit.system_code"
                 >
@@ -194,7 +194,7 @@
                 <select v-model="registForm.unit" class="form-select">
                   <option value="">{{ t("common.select") }}</option>
                   <option
-                    v-for="unit in unitSystems"
+                    v-for="unit in pipeStore.unitSystems"
                     :key="unit.unit_system_id"
                     :value="unit.system_code"
                   >
@@ -457,6 +457,7 @@ import ProcessDetail from "./ProcessDetail.vue";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import { useProcessStore, type ProcessItem } from "@/stores/processStore";
+import { usePipeStore } from "@/stores/pipeStore";
 
 const { t } = useI18n();
 
@@ -464,6 +465,7 @@ const { t } = useI18n();
 const translateMessage = useTranslateMessage();
 
 const processStore = useProcessStore();
+const pipeStore = usePipeStore();
 
 // 공정명 값 변경 추적
 watch(
@@ -573,32 +575,6 @@ const isComponentMounted = ref(false);
 
 // 단위 선택
 const selectedUnit = ref<string>("");
-
-// 단위 시스템 옵션 (Pipe.vue 패턴 참조, 추후 API에서 로드하도록 변경 가능)
-const unitSystems = ref<
-  Array<{
-    unit_system_id: string;
-    system_name: string;
-    system_code: string;
-    description: string;
-    is_active: boolean;
-  }>
->([
-  {
-    unit_system_id: "1",
-    system_name: "Metric",
-    system_code: "METRIC",
-    description: "Metric System",
-    is_active: true,
-  },
-  {
-    unit_system_id: "2",
-    system_name: "Uscs",
-    system_code: "USCS",
-    description: "US Customary System",
-    is_active: true,
-  },
-]);
 
 // 등록 폼 데이터
 const registForm = ref<RegistForm>({
@@ -1523,7 +1499,15 @@ onMounted(async () => {
       searchUnitType: typeof processStore.searchUnit,
     });
 
-    // 0. 화면 로드 시 select 박스 선택 초기화
+    // 0. 단위 시스템 옵션 로드 (Pipe.vue와 동일한 방식)
+    try {
+      await pipeStore.fetchCommonCodes("PIPE_S");
+      console.log("0-0. 단위 시스템 옵션 로드 완료");
+    } catch (error) {
+      console.error("단위 시스템 옵션 로드 실패:", error);
+    }
+
+    // 0-1. 화면 로드 시 select 박스 선택 초기화
     // 단위 초기화
     selectedUnit.value = "";
     if (typeof processStore.setSearchUnit === "function") {

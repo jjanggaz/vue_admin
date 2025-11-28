@@ -37,24 +37,25 @@
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
-            type="text"
-            class="form-input file-name-input"
-            :value="thumbnailFileName"
-            readonly
-            placeholder="파일 선택"
+              type="text"
+              class="form-input file-name-input"
+              :value="thumbnailFileName"
+              readonly
+              placeholder="파일 선택"
             />
             <input
-            type="file"
-            ref="thumbnailFileInput"
-            accept=".jpg,.jpeg,.png,.gif"
-            style="display: none"
-            @change="handleThumbnailFileChange"
+              type="file"
+              ref="thumbnailFileInput"
+              accept=".jpg,.jpeg,.png,.gif"
+              style="display: none"
+              @change="handleThumbnailFileChange"
             />
             <button
               type="button"
               class="btn-ellipsis"
               @click="thumbnailFileInput?.click()"
             >
+              ...
             </button>
           </div>
           <img
@@ -76,12 +77,13 @@
           </button>
           </div>
         </div>
+
     <!-- 행 삭제/저장 버튼 -->
     <div class="table-header-row">
       <h3 class="table-title">선택 항목</h3>
       <div class="button-group">
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
-            - 행 삭제
+            -행 삭제
           </button>
         <button type="button" class="btn-save" @click="handleSaveSelectedItems">
           저장
@@ -173,9 +175,6 @@
                 <span>{{
                   filterSubTypeLabel || t("common.select")
                 }}</span>
-                <span class="arrow">{{
-                  isFilterTreeDropdownOpen ? "▲" : "▼"
-                }}</span>
               </div>
             </div>
             <!-- 배관 선택 시 일반 셀렉트 -->
@@ -202,7 +201,8 @@
             type="text"
               v-model="selectionFilter.diameter"
               class="form-input"
-            placeholder="직경"
+            placeholder="직경 (숫자만 입력)"
+              @input="handleDiameterInput"
               @change="handleDiameterChange"
           />
           </div>
@@ -447,7 +447,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, onActivated, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, onActivated, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import Pagination from "@/components/common/Pagination.vue";
@@ -1268,11 +1268,13 @@ const handleSelectionSearch = () => {
     filterSubTypeLabel: filterSubTypeLabel.value,
     filterSelectedCode: filterSelectedCode.value,
   });
-  fetchMaterialList(1);
+  // 최신 구분 값 전달
+  fetchMaterialList(1, selectionFilter.value.pipeCategory);
 };
 
 // 선택 항목 필터 초기화
 const handleResetSelectionFilter = () => {
+  // 검색조건 항목들 초기화
   selectionFilter.value = {
     pipeCategory: "",
     fittingType: "",
@@ -1284,6 +1286,9 @@ const handleResetSelectionFilter = () => {
   filterSelectedCode.value = "";
   filterExpandedKeys.value = new Set();
   closeFilterTreeDropdown();
+  
+  // 자재 리스트 그리드 초기화
+  resetMaterialListGrid();
 };
 
 // 자재 리스트 그리드 초기화 함수
@@ -1298,30 +1303,53 @@ const resetMaterialListGrid = () => {
 
 // 필터 세부구분 변경 핸들러 (배관용)
 const handleFilterSubTypeChange = () => {
-  // 구분과 세부구분이 모두 선택된 경우 자동 조회
+  // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
   if (isSelectionSearchEnabled.value) {
-    fetchMaterialList(1);
+    fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
+};
+
+// 직경 입력 핸들러 (숫자만 허용)
+const handleDiameterInput = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  // 숫자만 허용 (정수 및 소수점 포함)
+  const value = input.value.replace(/[^0-9.]/g, "");
+  // 소수점이 여러 개인 경우 첫 번째만 허용
+  const parts = value.split(".");
+  const filteredValue = parts.length > 2 
+    ? parts[0] + "." + parts.slice(1).join("")
+    : value;
+  
+  selectionFilter.value.diameter = filteredValue;
+  input.value = filteredValue;
 };
 
 // 직경 입력 변경 핸들러
 const handleDiameterChange = () => {
-  // 구분과 세부구분이 모두 선택된 경우 자동 조회
+  // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
   if (isSelectionSearchEnabled.value) {
-    fetchMaterialList(1);
+    fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
 };
 
 // 키워드 입력 변경 핸들러
 const handleKeywordChange = () => {
-  // 구분과 세부구분이 모두 선택된 경우 자동 조회
+  // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
   if (isSelectionSearchEnabled.value) {
-    fetchMaterialList(1);
+    fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
 };
 
 // 필터 구분 변경 핸들러
 const handleFilterCategoryChange = async () => {
+  console.log("========================================");
+  console.log("[Asset3DPreset] handleFilterCategoryChange 호출");
+  console.log("========================================");
+  console.log("🔍 변경 전 selectionFilter.value.pipeCategory:", selectionFilter.value.pipeCategory);
+  
+  // Vue의 반응성 업데이트가 완료될 때까지 대기
+  await nextTick();
+  
   // 세부구분 초기화
   selectionFilter.value.fittingType = "";
   filterSubTypeLabel.value = "";
@@ -1332,13 +1360,24 @@ const handleFilterCategoryChange = async () => {
   // 자재 리스트 그리드 초기화
   resetMaterialListGrid();
   
+  // 현재 선택된 구분 값 확인 - nextTick 후 최신 값 사용
+  await nextTick(); // 한 번 더 대기하여 v-model 업데이트 완료 보장
   const selectedCategory = selectionFilter.value.pipeCategory;
+  console.log("🔍 변경 후 selectionFilter.value.pipeCategory:", selectionFilter.value.pipeCategory);
+  console.log("🔍 selectedCategory 변수 값:", selectedCategory);
+  console.log("========================================");
   
   if (selectedCategory === "P_VALV") {
     // 수동 밸브 선택 시 트리 데이터 로드
     await ensureManualValveTree();
     // 수동 밸브도 자동 조회 (세부구분 없이 전체 조회)
-    fetchMaterialList(1);
+    // 명시적으로 root_equipment_type 전달 - 항상 최신 값 사용
+    await nextTick(); // 트리 로드 후 한 번 더 대기
+    // fetchMaterialList 호출 직전에 최신 값 확인
+    const currentCategory = selectionFilter.value.pipeCategory;
+    console.log("✅ P_VALV 선택 - fetchMaterialList 호출");
+    console.log("📤 전달할 root_equipment_type:", currentCategory);
+    fetchMaterialList(1, currentCategory);
   } else if (selectedCategory) {
     // 수동 밸브가 아닌 다른 값 선택 시 세부구분 옵션 로드 (피팅방식)
     // parent_key는 항상 FIT_PIPE로 조회
@@ -1356,8 +1395,13 @@ const handleFilterCategoryChange = async () => {
           label: item.code_value,
         }));
       }
-      // 구분만 선택된 경우에도 재조회 호출
-      fetchMaterialList(1);
+      // 구분만 선택된 경우에도 재조회 호출 - 명시적으로 root_equipment_type 전달 - 항상 최신 값 사용
+      await nextTick(); // 옵션 로드 후 한 번 더 대기
+      // fetchMaterialList 호출 직전에 최신 값 확인
+      const currentCategory = selectionFilter.value.pipeCategory;
+      console.log("✅ 다른 구분 선택 - fetchMaterialList 호출");
+      console.log("📤 전달할 root_equipment_type:", currentCategory);
+      fetchMaterialList(1, currentCategory);
     } catch (err) {
       console.error("세부구분 옵션 로드 실패:", err);
       filterSubTypeOptions.value = [];
@@ -1434,9 +1478,9 @@ const handleFilterTreeSelect = (node: ManualValveTreeNode) => {
   expandFilterPath(node.code_key);
   closeFilterTreeDropdown();
   
-  // 구분과 세부구분이 모두 선택된 경우 자동 조회
+  // 구분과 세부구분이 모두 선택된 경우 자동 조회 - 최신 구분 값 전달
   if (selectionFilter.value.pipeCategory && filterSelectedCode.value) {
-    fetchMaterialList(1);
+    fetchMaterialList(1, selectionFilter.value.pipeCategory);
   }
 };
 
@@ -1502,7 +1546,7 @@ const handleDeleteSelectionItem = (id: number) => {
 };
 
 // 자재 리스트 조회 (카탈로그 API 호출)
-const fetchMaterialList = async (page = 1) => {
+const fetchMaterialList = async (page = 1, parentType?: string) => {
   materialListLoading.value = true;
   materialListError.value = null;
   
@@ -1515,13 +1559,38 @@ const fetchMaterialList = async (page = 1) => {
       page_size: materialPageSize.value,
     };
     
-    // 구분(root_equipment_type) 설정 - Pipe.vue 방식 적용
-    if (selectionFilter.value.pipeCategory) {
-      requestData.root_equipment_type = selectionFilter.value.pipeCategory;
+    // 구분(root_equipment_type) 설정 - 파라미터로 전달된 값 우선 사용, 없으면 selectionFilter에서 가져옴
+    // parentType 파라미터가 있으면 사용, 없으면 최신 selectionFilter.value.pipeCategory 사용
+    // 빈 문자열도 유효한 값으로 처리하지 않도록 체크
+    const currentPipeCategory = (parentType !== undefined && parentType !== "") 
+      ? parentType 
+      : (selectionFilter.value.pipeCategory || "");
+    
+    console.log("========================================");
+    console.log("[Asset3DPreset] fetchMaterialList 호출");
+    console.log("========================================");
+    console.log("📥 입력 파라미터:", {
+      page: page,
+      parentTypeParam: parentType,
+      selectionFilterPipeCategory: selectionFilter.value.pipeCategory,
+      selectionFilterFittingType: selectionFilter.value.fittingType,
+      filterSelectedCode: filterSelectedCode.value,
+      searchText: selectionFilter.value.searchText,
+    });
+    console.log("🔍 계산된 currentPipeCategory:", currentPipeCategory);
+    console.log("🔍 parentType 파라미터:", parentType);
+    console.log("🔍 selectionFilter.value.pipeCategory:", selectionFilter.value.pipeCategory);
+    
+    // 구분 값이 선택된 경우 root_equipment_type에 구분 선택값 전달
+    if (currentPipeCategory && currentPipeCategory !== "") {
+      requestData.root_equipment_type = currentPipeCategory;
+      console.log("✅ root_equipment_type 설정:", requestData.root_equipment_type);
+    } else {
+      console.warn("⚠️ currentPipeCategory가 비어있습니다. root_equipment_type을 설정하지 않습니다.");
     }
     
-    // 세부구분(equipment_type) 설정
-    if (selectionFilter.value.pipeCategory === "P_VALV") {
+    // 구분이 '수동 밸브'(P_VALV)인 경우 추가로 search_field와 search_value 전달
+    if (currentPipeCategory === "P_VALV") {
       // 수동 밸브: filterSelectedCode (트리에서 선택한 4레벨 코드)가 있으면 해당 값으로 검색
       const equipmentType = filterSelectedCode.value || "";
       if (equipmentType) {
@@ -1529,9 +1598,8 @@ const fetchMaterialList = async (page = 1) => {
         requestData.search_value = equipmentType;
       }
     } else if (selectionFilter.value.fittingType) {
-      // 다른 구분에서 세부구분이 선택된 경우
-      requestData.search_field = "equipment_type";
-      requestData.search_value = selectionFilter.value.fittingType;
+      // 다른 구분에서 세부구분이 선택된 경우 (필요시 사용)
+      // 현재는 수동 밸브만 search_field/search_value를 사용하도록 요구사항에 맞춤
     }
     
     // 키워드 입력 시 keyword 파라미터 추가
@@ -1539,7 +1607,41 @@ const fetchMaterialList = async (page = 1) => {
       requestData.keyword = selectionFilter.value.searchText.trim();
     }
     
-    console.log("[Asset3DPreset] 카탈로그 API 요청 데이터:", requestData);
+    // 직경 입력 시 search_criteria에 dia_phi_mm 추가
+    if (selectionFilter.value.diameter && selectionFilter.value.diameter.trim()) {
+      const diameterValue = parseFloat(selectionFilter.value.diameter.trim());
+      if (!isNaN(diameterValue)) {
+        // search_criteria 객체가 없으면 생성
+        if (!requestData.search_criteria) {
+          requestData.search_criteria = {};
+        }
+        const searchCriteria = requestData.search_criteria as Record<string, unknown>;
+        searchCriteria.dia_phi_mm = diameterValue;
+        console.log("📤 직경 값 추가:", diameterValue);
+      }
+    }
+    
+    // parent_type이 있으면 제거하고 root_equipment_type만 사용
+    if (requestData.parent_type) {
+      console.warn("⚠️ parent_type 발견! 제거합니다:", requestData.parent_type);
+      delete requestData.parent_type;
+    }
+    
+    // root_equipment_type이 없고 currentPipeCategory가 있으면 설정
+    if (!requestData.root_equipment_type && currentPipeCategory) {
+      requestData.root_equipment_type = currentPipeCategory;
+      console.log("✅ root_equipment_type 설정 (누락된 경우):", requestData.root_equipment_type);
+    }
+    
+    console.log("📤 최종 요청 데이터 (requestData):", JSON.stringify(requestData, null, 2));
+    console.log("📤 root_equipment_type 값:", requestData.root_equipment_type);
+    console.log("📤 parent_type 존재 여부:", requestData.parent_type !== undefined ? "❌ 존재함 (제거됨)" : "✅ 없음");
+    
+    // 실제 API 요청 body 문자열 생성
+    const requestBodyString = JSON.stringify(requestData);
+    console.log("📤 실제 API 요청 Body (JSON 문자열):", requestBodyString);
+    console.log("📤 API 엔드포인트: POST /api/asset3D/catalog/search");
+    console.log("========================================");
     
     // 카탈로그 API 호출
     const response = await request("/api/asset3D/catalog/search", undefined, {
@@ -1547,8 +1649,10 @@ const fetchMaterialList = async (page = 1) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestData),
+      body: requestBodyString,
     });
+    
+    console.log("📥 API 응답:", response);
     
     console.log("[Asset3DPreset] 카탈로그 API 응답:", response);
     
@@ -1847,27 +1951,154 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleViewportChange);
 });
 
-// 썸네일 등록 핸들러
+// 썸네일 파일 업로드 함수
+const uploadThumbnailFile = async (file: File): Promise<string | null> => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_folder", "thumbnail");
+
+    const response = await request("/api/file/upload", undefined, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("썸네일 업로드 응답:", response);
+
+    if (response && response.success && response.response) {
+      // 응답에서 file_id 추출
+      const fileId = response.response.file_id || response.response.id || null;
+      console.log("썸네일 업로드 성공, file_id:", fileId);
+      return fileId;
+    } else {
+      console.error("썸네일 업로드 실패: 응답이 올바르지 않습니다.", response);
+      return null;
+    }
+  } catch (error) {
+    console.error("썸네일 업로드 실패:", error);
+    throw error;
+  }
+};
+
+// 프리셋 등록 핸들러
 const handleThumbnailRegister = async () => {
-  if (!thumbnailFile.value) {
-    alert("썸네일 파일을 선택해주세요.");
+  // 필수 필드 검증
+  if (!selectedUnit.value) {
+    alert("단위를 선택해주세요.");
+    return;
+  }
+
+  if (!selectedMachine.value) {
+    alert("연결기계를 선택해주세요.");
+    return;
+  }
+
+  if (!presetName.value || presetName.value.trim() === "") {
+    alert("프리셋 명을 입력해주세요.");
+    return;
+  }
+
+  if (tableRows.value.length === 0) {
+    alert("선택 항목을 추가해주세요.");
     return;
   }
 
   try {
-    // TODO: 썸네일 업로드 API 호출
-    // await asset3DStore.uploadThumbnail(thumbnailFile.value);
-    alert("썸네일이 등록되었습니다.");
-    // 등록 성공 후 파일 초기화
-    thumbnailFileName.value = "";
-    thumbnailFile.value = null;
-    thumbnailPreviewUrl.value = "";
-    if (thumbnailFileInput.value) {
-      thumbnailFileInput.value.value = "";
+    // 썸네일 파일 업로드 (있는 경우)
+    let thumbnailId: string | null = null;
+    if (thumbnailFile.value) {
+      console.log("썸네일 파일 업로드 시작...");
+      thumbnailId = await uploadThumbnailFile(thumbnailFile.value);
+      if (!thumbnailId) {
+        alert("썸네일 업로드에 실패했습니다.");
+        return;
+      }
+      console.log("썸네일 업로드 완료, thumbnail_id:", thumbnailId);
+    }
+
+    // tableRows에서 첫 번째 행의 데이터 추출
+    const firstRow = tableRows.value[0];
+    
+    // 직경 값 추출 (숫자만)
+    let diameterValue = 0;
+    if (firstRow.diameter) {
+      const diameterNum = parseFloat(firstRow.diameter.replace(/[^0-9.]/g, ""));
+      if (!isNaN(diameterNum)) {
+        diameterValue = diameterNum;
+      }
+    }
+
+    // 프리셋 생성 요청 데이터 구성
+    const presetData: Record<string, unknown> = {
+      root_equipment_type: selectedMachine.value,
+      equipment_type: firstRow.subType || firstRow.type || "",
+      preset_category: "PRESET",
+      total_unit_count: tableRows.value.length,
+      preset_name_ko: presetName.value.trim(),
+      preset_name_en: presetName.value.trim(), // 영문명이 없으면 한글명 사용
+      unit_system_code: selectedUnit.value,
+      diameter_value: diameterValue,
+      diameter_unit: "mm",
+      note: firstRow.remarks || "",
+      metadata: {},
+      is_active: true,
+    };
+
+    // 썸네일 ID 추가 (있는 경우)
+    if (thumbnailId) {
+      presetData.thumbnail_id = thumbnailId;
+    }
+
+    // set_dtdx_file_id 추가 (있는 경우)
+    // TODO: dtdx 파일 업로드 및 ID 추출 로직 필요 시 추가
+
+    console.log("========================================");
+    console.log("[Asset3DPreset] 프리셋 생성 API 호출");
+    console.log("========================================");
+    console.log("📤 프리셋 생성 요청 데이터:", JSON.stringify(presetData, null, 2));
+    console.log("========================================");
+
+    // 프리셋 생성 API 호출
+    const response = await request("/api/asset3D/preset/create", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(presetData),
+    });
+
+    console.log("📥 프리셋 생성 API 응답:", response);
+
+    if (response && response.success) {
+      alert("프리셋이 등록되었습니다.");
+      
+      // 등록 성공 후 폼 초기화
+      selectedUnit.value = "";
+      selectedMachine.value = "";
+      presetName.value = "";
+      thumbnailFileName.value = "";
+      thumbnailFile.value = null;
+      thumbnailPreviewUrl.value = "";
+      tableRows.value = [];
+      selectedRows.value = [];
+      nextRowId = 1;
+      
+      if (thumbnailFileInput.value) {
+        thumbnailFileInput.value.value = "";
+      }
+    } else {
+      const errorMessage = response?.message || "프리셋 등록에 실패했습니다.";
+      alert(errorMessage);
     }
   } catch (error) {
-    console.error("썸네일 등록 실패:", error);
-    alert("썸네일 등록에 실패했습니다.");
+    console.error("프리셋 등록 실패:", error);
+    const errorMessage = error && typeof error === "object" && "message" in error
+      ? String((error as { message?: string }).message)
+      : "프리셋 등록에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 </script>
@@ -2228,7 +2459,7 @@ select {
 
 .tree-dropdown-portal {
   position: fixed;
-  z-index: 2000;
+  z-index: 10001; // 모달(10000)보다 위에 표시되도록 설정
   pointer-events: none;
 }
 
@@ -2427,28 +2658,56 @@ select {
 
       .filter-tree-select-wrapper {
         position: relative;
+        width: 100%;
 
         .tree-select-display {
-          height: 32px;
-          border: 1px solid #d0d5dd;
-          border-radius: 6px;
-          padding: 0 12px;
-          background: #fff;
+          // 구분 셀렉트와 동일한 스타일 적용
+          appearance: none;
+          position: relative;
+          width: 100%;
+          min-width: 0;
+          height: 40px; // 구분 셀렉트와 동일한 높이
+          min-height: 40px; // 최소 높이 고정
+          max-height: 40px; // 최대 높이 고정
+          border: 1px solid #e7e6ed;
+          border-radius: 4px;
+          padding: 0 32px 0 10px; // 구분 셀렉트와 동일한 패딩
+          box-sizing: border-box; // 패딩과 보더를 높이에 포함
+          background-color: transparent; // 구분 셀렉트와 동일한 배경
+          background-image: url(../../../assets/icons/ico_select-down.svg);
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 12px auto;
           cursor: pointer;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 14px;
-          min-width: 240px;
+          font-size: 15px; // 구분 셀렉트와 동일한 폰트 크기
+          font-weight: 400;
+          overflow: hidden; // 내용이 넘치지 않도록
+
+          // 내부 span 요소 스타일
+          > span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 40px; // 높이와 동일하게 설정하여 수직 중앙 정렬
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-image: url(../../../assets/icons/ico_select-up.svg);
+          }
 
           &.open {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+            background-image: url(../../../assets/icons/ico_select-up.svg);
           }
 
           .arrow {
-            font-size: 10px;
-            color: #667085;
+            display: none; // 배경 이미지로 대체되므로 숨김
             margin-left: 8px;
           }
         }

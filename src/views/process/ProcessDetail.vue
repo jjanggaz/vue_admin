@@ -16,7 +16,7 @@
             >
               <option value="">{{ t("common.select") }}</option>
               <option
-                v-for="unit in unitSystems"
+                v-for="unit in pipeStore.unitSystems"
                 :key="unit.unit_system_id"
                 :value="unit.system_code"
               >
@@ -1039,6 +1039,7 @@ import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import { useProcessStore } from "@/stores/processStore";
+import { usePipeStore } from "@/stores/pipeStore";
 import DataTable from "@/components/common/DataTable.vue";
 import type { TableColumn } from "@/types/components";
 import { request } from "@/utils/request";
@@ -1075,6 +1076,7 @@ const { t } = useI18n();
 const translateMessage = useTranslateMessage();
 
 const processStore = useProcessStore();
+const pipeStore = usePipeStore();
 
 // 공정 등록/수정 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
 const filteredProcessTypeOptions = computed(() => {
@@ -1167,32 +1169,6 @@ const excelFileInput = ref<HTMLInputElement>();
 
 // 단위 선택
 const selectedUnit = ref("");
-
-// 단위 시스템 옵션 (Pipe.vue 패턴 참조, 추후 API에서 로드하도록 변경 가능)
-const unitSystems = ref<
-  Array<{
-    unit_system_id: string;
-    system_name: string;
-    system_code: string;
-    description: string;
-    is_active: boolean;
-  }>
->([
-  {
-    unit_system_id: "1",
-    system_name: "Metric",
-    system_code: "METRIC",
-    description: "Metric System",
-    is_active: true,
-  },
-  {
-    unit_system_id: "2",
-    system_name: "Uscs",
-    system_code: "USCS",
-    description: "US Customary System",
-    is_active: true,
-  },
-]);
 
 // 필수 입력 검증을 위한 computed 속성들
 const hasProcessSymbolFile = computed(() => {
@@ -2485,12 +2461,21 @@ const uploadFormulaFiles = () => {
   }
 
   const newFormulaItems = selectedFormulaFiles.value.map((file, index) => {
+    // 현재 시간을 YYYY-MM-DD HH:MM 형식으로 생성
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const registrationDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+    
     return {
       id: `formula_${Date.now()}_${index}`,
       no: processStore.formulaList.length + index + 1,
       registeredFormula: file.name.replace(".py", ""),
       formula_code: "",
-      registrationDate: formatDate(new Date()),
+      registrationDate: registrationDate,
       infoOverview: "",
       remarks: "",
       _file: file,
@@ -5449,6 +5434,16 @@ const handleFormulaFileChange = (item: any, event: Event) => {
       const row = processStore.formulaList[itemIndex] as any;
       // 표시 컬럼(file_name)에 파일명 저장
       row.file_name = file.name;
+      // 파일 처음 추가 시 등록일자를 현재 시간으로 설정
+      if (!row.registrationDate) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        row.registrationDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+      }
       // 하위 호환: 기존 필드도 유지 갱신
       row.registeredFormula = file.name.replace(".py", "");
       row._file = file;
@@ -11193,6 +11188,8 @@ defineExpose({
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
   try {
+    // 단위 시스템 옵션 로드 (Process.vue와 동일한 방식)
+    await pipeStore.fetchCommonCodes("PIPE_S");
     // 팝업이 열릴 때 항상 이전 공정심볼 미리보기 초기화
     processStore.clearProcessSymbolPreview();
 

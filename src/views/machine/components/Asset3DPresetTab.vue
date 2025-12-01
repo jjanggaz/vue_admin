@@ -33,7 +33,7 @@
           />
         </div>
         <div class="form-group">
-          <label class="required">썸네일 업로드</label>
+          <label>썸네일 업로드</label>
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
@@ -95,7 +95,7 @@
     <div class="table-section">
       <!-- 등록 모드에서 preset_id가 없을 때 메시지 표시 -->
       <div v-if="!props.isEditMode && !isSelectionGridEnabled" class="empty-message">
-        마스터 정보를 먼저 저장하세요
+        마스터 정보를 먼저 등록하세요
       </div>
       
       <!-- 그리드 표시 (수정 모드이거나 등록 모드에서 preset_id가 있을 때) -->
@@ -458,6 +458,7 @@ import Pagination from "@/components/common/Pagination.vue";
 import { useAsset3DStore } from "@/stores/asset3DStore";
 import { usePipeStore } from "@/stores/pipeStore";
 import { request } from "@/utils/request";
+import { getFileApiUrl } from "@/utils/config";
 
 // Props 정의
 interface Props {
@@ -748,16 +749,7 @@ const handleThumbnailFileChange = (e: Event) => {
   const file = input?.files?.[0];
 
   if (file) {
-    // 파일명 validation
-    if (!validateFileName(file.name)) {
-      alert(t("messages.warning.invalidFormulaFileNameFormat"));
-      input.value = "";
-      thumbnailFileName.value = "";
-      thumbnailFile.value = null;
-      return;
-    }
-
-    // 확장자 검증
+    // 확장자 검증만 수행 (파일명 validation 제거)
     const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif"];
     const fileExtension = file.name
       .toLowerCase()
@@ -2124,6 +2116,57 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleViewportChange);
 });
 
+// 파일 업로드 요청 함수 (fileUploadStore.ts의 fileUploadRequest 패턴 사용)
+const fileUploadRequest = async (
+  path: string,
+  formData: FormData
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = getFileApiUrl(path);
+
+    // 요청 완료 처리
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response);
+        } catch {
+          resolve({ success: true });
+        }
+      } else {
+        let errorMessage = `HTTP ${xhr.status}: ${xhr.statusText}`;
+        try {
+          const errorResponse = JSON.parse(xhr.responseText);
+          if (errorResponse.error || errorResponse.message) {
+            errorMessage = errorResponse.error || errorResponse.message;
+          }
+        } catch {
+          if (xhr.responseText) {
+            errorMessage = `${errorMessage} - ${xhr.responseText}`;
+          }
+        }
+        reject(new Error(`파일 업로드 실패: ${errorMessage}`));
+      }
+    };
+
+    // 네트워크 오류 처리
+    xhr.onerror = () => {
+      reject(new Error(`네트워크 연결에 실패했습니다. (${url})`));
+    };
+
+    // 타임아웃 처리
+    xhr.ontimeout = () => {
+      reject(new Error("API Call Fail: Timeout"));
+    };
+
+    // 요청 설정 및 전송
+    xhr.open("POST", url);
+    xhr.timeout = 30000; // 30초 타임아웃
+    xhr.send(formData);
+  });
+};
+
 // 썸네일 파일 업로드 함수
 const uploadThumbnailFile = async (file: File): Promise<string | null> => {
   try {
@@ -2131,21 +2174,26 @@ const uploadThumbnailFile = async (file: File): Promise<string | null> => {
     formData.append("file", file);
     formData.append("upload_folder", "thumbnail");
 
-    const response = await request("/api/file/upload", undefined, {
-      method: "POST",
-      body: formData,
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    console.log("썸네일 파일 업로드 시작...");
+    const response = await fileUploadRequest("/api/upload", formData);
 
     console.log("썸네일 업로드 응답:", response);
 
-    if (response && response.success && response.response) {
-      // 응답에서 file_id 추출
-      const fileId = response.response.file_id || response.response.id || null;
+    // fileUploadRequest는 직접 JSON 응답을 반환하므로 response 구조 확인 필요
+    if (response && (response.file_id || response.id)) {
+      const fileId = response.file_id || response.id;
       console.log("썸네일 업로드 성공, file_id:", fileId);
-      return fileId;
+      return String(fileId);
+    } else if (response && response.message) {
+      // 성공 메시지만 있는 경우 응답에서 file_id 추출 시도
+      console.log("썸네일 업로드 응답 메시지:", response.message);
+      // 응답 구조에 따라 file_id가 다른 필드에 있을 수 있음
+      const fileId = response.file_id || response.id || response.data?.file_id || null;
+      if (fileId) {
+        return String(fileId);
+      }
+      console.warn("썸네일 업로드 응답에 file_id가 없습니다:", response);
+      return null;
     } else {
       console.error("썸네일 업로드 실패: 응답이 올바르지 않습니다.", response);
       return null;
@@ -2176,23 +2224,69 @@ const handleThumbnailRegister = async () => {
 
   try {
     // 수정 모드인지 확인 (가장 먼저 체크)
+    const isEditMode = props.isEditMode === true;
+    const hasEditItem = props.editItem !== null && props.editItem !== undefined;
+    
     console.log("========================================");
     console.log("[Asset3DPreset] 등록/수정 모드 확인");
     console.log("========================================");
-    console.log("isEditMode:", props.isEditMode);
+    console.log("isEditMode:", isEditMode);
+    console.log("hasEditItem:", hasEditItem);
     console.log("editItem:", props.editItem);
     console.log("========================================");
 
-    // 썸네일 파일 업로드 (있는 경우)
+    // 썸네일 파일 업로드 (등록 모드에서만 실행)
     let thumbnailId: string | null = null;
-    if (thumbnailFile.value) {
-      console.log("썸네일 파일 업로드 시작...");
+    
+    // 수정 모드가 아닐 때만 썸네일 파일 업로드
+    if (!isEditMode && thumbnailFile.value) {
+      console.log("========================================");
+      console.log("[Asset3DPreset] 썸네일 파일 업로드 시작 (등록 모드)");
+      console.log("========================================");
+      console.log("파일명:", thumbnailFile.value.name);
+      console.log("파일 크기:", thumbnailFile.value.size);
+      console.log("파일 타입:", thumbnailFile.value.type);
+      console.log("========================================");
+      
       thumbnailId = await uploadThumbnailFile(thumbnailFile.value);
+      
       if (!thumbnailId) {
+        console.error("썸네일 업로드 실패: thumbnailId가 null입니다.");
         alert("썸네일 업로드에 실패했습니다.");
         return;
       }
-      console.log("썸네일 업로드 완료, thumbnail_id:", thumbnailId);
+      console.log("========================================");
+      console.log("[Asset3DPreset] 썸네일 업로드 완료");
+      console.log("========================================");
+      console.log("thumbnail_id:", thumbnailId);
+      console.log("========================================");
+    } else if (isEditMode) {
+      // 수정 모드: 기존 썸네일 ID 유지 또는 새로 선택한 파일이 있으면 처리
+      console.log("========================================");
+      console.log("[Asset3DPreset] 수정 모드 - 썸네일 처리");
+      console.log("========================================");
+      console.log("thumbnailFile.value:", thumbnailFile.value);
+      console.log("thumbnailFileName.value:", thumbnailFileName.value);
+      
+      if (thumbnailFile.value) {
+        // 수정 모드에서 새 썸네일 파일이 선택된 경우
+        // 백엔드 API가 파일을 직접 받지 않으므로, 별도 업로드 필요
+        // 하지만 사용자 요구사항에 따라 업로드하지 않음
+        console.log("수정 모드에서 새 썸네일 파일이 선택되었지만, 별도 업로드 없이 프리셋 업데이트만 수행");
+        
+        // 기존 썸네일 ID 유지 (editItem에서 가져오기)
+        const editItemAny = props.editItem as any;
+        thumbnailId = editItemAny.thumbnail_id || null;
+        console.log("기존 thumbnail_id 유지:", thumbnailId);
+      } else {
+        // 썸네일 파일이 선택되지 않은 경우 기존 썸네일 ID 유지
+        const editItemAny = props.editItem as any;
+        thumbnailId = editItemAny.thumbnail_id || null;
+        console.log("기존 thumbnail_id 유지:", thumbnailId);
+      }
+      console.log("========================================");
+    } else {
+      console.log("썸네일 파일이 없습니다. 업로드 건너뜀.");
     }
 
     // tableRows에서 첫 번째 행의 데이터 추출 (있는 경우)
@@ -2231,9 +2325,7 @@ const handleThumbnailRegister = async () => {
     // set_dtdx_file_id 추가 (있는 경우)
     // TODO: dtdx 파일 업로드 및 ID 추출 로직 필요 시 추가
 
-    // 수정 모드인지 확인
-    const isEditMode = props.isEditMode === true;
-    const hasEditItem = props.editItem !== null && props.editItem !== undefined;
+    // 수정 모드인지 확인 (위에서 이미 선언됨)
     
     console.log("========================================");
     console.log("[Asset3DPreset] 수정 모드 체크");

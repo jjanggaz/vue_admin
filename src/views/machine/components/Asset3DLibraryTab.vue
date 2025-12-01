@@ -99,9 +99,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAsset3DStore } from "@/stores/asset3DStore";
+import { request } from "@/utils/request";
+import { getFileApiUrl } from "@/utils/config";
 
 // Props 정의
 interface Props {
@@ -129,6 +131,32 @@ const thumbnailFileName = ref("");
 // 파일 input refs
 const modelFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
+
+// 수정 모드일 때 editItem 데이터로 폼 필드 설정
+watch(
+  () => props.editItem,
+  (newItem) => {
+    if (props.isEditMode && newItem) {
+      // category -> selectedCategory
+      selectedCategory.value = String(newItem.category || "");
+      
+      // model_name -> modelName
+      modelName.value = String(newItem.model_name || "");
+      
+      // unit_system_code -> selectedUnit
+      selectedUnit.value = String(newItem.unit_system_code || "");
+      
+      // 파일명 설정 (파일은 업로드되어 있으므로 파일명만 표시)
+      if (newItem.dtdx_model_file_name) {
+        modelFileName.value = String(newItem.dtdx_model_file_name);
+      }
+      if (newItem.thumbnail_file_name) {
+        thumbnailFileName.value = String(newItem.thumbnail_file_name);
+      }
+    }
+  },
+  { immediate: true }
+);
 
 // 3D 모델 파일 변경 핸들러
 const handleModelFileChange = (e: Event) => {
@@ -224,6 +252,123 @@ const validateFileName = (fileName: string): boolean => {
   return true;
 };
 
+// 파일 업로드 요청 함수
+const fileUploadRequest = async (
+  path: string,
+  formData: FormData
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = getFileApiUrl(path);
+
+    // 요청 완료 처리
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response);
+        } catch {
+          resolve({ success: true });
+        }
+      } else {
+        let errorMessage = `HTTP ${xhr.status}: ${xhr.statusText}`;
+        try {
+          const errorResponse = JSON.parse(xhr.responseText);
+          if (errorResponse.error || errorResponse.message) {
+            errorMessage = errorResponse.error || errorResponse.message;
+          }
+        } catch {
+          if (xhr.responseText) {
+            errorMessage = `${errorMessage} - ${xhr.responseText}`;
+          }
+        }
+        reject(new Error(`파일 업로드 실패: ${errorMessage}`));
+      }
+    };
+
+    // 네트워크 오류 처리
+    xhr.onerror = () => {
+      reject(new Error(`네트워크 연결에 실패했습니다. (${url})`));
+    };
+
+    // 타임아웃 처리
+    xhr.ontimeout = () => {
+      reject(new Error("API Call Fail: Timeout"));
+    };
+
+    // 요청 설정 및 전송
+    xhr.open("POST", url);
+    xhr.timeout = 30000; // 30초 타임아웃
+    xhr.send(formData);
+  });
+};
+
+// 3D 모델 파일 업로드 함수
+const uploadModelFile = async (file: File): Promise<string | null> => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_folder", "model");
+
+    console.log("3D 모델 파일 업로드 시작...");
+    const response = await fileUploadRequest("/api/upload", formData);
+
+    console.log("3D 모델 파일 업로드 응답:", response);
+
+    if (response && (response.file_id || response.id)) {
+      const fileId = response.file_id || response.id;
+      console.log("3D 모델 파일 업로드 성공, file_id:", fileId);
+      return String(fileId);
+    } else if (response && response.message) {
+      const fileId = response.file_id || response.id || response.data?.file_id || null;
+      if (fileId) {
+        return String(fileId);
+      }
+      console.warn("3D 모델 파일 업로드 응답에 file_id가 없습니다:", response);
+      return null;
+    } else {
+      console.error("3D 모델 파일 업로드 실패: 응답이 올바르지 않습니다.", response);
+      return null;
+    }
+  } catch (error) {
+    console.error("3D 모델 파일 업로드 실패:", error);
+    throw error;
+  }
+};
+
+// 썸네일 파일 업로드 함수
+const uploadThumbnailFile = async (file: File): Promise<string | null> => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_folder", "thumbnail");
+
+    console.log("썸네일 파일 업로드 시작...");
+    const response = await fileUploadRequest("/api/upload", formData);
+
+    console.log("썸네일 파일 업로드 응답:", response);
+
+    if (response && (response.file_id || response.id)) {
+      const fileId = response.file_id || response.id;
+      console.log("썸네일 파일 업로드 성공, file_id:", fileId);
+      return String(fileId);
+    } else if (response && response.message) {
+      const fileId = response.file_id || response.id || response.data?.file_id || null;
+      if (fileId) {
+        return String(fileId);
+      }
+      console.warn("썸네일 파일 업로드 응답에 file_id가 없습니다:", response);
+      return null;
+    } else {
+      console.error("썸네일 파일 업로드 실패: 응답이 올바르지 않습니다.", response);
+      return null;
+    }
+  } catch (error) {
+    console.error("썸네일 파일 업로드 실패:", error);
+    throw error;
+  }
+};
+
 // 등록 핸들러
 const handleRegister = async () => {
   // 필수 항목 검증
@@ -242,41 +387,98 @@ const handleRegister = async () => {
     return;
   }
 
-  // 모델명 validation
-  if (!validateFileName(modelName.value)) {
-    alert(t("messages.warning.invalidFormulaFileNameFormat"));
-    return;
-  }
-
   try {
-    // TODO: 등록 API 호출
-    console.log("등록 데이터:", {
-      unit: selectedUnit.value,
+    // 파일 업로드 (있는 경우)
+    let dtdxModelId: string | null = null;
+    let thumbnailId: string | null = null;
+
+    // 3D 모델 파일 업로드
+    if (modelFile.value) {
+      dtdxModelId = await uploadModelFile(modelFile.value);
+      if (!dtdxModelId) {
+        alert("3D 모델 파일 업로드에 실패했습니다.");
+        return;
+      }
+    }
+
+    // 썸네일 파일 업로드
+    if (thumbnailFile.value) {
+      thumbnailId = await uploadThumbnailFile(thumbnailFile.value);
+      if (!thumbnailId) {
+        alert("썸네일 파일 업로드에 실패했습니다.");
+        return;
+      }
+    }
+
+    // 카테고리 영문명 매핑
+    const categoryEnMap: Record<string, string> = {
+      INTERIOR: "Interior",
+      STRUCTURE: "Structure",
+    };
+    const categoryEn = categoryEnMap[selectedCategory.value] || selectedCategory.value;
+
+    // 등록 요청 데이터 구성
+    const requestData: Record<string, unknown> = {
       category: selectedCategory.value,
-      modelName: modelName.value,
-      modelFile: modelFile.value,
-      thumbnailFile: thumbnailFile.value,
+      category_en: categoryEn,
+      model_code: modelName.value.trim(), // 모델명을 model_code로 사용
+      model_name: modelName.value.trim(),
+      model_name_en: modelName.value.trim(), // 영문명이 없으면 한글명 사용
+      unit_system_code: selectedUnit.value,
+      metadata: {},
+      is_active: true,
+      remarks: "",
+    };
+
+    // 파일 ID 추가 (있는 경우)
+    if (dtdxModelId) {
+      requestData.dtdx_model_id = dtdxModelId;
+    }
+    if (thumbnailId) {
+      requestData.thumbnail_id = thumbnailId;
+    }
+
+    console.log("========================================");
+    console.log("[Asset3DLibrary] 등록 요청");
+    console.log("========================================");
+    console.log("요청 데이터:", JSON.stringify(requestData, null, 2));
+    console.log("========================================");
+
+    // API 호출
+    const response = await request("/api/asset3D/library/create", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
     });
 
-    alert("등록되었습니다.");
+    console.log("등록 응답:", response);
 
-    // 성공 시 초기화
-    selectedUnit.value = "";
-    selectedCategory.value = "";
-    modelName.value = "";
-    modelFileName.value = "";
-    modelFile.value = null;
-    thumbnailFileName.value = "";
-    thumbnailFile.value = null;
-    if (modelFileInput.value) {
-      modelFileInput.value.value = "";
-    }
-    if (thumbnailFileInput.value) {
-      thumbnailFileInput.value.value = "";
+    if (response && response.success) {
+      alert("등록되었습니다.");
+
+      // 성공 시 초기화
+      selectedUnit.value = "";
+      selectedCategory.value = "";
+      modelName.value = "";
+      modelFileName.value = "";
+      modelFile.value = null;
+      thumbnailFileName.value = "";
+      thumbnailFile.value = null;
+      if (modelFileInput.value) {
+        modelFileInput.value.value = "";
+      }
+      if (thumbnailFileInput.value) {
+        thumbnailFileInput.value.value = "";
+      }
+    } else {
+      throw new Error(response?.message || "등록에 실패했습니다.");
     }
   } catch (error) {
     console.error("등록 실패:", error);
-    alert("등록에 실패했습니다.");
+    const errorMessage = error instanceof Error ? error.message : "등록에 실패했습니다.";
+    alert(errorMessage);
   }
 };
 </script>

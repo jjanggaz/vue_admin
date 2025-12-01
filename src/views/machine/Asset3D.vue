@@ -92,7 +92,7 @@
           selection-mode="multiple"
           :show-select-all="true"
           :select-header-text="t('common.selectColumn')"
-          row-key="equipment_id"
+          row-key="row_key"
           :stickyHeader="true"
           @selection-change="handleSelectionChange"
           @row-click="handleRowClick"
@@ -160,7 +160,6 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
-        <div class="detail-panel-head">
           <h3>{{ t("common.detailInfo") }}</h3>
           <div class="header-buttons">
             <button
@@ -184,14 +183,13 @@
             >
               {{ t("common.cancel") }}
             </button>
+            <button
+              class="btn-close"
+              @click="closeDetailPanel"
+              aria-label="Close"
+            >
+            </button>
           </div>
-        </div>
-          <button
-            class="btn-close"
-            @click="closeDetailPanel"
-            aria-label="Close"
-          >
-          </button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -1643,22 +1641,32 @@ const loadData = async () => {
       // 그리드에 표시할 데이터 매핑
       // 3D 라이브러리인 경우 model_name을 명칭에 출력
       const isLibrary = modelType === "3D_LIBRARY";
-      asset3dList.value = items.map((item: any) => ({
-        ...item,
-        equipment_id: item.equipment_id || item.preset_id || item.id || "",
-        equipment_name: isLibrary 
-          ? (item.model_name || item.equipment_name || item.name || "")
-          : (item.preset_name_ko || item.equipment_name || item.name || ""),
-        equipment_type: item.root_equipment_type || item.equipment_type || "",
-        equipment_type_name: getEquipmentTypeName(item.root_equipment_type),
-        // 직경: diameter_value + " " + diameter_unit
-        diameter_display: item.diameter_value 
-          ? `${item.diameter_value}${item.diameter_unit ? " " + item.diameter_unit : ""}`
-          : "-",
-        unit_system_code: item.unit_system_code || "",
-        // 3D 모델구분 저장 (수정 시 탭 분기에 사용)
-        model_type: modelType,
-      }));
+      asset3dList.value = items.map((item: any) => {
+        const equipmentId = item.equipment_id || item.preset_id || item.id || "";
+        const libraryId = item.library_id || item.id || ""; // 3D 라이브러리용 ID
+        
+        // 3D 라이브러리인 경우 library_id를 row_key로 사용, 아니면 equipment_id 사용
+        const rowKey = isLibrary ? libraryId : equipmentId;
+        
+        return {
+          ...item,
+          equipment_id: equipmentId,
+          library_id: libraryId,
+          row_key: rowKey, // 그리드 선택 key
+          equipment_name: isLibrary 
+            ? (item.model_name || item.equipment_name || item.name || "")
+            : (item.preset_name_ko || item.equipment_name || item.name || ""),
+          equipment_type: item.root_equipment_type || item.equipment_type || "",
+          equipment_type_name: getEquipmentTypeName(item.root_equipment_type),
+          // 직경: diameter_value + " " + diameter_unit
+          diameter_display: item.diameter_value 
+            ? `${item.diameter_value}${item.diameter_unit ? " " + item.diameter_unit : ""}`
+            : "-",
+          unit_system_code: item.unit_system_code || "",
+          // 3D 모델구분 저장 (수정 시 탭 분기에 사용)
+          model_type: modelType,
+        };
+      });
 
       // 페이징 정보 업데이트
       if (data.pagination) {

@@ -12897,9 +12897,9 @@ input[type="radio"] {
     justify-content: center;
     position: absolute;
     top: 0;
-    right: -5px;
-    width: 12px;
-    height: 12px;
+    right: -2.5px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background-color: rgba(62, 67, 94, .6);
     transition: background-color .2s ease-in-out, opacity .2s ease-in-out;;

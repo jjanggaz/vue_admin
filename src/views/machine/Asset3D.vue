@@ -160,6 +160,7 @@
       <!-- 상세정보 패널 -->
       <div v-if="isDetailPanelOpen" class="detail-panel">
         <div class="detail-panel-header">
+        <div class="detail-panel-head">
           <h3>{{ t("common.detailInfo") }}</h3>
           <div class="header-buttons">
             <button
@@ -183,13 +184,14 @@
             >
               {{ t("common.cancel") }}
             </button>
-            <button
-              class="btn-close"
-              @click="closeDetailPanel"
-              aria-label="Close"
-            >
-            </button>
           </div>
+        </div>
+          <button
+            class="btn-close"
+            @click="closeDetailPanel"
+            aria-label="Close"
+          >
+          </button>
         </div>
         <div class="detail-panel-body">
           <!-- 모델 썸네일 이미지 영역 -->
@@ -1850,6 +1852,7 @@ onMounted(async () => {
 
     .detail-panel-head {
       display: flex;
+      justify-content: flex-start;
       align-items: center;
       gap: 20px;
     }

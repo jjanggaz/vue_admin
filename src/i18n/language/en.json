@@ -1518,7 +1518,7 @@
     },
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
-      "loginFail": "Login failed. Please check your username and password.",
+      "loginFail": "Login information does not match. Please check your username and password again.",
       "passwordsDoNotMatch": "Passwords do not match.",
       "idAlreadyExists": "ID already exists.",
       "registrationError": "Registration error occurred.",

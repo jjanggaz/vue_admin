@@ -76,7 +76,11 @@
         <button class="btn btn-primary btn-register" @click="openRegistModal">
           {{ t("common.register") }}
         </button>
-        <button class="btn btn-primary btn-edit" @click="handleEdit">
+        <button
+          class="btn btn-primary btn-edit"
+          @click="handleEdit"
+          :disabled="selectedItems.length !== 1"
+        >
           {{ t("common.edit") }}
         </button>
         <button

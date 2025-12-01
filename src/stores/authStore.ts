@@ -52,8 +52,8 @@ export const useAuthStore = defineStore("auth", {
             // WAI_WEB_ADMIN 시스템 코드의 메뉴들 필터링 END =======================
 
             // 메뉴 접근 권한 확인
-            if (!responseData.menus || responseData.menus.length === 0) {
-              throw new Error("메뉴 접근 권한이 없습니다.");
+            if (menuCodes.length === 0) {
+              throw new Error("messages.error.noMenuAccess");
             }
 
             // 로그인 응답에서 사용자 정보 처리
@@ -97,23 +97,36 @@ export const useAuthStore = defineStore("auth", {
             // 로그인 실패 시 - 상태 코드별 에러 처리
             if (result.status === 401) {
               // 인증 실패 (아이디/비밀번호 오류)
-              throw new Error(
-                result.message || "아이디 또는 비밀번호가 올바르지 않습니다."
-              );
+              throw new Error("messages.error.loginFail");
             } else if (result.status === 403) {
               // 메뉴 접근 권한 없음
-              throw new Error(result.message || "메뉴 접근 권한이 없습니다.");
+              throw new Error("messages.error.noMenuAccess");
             } else {
               // 기타 오류
-              throw new Error(result.message || "로그인에 실패했습니다.");
+              throw new Error("messages.error.loginFailed");
             }
           }
         } else {
-          throw new Error("서버 응답이 없습니다.");
+          throw new Error("messages.error.noServerResponse");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("로그인 실패:", error);
-        throw error;
+        // request에서 던진 에러 객체인 경우, 상태 코드에 따라 적절한 throw 메시지 사용
+        if (error && typeof error === "object" && "status" in error) {
+          if (error.status === 401) {
+            throw new Error("messages.error.loginFail");
+          } else if (error.status === 403) {
+            throw new Error("messages.error.noMenuAccess");
+          } else {
+            throw new Error("messages.error.loginFailed");
+          }
+        }
+        // Error 객체인 경우 그대로 throw (이미 throw 메시지가 설정된 경우)
+        if (error instanceof Error) {
+          throw error;
+        }
+        // 기타 경우
+        throw new Error("messages.error.loginFailed");
       }
     },
 

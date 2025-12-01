@@ -134,7 +134,12 @@ const handleLogin = async () => {
     console.log("에러 message:", error?.message);
     console.log("에러 전체 구조:", JSON.stringify(error, null, 2));
 
-    const errorMessage = t("messages.error.loginFail");
+    // 에러 메시지가 다국어 키인 경우 다국어 처리, 아니면 그대로 사용
+    let errorMessage = error?.message || t("messages.error.loginFail");
+    // messages.error.로 시작하는 경우 다국어 키로 인식
+    if (errorMessage.startsWith("messages.error.")) {
+      errorMessage = t(errorMessage);
+    }
     alert(errorMessage);
   }
 };
@@ -226,7 +231,8 @@ const handleLogin = async () => {
         height: 20px;
         border: none;
         background-color: transparent;
-        background: url(../../assets/icons/ico_check-off.svg) no-repeat center / 20px auto;
+        background: url(../../assets/icons/ico_check-off.svg) no-repeat center /
+          20px auto;
         background-repeat: no-repeat;
         background-position: center;
         background-size: 20px auto;
@@ -263,7 +269,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  
+
   .lang-select {
     position: relative;
     appearance: none;

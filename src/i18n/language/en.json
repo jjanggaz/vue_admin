@@ -1519,6 +1519,9 @@
     "error": {
       "excelParseError": "An error occurred while parsing the Excel file.",
       "loginFail": "Login information does not match. Please check your username and password again.",
+      "noMenuAccess": "No menu access permission.",
+      "noServerResponse": "No server response.",
+      "loginFailed": "Login failed.",
       "passwordsDoNotMatch": "Passwords do not match.",
       "idAlreadyExists": "ID already exists.",
       "registrationError": "Registration error occurred.",

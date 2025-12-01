@@ -2377,7 +2377,31 @@ const handleHeaderMachineSubCategoryChange = async () => {
     const res = await machineStore.fetchThirdDepth(searchKey, 4);
     const codes = (res as any)?.response ?? [];
     if (Array.isArray(codes) && codes.length > 0) {
-      const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
+      // 4차 데이터의 각 항목에 대해 5차 데이터 조회 및 merge
+      const allCodes = [...codes];
+      for (const item of codes) {
+        try {
+          const fifthResponse = await machineStore.fetchThirdDepth(
+            item.code_key,
+            5
+          );
+          if (fifthResponse?.response && fifthResponse.response.length > 0) {
+            // 기존 allCodes에 5차 데이터를 merge (중복 제거)
+            const existingKeys = new Set(
+              allCodes.map((opt: any) => opt.code_key)
+            );
+            const newItems = fifthResponse.response.filter(
+              (fifthItem: any) => !existingKeys.has(fifthItem.code_key)
+            );
+            allCodes.push(...newItems);
+          }
+        } catch (error) {
+          console.error(`공통코드 조회 실패 (${item.code_key}):`, error);
+        }
+      }
+
+      // code_key 기준으로 정렬
+      const sorted = allCodes.slice().sort((a: any, b: any) => {
         const ak = (a?.code_key ?? "") as string;
         const bk = (b?.code_key ?? "") as string;
         return ak.localeCompare(bk);

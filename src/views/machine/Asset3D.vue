@@ -260,45 +260,6 @@
                 accept=".svg"
               />
             </div>
-
-            <!-- 단가이력 -->
-            <div class="detail-section price-history-section">
-              <h4 class="section-title">{{ t("common.priceHistory") }}</h4>
-              <DataTable
-                :columns="priceHistoryColumns"
-                :data="priceHistoryData"
-                :loading="false"
-                :selectable="false"
-                :stickyHeader="true"
-              >
-                <!-- 단가 슬롯 -->
-                <template #cell-price_value="{ item }">
-                  {{
-                    item.price_value ? item.price_value.toLocaleString() : "-"
-                  }}
-                </template>
-
-                <!-- 단가등록일 슬롯 -->
-                <template #cell-price_date="{ item }">
-                  {{ item.price_date || "-" }}
-                </template>
-
-                <!-- 단가유형 슬롯 -->
-                <template #cell-price_type="{ item }">
-                  {{ formatPriceType(item.price_type) }}
-                </template>
-
-                <!-- 단위 슬롯 -->
-                <template #cell-price_unit_code="{ item }">
-                  {{ item.price_unit_code || "-" }}
-                </template>
-
-                <!-- 제공처 슬롯 -->
-                <template #cell-price_reference="{ item }">
-                  {{ item.price_reference || "-" }}
-                </template>
-              </DataTable>
-            </div>
           </div>
         </div>
       </div>
@@ -306,7 +267,13 @@
 
     <!-- 등록/수정 모달: 내부 탭 구성 -->
     <div v-if="isRegistModalOpen" class="modal-overlay">
-      <div class="modal-container" style="max-width: 1600px; width: 98%; max-height: 95vh; height: 95vh; display: flex; flex-direction: column;">
+      <div 
+        class="modal-container" 
+        :class="{ 'library-tab-modal': modalActiveTab === 0 }"
+        :style="modalActiveTab === 0 
+          ? 'max-width: 1600px; width: 98%; max-height: auto; height: auto; display: flex; flex-direction: column;' 
+          : 'max-width: 1600px; width: 98%; max-height: 95vh; height: 95vh; display: flex; flex-direction: column;'"
+      >
         <div class="modal-header">
           <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
@@ -316,7 +283,12 @@
           >
           </button>
         </div>
-        <div class="modal-body" style="flex: 1; overflow-y: auto; min-height: 0;">
+        <div 
+          class="modal-body" 
+          :style="modalActiveTab === 0 
+            ? 'flex: 0 1 auto; overflow-y: visible; min-height: 0;' 
+            : 'flex: 1; overflow-y: auto; min-height: 0;'"
+        >
           <div class="tabs-wrapper">
             <div
               v-for="(tab, idx) in modalTabs"
@@ -379,14 +351,6 @@ const modalTabs = [
 ];
 const modalActiveTab = ref(0);
 
-interface PriceHistoryItem {
-  price_value: number;
-  price_date: string;
-  price_type: string;
-  price_unit_code: string;
-  price_reference: string;
-}
-
 interface Asset3DItem {
   equipment_id: string;
   equipment_code: string;
@@ -425,7 +389,6 @@ interface Asset3DItem {
   formula_id?: string;
   updated_by: string;
   manufacturer_en?: string;
-  equipment_price_history?: PriceHistoryItem[];
   formula?: {
     formula_id?: string;
     file_name?: string;
@@ -489,54 +452,6 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
 ];
-
-// 단가이력 테이블 컬럼 설정
-const priceHistoryColumns: TableColumn[] = [
-  {
-    key: "price_value",
-    title: t("common.unitPrice"),
-    width: "50px",
-    sortable: false,
-  },
-  {
-    key: "price_date",
-    title: t("common.unitPriceDate"),
-    width: "50px",
-    sortable: false,
-  },
-  {
-    key: "price_type",
-    title: t("common.priceType"),
-    width: "50px",
-    sortable: false,
-  },
-  {
-    key: "price_unit_code",
-    title: t("common.unit"),
-    width: "50px",
-    sortable: false,
-  },
-  {
-    key: "price_reference",
-    title: t("common.provider"),
-    width: "100px",
-    sortable: false,
-  },
-];
-
-const formatPriceType = (priceType?: string | null): string => {
-  if (!priceType) {
-    return "-";
-  }
-  const normalizedType = priceType.toUpperCase();
-  if (normalizedType === "UNIT_PRICE") {
-    return t("asset3D.priceType.unit");
-  }
-  if (normalizedType === "INVOICE_PRICE") {
-    return t("asset3D.priceType.invoice");
-  }
-  return priceType;
-};
 
 const asset3dList = ref<Asset3DItem[]>([]);
 const loading = ref(false);
@@ -788,14 +703,6 @@ const specVerticalData = computed(() => {
   return data;
 });
 
-// 단가이력 데이터
-const priceHistoryData = computed(() => {
-  if (!detailItemData.value || !detailItemData.value.equipment_price_history) {
-    return [];
-  }
-  return detailItemData.value.equipment_price_history;
-});
-
 // 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
 
 // API 응답에서 페이징 정보를 받아오므로 서버 사이드 페이징 사용
@@ -866,11 +773,35 @@ const handleEdit = () => {
   
   // 선택된 항목의 타입에 따라 탭 선택
   const selectedItem = selectedItems.value[0];
+  
+  console.log("========================================");
+  console.log("[Asset3D] 수정 모드 팝업 열기");
+  console.log("========================================");
+  console.log("선택된 항목:", selectedItem);
+  console.log("model_type:", selectedItem.model_type);
+  
   if (selectedItem.model_type === "3D_LIBRARY") {
     modalActiveTab.value = 0; // 3D 라이브러리 탭
+    const libraryId = (selectedItem as any).library_id || selectedItem.equipment_id || (selectedItem as any).id || "";
+    console.log("3D 라이브러리 탭 선택");
+    console.log("library_id:", libraryId);
+    console.log("호출될 API: POST /api/asset3D/search/3D_LIBRARY");
+    console.log("매개변수:", {
+      search_field: "library_id",
+      search_value: libraryId,
+    });
   } else {
     modalActiveTab.value = 1; // 프리셋 탭
+    const presetId = selectedItem.equipment_id || (selectedItem as any).preset_id || (selectedItem as any).id || "";
+    console.log("프리셋 탭 선택");
+    console.log("preset_id:", presetId);
+    console.log("호출될 API: POST /api/asset3D/search/PRESET");
+    console.log("매개변수:", {
+      search_field: "preset_id",
+      search_value: presetId,
+    });
   }
+  console.log("========================================");
   
   isRegistModalOpen.value = true;
 };
@@ -1144,51 +1075,7 @@ const saveDetailChanges = async () => {
       // 저장 성공 후 편집 모드 종료
       isDetailEditMode.value = false;
 
-      // output_values의 변경된 항목만 로그 출력 및 가격 이력 생성
-      if (originalItemData.value && originalItemData.value.output_values) {
-        for (const [key, originalField] of Object.entries(
-          originalItemData.value.output_values
-        )) {
-          const originalValue = (originalField as any)?.value;
-          const currentValue = editData.value.output_values?.[key]?.value;
-
-          // 값 비교 (null, undefined, 빈 문자열을 모두 동일하게 처리)
-          const normalizedOriginal =
-            originalValue == null || originalValue === ""
-              ? null
-              : originalValue;
-          const normalizedCurrent =
-            currentValue == null || currentValue === "" ? null : currentValue;
-
-          const isChanged = normalizedOriginal !== normalizedCurrent;
-
-          if (isChanged) {
-            // 가격 이력 생성 API 호출
-            try {
-              const currentField =
-                editData.value.output_values?.[key] || originalField;
-              await asset3DStore.createPriceHistory({
-                equipment_id: item.equipment_id,
-                equipment_code: item.equipment_code,
-                price_type: (currentField as any)?.key?.toUpperCase() || "",
-                price_unit_code:
-                  (currentField as any)?.unit_code ||
-                  (originalField as any)?.unit_code,
-                price_unit_symbol:
-                  (currentField as any)?.unit_symbol ||
-                  (originalField as any)?.unit_symbol,
-                price_value: currentValue,
-                price_reference:
-                  (currentField as any)?.price_reference ??
-                  (originalField as any)?.price_reference ??
-                  "",
-              });
-            } catch (error) {
-              console.error(`가격 이력 생성 실패 (${key}):`, error);
-            }
-          }
-        }
-      }
+      // 가격 이력 생성 로직 제거됨
 
       alert(t("messages.success.saved"));
 
@@ -2136,22 +2023,6 @@ onMounted(async () => {
   }
 }
 
-.price-history-section {
-  margin-top: 24px;
-
-  :deep(.data-table-container) {
-    max-height: 250px;
-    overflow-y: auto;
-    overflow-x: auto;
-    width: 100%;
-  }
-
-  :deep(.data-table) {
-    min-width: 600px;
-    width: 100%;
-  }
-}
-
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
 
@@ -2393,6 +2264,16 @@ $tablet: 1024px;
         min-width: 100%;
       }
     }
+  }
+}
+
+.modal-container.library-tab-modal {
+  max-height: auto !important;
+  height: auto !important;
+  
+  .modal-body {
+    flex: 0 1 auto !important;
+    overflow-y: visible !important;
   }
 }
 </style>

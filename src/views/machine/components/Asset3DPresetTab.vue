@@ -57,6 +57,15 @@
             >
               ...
             </button>
+            <button
+              v-if="thumbnailDownloadUrl"
+              type="button"
+              class="btn-download"
+              @click="handleThumbnailDownload"
+              title="썸네일 다운로드"
+            >
+              <span class="ico-download"></span>
+            </button>
           </div>
           <img
             v-if="thumbnailPreviewUrl"
@@ -496,6 +505,7 @@ const thumbnailFile = ref<File | null>(null);
 const thumbnailFileName = ref("");
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailPreviewUrl = ref<string>("");
+const thumbnailDownloadUrl = ref<string>("");
 
 // 테이블 데이터 (자재 리스트와 동일한 구조)
 interface TableRow {
@@ -614,14 +624,13 @@ interface MaterialListItem {
 // 자재 리스트 컬럼 정의
 const materialListColumns: TableColumn[] = [
   { key: "no", title: "#", width: "50px", sortable: false },
-  { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
-  { key: "subCategory", title: "세부구분", width: "150px", sortable: false },
+  { key: "code", title: "코드", width: "auto", sortable: false },
+  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
+  { key: "equipment_type_name", title: "배관유형명", width: "200px", sortable: false },
+  { key: "vendor_name", title: "공급업체명", width: "150px", sortable: false },
   { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
   { key: "diameter", title: "직경", width: "80px", sortable: false },
   { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
-  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
-  { key: "code", title: "코드", width: "auto", sortable: false },
-  { key: "cellName", title: "썸네일", width: "100px", sortable: false },
 ];
 
 // 자재 리스트 데이터 (computed)
@@ -655,6 +664,8 @@ const materialListData = computed(() => {
 const tableRows = ref<TableRow[]>([]);
 const selectedRows = ref<TableRow[]>([]);
 let nextRowId = 1;
+// 초기 로드된 항목들의 detail_id 추적 (수정 모드에서 API로 로드된 항목)
+const initialLoadedDetailIds = ref<Set<string>>(new Set());
 const manualValveTree = ref<ManualValveTreeNode[]>([]);
 const manualValveTreeLoading = ref(false);
 const manualValveTreeError = ref<string | null>(null);
@@ -734,7 +745,6 @@ const getTypeLabel = (typeValue: string) => {
 const tableColumns: TableColumn[] = [
   { key: "no", title: "순번", width: "50px", sortable: false },
   { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
-  { key: "subCategory", title: "세부구분", width: "150px", sortable: false },
   { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
   { key: "diameter", title: "직경", width: "80px", sortable: false },
   { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
@@ -775,6 +785,7 @@ const handleThumbnailFileChange = (e: Event) => {
     thumbnailFileName.value = "";
     thumbnailFile.value = null;
     thumbnailPreviewUrl.value = "";
+    thumbnailDownloadUrl.value = "";
   }
 };
 
@@ -829,6 +840,11 @@ const handleDeleteRow = () => {
     return;
   }
 
+  // 확인 팝업
+  if (!confirm("삭제 하시겠습니까?")) {
+    return;
+  }
+
   const selectedIds = selectedRows.value.map((row) => row.id);
   tableRows.value = tableRows.value.filter(
     (row) => !selectedIds.includes(row.id)
@@ -840,11 +856,6 @@ const handleDeleteRow = () => {
 
 // 선택 항목 저장 핸들러
 const handleSaveSelectedItems = async () => {
-  if (tableRows.value.length === 0) {
-    alert("저장할 항목이 없습니다.");
-    return;
-  }
-
   // preset_id 확인
   if (!currentPresetId.value) {
     alert("프리셋 ID가 없습니다. 마스터 정보를 먼저 저장해주세요.");
@@ -852,80 +863,362 @@ const handleSaveSelectedItems = async () => {
   }
 
   try {
-    // 각 행을 개별적으로 API 호출 (백엔드가 단일 객체를 기대함)
-    const requests = tableRows.value.map((row) => {
-      // 원본 데이터에서 equipment_id와 equipment_code 가져오기
-      const equipmentId = (row as Record<string, unknown>).equipment_id || null;
-      const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
-      
-      // 원본 코드 값 사용 (한글 라벨이 아닌 코드 값)
-      const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
-      const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
-      
-      // 직경에서 숫자만 추출 (예: "1000 mm" -> "1000", 빈 값은 빈 문자열)
-      const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
-      const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+    // 등록 모드인 경우: 모든 항목이 추가 대상
+    const isEditMode = props.isEditMode === true;
+    
+    if (!isEditMode) {
+      // 등록 모드: 모든 항목을 추가
+      const allRows = tableRows.value;
+      if (allRows.length === 0) {
+        alert("저장할 항목이 없습니다.");
+        return;
+      }
 
-      return {
-        sequence_order: row.no,
-        preset_category: originalPipeCategoryCode || "",
-        preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
-        diameter_before: diameterBefore || "",
-        diameter_after: diameterAfter || "",
-        length: "",
-        equipment_code: equipmentCode,
-        equipment_id: equipmentId,
-        remarks: "",
-      };
+      console.log("========================================");
+      console.log("[Asset3DPreset] 등록 모드 - 모든 항목 추가");
+      console.log("========================================");
+      console.log("preset_id:", currentPresetId.value);
+      console.log("추가할 항목 수:", allRows.length);
+      console.log("========================================");
+
+      const addRequests = allRows.map((row) => {
+        const equipmentId = (row as Record<string, unknown>).equipment_id || null;
+        const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
+        const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
+        const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
+        const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
+        const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+
+        return {
+          sequence_order: row.no,
+          preset_category: originalPipeCategoryCode || "",
+          preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
+          diameter_before: diameterBefore || "",
+          diameter_after: diameterAfter || "",
+          length: "",
+          equipment_code: equipmentCode,
+          equipment_id: equipmentId,
+          remarks: "",
+        };
+      });
+
+      const addResponses = await Promise.all(
+        addRequests.map(async (requestData, index) => {
+          try {
+            const response = await request(
+              `/api/asset3D/preset/${currentPresetId.value}/detail`,
+              undefined,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
+            console.log(`[등록 ${index + 1}] 응답:`, response);
+            return response;
+          } catch (error) {
+            console.error(`[등록 ${index + 1}] 실패:`, error);
+            throw error;
+          }
+        })
+      );
+
+      const failedResponses = addResponses.filter((res) => !res || !res.success);
+      if (failedResponses.length > 0) {
+        throw new Error(`${failedResponses.length}개의 항목 저장에 실패했습니다.`);
+      }
+
+      alert("저장되었습니다.");
+      console.log("저장 성공:", addResponses);
+      return;
+    }
+
+    // 수정 모드: 추가/삭제된 항목만 처리
+    // 현재 그리드의 detail_id 추출
+    const currentDetailIds = new Set<string>();
+    tableRows.value.forEach((row) => {
+      const detailId = (row as Record<string, unknown>).detail_id;
+      if (detailId) {
+        currentDetailIds.add(String(detailId));
+      }
     });
 
-    // 저장 요청 파라미터 출력
-    console.log("========================================");
-    console.log("[Asset3DPreset] 선택 항목 그리드 저장 요청");
-    console.log("========================================");
-    console.log("preset_id:", currentPresetId.value);
-    console.log("요청 항목 수:", requests.length);
-    console.log("요청 데이터:", requests);
-    requests.forEach((req, index) => {
-      console.log(`[${index + 1}] 요청 데이터:`, req);
+    // 추가된 항목 찾기 (초기 로드된 항목에 없고 현재 그리드에 있는 항목)
+    const addedRows = tableRows.value.filter((row) => {
+      const detailId = (row as Record<string, unknown>).detail_id;
+      return !detailId || !initialLoadedDetailIds.value.has(String(detailId));
     });
-    console.log("========================================");
 
-    // 각 행을 개별적으로 API 호출 (백엔드가 단일 객체를 기대함)
-    const responses = await Promise.all(
-      requests.map(async (requestData, index) => {
-        try {
-          const response = await request(
-            `/api/asset3D/preset/${currentPresetId.value}/detail`,
-            undefined,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(requestData),
-            }
-          );
-          console.log(`[${index + 1}] 저장 응답:`, response);
-          return response;
-        } catch (error) {
-          console.error(`[${index + 1}] 저장 실패:`, error);
-          throw error;
-        }
-      })
+    // 삭제된 항목 찾기 (초기 로드된 항목에 있고 현재 그리드에 없는 항목)
+    const deletedDetailIds = Array.from(initialLoadedDetailIds.value).filter(
+      (detailId) => !currentDetailIds.has(detailId)
     );
 
+    console.log("========================================");
+    console.log("[Asset3DPreset] 선택 항목 그리드 저장 요청 (수정 모드)");
+    console.log("========================================");
+    console.log("preset_id:", currentPresetId.value);
+    console.log("초기 로드된 항목 수:", initialLoadedDetailIds.value.size);
+    console.log("현재 그리드 항목 수:", tableRows.value.length);
+    console.log("추가된 항목 수:", addedRows.length);
+    console.log("삭제된 항목 수:", deletedDetailIds.length);
+    console.log("========================================");
+
+    // 추가된 항목이 없고 삭제된 항목도 없으면 저장할 것이 없음
+    if (addedRows.length === 0 && deletedDetailIds.length === 0) {
+      alert("변경된 항목이 없습니다.");
+      return;
+    }
+
+    const responses: any[] = [];
+
+    // 1. 삭제된 항목 처리 (DELETE API 호출)
+    if (deletedDetailIds.length > 0) {
+      console.log("========================================");
+      console.log("[Asset3DPreset] 삭제할 항목:", deletedDetailIds);
+      console.log("========================================");
+
+      const deleteResponses = await Promise.all(
+        deletedDetailIds.map(async (detailId, index) => {
+          try {
+            const response = await request(
+              `/api/asset3D/preset/${currentPresetId.value}/detail/${detailId}`,
+              undefined,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            console.log(`[삭제 ${index + 1}] 응답:`, response);
+            
+            // 삭제 성공 시 initialLoadedDetailIds에서 제거
+            if (response && response.success) {
+              initialLoadedDetailIds.value.delete(detailId);
+              console.log(`[삭제 ${index + 1}] detail_id ${detailId} 제거 완료`);
+            }
+            
+            return response;
+          } catch (error) {
+            console.error(`[삭제 ${index + 1}] 실패:`, error);
+            throw error;
+          }
+        })
+      );
+      responses.push(...deleteResponses);
+    }
+
+    // 2. 추가된 항목 처리 (POST API 호출)
+    if (addedRows.length > 0) {
+      console.log("========================================");
+      console.log("[Asset3DPreset] 추가할 항목:", addedRows.length, "개");
+      console.log("========================================");
+
+      const addRequests = addedRows.map((row) => {
+        // 원본 데이터에서 equipment_id와 equipment_code 가져오기
+        const equipmentId = (row as Record<string, unknown>).equipment_id || null;
+        const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
+        
+        // 원본 코드 값 사용 (한글 라벨이 아닌 코드 값)
+        const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
+        const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
+        
+        // 직경에서 숫자만 추출 (예: "1000 mm" -> "1000", 빈 값은 빈 문자열)
+        const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
+        const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+
+        return {
+          sequence_order: row.no,
+          preset_category: originalPipeCategoryCode || "",
+          preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
+          diameter_before: diameterBefore || "",
+          diameter_after: diameterAfter || "",
+          length: "",
+          equipment_code: equipmentCode,
+          equipment_id: equipmentId,
+          remarks: "",
+        };
+      });
+
+      addRequests.forEach((req, index) => {
+        console.log(`[추가 ${index + 1}] 요청 데이터:`, req);
+      });
+
+      const addResponses = await Promise.all(
+        addRequests.map(async (requestData, index) => {
+          try {
+            const response = await request(
+              `/api/asset3D/preset/${currentPresetId.value}/detail`,
+              undefined,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
+            console.log(`[추가 ${index + 1}] 응답:`, response);
+            
+            // 응답에서 detail_id 추출하여 초기 로드 목록에 추가
+            if (response && response.success && response.response) {
+              const detailId = (response.response as any).detail_id;
+              if (detailId) {
+                initialLoadedDetailIds.value.add(String(detailId));
+                // tableRows에서도 detail_id 업데이트
+                const addedRow = addedRows[index];
+                if (addedRow) {
+                  (addedRow as Record<string, unknown>).detail_id = detailId;
+                }
+              }
+            }
+            
+            return response;
+          } catch (error) {
+            console.error(`[추가 ${index + 1}] 실패:`, error);
+            throw error;
+          }
+        })
+      );
+      responses.push(...addResponses);
+    }
+
     // 모든 응답 확인
-    const failedResponses = responses.filter((res) => !res || !res.response);
+    const failedResponses = responses.filter((res) => !res || !res.success);
     if (failedResponses.length > 0) {
-      throw new Error(`${failedResponses.length}개의 항목 저장에 실패했습니다.`);
+      throw new Error(`${failedResponses.length}개의 항목 처리에 실패했습니다.`);
     }
 
     alert("저장되었습니다.");
     console.log("저장 성공:", responses);
+    
+    // 저장 성공 후 선택 항목 그리드 새로고침 (수정 모드인 경우만)
+    if (props.isEditMode === true && currentPresetId.value) {
+      await reloadPresetDetailData(currentPresetId.value);
+    }
   } catch (error) {
     console.error("저장 실패:", error);
     alert("저장에 실패했습니다.");
+  }
+};
+
+// 프리셋 상세 정보 조회 및 선택 항목 그리드 새로고침 함수
+const reloadPresetDetailData = async (presetId: string) => {
+  try {
+    console.log("========================================");
+    console.log("[Asset3DPresetTab] 프리셋 상세 정보 조회 (그리드 새로고침)");
+    console.log("========================================");
+    console.log("API 엔드포인트: GET /api/asset3D/preset/" + presetId + "/detail");
+    console.log("preset_id:", presetId);
+    console.log("========================================");
+
+    const detailResponse = await request(`/api/asset3D/preset/${presetId}/detail`, undefined, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("[Asset3DPresetTab] 프리셋 상세 정보 응답:", detailResponse);
+
+    if (detailResponse && detailResponse.success && detailResponse.response) {
+      const detailData = detailResponse.response;
+      // response.data 배열 사용
+      const detailItems = detailData.data || (Array.isArray(detailData) ? detailData : []);
+
+      if (detailItems && detailItems.length > 0) {
+        // 선택 항목 그리드 초기화
+        tableRows.value = [];
+        // 초기 로드된 항목 ID 추적 초기화
+        initialLoadedDetailIds.value.clear();
+
+        // 세부구분 라벨 변환을 위한 공통코드 캐시 (같은 preset_category는 한 번만 호출)
+        const subCategoryLabelCache: Record<string, Record<string, string>> = {};
+
+        // 상세 정보를 선택 항목 그리드 형식으로 변환
+        for (const detailItem of detailItems) {
+          // preset_category 코드를 라벨로 변환
+          const pipeCategoryCode = String(detailItem.preset_category || "");
+          const pipeCategoryLabel = getTypeLabel(pipeCategoryCode) || "";
+
+          // preset_subcategory 코드를 라벨로 변환
+          const subCategoryCode = String(detailItem.preset_subcategory || "");
+          let subCategoryLabel = subCategoryCode;
+
+          // 세부구분 라벨 변환 시도 (캐시 사용)
+          if (subCategoryCode && pipeCategoryCode) {
+            // 캐시에 없으면 공통코드 조회
+            if (!subCategoryLabelCache[pipeCategoryCode]) {
+              try {
+                await asset3DStore.fetchThirdDepth(pipeCategoryCode, 3);
+                const thirdDepthItems = (asset3DStore.thirdDepth as CodeKeyValue[] | undefined) || [];
+                subCategoryLabelCache[pipeCategoryCode] = {};
+                thirdDepthItems.forEach((item: CodeKeyValue) => {
+                  subCategoryLabelCache[pipeCategoryCode][item.code_key] = item.code_value;
+                });
+              } catch (error) {
+                console.warn(`세부구분 라벨 변환 실패 (${pipeCategoryCode}):`, error);
+                subCategoryLabelCache[pipeCategoryCode] = {};
+              }
+            }
+
+            // 캐시에서 라벨 찾기
+            if (subCategoryLabelCache[pipeCategoryCode] && subCategoryLabelCache[pipeCategoryCode][subCategoryCode]) {
+              subCategoryLabel = subCategoryLabelCache[pipeCategoryCode][subCategoryCode];
+            }
+          }
+
+          const newRow: TableRow = {
+            id: nextRowId++,
+            no: detailItem.sequence_order || 0, // API 응답의 sequence_order 그대로 사용
+            pipeCategory: pipeCategoryLabel,
+            subCategory: subCategoryLabel,
+            fittingType: subCategoryLabel, // 세부구분을 피팅방식에도 표시
+            diameter: String(detailItem.diameter_before || ""),
+            diameterAfter: String(detailItem.diameter_after || ""),
+            pipeType: "", // API 응답에 없음
+            code: String(detailItem.equipment_code || ""),
+            cellName: "", // API 응답에 없음
+            // 원본 데이터 보존
+            equipment_id: detailItem.equipment_id || null,
+            equipment_code: detailItem.equipment_code || "",
+            // 원본 코드 값 저장
+            _originalPipeCategoryCode: pipeCategoryCode,
+            _originalSubCategoryCode: subCategoryCode,
+            ...detailItem,
+          };
+
+          tableRows.value.push(newRow);
+          
+          // 초기 로드된 항목의 detail_id 추적
+          if (detailItem.detail_id) {
+            initialLoadedDetailIds.value.add(String(detailItem.detail_id));
+          }
+        }
+
+        // sequence_order 기준으로 정렬 (API 응답 순서 유지)
+        tableRows.value.sort((a, b) => {
+          const orderA = (a as any).sequence_order || a.no || 0;
+          const orderB = (b as any).sequence_order || b.no || 0;
+          return orderA - orderB;
+        });
+
+        console.log("[Asset3DPresetTab] 선택 항목 그리드 데이터 로드 완료:", tableRows.value.length, "개 항목");
+        console.log("[Asset3DPresetTab] 초기 로드된 detail_id:", Array.from(initialLoadedDetailIds.value));
+      } else {
+        console.log("[Asset3DPresetTab] 프리셋 상세 정보가 없습니다.");
+        tableRows.value = [];
+      }
+    } else {
+      console.warn("[Asset3DPresetTab] 프리셋 상세 정보 조회 실패:", detailResponse);
+      tableRows.value = [];
+    }
+  } catch (detailError) {
+    console.error("[Asset3DPresetTab] 프리셋 상세 정보 조회 중 오류:", detailError);
+    tableRows.value = [];
   }
 };
 
@@ -1630,21 +1923,45 @@ const handleAddSelection = () => {
     return;
   }
 
+  // 기존 행들 중 가장 큰 순번 찾기 (숫자로 변환하여 비교)
+  let maxNo = 0;
+  if (tableRows.value.length > 0) {
+    const noValues = tableRows.value.map(row => {
+      const noValue = typeof row.no === 'number' ? row.no : (row.no ? Number(row.no) : 0);
+      return isNaN(noValue) ? 0 : noValue;
+    });
+    maxNo = Math.max(...noValues);
+  }
+
+  console.log("[Asset3DPresetTab] 기존 최대 순번:", maxNo, "기존 행 개수:", tableRows.value.length, "신규 행 개수:", selectedMaterialItems.value.length);
+
   // 선택된 자재 리스트 항목들을 선택 항목 그리드에 순차 추가
   selectedMaterialItems.value.forEach((materialItem, index) => {
     // 원본 데이터에서 equipment_id와 equipment_code 가져오기
     const equipmentId = (materialItem as Record<string, unknown>).equipment_id || null;
     const equipmentCode = (materialItem as Record<string, unknown>).equipment_code || materialItem.code || "";
 
+    const newNo = maxNo + index + 1; // 기존 최대 순번 + 1부터 시작
+    console.log(`[Asset3DPresetTab] 신규 행 ${index + 1} 순번:`, newNo, "(기존 최대:", maxNo, "+", index + 1, ")");
+
+    // materialItem에서 no 필드 제거 (순번 덮어쓰기 방지)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { no: _no, ...materialItemWithoutNo } = materialItem as Record<string, unknown>;
+
+    // 자재 리스트 그리드의 피팅방식 값 추출 (원본 데이터에서도 확인)
+    const materialFittingType = String(materialItem.fittingType || (materialItemWithoutNo.fittingType as string) || "");
+
+    // materialItemWithoutNo에서 pipeType 제거 (배관유형 항목 제외)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { pipeType: _pipeType, ...materialItemWithoutNoAndPipeType } = materialItemWithoutNo;
+
     const newRow: TableRow = {
       id: nextRowId++,
-      no: tableRows.value.length + index + 1, // 순차적으로 번호 할당
       pipeCategory: String(materialItem.pipeCategory || ""),
       subCategory: String(materialItem.subCategory || ""),
-      fittingType: String(materialItem.fittingType || ""),
       diameter: String(materialItem.diameter || ""),
       diameterAfter: String(materialItem.diameterAfter || ""),
-      pipeType: String(materialItem.pipeType || ""),
+      pipeType: "", // 배관유형 항목 제외
       code: String(materialItem.code || ""),
       cellName: String(materialItem.cellName || ""),
       // 원본 데이터 보존 (equipment_id, equipment_code 포함)
@@ -1655,13 +1972,16 @@ const handleAddSelection = () => {
       _originalSubCategoryCode: selectionFilter.value.pipeCategory === "P_VALV" 
         ? filterSelectedCode.value 
         : selectionFilter.value.fittingType || "",
-      ...(materialItem as Record<string, unknown>),
+      ...materialItemWithoutNoAndPipeType,
+      // 피팅방식은 자재 리스트 그리드의 값을 사용 (마지막에 설정하여 덮어쓰기 방지)
+      fittingType: materialFittingType,
+      // no 필드는 마지막에 설정하여 덮어쓰기 방지
+      no: newNo, // 기존 최대 순번 + 1부터 시작
     };
+    
+    console.log(`[Asset3DPresetTab] 신규 행 추가 후 순번 확인:`, newRow.no);
     tableRows.value.push(newRow);
   });
-
-  // 번호 재정렬 (최종 확인)
-  updateRowNumbers();
   
   // 자재 리스트 선택 초기화
   selectedMaterialItems.value = [];
@@ -1853,6 +2173,13 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           thumbnailFileName = String(thumbnailFileInfo.file_name);
         }
         
+        // vendor_info에서 vendor_name 추출
+        let vendorName = "";
+        const vendorInfo = item.vendor_info as Record<string, unknown> | undefined;
+        if (vendorInfo && vendorInfo.vendor_name) {
+          vendorName = String(vendorInfo.vendor_name);
+        }
+        
         return {
           id: item.equipment_id || index + 1,
           pipeCategory: getTypeLabel(selectionFilter.value.pipeCategory) || "",
@@ -1860,6 +2187,8 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           diameter: diameterValue || String(item.diameter || ""),
           diameterAfter: diameterAfterValue || String(item.diameter_after || ""),
           pipeType: String(item.equipment_type || ""),
+          equipment_type_name: String(item.equipment_type_name || ""),
+          vendor_name: vendorName,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
           // 원본 데이터 보존
@@ -1980,6 +2309,13 @@ const handleDebugSearch = async () => {
           thumbnailFileName = String(thumbnailFileInfo.file_name);
         }
         
+        // vendor_info에서 vendor_name 추출
+        let vendorName = "";
+        const vendorInfo = item.vendor_info as Record<string, unknown> | undefined;
+        if (vendorInfo && vendorInfo.vendor_name) {
+          vendorName = String(vendorInfo.vendor_name);
+        }
+        
         return {
           id: item.equipment_id || index + 1,
           pipeCategory: debugEquipmentType.value,
@@ -1987,6 +2323,8 @@ const handleDebugSearch = async () => {
           diameter: diameterValue || String(item.diameter || ""),
           diameterAfter: diameterAfterValue || String(item.diameter_after || ""),
           pipeType: String(item.equipment_type || ""),
+          equipment_type_name: String(item.equipment_type_name || ""),
+          vendor_name: vendorName,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
           ...item,
@@ -2065,42 +2403,129 @@ watch(
   () => props.editItem,
   async (newItem) => {
     if (props.isEditMode && newItem) {
-      console.log("[Asset3DPresetTab] 수정 모드 데이터 초기화:", newItem);
-      
-      // preset_id 추출 및 저장
-      const editItemAny = newItem as any;
-      const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
-      if (presetId) {
-        currentPresetId.value = String(presetId);
-        console.log("✅ 수정 모드: preset_id 설정:", currentPresetId.value);
-      }
-      
-      // 연결기계 설정
-      selectedMachine.value = String(newItem.root_equipment_type || "");
-      
-      // 명칭 설정
-      presetName.value = String(newItem.preset_name_ko || newItem.equipment_name || "");
-      
-      // 단위 설정
-      selectedUnit.value = String(newItem.unit_system_code || "");
-      
-      // 썸네일 미리보기 로드
-      if (newItem.thumbnail_id) {
-        try {
-          const response = await fetch(`/api/file/download/${newItem.thumbnail_id}`);
-          if (response.ok) {
-            const blob = await response.blob();
-            thumbnailPreviewUrl.value = URL.createObjectURL(blob);
-            thumbnailFileName.value = String(newItem.thumbnail_file_name || "썸네일 이미지");
-          }
-        } catch (error) {
-          console.error("썸네일 로드 실패:", error);
-          thumbnailPreviewUrl.value = "";
-          thumbnailFileName.value = "";
+      try {
+        const editItemAny = newItem as any;
+        // preset_id 추출
+        const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
+        
+        if (!presetId) {
+          console.error("[Asset3DPresetTab] preset_id를 찾을 수 없습니다:", newItem);
+          return;
         }
-      } else {
-        thumbnailPreviewUrl.value = "";
-        thumbnailFileName.value = "";
+
+        const requestParams = {
+          search_field: "preset_id",
+          search_value: presetId,
+        };
+
+        console.log("========================================");
+        console.log("[Asset3DPresetTab] 수정 모드 API 호출");
+        console.log("========================================");
+        console.log("API 엔드포인트: POST /api/asset3D/search/PRESET");
+        console.log("매개변수:", JSON.stringify(requestParams, null, 2));
+        console.log("preset_id:", presetId);
+        console.log("========================================");
+
+        // API 호출: /api/asset3D/search/PRESET
+        const response = await request("/api/asset3D/search/PRESET", undefined, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestParams),
+        });
+
+        console.log("[Asset3DPresetTab] API 응답:", response);
+
+        if (response && response.success && response.response) {
+          const data = response.response;
+          // 배열인 경우 첫 번째 항목 사용
+          const item = Array.isArray(data) ? data[0] : (data.items && Array.isArray(data.items) ? data.items[0] : data);
+
+          if (item) {
+            // preset_id 저장
+            currentPresetId.value = String(presetId);
+            console.log("✅ 수정 모드: preset_id 설정:", currentPresetId.value);
+            
+            // 연결기계 설정
+            selectedMachine.value = String(item.root_equipment_type || "");
+            
+            // 명칭 설정
+            presetName.value = String(item.preset_name_ko || item.equipment_name || "");
+            
+            // 단위 설정
+            selectedUnit.value = String(item.unit_system_code || "");
+            
+            // 썸네일 파일명 설정 (thumbnail_file.file_name 우선, 없으면 thumbnail_file_name)
+            const thumbnailFile = item.thumbnail_file as Record<string, unknown> | undefined;
+            if (thumbnailFile && thumbnailFile.file_name) {
+              thumbnailFileName.value = String(thumbnailFile.file_name);
+            } else if (item.thumbnail_file_name) {
+              thumbnailFileName.value = String(item.thumbnail_file_name);
+            } else {
+              thumbnailFileName.value = "";
+            }
+            
+            // 썸네일 다운로드 URL 설정
+            if (thumbnailFile && thumbnailFile.download_url) {
+              thumbnailDownloadUrl.value = String(thumbnailFile.download_url);
+            } else {
+              thumbnailDownloadUrl.value = "";
+            }
+            
+            // 썸네일 미리보기 로드
+            if (thumbnailFile && thumbnailFile.download_url) {
+              // download_url이 있으면 직접 사용
+              thumbnailPreviewUrl.value = String(thumbnailFile.download_url);
+            } else if (item.thumbnail_id) {
+              // download_url이 없으면 API를 통해 로드
+              try {
+                const url = new URL(`/api/file/download/${item.thumbnail_id}`, window.location.origin);
+                const headers: Record<string, string> = {
+                  system_code: import.meta.env.VITE_SYSTEM_CODE,
+                  user_Id: localStorage.getItem("authUserId") || "",
+                  wai_lang: localStorage.getItem("wai_lang") || "ko",
+                  authSuper: localStorage.getItem("authSuper") || "false",
+                };
+                
+                const response = await fetch(url.toString(), {
+                  method: "GET",
+                  headers,
+                  credentials: "include",
+                });
+                
+                if (response.ok) {
+                  const blob = await response.blob();
+                  thumbnailPreviewUrl.value = URL.createObjectURL(blob);
+                } else {
+                  console.error("썸네일 로드 실패:", response.status, response.statusText);
+                  thumbnailPreviewUrl.value = "";
+                }
+              } catch (error) {
+                console.error("썸네일 로드 실패:", error);
+                thumbnailPreviewUrl.value = "";
+              }
+            } else {
+              thumbnailPreviewUrl.value = "";
+            }
+
+            console.log("[Asset3DPresetTab] 폼 필드 설정 완료:", {
+              presetId: currentPresetId.value,
+              machine: selectedMachine.value,
+              presetName: presetName.value,
+              unit: selectedUnit.value,
+            });
+
+            // 프리셋 상세 정보 조회 (선택 항목 그리드 데이터 로드)
+            await reloadPresetDetailData(presetId);
+          } else {
+            console.warn("[Asset3DPresetTab] 응답 데이터가 없습니다.");
+          }
+        } else {
+          console.error("[Asset3DPresetTab] API 호출 실패:", response);
+        }
+      } catch (error) {
+        console.error("[Asset3DPresetTab] API 호출 중 오류:", error);
       }
     } else if (!props.isEditMode) {
       // 등록 모드로 전환 시 초기화
@@ -2167,14 +2592,22 @@ const fileUploadRequest = async (
   });
 };
 
-// 썸네일 파일 업로드 함수
+// 썸네일 파일 업로드 함수 (등록 모드용)
 const uploadThumbnailFile = async (file: File): Promise<string | null> => {
   try {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_folder", "thumbnail");
 
-    console.log("썸네일 파일 업로드 시작...");
+    console.log("========================================");
+    console.log("[Asset3DPreset] 썸네일 파일 업로드 시작 (등록 모드)");
+    console.log("========================================");
+    console.log("파일명:", file.name);
+    console.log("파일 크기:", file.size);
+    console.log("파일 타입:", file.type);
+    console.log("========================================");
+
+    // fileUploadRequest 함수 사용 (파일 서버 URL 사용)
     const response = await fileUploadRequest("/api/upload", formData);
 
     console.log("썸네일 업로드 응답:", response);
@@ -2201,6 +2634,111 @@ const uploadThumbnailFile = async (file: File): Promise<string | null> => {
   } catch (error) {
     console.error("썸네일 업로드 실패:", error);
     throw error;
+  }
+};
+
+// 프리셋 썸네일 업로드 함수 (수정 모드용)
+const uploadPresetThumbnail = async (file: File, presetId: string): Promise<string | null> => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("preset_id", presetId);
+
+    console.log("========================================");
+    console.log("[Asset3DPreset] 프리셋 썸네일 업로드 시작 (수정 모드)");
+    console.log("========================================");
+    console.log("preset_id:", presetId);
+    console.log("파일명:", file.name);
+    console.log("파일 크기:", file.size);
+    console.log("파일 타입:", file.type);
+    console.log("========================================");
+
+    // request 함수와 동일한 방식으로 호출 (상대 경로 사용)
+    const url = new URL("/api/asset3D/preset/thumbnail/upload", window.location.origin);
+    
+    const headers: Record<string, string> = {
+      system_code: import.meta.env.VITE_SYSTEM_CODE,
+      user_Id: localStorage.getItem("authUserId") || "",
+      wai_lang: localStorage.getItem("wai_lang") || "ko",
+      authSuper: localStorage.getItem("authSuper") || "false",
+    };
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.detail || errorMessage;
+      } catch {
+        // JSON 파싱 실패 시 기본 메시지 사용
+      }
+      throw new Error(`프리셋 썸네일 업로드 실패: ${errorMessage}`);
+    }
+
+    const responseData = await response.json();
+    console.log("프리셋 썸네일 업로드 응답:", responseData);
+
+    // 응답에서 thumbnail_id 또는 file_id 추출
+    let thumbnailId: string | null = null;
+    
+    if (responseData && (responseData.thumbnail_id || responseData.file_id || responseData.id)) {
+      thumbnailId = responseData.thumbnail_id || responseData.file_id || responseData.id;
+    } else if (responseData && responseData.response) {
+      // 응답이 중첩된 경우
+      const nestedData = responseData.response;
+      thumbnailId = nestedData.thumbnail_id || nestedData.file_id || nestedData.id || null;
+    }
+    
+    if (thumbnailId) {
+      console.log("프리셋 썸네일 업로드 성공, thumbnail_id:", thumbnailId);
+      return String(thumbnailId);
+    }
+    
+    console.error("프리셋 썸네일 업로드 실패: 응답이 올바르지 않습니다.", responseData);
+    return null;
+  } catch (error) {
+    console.error("프리셋 썸네일 업로드 실패:", error);
+    throw error;
+  }
+};
+
+// 썸네일 다운로드 핸들러
+const handleThumbnailDownload = async () => {
+  if (!thumbnailDownloadUrl.value) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+  
+  try {
+    // fetch로 파일을 blob으로 받아서 다운로드
+    const response = await fetch(thumbnailDownloadUrl.value, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = thumbnailFileName.value || "thumbnail";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("썸네일 다운로드 실패:", error);
+    alert("다운로드 중 오류가 발생했습니다.");
   }
 };
 
@@ -2235,33 +2773,13 @@ const handleThumbnailRegister = async () => {
     console.log("editItem:", props.editItem);
     console.log("========================================");
 
-    // 썸네일 파일 업로드 (등록 모드에서만 실행)
+    // 썸네일 파일 처리
     let thumbnailId: string | null = null;
     
-    // 수정 모드가 아닐 때만 썸네일 파일 업로드
-    if (!isEditMode && thumbnailFile.value) {
-      console.log("========================================");
-      console.log("[Asset3DPreset] 썸네일 파일 업로드 시작 (등록 모드)");
-      console.log("========================================");
-      console.log("파일명:", thumbnailFile.value.name);
-      console.log("파일 크기:", thumbnailFile.value.size);
-      console.log("파일 타입:", thumbnailFile.value.type);
-      console.log("========================================");
-      
-      thumbnailId = await uploadThumbnailFile(thumbnailFile.value);
-      
-      if (!thumbnailId) {
-        console.error("썸네일 업로드 실패: thumbnailId가 null입니다.");
-        alert("썸네일 업로드에 실패했습니다.");
-        return;
-      }
-      console.log("========================================");
-      console.log("[Asset3DPreset] 썸네일 업로드 완료");
-      console.log("========================================");
-      console.log("thumbnail_id:", thumbnailId);
-      console.log("========================================");
-    } else if (isEditMode) {
-      // 수정 모드: 기존 썸네일 ID 유지 또는 새로 선택한 파일이 있으면 처리
+    // 등록 모드에서는 썸네일 파일을 별도로 업로드하지 않고 프리셋 생성 API에 포함
+    // 수정 모드에서만 썸네일 파일을 별도로 업로드
+    if (isEditMode) {
+      // 수정 모드: 기존 썸네일 ID 유지 또는 새로 선택한 파일이 있으면 업로드
       console.log("========================================");
       console.log("[Asset3DPreset] 수정 모드 - 썸네일 처리");
       console.log("========================================");
@@ -2269,15 +2787,27 @@ const handleThumbnailRegister = async () => {
       console.log("thumbnailFileName.value:", thumbnailFileName.value);
       
       if (thumbnailFile.value) {
-        // 수정 모드에서 새 썸네일 파일이 선택된 경우
-        // 백엔드 API가 파일을 직접 받지 않으므로, 별도 업로드 필요
-        // 하지만 사용자 요구사항에 따라 업로드하지 않음
-        console.log("수정 모드에서 새 썸네일 파일이 선택되었지만, 별도 업로드 없이 프리셋 업데이트만 수행");
-        
-        // 기존 썸네일 ID 유지 (editItem에서 가져오기)
+        // 수정 모드에서 새 썸네일 파일이 선택된 경우 - 프리셋 썸네일 업로드 API 호출
         const editItemAny = props.editItem as any;
-        thumbnailId = editItemAny.thumbnail_id || null;
-        console.log("기존 thumbnail_id 유지:", thumbnailId);
+        const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId || currentPresetId.value;
+        
+        if (!presetId) {
+          console.error("수정 모드에서 preset_id를 찾을 수 없습니다.");
+          alert("프리셋 ID가 없습니다. 썸네일 업로드에 실패했습니다.");
+          return;
+        }
+        
+        console.log("수정 모드에서 새 썸네일 파일이 선택됨 - 프리셋 썸네일 업로드 API 호출");
+        
+        thumbnailId = await uploadPresetThumbnail(thumbnailFile.value, String(presetId));
+        
+        if (!thumbnailId) {
+          console.error("프리셋 썸네일 업로드 실패: thumbnailId가 null입니다.");
+          alert("썸네일 업로드에 실패했습니다.");
+          return;
+        }
+        
+        console.log("프리셋 썸네일 업로드 완료, thumbnail_id:", thumbnailId);
       } else {
         // 썸네일 파일이 선택되지 않은 경우 기존 썸네일 ID 유지
         const editItemAny = props.editItem as any;
@@ -2377,20 +2907,15 @@ const handleThumbnailRegister = async () => {
       if (response && response.success) {
         alert("프리셋이 수정되었습니다.");
         
-        // 수정 성공 후 폼 초기화
-        selectedUnit.value = "";
-        selectedMachine.value = "";
-        presetName.value = "";
-        thumbnailFileName.value = "";
+        // 수정 성공 후 새로 선택한 파일만 초기화 (썸네일 정보는 유지)
         thumbnailFile.value = null;
-        thumbnailPreviewUrl.value = "";
-        tableRows.value = [];
-        selectedRows.value = [];
-        nextRowId = 1;
-        
         if (thumbnailFileInput.value) {
           thumbnailFileInput.value.value = "";
         }
+        
+        // 수정 모드에서는 썸네일 파일명과 미리보기는 유지
+        // (서버에서 다시 로드하거나 기존 값 유지)
+        // 폼의 다른 필드는 초기화하지 않음 (수정 모드이므로)
       } else {
         const errorMessage = response?.message || "프리셋 수정에 실패했습니다.";
         alert(errorMessage);
@@ -2399,26 +2924,76 @@ const handleThumbnailRegister = async () => {
       console.log("========================================");
       console.log("[Asset3DPreset] 등록 모드로 처리");
       console.log("========================================");
-      // 등록 모드: 프리셋 생성 API 호출
+      // 등록 모드: 프리셋 생성 API 호출 (multipart/form-data)
       console.log("========================================");
       console.log("[Asset3DPreset] 프리셋 생성 API 호출");
       console.log("========================================");
       console.log("📤 프리셋 생성 요청 데이터:", JSON.stringify(presetData, null, 2));
+      console.log("썸네일 파일:", thumbnailFile.value ? thumbnailFile.value.name : "없음");
       console.log("========================================");
 
-      const response = await request("/api/asset3D/preset/create", undefined, {
+      // FormData로 전송 (multipart/form-data)
+      const formData = new FormData();
+      
+      // presetData의 모든 필드를 문자열로 추가
+      Object.keys(presetData).forEach((key) => {
+        const value = presetData[key];
+        if (value !== null && value !== undefined) {
+          if (typeof value === "object") {
+            // 객체인 경우 JSON 문자열로 변환
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, String(value));
+          }
+        }
+      });
+      
+      // 썸네일 파일이 있으면 siteFile로 추가
+      if (thumbnailFile.value) {
+        formData.append("siteFile", thumbnailFile.value);
+      }
+
+      const url = new URL("/api/asset3D/preset/create", window.location.origin);
+      const headers: Record<string, string> = {
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+        user_Id: localStorage.getItem("authUserId") || "",
+        wai_lang: localStorage.getItem("wai_lang") || "ko",
+        authSuper: localStorage.getItem("authSuper") || "false",
+      };
+
+      const response = await fetch(url.toString(), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(presetData),
+        headers,
+        credentials: "include",
+        body: formData,
       });
 
-      console.log("📥 프리셋 생성 API 응답:", response);
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.detail || errorMessage;
+        } catch {
+          // JSON 파싱 실패 시 기본 메시지 사용
+        }
+        throw new Error(`프리셋 생성 실패: ${errorMessage}`);
+      }
 
-      if (response && response.success) {
+      const responseData = await response.json();
+      
+      // request 함수와 동일한 응답 형식으로 변환
+      const responseFormatted = {
+        success: true,
+        status: response.status,
+        message: responseData.message || "Success",
+        response: responseData.response || responseData,
+      };
+
+      console.log("📥 프리셋 생성 API 응답:", responseFormatted);
+
+      if (responseFormatted && responseFormatted.success) {
         // preset_id 추출 및 저장
-        const responseData = response.response as any;
+        const responseData = responseFormatted.response as any;
         const presetId = responseData?.preset_id || responseData?.id || null;
         if (presetId) {
           currentPresetId.value = String(presetId);
@@ -2431,7 +3006,7 @@ const handleThumbnailRegister = async () => {
         // tableRows는 유지 (선택 항목 그리드에 표시)
         // thumbnailFileInput.value.value = ""; // 썸네일은 유지
       } else {
-        const errorMessage = response?.message || "프리셋 등록에 실패했습니다.";
+        const errorMessage = responseFormatted?.message || "프리셋 등록에 실패했습니다.";
         alert(errorMessage);
       }
     }
@@ -2586,6 +3161,37 @@ select {
   &:hover,
   &:active {
     background-color: #3c4973;
+  }
+}
+
+.btn-download {
+  flex-shrink: 0;
+  white-space: nowrap;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  background-color: #3e435e;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  position: relative;
+
+  &:hover,
+  &:active {
+    background-color: #3c4973;
+  }
+
+  .ico-download {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: url(../../../assets/icons/ico_download.svg) no-repeat center / 24px auto;
+    display: block;
   }
 }
 

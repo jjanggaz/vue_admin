@@ -1,271 +1,146 @@
 @use "sass:color";
 @use "variables" as *;
 
+/* 기본 버튼 스타일 */
 .btns {
- display: flex;
- align-items: center;
- gap: 10px;
-
- [class*="btn-"] {
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 0 16px;
-  border-radius: $border-radius-sm;
- }
+  gap: 10px;
+}
+
+button {
+  transition: $transition-base;
+
+  &:disabled,
+  &:disabled:hover {
+    cursor: not-allowed;
+    background-color: #abaebd;
+    color: #ffffff;
+  }
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   width: 80px;
   height: 40px;
-  padding: 8px 16px 8px 35px;
+  padding: 0 10px;
+  color: #ffffff;
   font-size: $font-size-base;
   font-weight: $font-weight-md;
   text-decoration: none;
   border: none;
-  border-radius: $border-radius-sm;
+  border-radius: 5px;
   cursor: pointer;
-  transition: $transition-base;
   user-select: none;
-
-  &:disabled {
-    cursor: not-allowed;
-    background-color: #abaebd;
-  }
-
-  &.btn-primary {
-    background-color: #222E77;
-    color: white;
-
-    &:disabled {
-      background-color: #abaebd;
-
-      &:hover {
-        background-color: #abaebd;
-      }
-    }
-
-    &:hover:not(:disabled) {
-      background-color: #29378C;
-    }
-
-    &.btn-delete {
-      padding: 8px 16px 8px 35px;
-
-      &:hover {
-        background-color: #3c4973;
-      }
-
-      &:disabled {
-        background-color: #abaebd;
-
-        &:hover {
-          background-color: #abaebd;
-        }
-      }
-    }
-  }
-
-  &.btn-secondary {
-    background-color: #222E77;
-    color: #ffffff;
-
-    &:disabled {
-      background-color: #abaebd;
-      &:hover {
-        background-color: #abaebd;
-      }
-    }
-
-    &:hover {
-      background-color: #29378C;
-    }
-  }
-
-  &.btn-outline {
-    background-color: transparent;
-    border: 2px solid $primary-color;
-    color: $primary-color;
-
-    &:hover:not(:disabled) {
-      background-color: $primary-color;
-      color: white;
-    }
-  }
 }
+/* //기본 버튼 스타일 */
 
-.btn.btn-delete {
-    position:relative;
-    background-color: #3e435e;
-    padding: 8px 16px 8px 35px;
-
-    &::before {
-        content: "";
-        position:absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        left: 16px;
-        width: 16px;
-        height: 16px;
-        background: url(../assets/icons/ico_delete.svg) no-repeat center / 11px auto;
-        aspect-ratio: 1/1;
-    }
-    &:hover {
-      background-color: #3c4973;
-    }
-    &:disabled {
-      background-color: #abaebd;
-    }
-}
-
-.btn-search {
-  min-width: 60px;
-  width: 60px;
-  height: 40px;
-  padding: 0;
-  text-align: center;
-  background-color: #222E77;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: $transition-base;
-
-  &:hover {
-    background-color: #29378C;
-  }
-}
-
-.btn-view {
+/* btn-secondary */
+.btn-secondary {
   width: 45px;
   height: 32px;
   line-height: 32px;
-  background-color: #3e435e;
-  color: white;
-  border: none;
-  padding: 0 4px;
-  border-radius: 4px;
-  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.2s;
+
+  background-color: #707489;
+
+  &:hover {
+    background-color: #82869d;
+  }
+}
+/* //btn-secondary */
+
+.btn-primary.p-id {
+  width: auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 10px;
+  background-color: #3e435e;
+  font-size: 14px;
+  font-weight: 500;
 
   &:hover {
     background-color: #3c4973;
   }
 }
 
-.btn-register {
+/* 검색 버튼 */
+.btn-search {
+  min-width: 60px;
+  width: 60px;
+  height: 40px;
+  text-align: center;
   background-color: #222E77;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
 
   &:hover {
     background-color: #29378C;
   }
 }
+/* //검색 버튼 */
 
-.action-buttons {
-  .btn-register {
-    position: relative;
+/* 삭제 버튼 */
+.btn-delete,
+.btn-cancel {
+  position:relative;
+  padding: 8px 16px 8px 33px;
+  background-color: #3e435e;
 
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
+  &::before {
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    background: url(../assets/icons/ico_delete.svg) no-repeat center / 11px auto;
+    aspect-ratio: 1/1;
   }
-  
-  .btn-edit {
-    position: relative;
-
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
+  &:hover {
+    background-color: #3c4973;
   }
 }
+.btn-delete.sm,
+.btn-cancel.sm {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
 
-.action-bar {
-  .btns {
-    button.btn-regist {
-     position: relative;
-     padding: 8px 16px 8px 35px;
- 
-     &::before {
-       content: "";
-       position:absolute;
-       top: 50%;
-       transform: translateY(-50%);
-       left: 16px;
-       width: 13px;
-       height: 13px;
-       background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-       aspect-ratio: 1/1;
-     }
-   }
-
-   .btn.btn-delete.sm {
-    width: 48px;
-    height: 32px;
-    justify-content: center;
-    padding: 0;
-    background-color: #3e435e;
-
-    &::before {
-      background: none;
-    }
-
-    &:hover {
-      background-color: #3c4973;
-    }
-   }
-  }
-
-  .btns button.btn-update,
-  .btns button.btn-edit {
-    position: relative;
-    padding: 8px 16px 8px 35px;
-
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
+  &::before {
+    background: none;
   }
 }
+/* //삭제 버튼 */
 
-.btns .btn-create {
+/* 보기 버튼 */
+.btn-view {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  background-color: #3e435e;
+  padding: 0 4px;
+  font-size: 14px;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #3c4973;
+  }
+}
+/* //보기 버튼 */
+
+/* 등록 버튼 + 코드관리 모달 등록 버튼 + 기계 등록 버튼 */
+.btn-register {
   position: relative;
-  width: auto;
   padding: 8px 16px 8px 35px;
+  background-color: #222E77;
 
   &::before {
     content: "";
@@ -278,90 +153,287 @@
     background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
     aspect-ratio: 1/1;
   }
-}
 
-div[class$="-list-header"] {
-  .btn-register {
-    position: relative;
-
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
-  }
-
-  .btn-edit {
-    position: relative;
-
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
+  &:hover {
+    background-color: #29378C;
   }
 }
+.btn-register.sm {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
 
+  &::before {
+    background: none;
+  }
+}
+.btn-register.md {
+  width: auto;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+
+  &::before {
+    background: none;
+  }
+}
+.btn-register.lg {
+  width: auto;
+  padding: 0 10px;
+
+  &::before {
+    background: none;
+  }
+}
+
+.btn-regist {
+  background-color: #222E77;
+
+  &:hover {
+    background-color: #29378C;
+  }
+}
+
+.btn-regist.sm {
+  width: auto;
+  height: 40px;
+  padding: 0 10px;
+}
+/* //등록 버튼 + 코드관리 모달 등록 버튼 + 기계 등록 버튼 */
+
+/* 수정 버튼 */
+.btn-edit,
+.btn-update {
+  position: relative;
+  padding: 8px 16px 8px 35px;
+  background-color: #222e77;
+
+  &::before {
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    width: 13px;
+    height: 13px;
+    background: url(../assets/icons/ico_edit.svg) no-repeat center / 13px auto;
+    aspect-ratio: 1/1;
+  }
+
+  &:hover {
+    background-color: #29378c;
+  }
+}
+.btn-edit.sm,
+.btn-update.sm {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+
+  &::before {
+    background: none;
+  }
+}
+/* //수정 버튼 */
+
+/* 신규, 다건등록 버튼 */
+.btn-create,
 .btn-multi-register {
   position: relative;
   width: auto;
+  padding: 8px 16px 8px 35px;
+  background-color: #222e77;
 
   &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 13px;
-      height: 13px;
-      background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-      aspect-ratio: 1/1;
-    }
-}
-
-.btns {
-  .btn.btn-code-management {
-    position: relative;
-    width: auto;
-    padding: 8px 16px 8px 35px;
-    background-color: #3e435e;
-
-    &::before {
-      content: "";
-      position:absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 16px;
-      width: 16px;
-      height: 16px;
-      background: url(../assets/icons/ico_code-sett.svg) no-repeat center / 16px auto;
-      aspect-ratio: 1/1;
-    }
-
-    &:hover {
-      background-color: #3c4973;
-    }
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    width: 13px;
+    height: 13px;
+    background: url(../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
+    aspect-ratio: 1/1;
   }
 
-  .btn.btn-add {
-    position: relative;
-    padding: 8px 16px 8px 35px;
-    background-color: #222E77;
-
-    &:hover {
-      background-color: #29378C;
-    }
+  &:hover {
+    background-color: #29378c;
   }
 }
+/* //신규, 다건등록 버튼 */
+
+/* 코드 관리 버튼 */
+.btn-code-management {
+  position: relative;
+  width: auto;
+  padding: 8px 16px 8px 35px;
+  background-color: #3e435e;
+  color: #ffffff;
+
+  &::before {
+    content: "";
+    position:absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 16px;
+    width: 16px;
+    height: 16px;
+    background: url(../assets/icons/ico_code-sett.svg) no-repeat center / 16px auto;
+    aspect-ratio: 1/1;
+  }
+
+  &:hover {
+    background-color: #3c4973;
+  }
+}
+/* //코드 관리 버튼 */
+
+/* 파일 선택 버튼 */
+.btn-file {
+  display: inline-block;
+  text-align: center;
+  width: 88px;
+  min-width: 88px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0;
+  background: #3e435e;
+
+  &:hover {
+    background: #3c4973;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+}
+.btn-file.lg {
+  width: auto;
+  padding: 0 10px;
+}
+.btn-file.sm {
+  width: 70px;
+  min-width: 70px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 14px;
+}
+
+.btn-file.error {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+/* //파일 선택 버튼 */
+
+/* 다운로드 버튼 */
+.download-btn {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 40px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #3e435e;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+
+  .ico-download {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: url(../assets/icons/ico_download.svg) no-repeat center / 24px auto;
+  }
+}
+
+.download-btn.sm {
+  width: 36px;
+  height: 32px;
+}
+/* //다운로드 버튼 */
+
+/* 저장 버튼 */
+.btn-save {
+  background-color: #0863e2;
+
+  &:hover {
+    background-color: #0067f5;
+  }
+}
+
+.btn-save.sm {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* //저장 버튼 */
+
+/* 추가 버튼 */
+.btn-add {
+  background-color: #222e77;
+
+  &:hover {
+    background-color: #29378c;
+  }
+}
+
+.btn-add.sm {
+  width: 45px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* //추가 버튼 */
+
+.btn-excel {
+  width: auto;
+  height: 40px;
+  background: #222e77;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+
+  &:hover {
+    background: #29378c;
+  }
+
+  &:active {
+    background: #29378c;
+  }
+
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+/* ···버튼 */
+.btn-ellipsis {
+  width: 44px;
+  height: 40px;
+  background: url(../assets/icons/ico_ellipsis-btn.svg) no-repeat center / 18px auto;
+  background-color: #3e435e;
+
+  &:hover,
+  &:active {
+    background-color: #3c4973;
+  }
+}
+/* //···버튼 */

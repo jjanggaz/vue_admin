@@ -66,7 +66,7 @@
       </template>
 
       <template #cell-edit="{ item }">
-        <button class="btn-edit" @click.stop="editMenu(item)">
+        <button class="btn btn-edit sm" @click.stop="editMenu(item)">
           {{ t("common.edit") }}
         </button>
       </template>
@@ -347,23 +347,6 @@ onMounted(() => {
   }
 }
 
-.btn-edit {
-  width: 45px;
-  height: 32px;
-  background-color: #222E77;
-  color: white;
-  border: none;
-  padding: 0 4px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #29378C;
-  }
-}
-
 .column-regist {
   grid-template-columns: repeat(1, minmax(150px, 1fr));
   gap: 20px 10px;
@@ -381,62 +364,6 @@ onMounted(() => {
     color: #333333;
     font-size: 13px;
     font-weight: 600;
-  }
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 10px 0 0;
-
-  .btn {
-    width: 100%;
-    padding: 8px 16px;
-    justify-content: center;
-    font-weight: 600;
-  }
-
-  .btn:first-child {
-    min-width: 370px;
-
-    @media (max-width: 768px) {
-      width: calc(65% - 5px);
-      min-width: calc(65% - 5px);
-    }
-  }
-  .btn:last-child {
-    background-color: #707489;
-    color: #ffffff;
-    
-    &:hover {
-      background-color: #82869d;
-    }
-
-    @media (max-width: 768px) {
-      width: calc(35% - 5px);
-      min-width: calc(35% - 5px);
-    }
-  }
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &.btn-secondary {
-    background-color: #6b7280;
-    color: white;
-
-    &:hover {
-      background-color: #4b5563;
-    }
   }
 }
 

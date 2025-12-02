@@ -30,27 +30,27 @@
             class="search-input"
             @keyup.enter="handleSearch"
           />
-          <button class="btn-search" @click="handleSearch">
+          <button class="btn btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
       </div>
       <div class="btns">
         <button
-          class="btn btn-primary btn-delete"
+          class="btn btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length !== 1"
         >
           {{ t("common.delete") }}
         </button>
         <button
-          class="btn btn-primary btn-edit"
+          class="btn btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
           {{ t("common.edit") }}
         </button>
-        <button class="btn btn-primary btn-regist" @click="handleRegist">
+        <button class="btn btn-register" @click="handleRegist">
           {{ t("common.register") }}
         </button>
       </div>
@@ -78,7 +78,7 @@
         </span>
       </template>
       <template #cell-menu_permissions="{ item }">
-        <button class="btn-view" @click.stop="viewMenuPermissions(item)">
+        <button class="btn btn-view" @click.stop="viewMenuPermissions(item)">
           {{ t("common.view") }}
         </button>
       </template>
@@ -301,7 +301,7 @@
             </AccordionTable>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer lg">
           <button class="btn btn-secondary" @click="closeMenuPermissionsModal">
             {{ t("common.close") }}
           </button>
@@ -829,11 +829,6 @@ const closeMenuPermissionsModal = () => {
   border-radius: 4px;
 }
 
-.btns {
-  display: flex;
-  gap: 10px;
-}
-
 .modal-container {
   min-width: 900px;
   max-width: 1200px;
@@ -876,19 +871,6 @@ const closeMenuPermissionsModal = () => {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-}
-
-.modal-footer {
-  .btn {
-    &:first-child {
-      min-width: 770px;
-
-      @media (max-width: 1200px) {
-        width: calc(70% - 5px);
-        min-width: calc(70% - 5px);
-      }
-    }
-  }
 }
 
 .menu-permissions {

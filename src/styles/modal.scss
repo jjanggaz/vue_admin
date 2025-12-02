@@ -12,7 +12,8 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 9999;
 }
-.modal-container {
+.modal-container,
+.modal-content {
   display: flex;
   flex-direction: column;
   width: 90%;
@@ -81,19 +82,35 @@
 
   .btn {
     width: 100%;
-    padding: 8px 16px;
+    height: 40px;
+    padding: 0 16px;
     justify-content: center;
+    font-size: 16px;
     font-weight: 600;
+
+    &:disabled,
+    &:disabled:hover {
+      cursor: not-allowed;
+      background-color: #abaebd !important;
+      color: #ffffff;
+    }
   }
 
   .btn:first-child {
     min-width: 370px;
+    background-color: #222e77;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #29378c;
+    }
 
     @media (max-width: 768px) {
       width: calc(65% - 5px);
       min-width: calc(65% - 5px);
     }
   }
+
   .btn:last-child {
     background-color: #707489;
     color: #ffffff;
@@ -105,6 +122,64 @@
     @media (max-width: 768px) {
       width: calc(35% - 5px);
       min-width: calc(35% - 5px);
+    }
+  }
+
+  .btn-cancel::before {
+    background: none;
+  }
+}
+.modal-footer.lg {
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    padding: 10px 10px 0 0;
+  }
+
+  .btn {
+    width: 200px;
+    min-width: 200px;
+
+    &:first-child {
+      @media (max-width: 768px) {
+        width: calc(65% - 5px);
+        min-width: calc(65% - 5px);
+      }
+    }
+    &:last-child {
+      @media (max-width: 768px) {
+        width: calc(35% - 5px);
+        min-width: calc(35% - 5px);
+      }
+    }
+  }
+
+  .btn-cancel {
+    background-color: #707489;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #82869d;
+    }
+  }
+
+  .btn-confirm {
+    background-color: #222e77;
+    color: #fff;
+
+    &:hover {
+      background-color: #29378c;
+    }
+  }
+}
+.modal-footer.lg {
+  .btn {
+    &:first-child {
+      @media (max-width: 768px) {
+        width: 100%;
+        min-width: 100%;
+      }
     }
   }
 }

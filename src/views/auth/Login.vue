@@ -46,7 +46,7 @@
           </label>
         </div>
 
-        <button type="submit" class="btn btn-primary login-btn">
+        <button type="submit" class="btn login-btn">
           {{ t("login.loginBtn") }}
         </button>
       </form>
@@ -260,8 +260,13 @@ const handleLogin = async () => {
     width: 100%;
     height: 60px;
     padding: 10px 0;
+    background-color: #222e77;
     font-size: 20px;
     font-weight: 700;
+
+    &:hover {
+      background-color: #29378c;
+    }
   }
 }
 

@@ -52,10 +52,9 @@
             />
             <button
               type="button"
-              class="btn-ellipsis"
+              class="btn btn-ellipsis"
               @click="thumbnailFileInput?.click()"
             >
-              ...
             </button>
             <button
               v-if="thumbnailDownloadUrl"
@@ -78,7 +77,7 @@
       <div class="form-group right-align">
         <button
           type="button"
-          class="btn-register"
+          class="btn btn-register md"
           @click="handleThumbnailRegister"
           :disabled="!selectedUnit || !selectedMachine || !presetName"
         >
@@ -94,7 +93,7 @@
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
             -행 삭제
           </button>
-        <button type="button" class="btn-save" @click="handleSaveSelectedItems">
+        <button type="button" class="btn btn-save sm" @click="handleSaveSelectedItems">
           저장
           </button>
       </div>
@@ -3143,91 +3142,13 @@ select {
   flex-shrink: 0;
 }
 
-.btn-ellipsis {
-  flex-shrink: 0;
-  white-space: nowrap;
-  width: 44px;
-  height: 40px;
-  padding: 0 10px;
-  background: url(../../../assets/icons/ico_ellipsis-btn.svg) no-repeat center / 18px auto;
-  background-color: #3e435e;
-  border-radius: 4px;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-
-  &:hover,
-  &:active {
-    background-color: #3c4973;
-  }
-}
-
-.btn-download {
-  flex-shrink: 0;
-  white-space: nowrap;
-  width: 44px;
-  height: 40px;
-  padding: 0;
-  background-color: #3e435e;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-  position: relative;
-
-  &:hover,
-  &:active {
-    background-color: #3c4973;
-  }
-
-  .ico-download {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background: url(../../../assets/icons/ico_download.svg) no-repeat center / 24px auto;
-    display: block;
-  }
-}
-
-.btn-register {
-  height: 40px;
-  background: #222e77;
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #29378c;
-  } 
-
-  &:active {
-    background: #29378c;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-}
-
 .btn-add-row,
 .btn-delete-row {
   height: 32px;
+  line-height: 32px;
   padding: 0 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -3251,25 +3172,6 @@ select {
   &:hover,
   &:active {
     background: #3c4973;
-  }
-}
-
-.btn-save {
-  height: 32px;
-  padding: 0 10px;
-  border: none;
-  border-radius: 4px;
-  background: #0863e2;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background .2s ease-in-out;
-
-  &:hover,
-  &:active {
-    background: #0067F5;
   }
 }
 
@@ -3739,8 +3641,9 @@ select {
 .btn-reset,
 .btn-toggle-all {
   height: 32px;
+  line-height: 32px;
   padding: 0 10px;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #3e435e;
   color: #ffffff;
   font-size: 14px;
@@ -3755,8 +3658,9 @@ select {
 
 .btn-add-selection {
   height: 32px;
+  line-height: 32px;
   padding: 0 10px;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #222e77;
   color: white;
   font-size: 14px;

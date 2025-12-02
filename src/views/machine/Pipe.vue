@@ -57,7 +57,7 @@
                   isDetailSearchOpen ? "▲" : "▼"
                 }}</span>
               </button>
-              <button class="btn-search" @click="handleSearch">
+              <button class="btn btn-search" @click="handleSearch">
                 {{ t("common.search") }}
               </button>
             </div>
@@ -402,13 +402,13 @@
           <h2>배관 리스트</h2>
           <div class="action-buttons">
             <button
-              class="btn btn-primary btn-register"
+              class="btn btn-register"
               @click="openRegistModal"
             >
               {{ t("common.register") }}
             </button>
             <button
-              class="btn btn-primary btn-delete"
+              class="btn btn-delete"
               @click="handleDelete"
               :disabled="selectedItems.length === 0"
             >
@@ -524,7 +524,7 @@
 
           <!-- 상세정보 액션 슬롯 -->
           <template #cell-details="{ item }">
-            <button class="btn-view" @click.stop="openDetailPanel(item)">
+            <button class="btn btn-view" @click.stop="openDetailPanel(item)">
               {{ t("common.view") }}
             </button>
           </template>
@@ -555,21 +555,21 @@
             <div class="header-buttons">
               <button
                 v-if="!isDetailEditMode"
-                class="btn-edit"
+                class="btn btn-edit sm"
                 @click="toggleEditMode"
               >
                 {{ t("common.edit") }}
               </button>
               <button
                 v-if="isDetailEditMode"
-                class="btn-save"
+                class="btn btn-save sm"
                 @click="saveDetailChanges"
               >
                 {{ t("common.save") }}
               </button>
               <button
                 v-if="isDetailEditMode"
-                class="btn-cancel"
+                class="btn btn-cancel sm"
                 @click="cancelEditMode"
               >
                 {{ t("common.cancel") }}
@@ -767,7 +767,7 @@
                 >
                 <button
                   type="button"
-                  class="btn-file"
+                  class="btn btn-file"
                   @click="registerExcelFileInput?.click()"
                 >
                   {{ t("common.selectFile") }}
@@ -793,14 +793,14 @@
               >
                 <button
                   type="button"
-                  class="btn-outline"
+                  class="btn btn-excel"
                   @click.prevent="onDownloadExcelTemplate"
                 >
                   {{ t("common.excelTemplateDownload") }}
                 </button>
                 <button
                   type="button"
-                  class="btn-register"
+                  class="btn btn-register md"
                   @click="handlePipeRegister"
                 >
                   {{ t("common.pipeRegistration") }}
@@ -815,7 +815,7 @@
                 <div class="file-upload-group">
                   <button
                     type="button"
-                    class="btn-file"
+                    class="btn btn-file"
                     @click="registerBulkFileInput?.click()"
                   >
                     {{ t("common.bulkModelUpload") }}
@@ -836,7 +836,7 @@
                   />
                   <button
                     type="button"
-                    class="btn-register"
+                    class="btn btn-register md"
                     @click="handleModelRegister"
                   >
                     {{ t("common.modelRegister") }}
@@ -899,7 +899,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer code-modal">
+        <div class="modal-footer lg">
           <button class="btn btn-secondary" @click="closeRegistModal">
             {{ t("common.close") }}
           </button>
@@ -3668,44 +3668,6 @@ onMounted(async () => {
       display: flex;
       align-items: center;
       gap: 10px;
-
-      .btn-edit,
-      .btn-save,
-      .btn-cancel {
-        width: 45px;
-        height: 32px;
-        line-height: 32px;
-        border-radius: 4px;
-        color: #ffffff;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.2s ease-in-out;
-      }
-
-      .btn-edit {
-        background: #222e77;
-
-        &:hover {
-          background: #29378c;
-        }
-      }
-
-      .btn-save {
-        background: #0863e2;
-
-        &:hover {
-          background: #0067f5;
-        }
-      }
-
-      .btn-cancel {
-        background: #3e435e;
-
-        &:hover {
-          background: #3c4973;
-        }
-      }
     }
   }
 
@@ -3946,9 +3908,6 @@ onMounted(async () => {
 }
 
 // VerticalDataTable 스타일 오버라이드
-.detail-section :deep(.vertical-data-table-container) {
-  
-}
 
 .detail-section :deep(.vertical-data-table) {
   font-size: 0.875rem;
@@ -4395,27 +4354,6 @@ $tablet: 1024px;
       justify-content: flex-end;
     }
   }
-  .btn-register {
-    height: 40px;
-    background: #222e77;
-    color: white;
-    border-radius: 4px;
-    padding: 0 10px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s ease;
-    flex-shrink: 0;
-  
-    &:hover {
-      background: #29378c;
-    } 
-  
-    &:active {
-      background: #29378c;
-    }
-  }
 }
 
 .label {
@@ -4511,62 +4449,6 @@ select {
   .file-name-input {
     flex: 1;
   }
-
-  button {
-    height: 40px;
-    padding: 0 10px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background .2s ease-in-out;
-  }
-
-  .btn-file {
-    flex-shrink: 0;
-    white-space: nowrap;
-    height: 40px;
-    padding: 0 10px;
-    background: #3e435e;
-    border-radius: 4px;
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-    transition: background 0.2s ease;
-    cursor: pointer;
-
-    &:hover {
-      background: #3c4973;
-    }
-
-    &:active {
-      background: #3c4973;
-    }
-  }
-}
-
-.btn-outline {
-  height: 40px;
-  background: #222e77;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background .2s ease;
-
-  &:hover {
-    background: #29378c;
-  }
-
-  &:active {
-    background: #29378c;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
 }
 
 .section-header {
@@ -4645,61 +4527,5 @@ select {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-}
-
-.modal-footer {
-  justify-content: flex-end;
-
-  @media (max-width: 768px) {
-    justify-content: center;
-    padding: 10px 10px 0 0;
-  }
-
-  .btn {
-    width: 200px;
-    min-width: 200px;
-
-    &:first-child {
-      @media (max-width: 768px) {
-        width: calc(65% - 5px);
-        min-width: calc(65% - 5px);
-      }
-    }
-    &:last-child {
-      @media (max-width: 768px) {
-        width: calc(35% - 5px);
-        min-width: calc(35% - 5px);
-      }
-    }
-  }
-
-  .btn-cancel {
-    background-color: #707489;
-    color: #ffffff;
-
-    &:hover {
-      background-color: #82869d;
-    }
-  }
-
-  .btn-confirm {
-    background-color: #222e77;
-    color: #fff;
-
-    &:hover {
-      background-color: #29378c;
-    }
-  }
-}
-
-.modal-footer.code-modal {
-  .btn {
-    &:first-child {
-      @media (max-width: 768px) {
-        width: 100%;
-        min-width: 100%;
-      }
-    }
-  }
 }
 </style>

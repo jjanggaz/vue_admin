@@ -332,7 +332,7 @@
               <dt>{{ t("common.symbolUpload") }}</dt>
               <dd>
                 <div class="file-upload-row">
-                  <label class="file-select-btn">
+                  <label class="btn btn-file">
                     {{ t("common.selectFile") }}
                     <input
                       type="file"
@@ -377,7 +377,7 @@
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="metricFileUpload">
-                    <label class="file-select-btn">
+                    <label class="btn btn-file">
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
@@ -444,7 +444,7 @@
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="uscsFileUpload">
-                    <label class="file-select-btn">
+                    <label class="btn btn-file">
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
@@ -502,7 +502,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer lg">
           <button
             class="btn btn-confirm"
             @click="createNewTab"
@@ -600,7 +600,7 @@
               <dt>{{ t("common.symbolUpload") }}</dt>
               <dd>
                 <div class="file-upload-row">
-                  <label class="file-select-btn">
+                  <label class="btn btn-file">
                     {{ t("common.selectFile") }}
                     <input
                       type="file"
@@ -653,7 +653,7 @@
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="updateMetricFileUpload">
-                    <label class="file-select-btn">
+                    <label class="btn btn-file">
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
@@ -727,7 +727,7 @@
                 <dt class="essential">{{ t("outflow.uploadFormula") }}</dt>
                 <dd>
                   <div class="file-upload-row" id="updateUscsFileUpload">
-                    <label class="file-select-btn">
+                    <label class="btn btn-file">
                       {{ t("common.selectFile") }}
                       <input
                         type="file"
@@ -794,7 +794,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer lg">
           <button
             class="btn btn-confirm"
             @click="updateTab"
@@ -827,7 +827,7 @@
         <div class="modal-body">
           <WaterCodeManagement :flowDirection="'EFFLUENT'" />
         </div>
-        <div class="modal-footer code-modal">
+        <div class="modal-footer lg">
           <button class="btn btn-cancel" @click="closeCodeManagementModal">
             {{ t("common.close") }}
           </button>
@@ -2822,104 +2822,9 @@ onBeforeUnmount(() => {
   }
 }
 
+/* Modal Styles */
 .modal-content {
-  width: 100%;
   max-width: 90%;
-  max-height: 90vh;
-  padding: 20px 10px 20px 20px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-
-  &.with-scroll {
-    overflow-y: auto;
-  }
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: #dddddd;
-    border-radius: 3px;
-
-    &:hover {
-      background-color: #b9b9b9;
-    }
-  }
-  &::-webkit-scrollbar-button:start:decrement,
-  &::-webkit-scrollbar-button:end:increment {
-    display: block;
-    height: 70px;
-    width: 0;
-    background-color: transparent;
-  }
-
-  // 반응형 처리
-  @media (max-width: 768px) {
-    max-width: 95%;
-
-    .column-regist {
-      flex-wrap: wrap;
-    }
-  }
-}
-
-.modal-footer {
-  justify-content: flex-end;
-
-  @media (max-width: 768px) {
-    justify-content: center;
-    padding: 10px 10px 0 0;
-  }
-
-  .btn {
-    width: 200px;
-    min-width: 200px;
-
-    &:first-child {
-      @media (max-width: 768px) {
-        width: calc(65% - 5px);
-        min-width: calc(65% - 5px);
-      }
-    }
-    &:last-child {
-      @media (max-width: 768px) {
-        width: calc(35% - 5px);
-        min-width: calc(35% - 5px);
-      }
-    }
-  }
-
-  .btn-cancel {
-    background-color: #707489;
-    color: #ffffff;
-
-    &:hover {
-      background-color: #82869d;
-    }
-  }
-
-  .btn-confirm {
-    background-color: #222e77;
-    color: #fff;
-
-    &:hover {
-      background-color: #29378c;
-    }
-  }
-}
-
-.modal-footer.code-modal {
-  .btn {
-    &:first-child {
-      @media (max-width: 768px) {
-        width: 100%;
-        min-width: 100%;
-      }
-    }
-  }
 }
 
 dl.column-regist {

@@ -98,7 +98,7 @@
 
           <div class="group-form">
             <div class="form-item button-group">
-              <button class="btn btn-primary btn-search" @click="handleSearch">
+              <button class="btn btn-search" @click="handleSearch">
                 {{ t("common.search") }}
               </button>
             </div>
@@ -107,11 +107,11 @@
       </div>
 
       <div class="btns">
-        <button class="btn btn-primary btn-regist" @click="handleRegist">
+        <button class="btn btn-register" @click="handleRegist">
           {{ t("common.register") }}
         </button>
         <button
-          class="btn btn-primary btn-delete"
+          class="btn btn-delete"
           @click="handleDelete"
           :disabled="processStore.selectedItems.length === 0"
         >
@@ -153,7 +153,7 @@
 
       <!-- 보기 버튼 슬롯 -->
       <template #cell-viewDetail="{ item }">
-        <button class="btn-view" @click.stop="viewDetail(item)">
+        <button class="btn btn-view" @click.stop="viewDetail(item)">
           {{ t("process.viewDetail") }}
         </button>
       </template>
@@ -263,7 +263,7 @@
                     ref="processSymbolFileInput"
                     id="processSymbolFileInput"
                   />
-                  <label for="processSymbolFileInput" class="file-select-btn">
+                  <label for="processSymbolFileInput" class="btn btn-file">
                     {{ t("common.selectFile") }}
                   </label>
                   <span class="selected-file">{{
@@ -278,11 +278,11 @@
           <div class="file-upload-section">
             <h4>{{ t("process.fileUpload") }}</h4>
             <div class="grid-actions">
-              <button class="btn btn-primary btn-sm" @click="addFileUploadRow">
+              <button class="btn btn-primary" @click="addFileUploadRow">
                 {{ t("process.addRow") }}
               </button>
               <button
-                class="btn btn-danger btn-sm"
+                class="btn btn-danger"
                 @click="deleteSelectedFileRows"
                 :disabled="selectedFileRows.length === 0"
               >
@@ -329,7 +329,7 @@
                     <td>
                       <div class="file-input-group">
                         <button
-                          class="btn btn-primary btn-sm"
+                          class="btn btn-primary"
                           @click="selectFormulaFile(row)"
                         >
                           {{ t("common.selectFile") }}
@@ -356,7 +356,7 @@
                     <td>
                       <div class="file-input-group">
                         <button
-                          class="btn btn-primary btn-sm"
+                          class="btn btn-primary"
                           @click="selectPfdFile(row)"
                         >
                           {{ t("common.selectFile") }}
@@ -1668,24 +1668,6 @@ onMounted(async () => {
           }
         }
 
-        // 공정구분 셀렉트 폭 조정
-        // &:nth-child(3) .form-select {
-        //   max-width: 150px;
-        //   min-width: 120px;
-        // }
-
-        // 공정중분류 셀렉트 폭 조정
-        // &:nth-child(4) .form-select {
-        //   max-width: 180px;
-        //   min-width: 150px;
-        // }
-
-        // 공정명 셀렉트 폭 조정
-        // &:nth-child(5) .form-select {
-        //   max-width: 200px;
-        //   min-width: 180px;
-        // }
-
         // 라벨 폭 조정
         .label-title {
           font-size: 16px;
@@ -1702,12 +1684,6 @@ onMounted(async () => {
         flex: 0 0 auto;
         min-width: 0;
 
-        // 셀렉트 폭 조정
-        // .form-select {
-        //   max-width: 100px;
-        //   min-width: 80px;
-        // }
-
         // 라벨 폭 조정
         .label-title {
           font-size: 16px;
@@ -1721,12 +1697,6 @@ onMounted(async () => {
 
   .group-form {
     min-width: 0;
-
-    // 셀렉트 폭 조정
-    // .form-select {
-    //   max-width: 180px;
-    //   min-width: 120px;
-    // }
 
     // 버튼 그룹 스타일
     .button-group {
@@ -1815,110 +1785,6 @@ onMounted(async () => {
   }
 }
 
-// // 모달 오버레이 스타일
-// .modal-overlay {
-//   position: fixed;
-//   top: 0;
-//   left: 0;
-//   width: 100%;
-//   height: 100%;
-//   background: rgba(0, 0, 0, 0.5);
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   z-index: 9998;
-// }
-
-// // 등록 모달 스타일
-// .modal-container {
-//   position: fixed;
-//   top: 50%;
-//   left: 50%;
-//   transform: translate(-50%, -50%);
-//   min-height: 600px;
-//   max-height: 80vh;
-//   min-width: 1200px;
-//   max-width: 95vw;
-//   overflow-y: auto;
-//   overflow-x: auto;
-//   z-index: 9999;
-
-//   .modal-header {
-//     cursor: default;
-//     padding: 5px 0 2px 0;
-//     margin: 0;
-//   }
-
-//   .modal-body {
-//     padding: 1rem 2.5rem 2.5rem 2.5rem;
-//     min-height: 400px;
-
-//     .column-regist {
-//       // 기존 grid 레이아웃 제거
-//       display: block;
-
-//       // 공정구분/중분류/공정명 3개 항목을 한 줄에 배치
-//       .process-row-3col {
-//         display: flex;
-//         gap: 2rem;
-//         margin-bottom: 1.5rem;
-
-//         .form-group {
-//           flex: 1 1 0;
-//           display: flex;
-//           align-items: center;
-//           gap: 1rem;
-
-//           dt {
-//             flex: 0 0 auto;
-//             margin: 0;
-//             font-weight: bold;
-//             font-size: 1rem;
-//             line-height: 1.4;
-//             color: #333;
-//             &.essential::after {
-//               content: " *";
-//               color: #dc3545;
-//             }
-//           }
-//           dd {
-//             flex: 1 1 0;
-//             margin: 0;
-//             .form-select {
-//               width: 100%;
-//               max-width: 400px;
-//               border: 1px solid #e7e6ed;
-//               border-radius: 4px;
-//               background-color: white;
-//               font-size: 14px;
-//               height: 40px;
-//               line-height: 1.2;
-//               &:focus {
-//                 outline: none;
-//                 border-color: #007bff;
-//                 box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-//               }
-//             }
-//           }
-//         }
-//       }
-
-//       // 공정심볼을 한 줄에 배치
-//       dt.essential + dd.process-symbol-row {
-//         display: inline-block;
-//         margin-bottom: 1rem;
-//       }
-
-//       // 공정심볼 라벨을 인라인으로 배치
-//       dt.essential {
-//         display: inline-block;
-//         margin-right: 1rem;
-//         margin-bottom: 0;
-//       }
-//     }
-//   }
-// }
-
 // 공정심볼 행 스타일
 .process-symbol-row {
   display: flex;
@@ -1935,22 +1801,6 @@ onMounted(async () => {
     background-color: white;
     font-size: 0.95rem;
     height: 48px;
-  }
-
-  .file-select-btn {
-    white-space: nowrap;
-    padding: 1rem 2rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    height: 48px;
-
-    &:hover {
-      background-color: #0056b3;
-    }
   }
 }
 
@@ -2010,21 +1860,6 @@ onMounted(async () => {
           border-radius: 4px;
           background-color: white;
           font-size: 0.875rem;
-        }
-
-        .file-select-btn {
-          padding: 0.5rem 1rem;
-          background-color: #007bff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 0.875rem;
-          white-space: nowrap;
-
-          &:hover {
-            background-color: #0056b3;
-          }
         }
       }
 
@@ -2222,23 +2057,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.file-select-btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  white-space: nowrap;
-  display: inline-block;
-  text-align: center;
-}
-
-.file-select-btn:hover {
-  background: #0056b3;
 }
 
 .selected-file {

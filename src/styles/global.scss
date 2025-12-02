@@ -190,77 +190,12 @@ body {
   align-items: center;
   margin-bottom: 20px;
 
-  .btns {
-    .btn {
-      &:disabled {
-        background-color: #abaebd;
-        
-        &:hover {
-          background-color: #abaebd;
-        }
-      }
-    }
-  }
-
-  .btn.btn-delete {
-    color: #ffffff;
-    background-color: #3e435e;
-
-    &:hover {
-      background-color: #3c4973;
-    }
-    &:disabled {
-      background-color: #abaebd;
-    }
-  }
-
   .title {
     display: flex;
     align-items: center;
     font-size: $font-size-lg;
     font-weight: $font-weight-bold;
     color: $text-color;
-  }
-
-  .btns {
-    button {
-      font-size: $font-size-base;
-      font-weight: $font-weight-md;
-      border-radius: $border-radius-sm;
-      transition: $transition-base;
-      color: white;
-      background-color: #222E77;
-      &:hover {
-        background-color: #29378C;
-      }
-      &:disabled:hover {
-        background-color: #abaebd;
-      }
-    }
-  }
-
-  .add-button {
-    display: flex;
-    align-items: center;
-    gap: $spacing-xs;
-    padding: $spacing-sm $spacing-lg;
-    border: none;
-    border-radius: $border-radius-md;
-    background: linear-gradient(135deg, #4f46e5, #3b82f6);
-    color: white;
-    font-weight: $font-weight-md;
-    cursor: pointer;
-    transition: $transition-base;
-
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: $shadow-md;
-    }
-
-    .plus-icon {
-      font-size: $font-size-lg;
-      font-weight: bold;
-    }
   }
 }
 
@@ -308,32 +243,6 @@ body {
     background: #f9fafb;
     color: #111827;
   }
-
-  .file-select-btn {
-    display: inline-block;
-    text-align: center;
-    min-width: 70px;
-    height: 40px;
-    line-height: 40px;
-    padding: 0 8px;
-    background: #3e435e;
-    border: none;
-    border-radius: 4px;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-      background: #3c4973;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-  }
 }
 
 .search-bar {
@@ -361,7 +270,6 @@ body {
   gap: 15px;
   align-items: center;
 }
-
 
 .filter-item {
   display: flex;

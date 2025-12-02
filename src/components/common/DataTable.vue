@@ -552,14 +552,14 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   tbody {
     .data-row {
-      transition: $transition-fast;
+      transition: $transition-base;
 
       & td:nth-of-type(3) {
         text-align: left;
       }
 
       &:hover {
-        background-color: #e6f4fc;
+        background-color: #e3f1fa;
       }
     }
 

@@ -43,7 +43,7 @@
       <div class="group-form inline">
         <span class="label">{{ t("common.formulaFile") }}</span>
         <div class="file-input-wrapper">
-          <button class="btn-file" @click="formulaFileInput?.click()">
+          <button class="btn btn-file" @click="formulaFileInput?.click()">
             {{ t("common.fileSelect") }}
           </button>
           <input
@@ -64,7 +64,7 @@
       <div class="group-form inline">
         <span class="label">{{ t("common.dtdModel") }}</span>
         <div class="file-input-wrapper">
-          <button class="btn-file" @click="dtdFileInput?.click()">
+          <button class="btn btn-file" @click="dtdFileInput?.click()">
             {{ t("common.fileSelect") }}
           </button>
           <input
@@ -85,7 +85,7 @@
       <div class="group-form inline">
         <span class="label">{{ t("common.modelThumbnail") }}</span>
         <div class="file-input-wrapper">
-          <button class="btn-file" @click="thumbnailFileInput?.click()">
+          <button class="btn btn-file" @click="thumbnailFileInput?.click()">
             {{ t("common.fileSelect") }}
           </button>
           <input
@@ -107,7 +107,7 @@
       <div class="group-form inline">
         <span class="label">{{ t("common.revitModel3D") }}</span>
         <div class="file-input-wrapper">
-          <button class="btn-file" @click="revitFileInput?.click()">
+          <button class="btn btn-file" @click="revitFileInput?.click()">
             {{ t("common.fileSelect") }}
           </button>
           <input
@@ -142,7 +142,7 @@
       </div>
       <div class="section-actions">
         <button
-          class="btn-outline btn-delete"
+          class="btn btn-delete sm"
           @click.prevent="onDeleteSelectedEditMode"
         >
           {{ t("common.delete") }}
@@ -785,24 +785,6 @@ $desktop: 1200px;
   }
 }
 
-.btn-outline {
-  width: 45px;
-  height: 32px;
-  line-height: 32px;
-  padding: 0;
-  background: #3e435e;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background-color .2s ease-in-out;
-
-  &:hover {
-    background-color: #3c4973;
-  }
-}
-
 .file-upload-group {
   display: flex;
   align-items: center;
@@ -841,60 +823,7 @@ $desktop: 1200px;
   }
 }
 
-.btn-file {
-  width: 88px;
-  background: #3e435e;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.2s ease-in-out;
-
-  &:hover {
-    background: #3c4973;
-  }
-
-  &:active {
-    background: #3c4973;
-  }
-}
-
-.btn-register {
-  @media (max-width: $mobile) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-  }
-}
-
-.btn-update {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #2563eb;
-  }
-
-  &:active {
-    background: #1d4ed8;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-}
-
 .section-title {
-  margin: 10px 0;
   font-weight: 600;
   font-size: 16px;
 
@@ -948,10 +877,6 @@ $desktop: 1200px;
 
   .input {
     flex: 1;
-  }
-
-  .btn-file {
-    flex-shrink: 0;
   }
 }
 

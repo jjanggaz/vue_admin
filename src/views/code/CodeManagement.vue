@@ -111,7 +111,7 @@
             </option>
           </select>
         </div>
-        <button class="btn-search" @click="handleSearch">
+        <button class="btn btn-search" @click="handleSearch">
           {{ t("common.search") }}
         </button>
       </div>
@@ -123,27 +123,27 @@
       <div class="table-section">
         <div class="action-buttons">
           <button
-            class="btn btn-secondary btn-register"
+            class="btn btn-register"
             @click="handleSingleRegist"
           >
             {{ t("common.register") }}
           </button>
           <button
-            class="btn btn-secondary btn-multi-register"
+            class="btn btn-multi-register"
             @click="handleMultiRegist"
             :disabled="!searchCodeGroupInput"
           >
             {{ t("common.multiRegister") }}
           </button>
           <button
-            class="btn btn-secondary btn-edit"
+            class="btn btn-edit"
             @click="handleEdit"
             :disabled="selectedItems.length !== 1"
           >
             {{ t("common.edit") }}
           </button>
           <button
-            class="btn btn-secondary btn-delete"
+            class="btn btn-delete"
             @click="handleDelete"
             :disabled="selectedItems.length === 0"
           >

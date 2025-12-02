@@ -8,14 +8,14 @@
             <h3>{{ t("waterCode.parameterList") }}</h3>
             <div class="header-buttons">
               <button
-                class="btn btn-update"
+                class="btn btn-update sm"
                 @click="handleUpdateClick"
                 :disabled="!selectedParameter"
               >
                 {{ t("common.update") }}
               </button>
               <button
-                class="btn btn-danger"
+                class="btn btn-delete sm"
                 @click="handleDeleteClick"
                 :disabled="!selectedParameter"
               >
@@ -125,7 +125,7 @@
                 </button>
                 <button
                   type="submit"
-                  class="btn btn-primary"
+                  class="btn btn-regist sm"
                   :disabled="isSubmitting"
                 >
                   {{
@@ -485,43 +485,6 @@ const resetForm = () => {
           gap: 10px;
           align-items: center;
         }
-
-        .btn {
-          width: 45px;
-          height: 32px;
-          padding: 0 8px;
-          border-radius: $border-radius-sm;
-          border: 1px solid transparent;
-          color: #ffffff;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &.btn-update {
-            background-color: #222e77;
-            
-            &:hover {
-              background-color: #29378c;
-            }
-            &:disabled {
-              background-color: #abaebd;
-              cursor: not-allowed;
-            }
-          }
-
-          &.btn-danger {
-            background-color: #3e435e;
-            
-            &:hover {
-              background-color: #3c4973;
-            }
-            &:disabled {
-              background-color: #abaebd;
-              cursor: not-allowed;
-            }
-          }
-        }
       }
     }
 
@@ -702,40 +665,6 @@ const resetForm = () => {
     padding-top: 10px;
     border-top: 1px solid #000000;
     flex-shrink: 0;
-
-    .btn {
-      width: 45px;
-      height: 32px;
-      padding: 0 8px;
-      border-radius: $border-radius-sm;
-      border: 1px solid transparent;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      &.btn-secondary {
-        background-color: white;
-        border-color: $border-color;
-        color: $text-color;
-        &:hover:not(:disabled) {
-          background-color: $background-light;
-        }
-      }
-
-      &.btn-danger {
-        background-color: $error-color;
-        color: white;
-        &:hover:not(:disabled) {
-          background-color: darken($error-color, 10%);
-        }
-      }
-    }
   }
 }
 </style>

@@ -62,7 +62,7 @@
           </select>
         </div>
         <div class="filter-item">
-          <button class="btn-search" @click="handleSearch">
+          <button class="btn btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
@@ -73,18 +73,18 @@
     <div class="structure-list-header">
       <h2>{{ t("common.structureList") }}</h2>
       <div class="action-buttons">
-        <button class="btn btn-primary btn-register" @click="openRegistModal">
+        <button class="btn btn-register" @click="openRegistModal">
           {{ t("common.register") }}
         </button>
         <button
-          class="btn btn-primary btn-edit"
+          class="btn btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
           {{ t("common.edit") }}
         </button>
         <button
-          class="btn btn-primary btn-delete"
+          class="btn btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length === 0"
         >
@@ -202,7 +202,7 @@
             />
           </template>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer lg">
           <button
             v-if="!isEditMode"
             class="btn btn-primary"
@@ -702,51 +702,6 @@ onMounted(async () => {
 // 반응형 브레이크포인트
 $mobile: 768px;
 $tablet: 1024px;
-
-.modal-footer {
-  justify-content: flex-end;
-
-  @media (max-width: $mobile) {
-    justify-content: center;
-    padding: 10px 10px 0 0;
-  }
-
-  .btn {
-    width: 200px;
-    min-width: 200px;
-
-    &:first-child {
-      @media (max-width: $mobile) {
-        width: calc(65% - 5px);
-        min-width: calc(65% - 5px);
-      }
-    }
-    &:last-child {
-      @media (max-width: $mobile) {
-        width: calc(35% - 5px);
-        min-width: calc(35% - 5px);
-      }
-    }
-  }
-
-  .btn-confirm {
-    background-color: #222e77;
-    color: #fff;
-
-    &:hover {
-      background-color: #29378c;
-    }
-  }
-
-  .btn-secondary {
-    background-color: #707489;
-    color: #ffffff;
-
-    &:hover {
-      background-color: #82869d;
-    }
-  }
-}
 
 .tabs-wrapper {
   display: flex;

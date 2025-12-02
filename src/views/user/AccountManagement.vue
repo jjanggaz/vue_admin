@@ -32,27 +32,27 @@
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">
+          <button class="btn btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
         </div>
       </div>
       <div class="btns">
         <button
-          class="btn btn-primary btn-delete"
+          class="btn btn-delete"
           @click="handleDelete"
           :disabled="selectedItems.length !== 1"
         >
           {{ t("common.delete") }}
         </button>
         <button
-          class="btn btn-primary btn-edit"
+          class="btn btn-edit"
           @click="handleEdit"
           :disabled="selectedItems.length !== 1"
         >
           {{ t("common.edit") }}
         </button>
-        <button class="btn btn-primary btn-regist" @click="handleRegist">
+        <button class="btn btn-register" @click="handleRegist">
           {{ t("common.register") }}
         </button>
       </div>
@@ -158,7 +158,7 @@
               <div v-if="!showPasswordChange">
                 <button
                   type="button"
-                  class="btn btn-secondary btn-change-password"
+                  class="btn btn-change-password"
                   @click="showPasswordChange = true"
                 >
                   {{ t("common.changePassword") }}
@@ -173,7 +173,7 @@
                 />
                 <button
                   type="button"
-                  class="btn btn-secondary btn-cancel-password"
+                  class="btn btn-cancel-password"
                   @click="cancelPasswordChange"
                 >
                   {{ t("common.changePasswordCancel") }}
@@ -945,6 +945,7 @@ dl.column-regist {
       height: 40px;
       padding: 0 10px;
       background: #3e435e;
+      border-radius: 5px;
       color: #ffffff;
       font-size: 16px;
       font-weight: 500;
@@ -962,7 +963,13 @@ dl.column-regist {
 .btn-cancel-password {
   width: 100%;
   padding: 0 10px;
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 500;
+  background-color: #3e435e;
+
+  &:hover {
+    background-color: #3c4973; 
+  }
 }
 
 .btn-cancel-password {

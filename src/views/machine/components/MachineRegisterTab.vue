@@ -26,7 +26,7 @@
         <div class="file-upload-group">
           <button
             type="button"
-            class="btn-file"
+            class="btn btn-file"
             @click="excelFileInput?.click()"
           >
             {{ t("common.selectFile") }}
@@ -50,14 +50,14 @@
       <div class="group-form inline right-align">
         <button
           type="button"
-          class="btn-outline"
+          class="btn btn-excel"
           @click.prevent="onDownloadExcelTemplate"
         >
           {{ t("common.excelTemplateDownload") }}
         </button>
         <button
           type="button"
-          class="btn-register"
+          class="btn btn-register lg"
           @click="handleMachineRegister"
         >
           {{ t("common.machineRegister") }}
@@ -72,7 +72,7 @@
         <div class="file-upload-group">
           <button
             type="button"
-            class="btn-file"
+            class="btn btn-file lg"
             @click="bulkFileInput?.click()"
           >
             {{ t("common.bulkModelUpload") }}
@@ -93,7 +93,7 @@
           />
           <button
             type="button"
-            class="btn-register"
+            class="btn btn-register lg"
             @click="handleModelRegister"
           >
             {{ t("common.modelRegister") }}
@@ -822,7 +822,7 @@ $desktop: 1200px;
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   min-width: 0; // flex 아이템이 축소될 수 있도록 함
 
   &.wide {
@@ -942,32 +942,6 @@ select {
   }
 }
 
-.btn-outline {
-  height: 40px;
-  background: #222e77;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background .2s ease;
-
-  &:hover {
-    background: #29378c;
-  }
-
-  &:active {
-    background: #29378c;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-}
-
 .file-upload-group {
   display: flex;
   align-items: center;
@@ -1004,55 +978,6 @@ select {
   @media (max-width: $mobile) {
     font-size: 12px;
     padding: 6px 8px;
-  }
-}
-
-.btn-file {
-  flex-shrink: 0;
-  white-space: nowrap;
-  height: 40px;
-  padding: 0 10px;
-  background: #3e435e;
-  border-radius: 4px;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    background: #3c4973;
-  }
-
-  &:active {
-    background: #3c4973;
-  }
-}
-
-.btn-register {
-  height: 40px;
-  background: #222e77;
-  color: white;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #29378c;
-  } 
-
-  &:active {
-    background: #29378c;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 6px 12px;
-    font-size: 12px;
   }
 }
 
@@ -1097,12 +1022,6 @@ select {
 
   @media (max-width: $mobile) {
     gap: 6px;
-  }
-}
-.btn-register {
-  @media (max-width: $mobile) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
   }
 }
 

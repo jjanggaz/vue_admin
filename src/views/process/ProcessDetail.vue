@@ -120,7 +120,7 @@
               <button
                 type="button"
                 @click="processSymbolInput?.click()"
-                class="file-select-btn"
+                class="btn btn-file"
               >
                 {{ t("common.selectFile") }}
               </button>
@@ -137,7 +137,7 @@
                   processStore.selectedFiles['processSymbol']
                 "
                  @click="downloadProcessSymbol"
-                 class="btn btn-sm btn-outline-primary download-btn"
+                 class="btn download-btn"
                  :title="t('processDetail.downloadProcessSymbol')"
                  style="vertical-align: middle"
                >
@@ -179,7 +179,7 @@
 
         <!-- 등록 버튼을 우측 위에 배치 -->
         <div class="register-button-container">
-          <button @click="handleMainSave" class="btn btn-primary save-btn">
+          <button @click="handleMainSave" class="btn btn-register">
             {{ t("processDetail.register") }}
           </button>
         </div>
@@ -205,12 +205,12 @@
             class="tab-actions"
             v-if="!props.isRegisterMode || isBasicInfoRegistered"
           >
-            <button @click="openFormulaModal" class="btn btn-primary">
+            <button @click="openFormulaModal" class="btn btn-add sm">
               {{ t("common.add") }}
             </button>
             <button
               @click="handleFormulaDelete"
-              class="btn btn-danger"
+              class="btn btn-delete sm"
               :disabled="
                 !selectedFormulaItems ||
                 (Array.isArray(selectedFormulaItems) &&
@@ -219,7 +219,7 @@
             >
               {{ t("common.delete") }}
             </button>
-            <button @click="handleFormulaSave" class="btn btn-success">
+            <button @click="handleFormulaSave" class="btn btn-save sm">
               {{ t("processDetail.save") }}
             </button>
           </div>
@@ -268,7 +268,7 @@
                 <button
                   type="button"
                   @click="selectFormulaFile(item)"
-                  class="file-select-btn"
+                  class="btn btn-file sm"
                 >
                   {{ t("common.selectFile") }}
                 </button>
@@ -281,7 +281,7 @@
                   <button
                     v-if="item.formula_id"
                     @click="downloadFormulaFromList(item)"
-                    class="btn btn-sm btn-outline-primary download-btn"
+                    class="btn download-btn sm"
                     :title="t('processDetail.downloadFormula')"
                   >
                     <span class="ico-download"></span>
@@ -292,7 +292,7 @@
           </template>
           <template #cell-component="{ item, index }">
             <button
-              class="file-select-btn"
+              class="btn btn-file sm"
               @click="toggleComponentsGrid(item, index)"
               :title="t('processDetail.componentList') + ' ' + t('processDetail.view')"
             >
@@ -353,17 +353,17 @@
                 (props.isRegisterMode && isBasicInfoRegistered)
               "
             >
-              <button @click="openPfdModal" class="btn btn-primary">
+              <button @click="openPfdModal" class="btn btn-add sm">
                 {{ t("common.add") }}
               </button>
               <button
                 @click="handlePfdDelete"
-                class="btn btn-danger"
+                class="btn btn-delete sm"
                 :disabled="!selectedPfdItems"
               >
                 {{ t("common.delete") }}
               </button>
-              <button @click="handlePfdSave" class="btn btn-success">
+              <button @click="handlePfdSave" class="btn btn-save sm">
                 저장
               </button>
             </div>
@@ -415,7 +415,7 @@
                   <button
                     type="button"
                     @click="selectPfdFile(item)"
-                    class="file-select-btn"
+                    class="btn btn-file sm"
                   >
                     {{ t("common.selectFile") }}
                   </button>
@@ -427,7 +427,7 @@
                         !item.drawing_id.startsWith('temp_pfd_drawing_')
                       "
                       @click="downloadPfd(item.drawing_id)"
-                      class="btn btn-sm btn-outline-primary download-btn"
+                      class="btn download-btn sm"
                       :title="t('processDetail.downloadPfd')"
                     >
                       <span class="ico-download"></span>
@@ -448,7 +448,7 @@
                 <button
                   type="button"
                   @click="selectSvgFile(item)"
-                  class="file-select-btn"
+                  class="btn btn-file sm"
                 >
                   {{ t("common.selectFile") }}
                 </button>
@@ -457,7 +457,7 @@
                   <button
                     v-if="hasValidSvgFile(item)"
                     @click="downloadPfdSvgFile(item)"
-                    class="btn btn-sm btn-outline-primary download-btn"
+                    class="btn download-btn sm"
                     title="Svg 파일 다운로드"
                   >
                     <span class="ico-download"></span>
@@ -467,7 +467,7 @@
             </template>
             <template #cell-mappingPidList="{ item }">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn-primary p-id"
                 :disabled="
                   !item.drawing_id ||
                   item.drawing_id.startsWith('temp_pfd_drawing_')
@@ -496,11 +496,11 @@
             <h4>P&ID</h4>
           </div>
           <div class="tab-actions">
-            <button class="btn btn-primary" @click="addMappingPidRow">
+            <button class="btn btn-add sm" @click="addMappingPidRow">
               추가
             </button>
             <button
-              class="btn btn-danger"
+              class="btn btn-delete sm"
               @click="deleteSelectedMappingPidItems"
               :disabled="
                 !selectedMappingPidItems ||
@@ -510,7 +510,7 @@
             >
               삭제
             </button>
-            <button @click="confirmMappingPid" class="btn btn-success">
+            <button @click="confirmMappingPid" class="btn btn-save sm">
               저장
             </button>
             <button @click="closePidListInMain" class="btn btn-secondary">
@@ -538,7 +538,7 @@
           <template #cell-pidFile="{ item }">
             <div class="file-selection-group">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn btn-file sm"
                 @click="selectPidFile(item)"
               >
                 파일선택
@@ -548,7 +548,7 @@
                 <button
                   v-if="item.pidFileName"
                   @click="downloadPid(item.drawing_id)"
-                  class="btn btn-sm btn-outline-primary download-btn"
+                  class="btn download-btn sm"
                   title="P&ID 다운로드"
                 >
                   <span class="ico-download"></span>
@@ -560,7 +560,7 @@
           <template #cell-excelFile="{ item }">
             <div class="file-selection-group">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn btn-file sm"
                 @click="selectExcelFile(item)"
                 :disabled="
                   !item.drawing_id ||
@@ -588,7 +588,7 @@
                       item.excel_file_name || item.excelFileName
                     )
                   "
-                  class="btn btn-sm btn-outline-primary download-btn"
+                  class="btn download-btn sm"
                   :title="t('processDetail.downloadMappingExcel')"
                 >
                   <span class="ico-download"></span>
@@ -611,7 +611,7 @@
           <template #cell-svgFile="{ item }">
             <div class="file-selection-group">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn btn-file sm"
                 @click="selectSvgFileForPid(item)"
                 :disabled="
                   !item.drawing_id ||
@@ -639,7 +639,7 @@
                       item.svg_file_name || item.svgFileName
                     )
                   "
-                  class="btn btn-sm btn-outline-primary download-btn"
+                  class="btn download-btn sm"
                   :title="t('processDetail.downloadMappingSvg')"
                 >
                   <span class="ico-download"></span>
@@ -661,7 +661,7 @@
           </template>
           <template #cell-pidComponent="{ item }">
             <button
-              class="btn btn-sm btn-primary"
+              class="btn btn-primary p-id"
               :disabled="
                 !item.drawing_id ||
                 item.drawing_id.startsWith('temp_pid_drawing_') ||
@@ -711,7 +711,7 @@
           <h4>P&ID Components</h4>
         </div>
         <div class="tab-actions">
-          <button @click="handlePidComponentSave" class="btn btn-success">
+          <button @click="handlePidComponentSave" class="btn btn-save sm">
             저장
           </button>
           <button @click="closePidComponentSection" class="btn btn-secondary">
@@ -812,7 +812,7 @@
             <button
               type="button"
               @click="capacityCalculationFileInput?.click()"
-              class="file-select-btn"
+              class="btn btn-file sm"
               :disabled="!hasFormulaData"
             >
               {{ t("common.selectFile") }}
@@ -831,7 +831,7 @@
             <button
               v-if="processStore.processDetail.ccs_file_id"
               type="button"
-              class="btn btn-sm btn-outline-primary download-btn"
+              class="btn download-btn sm"
               @click="handleCapacityCalculationDownload"
               :disabled="!hasFormulaData"
               :title="t('processDetail.downloadCapacityCalculation')"
@@ -842,7 +842,7 @@
             
             <button
               type="button"
-              class="file-select-btn"
+              class="btn btn-register sm"
               @click="handleCapacityCalculationRegister"
               :disabled="!processStore.capacityCalculationFile || !hasFormulaData"
             >
@@ -850,7 +850,7 @@
             </button>
             <button
               type="button"
-              class="file-select-btn"
+              class="btn btn-delete sm"
               @click="handleCapacityCalculationFileDelete"
               :disabled="
                 (!processStore.capacityCalculationFile &&
@@ -874,7 +874,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>{{ t("process.formulaFileAttachment") }}</h3>
-        <button @click="closeFormulaModal" class="modal-close">&times;</button>
+        <button @click="closeFormulaModal" class="close-btn"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -886,7 +886,7 @@
             style="display: none"
             ref="formulaFileInput"
           />
-          <button @click="formulaFileInput?.click()" class="btn btn-primary">
+          <button @click="formulaFileInput?.click()" class="btn btn btn-file">
             {{ t("common.selectFiles") }}
           </button>
           <span class="selected-files-info">
@@ -926,7 +926,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>{{ t("process.pfdFileAttachment") }}</h3>
-        <button @click="closePfdModal" class="modal-close">&times;</button>
+        <button @click="closePfdModal" class="btn-close"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -938,7 +938,7 @@
             style="display: none"
             ref="pfdFileInput"
           />
-          <button @click="pfdFileInput?.click()" class="btn btn-primary">
+          <button @click="pfdFileInput?.click()" class="btn btn btn-file">
             {{ t("common.selectFiles") }}
           </button>
           <span class="selected-files-info">
@@ -983,7 +983,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>P&ID 파일 첨부</h3>
-        <button @click="closePidModal" class="modal-close">&times;</button>
+        <button @click="closePidModal" class="btn-close"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -995,7 +995,7 @@
             style="display: none"
             ref="pidModalFileInput"
           />
-          <button @click="pidModalFileInput?.click()" class="btn btn-primary">
+          <button @click="pidModalFileInput?.click()" class="btn btn btn-file">
             {{ t("common.selectFiles") }}
           </button>
           <span class="selected-files-info">
@@ -11895,10 +11895,6 @@ watch(
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
-  .download-btn {
-    margin-left: 0;
-  }
 }
 
 .form-grid {
@@ -11914,34 +11910,6 @@ watch(
   display: flex;
   align-items: flex-end;
   height: 64px;
-}
-
-.register-button-container .save-btn {
-  position: relative;
-  padding: 8px 16px 8px 35px;
- 
-  &::before {
-    content: "";
-    position:absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 16px;
-    width: 13px;
-    height: 13px;
-    background: url(../../assets/icons/ico_regist.svg) no-repeat center / 13px auto;
-    aspect-ratio: 1/1;
-  }
-
-  &:hover {
-    background-color: #004085 !important;
-    border-color: #004085 !important;
-  }
-
-  &:focus {
-    background-color: #0056b3 !important;
-    border-color: #0056b3 !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25) !important;
-  }
 }
 
 .caution-message {
@@ -11975,12 +11943,6 @@ watch(
 /* 에러 상태 스타일 */
 .error {
   border-color: #dc3545 !important;
-  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-}
-
-.file-select-btn.error {
-  background-color: #dc3545;
-  border-color: #dc3545;
 }
 
 .selected-file.error {
@@ -12047,31 +12009,6 @@ watch(
   min-width: 160px;
 }
 
-.file-select-btn {
-  text-align: center;
-  width: 88px;
-  height: 40px;
-  line-height: 40px;
-  background: #3e435e;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background .2s ease;
-}
-
-.file-select-btn:hover {
-  background: #3c4973;
-}
-
-.file-select-btn:disabled {
-  background: #abaebd;
-  cursor: not-allowed;
-}
-
 .selected-file {
   color: #000 !important;
   font-size: 13px;
@@ -12082,25 +12019,12 @@ watch(
   min-width: 80px;
 }
 
-.pfd-section {
-  margin-top: 20px;
-}
-
-.components-section {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #e9ecef;
-}
-
-.pid-section {
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 2px solid #e9ecef;
-}
-
-.pid-save-section {
-  margin-top: 10px;
-  text-align: right;
+.formula-section,
+.pfd-section,
+.pid-section,
+.pid-save-section,
+.pid-component-section {
+  margin-top: 40px;
 }
 
 .tab-header {
@@ -12127,136 +12051,15 @@ watch(
 }
 .tab-actions {
   display: flex;
+  align-items: flex-end;
   gap: 10px;
   margin-bottom: 10px;
-
-  .btn {
-    text-align: center;
-    width: 45px;
-    height: 32px;
-    line-height: 32px;
-    padding: 0 10px;
-    font-weight: 500;
-
-    &:disabled {
-      opacity: 1;
-      border: none;
-      background-color: #abaebd;
-      color: #ffffff;
-    }
-  }
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.save-btn-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 15px;
-  padding-right: 0;
-}
-
-.save-btn {
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: 500;
-  width: 80px;
-}
-
-.btn-danger {
-  background-color: #3e435e;
-  color: white;
-  transition: background .3s ease-in-out;
-
-  &:hover {
-    background-color: #3c4973;
-  }
-}
-
-.btn-success {
-  background-color: #0863e2;
-  color: white;
-  transition: background .3s ease-in-out;
-
-  &:hover {
-    background-color: #0067f5;
-  }
-}
-
-.btn-secondary {
-  background-color: #0056b3;
-  color: white;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 20px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-}
-
-.modal-close:hover {
-  color: #333;
-}
-
-.modal-body {
-  padding: 8px 20px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 8px 20px;
-  border-top: 1px solid #e9ecef;
 }
 
 .selected-files-info {
   color: #666;
   font-size: 14px;
+  line-height: 40px;
 }
 
 .selected-files-list {
@@ -12393,25 +12196,6 @@ watch(
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.btn-sm {
-  justify-content: center;
-  width: auto;
-  height: 32px;
-  line-height: 32px;
-  padding: 0 10px;
-  border-radius: 4px;
-  background-color: #3e435e;
-  font-size: 14px;
-
-  :hover {
-    background-color: #3c4973;
-  }
-
-  &:hover:not(:disabled) {
-    background-color: #3c4973;
-  }
-}
-
 /* 컴포넌트 버튼 스타일 */
 .btn-component {
   background-color: #007bff;
@@ -12469,15 +12253,6 @@ watch(
   font-weight: 500;
 }
 
-/* 비활성화된 버튼 스타일 */
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: #e9ecef;
-  border-color: #dee2e6;
-  color: #6c757d;
-}
-
 /* 비활성화된 컴포넌트 버튼 스타일 */
 .btn-component:disabled {
   opacity: 0.5;
@@ -12494,13 +12269,6 @@ watch(
   background-color: #e9ecef;
   border-color: #dee2e6;
   color: #6c757d;
-}
-
-/* P&ID 컴포넌트 섹션 여백 */
-.pid-component-section {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #e9ecef;
 }
 
 /* P&ID 컴포넌트 그리드 스타일 */
@@ -12658,39 +12426,6 @@ watch(
   color: #ffffff !important;
 }
 
-/* 공정심볼 다운로드 버튼 스타일 */
-.download-btn {
-  position: relative;
-  display: block;
-  width: 44px;
-  height: 40px;
-  padding: 4px 8px;
-  font-size: 12px;
-  background-color: #3e435e;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-
-  .ico-download {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background: url(../../assets/icons/ico_download.svg) no-repeat center / 24px auto;
-  }
-}
-
-.download-btn:hover {
-  background-color: #3c4973;
-  color: white;
-}
-
-.download-btn:active {
-  transform: translateY(1px);
-}
-
 /* 계산식 이름과 다운로드 버튼 컨테이너 */
 .formula-name-container {
   display: flex;
@@ -12723,18 +12458,6 @@ watch(
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-
-  .file-select-btn {
-    width: 80px;
-    height: 32px;
-    line-height: 32px;
-    font-size: 14px;
-  }
-
-  .download-btn {
-    width: 36px;
-    height: 32px;
-  }
 }
 
 .selected-file {
@@ -12789,31 +12512,6 @@ watch(
     flex: 1;
     align-items: center;
     gap: 10px;
-  
-    .file-select-btn {
-      width: 70px;
-      height: 32px;
-      line-height: 32px;
-      font-size: 14px;
-      transition: background 0.2s ease-in-out;
-    }
-    
-    .file-select-btn:nth-of-type(2) {
-      background-color: #222E77;
-  
-      &:hover {
-        background-color: #29378C;
-      }
-  
-      &:disabled {
-        background-color: #abaebd;
-      }
-    }
-  
-    .file-select-btn:nth-of-type(2),
-    .file-select-btn:nth-of-type(3) {
-      width: 45px;
-    }
   }
 }
 
@@ -12829,45 +12527,11 @@ watch(
   width: 400px;
   height: 32px;
   padding: 0 10px;
-  /* min-height: unset !important;
-  height: calc(1.4em + 12.8px) !important;
-  line-height: 1.4 !important; */
   border-radius: 4px;
   padding: 0 10px;
   border-radius: 4px;
   border: 1px solid #e7e6ed;;
   font-size: 15px;
-}
-
-.btn-register:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.btn-register:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-input[type="radio"] {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border: none;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 20px auto;
-  background-image: url(../../assets/icons/ico_radio-off.svg);
-  cursor: pointer;
-
-  &:checked {
-    background-image: url(../../assets/icons/ico_radio-on.svg);
-  }
-
-  &:disabled {
-    background-image: url(../../assets/icons/ico_radio-disabled.svg);
-  }
 }
 
 .symbol-state {
@@ -12909,14 +12573,15 @@ input[type="radio"] {
     z-index: 10;
 
     &::after {
-      content: "x";
+      content: "";
       display: inline-block;
       position: absolute;
-      top: 40%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 10px;
-      color: #ffffff;
+      width: 7px;
+      height: 7px;
+      background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center / 7px auto;
     }
   }
 

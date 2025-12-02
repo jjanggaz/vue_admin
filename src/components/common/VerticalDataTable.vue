@@ -273,8 +273,9 @@ const getRowKey = (item: any, index: number) => {
 
           .btn-attach-small {
             height: 36px;
+            line-height: 36px;
             padding: 0 10px;
-            border-radius: 4px;
+            border-radius: 5px;
             background: #3e435e;
             color: #ffffff;
             font-size: 14px;

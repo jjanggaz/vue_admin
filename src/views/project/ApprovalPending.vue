@@ -15,7 +15,7 @@
               @keyup.enter="handleSearch"
             />
           </div>
-          <button class="btn-search" @click="handleSearch">
+          <button class="btn btn-search" @click="handleSearch">
             {{ t("common.search") }}
           </button>
           <span v-if="approvalPendingCount > 0" class="blink-alert">

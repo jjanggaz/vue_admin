@@ -70,10 +70,10 @@
             accept=".py"
             style="display: none"
           />
-          <button type="button" class="btn-file" @click="handleFileSelectClick">
+          <button type="button" class="btn btn-file" @click="handleFileSelectClick">
             {{ t("common.selectFile") }}
           </button>
-          <button type="button" class="btn-register" @click="handleRegister">
+          <button type="button" class="btn btn-register md" @click="handleRegister">
             {{ t("common.register") }}
           </button>
         </div>
@@ -86,7 +86,7 @@
         {{ t("common.formulaVersionManagement") }}
       </div>
       <div class="section-actions">
-        <button class="btn-danger" @click="handleDelete">
+        <button class="btn btn-delete sm" @click="handleDelete">
           {{ t("common.delete") }}
         </button>
       </div>
@@ -776,24 +776,6 @@ select {
   }
 }
 
-.btn-danger {
-  text-align: center;
-  white-space: nowrap;
-  height: 32px;
-  line-height: 32px;
-  padding: 0px 10px;
-  background: #3e435e;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background .2s ease-in-out;
- 
-  &:hover {
-    background-color: #3c4973;
-  }
-}
-
 .section-title {
   color: #333333;
   font-size: 15px;
@@ -891,50 +873,6 @@ select {
 
   @media (max-width: $mobile) {
     min-width: auto;
-  }
-}
-
-.btn-file {
-  flex-shrink: 0;
-  white-space: nowrap;
-  height: 40px;
-  padding: 0 10px;
-  background: #3e435e;
-  border-radius: 4px;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    background: #3c4973;
-  }
-
-  &:active {
-    background: #3c4973;
-  }
-}
-
-.btn-register {
-  height: 40px;
-  background: #222e77;
-  color: white;
-  border-radius: 4px;
-  padding: 0 10px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #29378c;
-  } 
-
-  &:active {
-    background: #29378c;
   }
 }
 

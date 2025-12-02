@@ -1285,7 +1285,7 @@ const handleEdit = () => {
 
   .search-filters {
     display: flex;
-    gap: 10px;
+    gap: 20px 10px;
     flex-wrap: wrap;
 
     .filter-group {

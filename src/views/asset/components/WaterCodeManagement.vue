@@ -116,7 +116,7 @@
               <div class="form-actions">
                 <button
                   type="button"
-                  class="btn btn-secondary"
+                  class="btn btn-cancel md"
                   @click="handleCancel"
                   :disabled="isSubmitting"
                   v-if="isEditMode"
@@ -660,11 +660,11 @@ const resetForm = () => {
 
   .form-actions {
     display: flex;
-    gap: $spacing-sm;
+    gap: 10px;
     justify-content: flex-end;
+    flex-shrink: 0;
     padding-top: 10px;
     border-top: 1px solid #000000;
-    flex-shrink: 0;
   }
 }
 </style>

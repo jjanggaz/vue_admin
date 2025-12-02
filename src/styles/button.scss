@@ -113,6 +113,17 @@ button {
     background: none;
   }
 }
+
+.btn-delete.md,
+.btn-cancel.md {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 10px;
+
+  &::before {
+    background: none;
+  }
+}
 /* //삭제 버튼 */
 
 /* 보기 버튼 */

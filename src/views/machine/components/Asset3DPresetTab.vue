@@ -66,12 +66,20 @@
               <span class="ico-download"></span>
             </button>
           </div>
-          <img
-            v-if="thumbnailPreviewUrl"
-            :src="thumbnailPreviewUrl"
-            alt="썸네일 미리보기"
-            class="thumbnail-preview"
-          />
+          <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
+            <img
+              :src="thumbnailPreviewUrl"
+              alt="썸네일 미리보기"
+              class="thumbnail-preview"
+            />
+            <button
+              v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
+              class="thumbnail-close-btn"
+              @click="handleDeleteThumbnail"
+              title="썸네일 삭제"
+            >
+            </button>
+          </div>
         </div>
       </div>
       <div class="form-group right-align">
@@ -289,8 +297,42 @@
             <!-- 순번 슬롯 -->
             <template #cell-no="{ index }">
               {{ index + 1 }}
-        </template>
-      </DataTable>
+            </template>
+            
+            <!-- 단가(원) 슬롯 -->
+            <template #cell-unit_price_KRW="{ item }">
+              {{
+                (() => {
+                  if (!item.output_values) return "-";
+                  const unitPriceField = item.output_values.unit_price_KRW;
+                  if (unitPriceField && unitPriceField.value !== undefined && unitPriceField.value !== null) {
+                    const priceValue = Number(unitPriceField.value);
+                    if (!isNaN(priceValue)) {
+                      return priceValue.toLocaleString('ko-KR');
+                    }
+                  }
+                  // 이미 포맷팅된 문자열이 있는 경우 (fallback)
+                  if (item.unit_price_KRW && item.unit_price_KRW !== "-") {
+                    return item.unit_price_KRW;
+                  }
+                  return "-";
+                })()
+              }}
+            </template>
+            
+            <!-- 3D 모델명 슬롯 -->
+            <template #cell-model_file_name="{ item }">
+              <a
+                v-if="item.model_download_url && item.model_file_name && item.model_file_name !== '-'"
+                :href="item.model_download_url"
+                target="_blank"
+                class="file-download-link"
+              >
+                {{ item.model_file_name }}
+              </a>
+              <span v-else>{{ item.model_file_name || "-" }}</span>
+            </template>
+          </DataTable>
     </div>
         
         <!-- 검색 결과가 없을 때 -->
@@ -486,6 +528,9 @@ const pipeStore = usePipeStore();
 // 프리셋 ID (등록 모드에서 preset_id 응답을 받은 후 저장)
 const currentPresetId = ref<string | null>(null);
 
+// 마스터의 diameter_value 추적 (등록 모드에서 사용)
+const masterDiameterValue = ref<number>(0);
+
 // 선택 항목 그리드 활성화 여부
 // 수정 모드: 바로 활성화
 // 등록 모드: preset_id 응답을 받은 경우에만 활성화
@@ -630,6 +675,9 @@ const materialListColumns: TableColumn[] = [
   { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
   { key: "diameter", title: "직경", width: "80px", sortable: false },
   { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
+  { key: "unit_price_KRW", title: "단가(원)", width: "100px", sortable: false },
+  { key: "joining", title: "접합방식(코드)", width: "150px", sortable: false },
+  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
 ];
 
 // 자재 리스트 데이터 (computed)
@@ -2179,6 +2227,43 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           vendorName = String(vendorInfo.vendor_name);
         }
         
+        // output_values에서 unit_price_KRW 추출
+        let unitPriceKRW = "";
+        const outputValues = item.output_values as Record<string, unknown> | undefined;
+        if (outputValues && outputValues.unit_price_KRW) {
+          const unitPriceField = outputValues.unit_price_KRW as Record<string, unknown>;
+          if (unitPriceField.value !== undefined && unitPriceField.value !== null) {
+            const priceValue = Number(unitPriceField.value);
+            if (!isNaN(priceValue)) {
+              // 천 단위 구분자(쉼표) 추가
+              unitPriceKRW = priceValue.toLocaleString('ko-KR');
+            }
+          }
+        }
+        
+        // specifications에서 joining.value 추출
+        let joiningValue = "";
+        const specifications = item.specifications as Record<string, unknown> | undefined;
+        if (specifications && specifications.joining) {
+          const joiningField = specifications.joining as Record<string, unknown>;
+          if (joiningField.value !== undefined && joiningField.value !== null) {
+            joiningValue = String(joiningField.value);
+          }
+        }
+        
+        // model_file_info에서 file_name과 download_url 추출
+        let modelFileName = "";
+        let modelDownloadUrl = "";
+        const modelFileInfo = item.model_file_info as Record<string, unknown> | undefined;
+        if (modelFileInfo) {
+          if (modelFileInfo.file_name) {
+            modelFileName = String(modelFileInfo.file_name);
+          }
+          if (modelFileInfo.download_url) {
+            modelDownloadUrl = String(modelFileInfo.download_url);
+          }
+        }
+        
         return {
           id: item.equipment_id || index + 1,
           pipeCategory: getTypeLabel(selectionFilter.value.pipeCategory) || "",
@@ -2190,6 +2275,10 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           vendor_name: vendorName,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
+          unit_price_KRW: unitPriceKRW || "-",
+          joining: joiningValue || "-",
+          model_file_name: modelFileName || "-",
+          model_download_url: modelDownloadUrl || "",
           // 원본 데이터 보존
           ...item,
         };
@@ -2454,6 +2543,9 @@ watch(
             
             // 단위 설정
             selectedUnit.value = String(item.unit_system_code || "");
+            
+            // 마스터의 diameter_value 설정
+            masterDiameterValue.value = item.diameter_value ? Number(item.diameter_value) : 0;
             
             // 썸네일 파일명 설정 (thumbnail_file.file_name 우선, 없으면 thumbnail_file_name)
             const thumbnailFile = item.thumbnail_file as Record<string, unknown> | undefined;
@@ -2741,6 +2833,148 @@ const handleThumbnailDownload = async () => {
   }
 };
 
+// 썸네일 삭제 핸들러
+const handleDeleteThumbnail = async () => {
+  // 삭제할 썸네일이 없는 경우
+  if (!thumbnailPreviewUrl.value && !thumbnailDownloadUrl.value && !thumbnailFile.value) {
+    alert("삭제할 썸네일이 없습니다.");
+    return;
+  }
+
+  // 확인 팝업
+  if (!confirm("썸네일을 삭제하시겠습니까?")) {
+    return;
+  }
+
+  try {
+    // 수정 모드이고 서버에 저장된 썸네일이 있는 경우 API 호출
+    if (props.isEditMode && currentPresetId.value && thumbnailDownloadUrl.value) {
+      const presetId = currentPresetId.value;
+      
+      console.log("썸네일 삭제 API 호출:", `/api/asset3D/preset/thumbnail/delete/${presetId}`);
+      
+      const response = await request(
+        `/api/asset3D/preset/thumbnail/delete/${presetId}`,
+        undefined,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || "썸네일 삭제에 실패했습니다.");
+      }
+
+      console.log("썸네일 삭제 성공:", response);
+    }
+
+    // 미리보기 URL 해제
+    if (thumbnailPreviewUrl.value && thumbnailPreviewUrl.value.startsWith("blob:")) {
+      URL.revokeObjectURL(thumbnailPreviewUrl.value);
+    }
+
+    // 썸네일 관련 데이터 초기화
+    thumbnailPreviewUrl.value = "";
+    thumbnailDownloadUrl.value = "";
+    thumbnailFileName.value = "";
+    thumbnailFile.value = null;
+    if (thumbnailFileInput.value) {
+      thumbnailFileInput.value.value = "";
+    }
+
+    // 저장 후 preset master 정보 재조회 (수정 모드인 경우)
+    if (props.isEditMode && currentPresetId.value) {
+      await reloadPresetMasterData(currentPresetId.value);
+    }
+
+    alert("썸네일이 삭제되었습니다.");
+  } catch (error) {
+    console.error("썸네일 삭제 실패:", error);
+    const errorMessage = error instanceof Error ? error.message : "썸네일 삭제에 실패했습니다.";
+    alert(errorMessage);
+  }
+};
+
+// 프리셋 마스터 정보 재조회 함수
+const reloadPresetMasterData = async (presetId: string) => {
+  try {
+    const requestParams = {
+      search_field: "preset_id",
+      search_value: presetId,
+    };
+
+    const response = await request("/api/asset3D/search/PRESET", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestParams),
+    });
+
+    if (response && response.success && response.response) {
+      const data = response.response;
+      const item = Array.isArray(data) ? data[0] : (data.items && Array.isArray(data.items) ? data.items[0] : data);
+
+      if (item) {
+        // 썸네일 파일 정보 업데이트
+        const thumbnailFile = item.thumbnail_file as Record<string, unknown> | undefined;
+        if (thumbnailFile && thumbnailFile.file_name) {
+          thumbnailFileName.value = String(thumbnailFile.file_name);
+        } else if (item.thumbnail_file_name) {
+          thumbnailFileName.value = String(item.thumbnail_file_name);
+        } else {
+          thumbnailFileName.value = "";
+        }
+        
+        // 썸네일 다운로드 URL 업데이트
+        if (thumbnailFile && thumbnailFile.download_url) {
+          thumbnailDownloadUrl.value = String(thumbnailFile.download_url);
+        } else {
+          thumbnailDownloadUrl.value = "";
+        }
+        
+        // 썸네일 미리보기 URL 업데이트
+        if (thumbnailFile && thumbnailFile.download_url) {
+          thumbnailPreviewUrl.value = String(thumbnailFile.download_url);
+        } else if (item.thumbnail_id) {
+          try {
+            const url = new URL(`/api/file/download/${item.thumbnail_id}`, window.location.origin);
+            const headers: Record<string, string> = {
+              system_code: import.meta.env.VITE_SYSTEM_CODE,
+              user_Id: localStorage.getItem("authUserId") || "",
+              wai_lang: localStorage.getItem("wai_lang") || "ko",
+              authSuper: localStorage.getItem("authSuper") || "false",
+            };
+            
+            const fileResponse = await fetch(url.toString(), {
+              method: "GET",
+              headers,
+              credentials: "include",
+            });
+            
+            if (fileResponse.ok) {
+              const blob = await fileResponse.blob();
+              thumbnailPreviewUrl.value = URL.createObjectURL(blob);
+            } else {
+              thumbnailPreviewUrl.value = "";
+            }
+          } catch (error) {
+            console.error("썸네일 로드 실패:", error);
+            thumbnailPreviewUrl.value = "";
+          }
+        } else {
+          thumbnailPreviewUrl.value = "";
+        }
+      }
+    }
+  } catch (error) {
+    console.error("프리셋 마스터 정보 재조회 실패:", error);
+  }
+};
+
 // 프리셋 등록 핸들러
 const handleThumbnailRegister = async () => {
   // 필수 필드 검증
@@ -2829,6 +3063,9 @@ const handleThumbnailRegister = async () => {
         diameterValue = diameterNum;
       }
     }
+    
+    // 마스터의 diameter_value 업데이트
+    masterDiameterValue.value = diameterValue;
 
     // 프리셋 생성/수정 요청 데이터 구성
     const presetData: Record<string, unknown> = {
@@ -3017,6 +3254,27 @@ const handleThumbnailRegister = async () => {
     alert(errorMessage);
   }
 };
+
+// 부모 컴포넌트에서 접근할 수 있도록 expose
+defineExpose({
+  // 마스터의 diameter_value 반환
+  getMasterDiameterValue: () => {
+    return masterDiameterValue.value;
+  },
+  // 선택 항목 그리드 첫 행의 diameter_before 반환
+  getFirstRowDiameterBefore: () => {
+    if (tableRows.value.length > 0 && tableRows.value[0].diameter) {
+      return String(tableRows.value[0].diameter);
+    }
+    return "";
+  },
+  // 마스터의 diameter_value 설정
+  setMasterDiameterValue: (value: number) => {
+    masterDiameterValue.value = value;
+  },
+  // 저장 버튼 이벤트 (handleThumbnailRegister)
+  handleThumbnailRegister,
+});
 </script>
 
 <style scoped lang="scss">
@@ -3133,13 +3391,65 @@ select {
   }
 }
 
-.thumbnail-preview {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border: 1px solid #d0d5dd;
-  border-radius: 4px;
-  flex-shrink: 0;
+.thumbnail-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+
+  .thumbnail-preview {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 1px solid #d0d5dd;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .thumbnail-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: -2.5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: rgba(62, 67, 94, 0.6);
+    transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    &::after {
+      content: "x";
+      display: inline-block;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      color: #ffffff;
+    }
+  }
+
+  .thumbnail-preview:hover ~ .thumbnail-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:hover .thumbnail-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .thumbnail-close-btn:hover {
+    background-color: rgba(62, 67, 94, 1);
+  }
 }
 
 .btn-add-row,
@@ -3796,14 +4106,14 @@ select {
 
   :deep(.data-table) {
     width: 100%;
-    min-width: 100%;
-    table-layout: fixed;
+    min-width: max-content;
+    table-layout: auto;
 
     td {
       font-size: 13px;
       white-space: nowrap;
       padding: 8px 10px;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
     }
 
@@ -3813,7 +4123,7 @@ select {
       font-size: 13px;
       padding: 10px 8px;
       min-width: 60px;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
     }
   }
@@ -3925,6 +4235,23 @@ select {
 
   &:hover {
     background: #c0392b;
+  }
+}
+
+.file-download-link {
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3.5px;
+    color: #1557b0;
+  }
+
+  &:visited {
+    color: #1a73e8;
   }
 }
 </style>

@@ -100,12 +100,20 @@
               <span class="ico-download"></span>
             </button>
           </div>
-          <img
-            v-if="thumbnailPreviewUrl"
-            :src="thumbnailPreviewUrl"
-            alt="썸네일 미리보기"
-            class="thumbnail-preview"
-          />
+          <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
+            <img
+              :src="thumbnailPreviewUrl"
+              alt="썸네일 미리보기"
+              class="thumbnail-preview"
+            />
+            <button
+              v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
+              class="thumbnail-close-btn"
+              @click="handleDeleteThumbnail"
+              title="썸네일 삭제"
+            >
+            </button>
+          </div>
         </div>
       </div>
       <div class="form-group right-align">
@@ -573,6 +581,159 @@ const handleThumbnailDownload = async () => {
   } catch (error) {
     console.error("썸네일 다운로드 실패:", error);
     alert("다운로드 중 오류가 발생했습니다.");
+  }
+};
+
+// 썸네일 삭제 핸들러
+const handleDeleteThumbnail = async () => {
+  // 삭제할 썸네일이 없는 경우
+  if (!thumbnailPreviewUrl.value && !thumbnailDownloadUrl.value && !thumbnailFile.value) {
+    alert("삭제할 썸네일이 없습니다.");
+    return;
+  }
+
+  // 확인 팝업
+  if (!confirm("썸네일을 삭제하시겠습니까?")) {
+    return;
+  }
+
+  try {
+    // 수정 모드이고 서버에 저장된 썸네일이 있는 경우 API 호출
+    if (props.isEditMode && props.editItem && thumbnailDownloadUrl.value) {
+      const editItemAny = props.editItem as any;
+      const libraryId = editItemAny.library_id || editItemAny.id || "";
+      
+      if (!libraryId) {
+        console.error("library_id를 찾을 수 없습니다:", props.editItem);
+        alert("library_id를 찾을 수 없습니다.");
+        return;
+      }
+      
+      console.log("썸네일 삭제 API 호출:", `/api/asset3D/library/thumbnail/delete/${libraryId}`);
+      
+      const response = await request(
+        `/api/asset3D/library/thumbnail/delete/${libraryId}`,
+        undefined,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || "썸네일 삭제에 실패했습니다.");
+      }
+
+      console.log("썸네일 삭제 성공:", response);
+    }
+
+    // 미리보기 URL 해제
+    if (thumbnailPreviewUrl.value && thumbnailPreviewUrl.value.startsWith("blob:")) {
+      URL.revokeObjectURL(thumbnailPreviewUrl.value);
+    }
+
+    // 썸네일 관련 데이터 초기화
+    thumbnailPreviewUrl.value = "";
+    thumbnailDownloadUrl.value = "";
+    thumbnailFileName.value = "";
+    thumbnailFile.value = null;
+    if (thumbnailFileInput.value) {
+      thumbnailFileInput.value.value = "";
+    }
+
+    // 저장 후 Library 정보 재조회 (수정 모드인 경우)
+    if (props.isEditMode && props.editItem) {
+      const editItemAny = props.editItem as any;
+      const libraryId = editItemAny.library_id || editItemAny.id || "";
+      if (libraryId) {
+        await reloadLibraryMasterData(libraryId);
+      }
+    }
+
+    alert("썸네일이 삭제되었습니다.");
+  } catch (error) {
+    console.error("썸네일 삭제 실패:", error);
+    const errorMessage = error instanceof Error ? error.message : "썸네일 삭제에 실패했습니다.";
+    alert(errorMessage);
+  }
+};
+
+// Library 마스터 정보 재조회 함수
+const reloadLibraryMasterData = async (libraryId: string) => {
+  try {
+    const requestParams = {
+      search_field: "library_id",
+      search_value: libraryId,
+    };
+
+    const response = await request("/api/asset3D/search/3D_LIBRARY", undefined, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestParams),
+    });
+
+    if (response && response.success && response.response) {
+      const data = response.response;
+      const item = Array.isArray(data) ? data[0] : (data.items && Array.isArray(data.items) ? data.items[0] : data);
+
+      if (item) {
+        // 썸네일 파일 정보 업데이트
+        const thumbnailFile = item.thumbnail_file as Record<string, unknown> | undefined;
+        if (thumbnailFile && thumbnailFile.file_name) {
+          thumbnailFileName.value = String(thumbnailFile.file_name);
+        } else if (item.thumbnail_file_name) {
+          thumbnailFileName.value = String(item.thumbnail_file_name);
+        } else {
+          thumbnailFileName.value = "";
+        }
+        
+        // 썸네일 다운로드 URL 업데이트
+        if (thumbnailFile && thumbnailFile.download_url) {
+          thumbnailDownloadUrl.value = String(thumbnailFile.download_url);
+        } else {
+          thumbnailDownloadUrl.value = "";
+        }
+        
+        // 썸네일 미리보기 URL 업데이트
+        if (thumbnailFile && thumbnailFile.download_url) {
+          thumbnailPreviewUrl.value = String(thumbnailFile.download_url);
+        } else if (item.thumbnail_id) {
+          try {
+            const url = new URL(`/api/file/download/${item.thumbnail_id}`, window.location.origin);
+            const headers: Record<string, string> = {
+              system_code: import.meta.env.VITE_SYSTEM_CODE,
+              user_Id: localStorage.getItem("authUserId") || "",
+              wai_lang: localStorage.getItem("wai_lang") || "ko",
+              authSuper: localStorage.getItem("authSuper") || "false",
+            };
+            
+            const fileResponse = await fetch(url.toString(), {
+              method: "GET",
+              headers,
+              credentials: "include",
+            });
+            
+            if (fileResponse.ok) {
+              const blob = await fileResponse.blob();
+              thumbnailPreviewUrl.value = URL.createObjectURL(blob);
+            } else {
+              thumbnailPreviewUrl.value = "";
+            }
+          } catch (error) {
+            console.error("썸네일 로드 실패:", error);
+            thumbnailPreviewUrl.value = "";
+          }
+        } else {
+          thumbnailPreviewUrl.value = "";
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Library 마스터 정보 재조회 실패:", error);
   }
 };
 
@@ -1259,6 +1420,67 @@ select {
     @media (max-width: 550px) {
       font-size: 13px; 
     }
+  }
+}
+
+.thumbnail-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+
+  .thumbnail-preview {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 1px solid #d0d5dd;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .thumbnail-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: -2.5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: rgba(62, 67, 94, 0.6);
+    transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    &::after {
+      content: "x";
+      display: inline-block;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      color: #ffffff;
+    }
+  }
+
+  .thumbnail-preview:hover ~ .thumbnail-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:hover .thumbnail-close-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .thumbnail-close-btn:hover {
+    background-color: rgba(62, 67, 94, 1);
   }
 }
 </style>

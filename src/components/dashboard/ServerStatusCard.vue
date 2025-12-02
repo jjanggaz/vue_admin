@@ -494,18 +494,6 @@ onUnmounted(() => {
   min-height: 800px;
 
   .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-
-    h3 {
-      margin: 0;
-      color: #1f2937;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
     .status-indicator {
       display: flex;
       align-items: center;

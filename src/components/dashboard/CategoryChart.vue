@@ -97,17 +97,7 @@ const chartOptions = {
   min-height: 300px;
 
   .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-
-    h3 {
-      margin: 0;
-      color: #1f2937;
-      font-size: 18px;
-      font-weight: 600;
-    }
+    align-items: flex-start;
 
     .total-summary {
       text-align: center;

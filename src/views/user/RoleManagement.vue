@@ -223,7 +223,7 @@
                 </div>
               </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer lg">
               <button type="submit" class="btn btn-primary">
                 {{ isEditMode ? t("common.update") : t("common.register") }}
               </button>

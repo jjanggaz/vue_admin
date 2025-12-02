@@ -500,19 +500,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.project-management {
-  padding: $spacing-xxl $spacing-lg 0;
-}
-
-.group-form {
-  .form-item {
-    input {
-      width: 240px;
-      height: 40px;
-    }
-  }
-}
-
 // 모달이 제대로 표시되도록 하는 스타일
 :deep(.modal-overlay) {
   position: fixed !important;

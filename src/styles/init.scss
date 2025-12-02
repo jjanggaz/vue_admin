@@ -1,6 +1,4 @@
 html, body {
-	margin: 0;
-	padding: 0;
 	font-family: 'pretendard', 'Noto Sans KR', 'NanumGothic', Dotum, Arial, sans-serif;
 }
 
@@ -19,6 +17,8 @@ a:link, a:visited, a:hover, a:active {
 }
 
 * {
+	margin: 0;
+	padding: 0;
 	box-sizing: border-box;
 }
 
@@ -49,7 +49,6 @@ input, select {
 	color: inherit;
 	background: none;
 	border: none;
-	// cursor: pointer;
 }
 
 .list-paging {
@@ -103,7 +102,7 @@ input {
 
 select[disabled], input[disabled] {
 	border: 1px solid #dfdfdf;
-	background: #f0f0f0;
+	background-color: #f0f0f0;
 }
 
 blockquote:before, blockquote:after, q:before, q:after {

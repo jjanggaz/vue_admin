@@ -360,34 +360,5 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.project-management {
-  padding: $spacing-xxl $spacing-lg 0;
-}
 
-.group-form {
-  .form-item {
-    input {
-      width: 240px;
-      height: 40px;
-    }
-  }
-}
-
-input[type="checkbox"] {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-  border: none;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 20px auto;
-  background-image: url(../../assets/icons/ico_check-off.svg);
-  cursor: pointer;
-
-  &:checked {
-    background-image: url(../../assets/icons/ico_check-on.svg);
-  }
-}
 </style>

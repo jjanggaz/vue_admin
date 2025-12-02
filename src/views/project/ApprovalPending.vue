@@ -277,16 +277,5 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.project-management {
-  padding: $spacing-xxl $spacing-lg 0;
-}
 
-.group-form {
-  .form-item {
-    input {
-      width: 240px;
-      height: 40px;
-    }
-  }
-}
 </style>

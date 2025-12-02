@@ -2638,10 +2638,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 @use "sass:color";
-.update-modal-body {
-  max-height: 800px;
-  overflow-y: auto;
-}
 
 .symbol-image-preview svg {
   max-width: 100%;
@@ -2656,15 +2652,6 @@ onBeforeUnmount(() => {
 
   .page-content {
     min-width: 0; // 페이지 컨텐츠가 축소될 수 있도록 허용
-
-    h2 {
-      margin-bottom: $spacing-lg;
-      color: $text-color;
-    }
-
-    p {
-      color: $text-light;
-    }
   }
 
   // 좌우 배치를 위한 스타일
@@ -2703,42 +2690,11 @@ onBeforeUnmount(() => {
       }
 
       .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-
-        h3 {
-          color: #202020;
-          font-size: 24px;
-          font-weight: 600;
-        }
-
         .applied-formula {
           display: inline-block;
           color: #333333;
           font-size: 13px;
           font-weight: 400;
-        }
-
-        .tab-info {
-          font-size: $font-size-sm;
-          color: $text-light;
-
-          small {
-            font-size: 0.75rem; // $font-size-xs 대신 직접 값 사용
-            opacity: 0.7;
-          }
-        }
-      }
-
-      .content,
-      .action-bar {
-        min-width: 0; // 컨텐츠 영역이 축소될 수 있도록 허용
-
-        .action-bar {
-          margin: $spacing-sm 0;
         }
       }
     }
@@ -2748,16 +2704,6 @@ onBeforeUnmount(() => {
     .modal-tab-content-uscs {
       background: transparent;
       box-shadow: none;
-
-      dl.column-regist {
-        align-items: center;
-        margin-bottom: 8px;
-
-        dt {
-          margin-bottom: 0;
-          font-size: 16px;
-        }
-      }
     }
   }
 
@@ -2830,21 +2776,7 @@ onBeforeUnmount(() => {
 dl.column-regist {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
-  width: 100%;
   align-items: center;
-  margin-bottom: 20px;
-
-  dt {
-    margin-bottom: 4px;
-    color: #333333;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  dd {
-    flex: 0 0 auto;
-  }
 }
 
 .column-item {
@@ -2858,7 +2790,7 @@ dl.column-regist {
 .color-picker-container {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: 10px;
 
   .color-preview {
     width: 40px;
@@ -2876,17 +2808,12 @@ dl.column-regist {
 
   .color-input {
     width: 100px;
-    height: 40px;
-    border: 1px solid #e7e6ed;
-    border-radius: 4px;
-    background: transparent;
-    cursor: pointer;
-
+    padding: 0;
+    
     &::-webkit-color-swatch-wrapper {
       padding: 0;
       border: none;
     }
-
     &::-webkit-color-swatch {
       border: 1px solid #e7e6ed;
       border-radius: 4px;
@@ -2902,23 +2829,9 @@ dl.column-regist {
   }
 }
 
-// 모달 내부 파일 업로드 폼 스타일은 상단의 dt/dd 구조와 동일하게 적용
-
 // 탭 스크롤 관련 스타일
 .action-bar {
-  display: flex;
-  justify-content: space-between;
   gap: 40px;
-  width: 100%;
-  margin-bottom: 20px;
-
-  .title {
-    h4 {
-      color: #202020;
-      font-size: 20px;
-      font-weight: 600;
-    }
-  }
 }
 
 .tab-action-bar {
@@ -2934,6 +2847,7 @@ dl.column-regist {
 }
 
 .tabs-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -2953,6 +2867,7 @@ dl.column-regist {
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE/Edge
   padding: 0 10px;
+  white-space: nowrap;
 
   &::-webkit-scrollbar {
     display: none; // Chrome/Safari
@@ -2978,6 +2893,7 @@ dl.column-regist {
   }
 
   .tab {
+    position: relative;
     flex-shrink: 0;
     white-space: nowrap; // 텍스트 줄바꿈 방지
     overflow: hidden; // 넘치는 텍스트 숨김
@@ -2988,6 +2904,7 @@ dl.column-regist {
     font-size: 15px;
     font-weight: 500;
     transition: height 0.3s ease;
+    cursor: pointer;
 
     &.active {
       height: 40px;
@@ -2998,20 +2915,22 @@ dl.column-regist {
 }
 
 .btn-scroll {
-  flex-shrink: 0;
-  background: #e7e6ed;
-  border: none;
-  border-radius: 4px;
-  width: 20px;
-  height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
   flex-shrink: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
   min-width: 20px;
+  height: 34px; // 탭의 높이와 맞춤 (padding 0.5rem * 2 + 텍스트 높이)
   margin-top: 3px;
+  background: #e7e6ed;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 1;
 
   img {
     width: 8px;
@@ -3028,6 +2947,12 @@ dl.column-regist {
     opacity: 0.6;
     cursor: not-allowed;
   }
+}
+.btn-scroll.left {
+  left: 0;
+}
+.btn-scroll.right {
+  right: 0;
 }
 
 .tab-buttons {

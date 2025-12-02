@@ -100,7 +100,7 @@
                 <select
                   v-model="detailSearch.headerMachineCategory"
                   :disabled="detailSearch.machineCategoryOptions.length === 0"
-                  class="form-select"
+                  class="form-select lg"
                   @change="
                     handleHeaderMachineCategoryChange();
                     handleSearch();
@@ -2877,6 +2877,10 @@ onMounted(async () => {
           cursor: not-allowed;
           border-color: #ddd;
         }
+      }
+
+      .form-select.lg {
+        width: 440px;
       }
     }
   }

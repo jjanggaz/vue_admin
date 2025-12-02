@@ -3,9 +3,9 @@
     <!-- 등록 폼 -->
     <div class="filter-bar">
         <div class="form-group">
-          <label class="required">단위</label>
+          <label class="required">{{ t("common.unit") }}</label>
           <select v-model="selectedUnit" class="form-select">
-            <option value="">-- 선택 --</option>
+            <option value="">{{ t("common.select") }}</option>
             <option
               v-for="unit in asset3DStore.unitSystems"
               :key="unit.unit_system_id"
@@ -16,24 +16,24 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="required">연결기계</label>
+          <label class="required">{{ t("asset3D.connectedMachine") }}</label>
           <select v-model="selectedMachine" class="form-select">
-            <option value="">-- 선택 --</option>
-          <option value="M_PUMP">펌프</option>
-          <option value="M_AEBL">송풍기</option>
+            <option value="">{{ t("common.select") }}</option>
+          <option value="M_PUMP">{{ t("asset3D.machinePump") }}</option>
+          <option value="M_AEBL">{{ t("asset3D.machineBlower") }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="required">프리셋 명</label>
+          <label class="required">{{ t("asset3D.presetName") }}</label>
           <input
             type="text"
             v-model="presetName"
             class="form-input"
-            placeholder="프리셋 명을 입력해주세요."
+            :placeholder="t('asset3D.presetNamePlaceholder')"
           />
         </div>
         <div class="form-group">
-          <label>썸네일 업로드</label>
+          <label>{{ t("asset3D.thumbnailUpload") }}</label>
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
@@ -41,7 +41,7 @@
               class="form-input file-name-input"
               :value="thumbnailFileName"
               readonly
-              placeholder="파일 선택"
+              :placeholder="t('common.selectFile')"
             />
             <input
               type="file"
@@ -61,7 +61,7 @@
               type="button"
               class="btn-download"
               @click="handleThumbnailDownload"
-              title="썸네일 다운로드"
+              :title="t('asset3D.downloadThumbnail')"
             >
               <span class="ico-download"></span>
             </button>
@@ -69,14 +69,22 @@
           <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
             <img
               :src="thumbnailPreviewUrl"
-              alt="썸네일 미리보기"
+              :alt="t('asset3D.thumbnailPreview')"
               class="thumbnail-preview"
             />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
+              class="btn download-btn"
+              @click="handleThumbnailDownload"
+              :title="t('asset3D.downloadThumbnail')"
+            >
+              <span class="ico-download"></span>
+            </button>
+            <button
+              v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="thumbnail-close-btn"
               @click="handleDeleteThumbnail"
-              title="썸네일 삭제"
+              :title="t('asset3D.deleteThumbnail')"
             >
             </button>
           </div>
@@ -89,20 +97,20 @@
           @click="handleThumbnailRegister"
           :disabled="!selectedUnit || !selectedMachine || !presetName"
         >
-          {{ isEditMode ? "저장" : "등록" }}
+          {{ isEditMode ? t("common.save") : t("common.register") }}
           </button>
           </div>
         </div>
 
     <!-- 행 삭제/저장 버튼 -->
     <div class="table-header-row">
-      <h3 class="table-title">선택 항목</h3>
+      <h3 class="table-title">{{ t("asset3D.selectedItems") }}</h3>
       <div class="button-group" v-if="isSelectionGridEnabled">
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
-            -행 삭제
+            {{ t("asset3D.deleteRow") }}
           </button>
         <button type="button" class="btn btn-save sm" @click="handleSaveSelectedItems">
-          저장
+          {{ t("common.save") }}
           </button>
       </div>
     </div>
@@ -111,7 +119,7 @@
     <div class="table-section">
       <!-- 등록 모드에서 preset_id가 없을 때 메시지 표시 -->
       <div v-if="!props.isEditMode && !isSelectionGridEnabled" class="empty-message">
-        마스터 정보를 먼저 등록하세요
+        {{ t("asset3D.message.registerMasterFirst") }}
       </div>
       
       <!-- 그리드 표시 (수정 모드이거나 등록 모드에서 preset_id가 있을 때) -->
@@ -159,7 +167,7 @@
       <div class="selection-filter-bar">
         <div class="filter-group">
           <div class="filter-item">
-            <label>구분</label>
+            <label>{{ t("asset3D.category") }}</label>
           <select
               v-model="selectionFilter.pipeCategory" 
               class="form-select"
@@ -177,7 +185,7 @@
           </select>
           </div>
           <div class="filter-item subtype-filter-item">
-            <label>세부구분</label>
+            <label>{{ t("asset3D.subCategory") }}</label>
             <!-- 수동 벨브 선택 시 트리 셀렉트 -->
             <div
               v-if="selectionFilter.pipeCategory === 'P_VALV'"
@@ -202,7 +210,7 @@
               :disabled="!isSelectionGridEnabled || !selectionFilter.pipeCategory"
               @change="handleFilterSubTypeChange"
             >
-              <option value="">전체</option>
+              <option value="">{{ t("common.all") }}</option>
               <option
                 v-for="option in filterSubTypeOptions"
                 :key="option.value"
@@ -213,12 +221,12 @@
             </select>
           </div>
           <div class="filter-item diameter-filter-item">
-            <label>직경 입력</label>
+            <label>{{ t("asset3D.diameterInput") }}</label>
           <input
             type="text"
               v-model="selectionFilter.diameter"
               class="form-input"
-            placeholder="직경 (숫자만 입력)"
+            :placeholder="t('asset3D.diameterPlaceholder')"
               :disabled="!isSelectionGridEnabled"
               @input="handleDiameterInput"
               @change="handleDiameterChange"
@@ -226,12 +234,12 @@
           />
           </div>
           <div class="filter-item search-item">
-            <label>키워드</label>
+            <label>{{ t("asset3D.keyword") }}</label>
           <input
             type="text"
               v-model="selectionFilter.searchText"
               class="form-input"
-              placeholder="원본 전체 텍스트 검색 (예: 엘보 & 150A)"
+              :placeholder="t('asset3D.keywordPlaceholder')"
               :disabled="!isSelectionGridEnabled"
               @keyup.enter="handleSelectionSearch"
               @change="handleKeywordChange"
@@ -240,10 +248,10 @@
         </div>
         <div class="button-group">
           <button type="button" class="btn-reset" :disabled="!isSelectionGridEnabled" @click="handleResetSelectionFilter">
-            필터 초기화
+            {{ t("asset3D.resetFilter") }}
           </button>
           <button type="button" class="btn-add-selection" :disabled="!isSelectionGridEnabled" @click="handleAddSelection">
-            선택 항목 추가
+            {{ t("asset3D.addSelectedItems") }}
           </button>
         </div>
       </div>
@@ -251,7 +259,7 @@
       <!-- 자재 리스트 테이블 -->
       <div class="selection-table-section">
         <div class="material-list-header">
-          <h3 class="section-title">자재 리스트</h3>
+          <h3 class="section-title">{{ t("asset3D.materialList") }}</h3>
           <!-- 디버깅용 equipment_type 검색 (숨김 처리) -->
           <!-- <div class="debug-search">
           <input
@@ -272,7 +280,7 @@
         
         <!-- 로딩 상태 표시 -->
         <div v-if="materialListLoading" class="loading-message">
-          검색 중...
+          {{ t("asset3D.searching") }}
         </div>
         
         <!-- 에러 메시지 표시 -->
@@ -769,9 +777,9 @@ const resetManualValveTreeState = () => {
 
 // 유형 옵션
 // 상단 그리드용 유형 옵션 (기존 유지)
-const typeOptions = ref([
-  { value: "FIT_PIPE", label: "배관" },
-  { value: "P_VALV", label: "수동 벨브" },
+const typeOptions = computed(() => [
+  { value: "FIT_PIPE", label: t("asset3D.typePipe") },
+  { value: "P_VALV", label: t("asset3D.typeManualValve") },
 ]);
 
 // 유형 코드를 라벨로 변환 (pipeStore.secondDepth 우선 사용)
@@ -812,7 +820,7 @@ const handleThumbnailFileChange = (e: Event) => {
       .toLowerCase()
       .substring(file.name.lastIndexOf("."));
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("썸네일 파일은 .jpg, .jpeg, .png, .gif 확장자만 허용됩니다.");
+      alert(t("asset3D.error.thumbnailFileExtensionOnly"));
       input.value = "";
       thumbnailFileName.value = "";
       thumbnailFile.value = null;
@@ -883,12 +891,12 @@ const handleAddRow = () => {
 // 행 삭제 핸들러
 const handleDeleteRow = () => {
   if (selectedRows.value.length === 0) {
-    alert("삭제할 행을 선택해주세요.");
+    alert(t("asset3D.error.selectRowToDelete"));
     return;
   }
 
   // 확인 팝업
-  if (!confirm("삭제 하시겠습니까?")) {
+  if (!confirm(t("asset3D.confirm.delete"))) {
     return;
   }
 
@@ -905,7 +913,7 @@ const handleDeleteRow = () => {
 const handleSaveSelectedItems = async () => {
   // preset_id 확인
   if (!currentPresetId.value) {
-    alert("프리셋 ID가 없습니다. 마스터 정보를 먼저 저장해주세요.");
+    alert(t("asset3D.error.noPresetId"));
     return;
   }
 
@@ -917,7 +925,7 @@ const handleSaveSelectedItems = async () => {
       // 등록 모드: 모든 항목을 추가
       const allRows = tableRows.value;
       if (allRows.length === 0) {
-        alert("저장할 항목이 없습니다.");
+        alert(t("asset3D.error.noItemsToSave"));
         return;
       }
 
@@ -974,10 +982,10 @@ const handleSaveSelectedItems = async () => {
 
       const failedResponses = addResponses.filter((res) => !res || !res.success);
       if (failedResponses.length > 0) {
-        throw new Error(`${failedResponses.length}개의 항목 저장에 실패했습니다.`);
+        throw new Error(t("asset3D.error.itemsSaveFailed", { count: failedResponses.length }));
       }
 
-      alert("저장되었습니다.");
+      alert(t("common.saved"));
       console.log("저장 성공:", addResponses);
       return;
     }
@@ -1015,7 +1023,7 @@ const handleSaveSelectedItems = async () => {
 
     // 추가된 항목이 없고 삭제된 항목도 없으면 저장할 것이 없음
     if (addedRows.length === 0 && deletedDetailIds.length === 0) {
-      alert("변경된 항목이 없습니다.");
+      alert(t("asset3D.error.noChangedItems"));
       return;
     }
 
@@ -1136,10 +1144,10 @@ const handleSaveSelectedItems = async () => {
     // 모든 응답 확인
     const failedResponses = responses.filter((res) => !res || !res.success);
     if (failedResponses.length > 0) {
-      throw new Error(`${failedResponses.length}개의 항목 처리에 실패했습니다.`);
+      throw new Error(t("asset3D.error.itemsProcessFailed", { count: failedResponses.length }));
     }
 
-    alert("저장되었습니다.");
+    alert(t("common.saved"));
     console.log("저장 성공:", responses);
     
     // 저장 성공 후 선택 항목 그리드 새로고침 (수정 모드인 경우만)
@@ -1148,7 +1156,7 @@ const handleSaveSelectedItems = async () => {
     }
   } catch (error) {
     console.error("저장 실패:", error);
-    alert("저장에 실패했습니다.");
+    alert(t("asset3D.error.saveFailed"));
   }
 };
 
@@ -1554,7 +1562,7 @@ const handleTreeSelect = (
     (selectedNode as ManualValveTreeNodeWithDepth).depth;
 
   if (codeLevel !== undefined && codeLevel !== 4) {
-    alert("4레벨 코드를 선택하세요.");
+    alert(t("asset3D.error.selectLevel4Code"));
     return;
   }
 
@@ -1672,7 +1680,7 @@ const handleSelectionSearch = () => {
   // 수동 밸브인 경우 세부구분(트리 선택값) 검증
   if (selectionFilter.value.pipeCategory === "P_VALV") {
     if (!selectionFilter.value.fittingType) {
-      alert("세부구분을 선택해주세요.");
+      alert(t("asset3D.error.selectSubCategory"));
       return;
     }
   }
@@ -1890,7 +1898,7 @@ const handleFilterTreeSelect = (node: ManualValveTreeNode) => {
   // 4레벨 코드인지 확인
   const codeLevel = node.code_level;
   if (codeLevel !== undefined && codeLevel !== 4) {
-    alert("4레벨 코드를 선택하세요.");
+    alert(t("asset3D.error.selectLevel4Code"));
     return;
   }
   
@@ -1947,7 +1955,7 @@ const expandFilterPath = (codeKey: string, exclusive = false) => {
 // 선택 항목 추가 (자재 리스트에서 선택한 항목을 선택 항목 그리드에 순차 추가)
 const handleAddSelection = () => {
   if (selectedMaterialItems.value.length === 0) {
-    alert("자재 리스트에서 추가할 항목을 선택해주세요.");
+    alert(t("asset3D.error.selectItemsFromMaterialList"));
     return;
   }
 
@@ -1955,18 +1963,18 @@ const handleAddSelection = () => {
   if (selectionFilter.value.pipeCategory === "P_VALV") {
     // 수동 밸브인 경우: 트리에서 선택한 세부구분 필요
     if (!filterSelectedCode.value && !filterSubTypeLabel.value) {
-      alert("세부구분을 선택해주세요.");
+      alert(t("asset3D.error.selectSubCategory"));
       return;
     }
   } else if (selectionFilter.value.pipeCategory) {
     // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 필요
     if (!selectionFilter.value.fittingType) {
-      alert("세부구분을 선택해주세요.");
+      alert(t("asset3D.error.selectSubCategory"));
       return;
     }
   } else {
     // 구분이 선택되지 않은 경우
-    alert("구분을 선택해주세요.");
+    alert(t("asset3D.error.selectCategory"));
     return;
   }
 
@@ -2319,7 +2327,7 @@ const handleMaterialPageChange = (page: number) => {
 // 디버깅용 equipment_type 검색 핸들러
 const handleDebugSearch = async () => {
   if (!debugEquipmentType.value.trim()) {
-    alert("equipment_type을 입력하세요.");
+    alert(t("asset3D.error.enterEquipmentType"));
     return;
   }
   
@@ -2560,8 +2568,10 @@ watch(
             // 썸네일 다운로드 URL 설정
             if (thumbnailFile && thumbnailFile.download_url) {
               thumbnailDownloadUrl.value = String(thumbnailFile.download_url);
+              console.log("[Asset3DPresetTab] 썸네일 다운로드 URL 설정:", thumbnailDownloadUrl.value);
             } else {
               thumbnailDownloadUrl.value = "";
+              console.log("[Asset3DPresetTab] 썸네일 다운로드 URL 없음");
             }
             
             // 썸네일 미리보기 로드
@@ -2801,8 +2811,29 @@ const uploadPresetThumbnail = async (file: File, presetId: string): Promise<stri
 
 // 썸네일 다운로드 핸들러
 const handleThumbnailDownload = async () => {
+  // 로컬 파일이 있는 경우 (새로 선택한 파일)
+  if (thumbnailFile.value) {
+    try {
+      const url = window.URL.createObjectURL(thumbnailFile.value);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = thumbnailFileName.value || t("asset3D.defaultThumbnailFileName");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    } catch (error) {
+      console.error("썸네일 다운로드 실패:", error);
+      alert(t("asset3D.error.downloadError"));
+      return;
+    }
+  }
+
+  // 서버에서 다운로드하는 경우
   if (!thumbnailDownloadUrl.value) {
-    alert("다운로드할 파일이 없습니다.");
+    alert(t("asset3D.error.noFileToDownload"));
     return;
   }
   
@@ -2814,14 +2845,14 @@ const handleThumbnailDownload = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+      throw new Error(`${t("asset3D.error.downloadFailed")}: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = thumbnailFileName.value || "thumbnail";
+    link.download = thumbnailFileName.value || t("asset3D.defaultThumbnailFileName");
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -2829,7 +2860,7 @@ const handleThumbnailDownload = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("썸네일 다운로드 실패:", error);
-    alert("다운로드 중 오류가 발생했습니다.");
+    alert(t("asset3D.error.downloadError"));
   }
 };
 
@@ -2837,12 +2868,12 @@ const handleThumbnailDownload = async () => {
 const handleDeleteThumbnail = async () => {
   // 삭제할 썸네일이 없는 경우
   if (!thumbnailPreviewUrl.value && !thumbnailDownloadUrl.value && !thumbnailFile.value) {
-    alert("삭제할 썸네일이 없습니다.");
+    alert(t("asset3D.error.noThumbnailToDelete"));
     return;
   }
 
   // 확인 팝업
-  if (!confirm("썸네일을 삭제하시겠습니까?")) {
+  if (!confirm(t("asset3D.confirm.deleteThumbnail"))) {
     return;
   }
 
@@ -2865,7 +2896,7 @@ const handleDeleteThumbnail = async () => {
       );
 
       if (!response || !response.success) {
-        throw new Error(response?.message || "썸네일 삭제에 실패했습니다.");
+        throw new Error(response?.message || t("asset3D.error.thumbnailDeleteFailed"));
       }
 
       console.log("썸네일 삭제 성공:", response);
@@ -2890,10 +2921,10 @@ const handleDeleteThumbnail = async () => {
       await reloadPresetMasterData(currentPresetId.value);
     }
 
-    alert("썸네일이 삭제되었습니다.");
+    alert(t("asset3D.success.thumbnailDeleted"));
   } catch (error) {
     console.error("썸네일 삭제 실패:", error);
-    const errorMessage = error instanceof Error ? error.message : "썸네일 삭제에 실패했습니다.";
+    const errorMessage = error instanceof Error ? error.message : t("asset3D.error.thumbnailDeleteFailed");
     alert(errorMessage);
   }
 };
@@ -2979,17 +3010,17 @@ const reloadPresetMasterData = async (presetId: string) => {
 const handleThumbnailRegister = async () => {
   // 필수 필드 검증
   if (!selectedUnit.value) {
-    alert("단위를 선택해주세요.");
+    alert(t("asset3D.error.selectUnit"));
     return;
   }
 
   if (!selectedMachine.value) {
-    alert("연결기계를 선택해주세요.");
+    alert(t("asset3D.error.selectConnectedMachine"));
     return;
   }
 
   if (!presetName.value || presetName.value.trim() === "") {
-    alert("프리셋 명을 입력해주세요.");
+    alert(t("asset3D.error.enterPresetName"));
     return;
   }
 
@@ -3026,7 +3057,7 @@ const handleThumbnailRegister = async () => {
         
         if (!presetId) {
           console.error("수정 모드에서 preset_id를 찾을 수 없습니다.");
-          alert("프리셋 ID가 없습니다. 썸네일 업로드에 실패했습니다.");
+          alert(t("asset3D.error.noPresetIdForThumbnailUpload"));
           return;
         }
         
@@ -3036,7 +3067,7 @@ const handleThumbnailRegister = async () => {
         
         if (!thumbnailId) {
           console.error("프리셋 썸네일 업로드 실패: thumbnailId가 null입니다.");
-          alert("썸네일 업로드에 실패했습니다.");
+          alert(t("asset3D.error.thumbnailUploadFailed"));
           return;
         }
         
@@ -3118,7 +3149,7 @@ const handleThumbnailRegister = async () => {
       
       if (!presetId) {
         console.error("프리셋 ID를 찾을 수 없습니다. editItem:", editItemAny);
-        alert("프리셋 ID를 찾을 수 없습니다.");
+        alert(t("asset3D.error.presetIdNotFound"));
         return;
       }
 
@@ -3141,7 +3172,7 @@ const handleThumbnailRegister = async () => {
       console.log("📥 프리셋 수정 API 응답:", response);
 
       if (response && response.success) {
-        alert("프리셋이 수정되었습니다.");
+        alert(t("asset3D.success.presetUpdated"));
         
         // 수정 성공 후 새로 선택한 파일만 초기화 (썸네일 정보는 유지)
         thumbnailFile.value = null;
@@ -3153,7 +3184,7 @@ const handleThumbnailRegister = async () => {
         // (서버에서 다시 로드하거나 기존 값 유지)
         // 폼의 다른 필드는 초기화하지 않음 (수정 모드이므로)
       } else {
-        const errorMessage = response?.message || "프리셋 수정에 실패했습니다.";
+        const errorMessage = response?.message || t("asset3D.error.presetUpdateFailed");
         alert(errorMessage);
       }
     } else {
@@ -3236,13 +3267,13 @@ const handleThumbnailRegister = async () => {
           console.log("✅ preset_id 저장:", currentPresetId.value);
         }
         
-        alert("프리셋이 등록되었습니다.");
+        alert(t("asset3D.success.presetRegistered"));
         
         // 등록 성공 후 상단 폼은 초기화하지 않음 (선택 항목 그리드 활성화를 위해 유지)
         // tableRows는 유지 (선택 항목 그리드에 표시)
         // thumbnailFileInput.value.value = ""; // 썸네일은 유지
       } else {
-        const errorMessage = responseFormatted?.message || "프리셋 등록에 실패했습니다.";
+        const errorMessage = responseFormatted?.message || t("asset3D.error.presetRegisterFailed");
         alert(errorMessage);
       }
     }
@@ -3250,7 +3281,7 @@ const handleThumbnailRegister = async () => {
     console.error("프리셋 등록 실패:", error);
     const errorMessage = error && typeof error === "object" && "message" in error
       ? String((error as { message?: string }).message)
-      : "프리셋 등록에 실패했습니다.";
+      : t("asset3D.error.presetRegisterFailed");
     alert(errorMessage);
   }
 };
@@ -3393,7 +3424,9 @@ select {
 
 .thumbnail-preview-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
 
   .thumbnail-preview {
@@ -3405,6 +3438,7 @@ select {
     flex-shrink: 0;
     display: block;
   }
+
 
   .thumbnail-close-btn {
     display: flex;

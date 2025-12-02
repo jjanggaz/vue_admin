@@ -3,9 +3,9 @@
     <!-- 등록 폼 -->
     <div class="filter-bar">
       <div class="form-group">
-        <label class="required">단위</label>
+        <label class="required">{{ t("common.unit") }}</label>
         <select v-model="selectedUnit" class="form-select">
-          <option value="">-- 선택 --</option>
+          <option value="">{{ t("common.select") }}</option>
           <option
             v-for="unit in asset3DStore.unitSystems"
             :key="unit.unit_system_id"
@@ -16,31 +16,31 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="required">3D ASSET 카테고리</label>
+        <label class="required">{{ t("asset3D.category") }}</label>
         <select v-model="selectedCategory" class="form-select">
-          <option value="">-- 선택 --</option>
-          <option value="INTERIOR">인테리어</option>
-          <option value="STRUCTURE">구조물</option>
+          <option value="">{{ t("common.select") }}</option>
+          <option value="INTERIOR">{{ t("asset3D.categoryInterior") }}</option>
+          <option value="STRUCTURE">{{ t("asset3D.categoryStructure") }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="required">3D 모델명</label>
+        <label class="required">{{ t("asset3D.modelName") }}</label>
         <input
           type="text"
           v-model="modelName"
           class="form-input"
-          placeholder="모델명 입력"
+          :placeholder="t('asset3D.modelNamePlaceholder')"
         />
       </div>
       <div class="form-group">
-        <label>3D모델 업로드</label>
+        <label>{{ t("asset3D.modelUpload") }}</label>
         <div class="file-upload-group">
           <input
           type="text"
           class="form-input file-name-input"
           :value="modelFileName"
           readonly
-          placeholder="파일 선택"
+          :placeholder="t('common.selectFile')"
           />
           <input
           type="file"
@@ -56,18 +56,18 @@
           >
           </button>
           <button
-            v-if="modelDownloadUrl"
+            v-if="modelDownloadUrl || modelFile"
             type="button"
-            class="btn-download"
+            class="btn download-btn"
             @click="handleModelDownload"
-            title="3D 모델 다운로드"
+            :title="t('asset3D.downloadModel')"
           >
             <span class="ico-download"></span>
           </button>
         </div>
       </div>
       <div class="form-group">
-        <label>3D모델 썸네일</label>
+        <label>{{ t("asset3D.thumbnail") }}</label>
         <div class="file-upload-wrapper">
           <div class="file-upload-group">
             <input
@@ -75,7 +75,7 @@
               class="form-input file-name-input"
               :value="thumbnailFileName"
               readonly
-              placeholder="파일 선택"
+              :placeholder="t('common.selectFile')"
             />
             <input
               type="file"
@@ -95,7 +95,7 @@
               type="button"
               class="btn-download"
               @click="handleThumbnailDownload"
-              title="썸네일 다운로드"
+              :title="t('asset3D.downloadThumbnail')"
             >
               <span class="ico-download"></span>
             </button>
@@ -103,14 +103,22 @@
           <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
             <img
               :src="thumbnailPreviewUrl"
-              alt="썸네일 미리보기"
+              :alt="t('asset3D.thumbnailPreview')"
               class="thumbnail-preview"
             />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
+              class="btn download-btn"
+              @click="handleThumbnailDownload"
+              :title="t('asset3D.downloadThumbnail')"
+            >
+              <span class="ico-download"></span>
+            </button>
+            <button
+              v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="thumbnail-close-btn"
               @click="handleDeleteThumbnail"
-              title="썸네일 삭제"
+              :title="t('asset3D.deleteThumbnail')"
             >
             </button>
           </div>
@@ -122,7 +130,7 @@
           class="btn btn-register md" 
           @click="handleButtonClick"
           >
-          {{ isEditMode ? "저장" : "등록" }}
+          {{ isEditMode ? t("common.save") : t("common.register") }}
         </button>
       </div>
       <!-- <div class="form-group right-align">
@@ -339,7 +347,7 @@ const handleModelFileChange = (e: Event) => {
 
     // 확장자 검증
     if (!file.name.toLowerCase().endsWith(".dtdx")) {
-      alert("3D 모델 파일은 .dtdx 확장자만 허용됩니다.");
+      alert(t("asset3D.error.modelFileExtensionOnly"));
       input.value = "";
       modelFileName.value = "";
       modelFile.value = null;
@@ -380,7 +388,7 @@ const handleThumbnailFileChange = (e: Event) => {
       .toLowerCase()
       .substring(file.name.lastIndexOf("."));
     if (!allowedExtensions.includes(fileExtension)) {
-      alert("썸네일 파일은 .jpg, .jpeg, .png, .gif 확장자만 허용됩니다.");
+      alert(t("asset3D.error.thumbnailFileExtensionOnly"));
       input.value = "";
       thumbnailFileName.value = "";
       thumbnailFile.value = null;
@@ -462,18 +470,18 @@ const fileUploadRequest = async (
             errorMessage = `${errorMessage} - ${xhr.responseText}`;
           }
         }
-        reject(new Error(`파일 업로드 실패: ${errorMessage}`));
+        reject(new Error(`${t("asset3D.error.fileUploadFailed")}: ${errorMessage}`));
       }
     };
 
     // 네트워크 오류 처리
     xhr.onerror = () => {
-      reject(new Error(`네트워크 연결에 실패했습니다. (${url})`));
+      reject(new Error(`${t("asset3D.error.networkConnectionFailed")} (${url})`));
     };
 
     // 타임아웃 처리
     xhr.ontimeout = () => {
-      reject(new Error("API Call Fail: Timeout"));
+      reject(new Error(t("asset3D.error.apiCallTimeout")));
     };
 
     // 요청 설정 및 전송
@@ -518,8 +526,29 @@ const uploadModelFile = async (file: File): Promise<string | null> => {
 
 // 3D 모델 다운로드 핸들러
 const handleModelDownload = async () => {
+  // 로컬 파일이 있는 경우 (새로 선택한 파일)
+  if (modelFile.value) {
+    try {
+      const url = window.URL.createObjectURL(modelFile.value);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = modelFileName.value || t("asset3D.defaultModelFileName");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    } catch (error) {
+      console.error("3D 모델 다운로드 실패:", error);
+      alert(t("asset3D.error.downloadError"));
+      return;
+    }
+  }
+
+  // 서버에서 다운로드하는 경우
   if (!modelDownloadUrl.value) {
-    alert("다운로드할 파일이 없습니다.");
+    alert(t("asset3D.error.noFileToDownload"));
     return;
   }
   
@@ -531,14 +560,14 @@ const handleModelDownload = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+      throw new Error(`${t("asset3D.error.downloadFailed")}: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = modelFileName.value || "model.dtdx";
+    link.download = modelFileName.value || t("asset3D.defaultModelFileName");
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -546,14 +575,35 @@ const handleModelDownload = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("3D 모델 다운로드 실패:", error);
-    alert("다운로드에 실패했습니다.");
+    alert(t("asset3D.error.downloadFailed"));
   }
 };
 
 // 썸네일 다운로드 핸들러
 const handleThumbnailDownload = async () => {
+  // 로컬 파일이 있는 경우 (새로 선택한 파일)
+  if (thumbnailFile.value) {
+    try {
+      const url = window.URL.createObjectURL(thumbnailFile.value);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = thumbnailFileName.value || t("asset3D.defaultThumbnailFileName");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    } catch (error) {
+      console.error("썸네일 다운로드 실패:", error);
+      alert(t("asset3D.error.downloadError"));
+      return;
+    }
+  }
+
+  // 서버에서 다운로드하는 경우
   if (!thumbnailDownloadUrl.value) {
-    alert("다운로드할 파일이 없습니다.");
+    alert(t("asset3D.error.noFileToDownload"));
     return;
   }
   
@@ -565,14 +615,14 @@ const handleThumbnailDownload = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+      throw new Error(`${t("asset3D.error.downloadFailed")}: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = thumbnailFileName.value || "thumbnail";
+    link.download = thumbnailFileName.value || t("asset3D.defaultThumbnailFileName");
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -580,7 +630,7 @@ const handleThumbnailDownload = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("썸네일 다운로드 실패:", error);
-    alert("다운로드 중 오류가 발생했습니다.");
+    alert(t("asset3D.error.downloadError"));
   }
 };
 
@@ -588,12 +638,12 @@ const handleThumbnailDownload = async () => {
 const handleDeleteThumbnail = async () => {
   // 삭제할 썸네일이 없는 경우
   if (!thumbnailPreviewUrl.value && !thumbnailDownloadUrl.value && !thumbnailFile.value) {
-    alert("삭제할 썸네일이 없습니다.");
+    alert(t("asset3D.error.noThumbnailToDelete"));
     return;
   }
 
   // 확인 팝업
-  if (!confirm("썸네일을 삭제하시겠습니까?")) {
+  if (!confirm(t("asset3D.confirm.deleteThumbnail"))) {
     return;
   }
 
@@ -605,7 +655,7 @@ const handleDeleteThumbnail = async () => {
       
       if (!libraryId) {
         console.error("library_id를 찾을 수 없습니다:", props.editItem);
-        alert("library_id를 찾을 수 없습니다.");
+        alert(t("asset3D.error.libraryIdNotFound"));
         return;
       }
       
@@ -623,7 +673,7 @@ const handleDeleteThumbnail = async () => {
       );
 
       if (!response || !response.success) {
-        throw new Error(response?.message || "썸네일 삭제에 실패했습니다.");
+        throw new Error(response?.message || t("asset3D.error.thumbnailDeleteFailed"));
       }
 
       console.log("썸네일 삭제 성공:", response);
@@ -652,10 +702,10 @@ const handleDeleteThumbnail = async () => {
       }
     }
 
-    alert("썸네일이 삭제되었습니다.");
+    alert(t("asset3D.success.thumbnailDeleted"));
   } catch (error) {
     console.error("썸네일 삭제 실패:", error);
-    const errorMessage = error instanceof Error ? error.message : "썸네일 삭제에 실패했습니다.";
+    const errorMessage = error instanceof Error ? error.message : t("asset3D.error.thumbnailDeleteFailed");
     alert(errorMessage);
   }
 };
@@ -797,19 +847,19 @@ const handleRegister = async () => {
   // 필수 항목 검증
   if (!selectedUnit.value) {
     console.log("[Asset3DLibrary] 검증 실패: 단위 미선택");
-    alert("단위를 선택해주세요.");
+    alert(t("asset3D.error.selectUnit"));
     return;
   }
 
   if (!selectedCategory.value) {
     console.log("[Asset3DLibrary] 검증 실패: 카테고리 미선택");
-    alert("3D ASSET 카테고리를 선택해주세요.");
+    alert(t("asset3D.error.selectCategory"));
     return;
   }
 
   if (!modelName.value || modelName.value.trim() === "") {
     console.log("[Asset3DLibrary] 검증 실패: 모델명 미입력");
-    alert("3D 모델명을 입력해주세요.");
+    alert(t("asset3D.error.enterModelName"));
     return;
   }
 
@@ -837,7 +887,7 @@ const handleRegister = async () => {
       const libraryId = editItemAny.library_id || editItemAny.id || "";
 
       if (!libraryId) {
-        alert("library_id를 찾을 수 없습니다.");
+        alert(t("asset3D.error.libraryIdNotFound"));
         return;
       }
 
@@ -889,7 +939,7 @@ const handleRegister = async () => {
         console.log("📥 라이브러리 업데이트 응답:", updateResponse);
 
         if (!updateResponse || !updateResponse.success) {
-          const errorMsg = updateResponse?.message || "라이브러리 업데이트에 실패했습니다.";
+          const errorMsg = updateResponse?.message || t("asset3D.error.libraryUpdateFailed");
           console.error("========================================");
           console.error("[Asset3DLibrary] 라이브러리 업데이트 실패");
           console.error("========================================");
@@ -970,7 +1020,7 @@ const handleRegister = async () => {
           console.error("========================================");
           console.error("[Asset3DLibrary] 썸네일 파일 업로드 실패");
           console.error("========================================");
-          throw new Error(`썸네일 파일 업로드 실패: ${errorMessage}`);
+          throw new Error(`${t("asset3D.error.thumbnailUploadFailed")}: ${errorMessage}`);
         }
 
         const uploadResponseData = await uploadResponse.json();
@@ -1041,7 +1091,7 @@ const handleRegister = async () => {
           console.error("========================================");
           console.error("[Asset3DLibrary] 3D 모델 파일 업로드 실패");
           console.error("========================================");
-          throw new Error(`3D 모델 파일 업로드 실패: ${errorMessage}`);
+          throw new Error(`${t("asset3D.error.modelUploadFailed")}: ${errorMessage}`);
         }
 
         const uploadResponseData = await uploadResponse.json();
@@ -1069,7 +1119,7 @@ const handleRegister = async () => {
       }
       console.log("========================================");
 
-      alert("저장되었습니다.");
+      alert(t("common.saved"));
 
       // 수정 모드에서는 새로 선택한 파일만 초기화 (썸네일 정보는 유지)
       modelFile.value = null;
@@ -1234,7 +1284,7 @@ const handleRegister = async () => {
       console.error("========================================");
       console.error("[Asset3DLibrary] 등록 실패");
       console.error("========================================");
-      throw new Error(`등록 실패: ${errorMessage}`);
+      throw new Error(`${t("asset3D.error.registerFailed")}: ${errorMessage}`);
     }
 
     const responseData = await response.json();
@@ -1244,10 +1294,10 @@ const handleRegister = async () => {
     console.log("========================================");
 
     if (!responseData || !responseData.success) {
-      throw new Error(responseData?.message || "등록에 실패했습니다.");
+      throw new Error(responseData?.message || t("asset3D.error.registerFailed"));
     }
 
-    alert("등록되었습니다.");
+    alert(t("common.registered"));
 
     // 성공 시 초기화
     selectedUnit.value = "";
@@ -1271,7 +1321,7 @@ const handleRegister = async () => {
     console.error("에러 메시지:", error instanceof Error ? error.message : String(error));
     console.error("에러 스택:", error instanceof Error ? error.stack : "스택 없음");
     console.error("========================================");
-    const errorMessage = error instanceof Error ? error.message : "등록에 실패했습니다.";
+    const errorMessage = error instanceof Error ? error.message : t("asset3D.error.registerFailed");
     alert(errorMessage);
   }
 };
@@ -1425,7 +1475,9 @@ select {
 
 .thumbnail-preview-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
 
   .thumbnail-preview {
@@ -1437,6 +1489,7 @@ select {
     flex-shrink: 0;
     display: block;
   }
+
 
   .thumbnail-close-btn {
     display: flex;

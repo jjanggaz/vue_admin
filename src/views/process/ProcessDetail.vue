@@ -211,11 +211,7 @@
             <button
               @click="handleFormulaDelete"
               class="btn btn-delete sm"
-              :disabled="
-                !selectedFormulaItems ||
-                (Array.isArray(selectedFormulaItems) &&
-                  selectedFormulaItems.length === 0)
-              "
+              :disabled="!selectedFormulaItems"
             >
               {{ t("common.delete") }}
             </button>
@@ -242,6 +238,7 @@
           :selectable="false"
           :max-height="formulaTableMaxHeight"
           :key="formulaTableKey"
+          @row-click="handleFormulaRowClick"
         >
           <template #cell-select="{ item, index }">
             <input
@@ -249,7 +246,7 @@
               :name="`formulaSelect`"
               :value="item"
               v-model="selectedFormulaItems"
-              @change="handleFormulaSelectionChange"
+              @change="() => handleFormulaSelectionChange(true)"
             />
           </template>
           <template #cell-no="{ item, index }">
@@ -389,6 +386,7 @@
             :selectable="false"
             :max-height="pfdTableMaxHeight"
             :sticky-header="pfdTableMaxHeight !== 'auto'"
+            @row-click="handlePfdRowClick"
           >
             <template #cell-select="{ item, index }">
               <input
@@ -502,11 +500,7 @@
             <button
               class="btn btn-delete sm"
               @click="deleteSelectedMappingPidItems"
-              :disabled="
-                !selectedMappingPidItems ||
-                (Array.isArray(selectedMappingPidItems) &&
-                  selectedMappingPidItems.length === 0)
-              "
+              :disabled="!selectedMappingPidItems"
             >
               삭제
             </button>
@@ -525,6 +519,7 @@
           :selectable="false"
           :max-height="pidTableMaxHeight"
           :sticky-header="pidTableMaxHeight !== 'auto'"
+          @row-click="handleMappingPidRowClick"
         >
           <template #cell-select="{ item, index }">
             <input
@@ -1091,7 +1086,7 @@ const hasFormulaData = computed(() => {
 });
 
 // Reactive references
-const selectedFormulaItems = ref<any[]>([]);
+const selectedFormulaItems = ref<any | null>(null);
 const selectedPfdItems = ref<any | null>(null);
 const selectedFormulaFiles = ref<File[]>([]);
 const selectedPfdFiles = ref<File[]>([]);
@@ -1106,7 +1101,7 @@ const capacityCalculationFileInput = ref<HTMLInputElement | null>(null);
 const currentPfdItemForMapping = ref<any>(null);
 const currentPidItemForMapping = ref<any>(null); // P&ID 파일 선택용 참조 변수
 const mappingPidList = ref<any[]>([]);
-const selectedMappingPidItems = ref<any[]>([]);
+const selectedMappingPidItems = ref<any | null>(null);
 const initialMappingPidList = ref<any[]>([]); // 초기 P&ID 목록 데이터 저장
 
 // Svg 파일 관련 상태
@@ -2549,7 +2544,15 @@ const uploadPidFiles = () => {
 };
 
 // 선택 관련 함수들
-const handleFormulaSelectionChange = () => {
+// 계산식 그리드 row 클릭 핸들러
+const handleFormulaRowClick = (item: any, index: number) => {
+  // row 클릭 시 해당 행 선택
+  selectedFormulaItems.value = item;
+  // 선택 변경 이벤트 호출 (스크롤 없이)
+  handleFormulaSelectionChange(false);
+};
+
+const handleFormulaSelectionChange = (shouldScroll: boolean = true) => {
   // 계산식 row가 선택되면 공정카드 버튼 클릭 이벤트 호출
   if (selectedFormulaItems.value) {
     const selectedItem = selectedFormulaItems.value;
@@ -2558,7 +2561,7 @@ const handleFormulaSelectionChange = () => {
     );
 
     if (selectedIndex !== -1) {
-      handleProcessManagementClick(selectedItem, selectedIndex);
+      handleProcessManagementClick(selectedItem, selectedIndex, shouldScroll);
     }
   }
 };
@@ -3420,7 +3423,7 @@ const handlePidComponentEquipmentTypeChange = async (item: any) => {
 };
 
 // 공정카드 버튼 클릭 핸들러
-const handleProcessManagementClick = (item: any, index: number) => {
+const handleProcessManagementClick = (item: any, index: number, shouldScroll: boolean = true) => {
   console.log("공정카드 버튼 클릭:", item, index);
 
   // 해당 row 선택
@@ -3436,13 +3439,15 @@ const handleProcessManagementClick = (item: any, index: number) => {
 
   // 공정카드 섹션 표시
   showPfdSection.value = true;
-  // 공정카드 섹션으로 스크롤
-  setTimeout(() => {
-    const pfdSection = document.querySelector(".pfd-section");
-    if (pfdSection) {
-      pfdSection.scrollIntoView({ behavior: "smooth" });
-    }
-  }, 100);
+  // 공정카드 섹션으로 스크롤 (shouldScroll이 true일 때만)
+  if (shouldScroll) {
+    setTimeout(() => {
+      const pfdSection = document.querySelector(".pfd-section");
+      if (pfdSection) {
+        pfdSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  }
 };
 
 // 변경사항 확인 함수들
@@ -7525,6 +7530,14 @@ const processPfdChanges = async (processId: string) => {
   }
 };
 
+// 공정카드 그리드 row 클릭 핸들러
+const handlePfdRowClick = (item: any, index: number) => {
+  // row 클릭 시 해당 행 선택
+  selectedPfdItems.value = item;
+  // 선택 변경 이벤트 호출
+  handlePfdSelectionChange();
+};
+
 const handlePfdSelectionChange = () => {
   console.log("선택된 공정카드 항목:", selectedPfdItems.value);
 
@@ -9177,7 +9190,7 @@ const openMappingPidModal = async (pfdItem: any) => {
   }
 
   currentPfdItemForMapping.value = pfdItem;
-  selectedMappingPidItems.value = []; // 선택된 항목들 초기화
+  selectedMappingPidItems.value = null; // 선택된 항목들 초기화
   showPidListInMain.value = true; // 메인화면에 표시
 
   // P&ID 목록 데이터 로드 - drawing_id를 parent_drawing_id로 전달
@@ -9203,7 +9216,7 @@ const closePidListInMain = () => {
   showPidListInMain.value = false;
   currentPfdItemForMapping.value = null;
   mappingPidList.value = [];
-  selectedMappingPidItems.value = [];
+  selectedMappingPidItems.value = null;
   initialMappingPidList.value = [];
 
   // P&ID Components 설정도 함께 닫기
@@ -11131,6 +11144,14 @@ const handleSelectAllMappingPid = () => {
   } else {
     selectedMappingPidItems.value = [...mappingPidList.value];
   }
+};
+
+// P&ID 그리드 row 클릭 핸들러
+const handleMappingPidRowClick = (item: any, index: number) => {
+  // row 클릭 시 해당 행 선택
+  selectedMappingPidItems.value = item;
+  // 선택 변경 이벤트 호출
+  handleMappingPidSelectionChange();
 };
 
 const handleMappingPidSelectionChange = async () => {

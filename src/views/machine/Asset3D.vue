@@ -532,6 +532,7 @@ const libraryDetailData = ref<{
   thumbnailFileName: string;
   thumbnailPreviewUrl: string;
   thumbnailDownloadUrl: string;
+  remarks?: string;
 } | null>(null);
 const isLibraryDetail = ref(false);
 
@@ -554,6 +555,12 @@ const presetDetailData = ref<{
   unit: string;
   machine: string;
   presetName: string;
+  totalUnitCount?: number | string;
+  diameterValue?: number | string;
+  diameterUnit?: string;
+  dtdxFileName?: string;
+  dtdxDownloadUrl?: string;
+  note?: string;
   thumbnailFileName: string;
   thumbnailPreviewUrl: string;
   thumbnailDownloadUrl: string;
@@ -739,6 +746,12 @@ const libraryVerticalData = computed(() => {
     editable: false,
     fieldType: "file",
   });
+  data.push({
+    columnName: "비고",
+    value: libraryDetailData.value.remarks || "-",
+    editable: false,
+    fieldType: "input",
+  });
 
   return data;
 });
@@ -762,11 +775,12 @@ const getPresetTypeLabel = (typeValue: string) => {
 };
 
 // 프리셋용 VerticalDataTable 데이터 - 동적 생성
+// 마스터 정보만 표시 (presetItem에서 가져온 데이터만 사용)
 const presetVerticalData = computed(() => {
   if (!presetDetailData.value) return [];
   const data: any[] = [];
 
-  // 1. 기본 정보 필드
+  // 1. 마스터 정보 필드만 표시
   data.push({
     columnName: "단위",
     value: presetDetailData.value.unit || "-",
@@ -785,6 +799,28 @@ const presetVerticalData = computed(() => {
     editable: false,
     fieldType: "input",
   });
+  data.push({
+    columnName: "총 대수 구성",
+    value: presetDetailData.value.totalUnitCount !== undefined && presetDetailData.value.totalUnitCount !== null
+      ? String(presetDetailData.value.totalUnitCount)
+      : "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "프리셋의 대표 직경 값",
+    value: presetDetailData.value.diameterValue !== undefined && presetDetailData.value.diameterValue !== null
+      ? String(presetDetailData.value.diameterValue)
+      : "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "직경 단위",
+    value: presetDetailData.value.diameterUnit || "-",
+    editable: false,
+    fieldType: "input",
+  });
 
   // 2. 파일 필드
   data.push({
@@ -793,6 +829,12 @@ const presetVerticalData = computed(() => {
     filePath: presetDetailData.value.thumbnailDownloadUrl,
     editable: false,
     fieldType: "file",
+  });
+  data.push({
+    columnName: "메모",
+    value: presetDetailData.value.note || "-",
+    editable: false,
+    fieldType: "input",
   });
 
   return data;
@@ -1151,6 +1193,15 @@ const openDetailPanel = async (item: Asset3DItem) => {
             }
           }
 
+          // 3D 모델 파일 정보 (set_dtdx_file_id)
+          const dtdxFile = presetItem.set_dtdx_file as Record<string, unknown> | undefined;
+          const dtdxFileName = dtdxFile && dtdxFile.file_name 
+            ? String(dtdxFile.file_name) 
+            : (presetItem.set_dtdx_file_name ? String(presetItem.set_dtdx_file_name) : "");
+          const dtdxDownloadUrl = dtdxFile && dtdxFile.download_url 
+            ? String(dtdxFile.download_url) 
+            : "";
+
           // 프리셋 상세 정보 조회 (선택 항목 그리드 데이터)
           let tableRows: PresetTableRow[] = [];
           try {
@@ -1233,6 +1284,16 @@ const openDetailPanel = async (item: Asset3DItem) => {
             unit: unitName,
             machine: machineName,
             presetName: String(presetItem.preset_name_ko || presetItem.equipment_name || ""),
+            totalUnitCount: presetItem.total_unit_count !== undefined && presetItem.total_unit_count !== null
+              ? presetItem.total_unit_count
+              : undefined,
+            diameterValue: presetItem.diameter_value !== undefined && presetItem.diameter_value !== null
+              ? presetItem.diameter_value
+              : undefined,
+            diameterUnit: presetItem.diameter_unit ? String(presetItem.diameter_unit) : undefined,
+            dtdxFileName,
+            dtdxDownloadUrl,
+            note: presetItem.note ? String(presetItem.note) : undefined,
             thumbnailFileName,
             thumbnailPreviewUrl,
             thumbnailDownloadUrl,
@@ -1347,6 +1408,7 @@ const openDetailPanel = async (item: Asset3DItem) => {
             thumbnailFileName,
             thumbnailPreviewUrl,
             thumbnailDownloadUrl,
+            remarks: libraryItem.remarks ? String(libraryItem.remarks) : undefined,
           };
         }
       }
@@ -1458,10 +1520,45 @@ const handleLibraryFileDownload = (fieldName: string) => {
 const handlePresetFileDownload = (fieldName: string) => {
   if (!presetDetailData.value) return;
 
-  if (fieldName === "썸네일 업로드" && presetDetailData.value.thumbnailDownloadUrl) {
+  if (fieldName === "3D 모델파일" && presetDetailData.value.dtdxDownloadUrl) {
+    handlePresetDtdxDownload();
+  } else if (fieldName === "썸네일 업로드" && presetDetailData.value.thumbnailDownloadUrl) {
     handlePresetThumbnailDownload();
   } else {
     alert(t("messages.warning.noFileToDownload"));
+  }
+};
+
+// 프리셋 3D 모델 파일 다운로드 핸들러
+const handlePresetDtdxDownload = async () => {
+  if (!presetDetailData.value || !presetDetailData.value.dtdxDownloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    const response = await fetch(presetDetailData.value.dtdxDownloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = presetDetailData.value.dtdxFileName || "model.dtdx";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("3D 모델 파일 다운로드 실패:", error);
+    alert("다운로드 중 오류가 발생했습니다.");
   }
 };
 

@@ -163,27 +163,6 @@
           <h3>{{ t("common.detailInfo") }}</h3>
           <div class="header-buttons">
             <button
-              v-if="!isDetailEditMode"
-              class="btn-edit"
-              @click="toggleEditMode"
-            >
-              {{ t("common.edit") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-save"
-              @click="saveDetailChanges"
-            >
-              {{ t("common.save") }}
-            </button>
-            <button
-              v-if="isDetailEditMode"
-              class="btn-cancel"
-              @click="cancelEditMode"
-            >
-              {{ t("common.cancel") }}
-            </button>
-            <button
               class="btn-close"
               @click="closeDetailPanel"
               aria-label="Close"
@@ -192,75 +171,143 @@
           </div>
         </div>
         <div class="detail-panel-body">
-          <!-- 모델 썸네일 이미지 영역 -->
-          <div class="model-thumbnail-section">
-            <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
-              <!-- 로딩 오버레이 -->
-              <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
-                <div class="loading-spinner"></div>
-                <span class="loading-text">{{ t("common.loading") }}</span>
+          <!-- 3D 라이브러리 보기 화면 -->
+          <template v-if="isLibraryDetail && libraryDetailData">
+            <!-- 모델 썸네일 이미지 영역 -->
+            <div class="model-thumbnail-section">
+              <div v-if="libraryDetailData.thumbnailPreviewUrl" class="thumbnail-image-container">
+                <!-- 이미지 -->
+                <img
+                  :src="libraryDetailData.thumbnailPreviewUrl"
+                  :alt="t('common.modelThumbnailSection')"
+                  class="thumbnail-image"
+                />
               </div>
-              <!-- 이미지 -->
-              <img
-                :src="thumbnailImageUrl"
-                :alt="t('common.modelThumbnailSection')"
-                class="thumbnail-image"
-                :class="{ hidden: isThumbnailLoading }"
-                @load="isThumbnailLoading = false"
-                @error="isThumbnailLoading = false"
-              />
+              <div v-else class="thumbnail-placeholder">
+                <span class="thumbnail-text">{{
+                  t("common.noModelThumbnail")
+                }}</span>
+              </div>
             </div>
-            <div v-else class="thumbnail-placeholder">
-              <span class="thumbnail-text">{{
-                t("common.noModelThumbnail")
-              }}</span>
-            </div>
-          </div>
 
-          <div class="detail-tables-container">
-            <!-- 사양 정보 -->
-            <div class="detail-section">
-              <VerticalDataTable
-                :data="specVerticalData"
+            <div class="detail-tables-container">
+              <!-- 사양 정보 -->
+              <div class="detail-section">
+                <VerticalDataTable
+                  :data="libraryVerticalData"
+                  :loading="false"
+                  :editMode="false"
+                  @file-download="handleLibraryFileDownload"
+                />
+              </div>
+            </div>
+          </template>
+
+          <!-- 프리셋 보기 화면 -->
+          <template v-else-if="isPresetDetail && presetDetailData">
+            <!-- 모델 썸네일 이미지 영역 -->
+            <div class="model-thumbnail-section">
+              <div v-if="presetDetailData.thumbnailPreviewUrl" class="thumbnail-image-container">
+                <!-- 이미지 -->
+                <img
+                  :src="presetDetailData.thumbnailPreviewUrl"
+                  :alt="t('common.modelThumbnailSection')"
+                  class="thumbnail-image"
+                />
+              </div>
+              <div v-else class="thumbnail-placeholder">
+                <span class="thumbnail-text">{{
+                  t("common.noModelThumbnail")
+                }}</span>
+              </div>
+            </div>
+
+            <div class="detail-tables-container">
+              <!-- 사양 정보 -->
+              <div class="detail-section">
+                <VerticalDataTable
+                  :data="presetVerticalData"
+                  :loading="false"
+                  :editMode="false"
+                  @file-download="handlePresetFileDownload"
+                />
+              </div>
+            </div>
+
+            <!-- 선택 항목 그리드 -->
+            <div v-if="presetDetailData.tableRows && presetDetailData.tableRows.length > 0" class="preset-selection-grid">
+              <h3 class="selection-grid-title">선택 항목</h3>
+              <DataTable
+                :columns="presetTableColumns"
+                :data="presetDetailData.tableRows"
                 :loading="false"
-                :editMode="isDetailEditMode"
-                @field-change="handleFieldChange"
-                @file-attach="handleFileAttach"
-                @file-remove="handleFileRemove"
-                @file-download="handleFileDownload"
-              />
-
-              <!-- 숨겨진 파일 input들 -->
-              <input
-                type="file"
-                ref="file3d"
-                @change="handleFileSelect('3d', $event)"
-                style="display: none"
-                accept=".dtdx"
-              />
-              <input
-                type="file"
-                ref="fileThumbnail"
-                @change="handleFileSelect('thumbnail', $event)"
-                style="display: none"
-                accept=".jpg,.jpeg,.png,.gif"
-              />
-              <input
-                type="file"
-                ref="fileRevit"
-                @change="handleFileSelect('revit', $event)"
-                style="display: none"
-                accept=".rfa"
-              />
-              <input
-                type="file"
-                ref="fileSymbol"
-                @change="handleFileSelect('symbol', $event)"
-                style="display: none"
-                accept=".svg"
-              />
+                :selectable="false"
+                row-key="id"
+              >
+                <template #cell-pipeCategory="{ item }">
+                  <span class="table-text">{{ item.pipeCategory || "-" }}</span>
+                </template>
+                <template #cell-fittingType="{ item }">
+                  <span class="table-text">{{ item.fittingType || "-" }}</span>
+                </template>
+                <template #cell-diameter="{ item }">
+                  <span class="table-text">{{ item.diameter || "-" }}</span>
+                </template>
+                <template #cell-diameterAfter="{ item }">
+                  <span class="table-text">{{ item.diameterAfter || "-" }}</span>
+                </template>
+                <template #cell-pipeType="{ item }">
+                  <span class="table-text">{{ item.pipeType || "-" }}</span>
+                </template>
+                <template #cell-code="{ item }">
+                  <span class="table-text">{{ item.code || "-" }}</span>
+                </template>
+                <template #cell-cellName="{ item }">
+                  <span class="table-text">{{ item.cellName || "-" }}</span>
+                </template>
+              </DataTable>
             </div>
-          </div>
+          </template>
+
+          <!-- 기존 상세 정보 화면 (기타) -->
+          <template v-else>
+            <!-- 모델 썸네일 이미지 영역 -->
+            <div class="model-thumbnail-section">
+              <div v-if="thumbnailImageUrl" class="thumbnail-image-container">
+                <!-- 로딩 오버레이 -->
+                <div v-if="isThumbnailLoading" class="thumbnail-loading-overlay">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">{{ t("common.loading") }}</span>
+                </div>
+                <!-- 이미지 -->
+                <img
+                  :src="thumbnailImageUrl"
+                  :alt="t('common.modelThumbnailSection')"
+                  class="thumbnail-image"
+                  :class="{ hidden: isThumbnailLoading }"
+                  @load="isThumbnailLoading = false"
+                  @error="isThumbnailLoading = false"
+                />
+              </div>
+              <div v-else class="thumbnail-placeholder">
+                <span class="thumbnail-text">{{
+                  t("common.noModelThumbnail")
+                }}</span>
+              </div>
+            </div>
+
+            <div class="detail-tables-container">
+              <!-- 사양 정보 -->
+              <div class="detail-section">
+                <VerticalDataTable
+                  :data="specVerticalData"
+                  :loading="false"
+                  :editMode="false"
+                  @file-download="handleFileDownload"
+                />
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -332,6 +379,7 @@ import Asset3DPresetTab from "./components/Asset3DPresetTab.vue";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
 import { useAsset3DStore } from "@/stores/asset3DStore";
+import { usePipeStore } from "@/stores/pipeStore";
 import { request } from "@/utils/request";
 
 const { t, locale } = useI18n();
@@ -340,6 +388,7 @@ const { t, locale } = useI18n();
 const translateMessage = useTranslateMessage();
 
 const asset3DStore = useAsset3DStore();
+const pipeStore = usePipeStore();
 
 // 모달 탭 구성 - 등록 모드만 사용
 const modalTabs = [
@@ -469,37 +518,46 @@ const isDetailPanelOpen = ref(false);
 const detailItemData = ref<Asset3DItem | null>(null);
 const thumbnailImageUrl = ref<string>("");
 const isThumbnailLoading = ref(false);
+// 3D 라이브러리 상세 데이터
+const libraryDetailData = ref<{
+  unit: string;
+  category: string;
+  modelName: string;
+  modelFileName: string;
+  modelDownloadUrl: string;
+  thumbnailFileName: string;
+  thumbnailPreviewUrl: string;
+  thumbnailDownloadUrl: string;
+} | null>(null);
+const isLibraryDetail = ref(false);
 
-// 편집 기능 제거로 관련 상태 제거
-const isDetailEditMode = ref(false);
+// 프리셋 상세 데이터
+interface PresetTableRow {
+  id: number;
+  no: number;
+  pipeCategory: string;
+  subCategory: string;
+  fittingType: string;
+  diameter: string;
+  diameterAfter: string;
+  pipeType: string;
+  code: string;
+  cellName: string;
+  [key: string]: unknown;
+}
 
-// 편집 모드 데이터
-const editData = ref<{
-  equipmentType: string;
-  vendor_id: string;
-  modelNumber: string;
-  model3dFile: string;
-  revitFile: string;
-  symbolFile: string;
-  thumbnailFile: string;
-  output_values: Record<string, any>;
-  search_criteria: Record<string, any>;
-  specifications: Record<string, any>;
-}>({
-  equipmentType: "",
-  vendor_id: "",
-  modelNumber: "",
-  model3dFile: "",
-  revitFile: "",
-  symbolFile: "",
-  thumbnailFile: "",
-  output_values: {},
-  search_criteria: {},
-  specifications: {},
-});
+const presetDetailData = ref<{
+  unit: string;
+  machine: string;
+  presetName: string;
+  thumbnailFileName: string;
+  thumbnailPreviewUrl: string;
+  thumbnailDownloadUrl: string;
+  tableRows: PresetTableRow[];
+} | null>(null);
+const isPresetDetail = ref(false);
 
-// 원본 데이터 백업 (취소 시 복원용)
-const originalItemData = ref<Asset3DItem | null>(null);
+// 편집 기능 제거됨 (보기 전용)
 
 // 콤보박스 옵션들 (API로부터 동적 로드)
 const manufacturers = ref<Array<{ value: string; label: string }>>([]);
@@ -522,18 +580,14 @@ const specVerticalData = computed(() => {
   });
   data.push({
     columnName: t("columns.asset3D.company"),
-    value: isDetailEditMode.value
-      ? editData.value.vendor_id || "-"
-      : item.vendor_id || "-",
+    value: item.vendor_id || "-",
     editable: false,
     fieldType: "select",
     options: manufacturers.value,
   });
   data.push({
     columnName: t("columns.asset3D.model"),
-    value: isDetailEditMode.value
-      ? editData.value.modelNumber || "-"
-      : item.model_number || "-",
+    value: item.model_number || "-",
     editable: false,
     fieldType: "input",
   });
@@ -542,73 +596,30 @@ const specVerticalData = computed(() => {
   if (item.output_values) {
     const providerLabel = t("common.provider");
     Object.entries(item.output_values).forEach(
-      ([key, field]: [string, any]) => {
-        // 수정 모드이거나 값이 있는 경우 표시
-        // if (
-        //   isDetailEditMode.value ||
-        //   (field.value !== null &&
-        //     field.value !== undefined &&
-        //     field.value !== "")
-        // ) {
-        // 원본 값과 현재 값 비교
-        let isChanged = false;
-        if (isDetailEditMode.value && originalItemData.value) {
-          const originalValue =
-            originalItemData.value.output_values?.[key]?.value;
-          const currentValue = editData.value.output_values?.[key]?.value;
-          // 값 비교 (숫자와 문자열 모두 고려)
-          if (originalValue !== currentValue) {
-            // null, undefined, 빈 문자열을 모두 동일하게 처리
-            const normalizedOriginal =
-              originalValue == null || originalValue === ""
-                ? null
-                : originalValue;
-            const normalizedCurrent =
-              currentValue == null || currentValue === "" ? null : currentValue;
-            isChanged = normalizedOriginal !== normalizedCurrent;
-          }
-        }
-
-        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
-        const displayValue = isDetailEditMode.value
-          ? editData.value.output_values?.[key]?.value ?? field.value
-          : field.value;
+      ([_key, field]: [string, any]) => {
+        const displayValue = field.value;
 
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? displayValue
-            : typeof displayValue === "number"
+          value: typeof displayValue === "number"
             ? displayValue.toLocaleString()
             : displayValue,
-          editable: true,
+          editable: false,
           fieldType: "number",
-          //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
-          isChanged: isChanged, // 변경 여부 추가
         });
 
         const providerColumnName = `${
           isEnglish ? field.key || "-" : field.name_kr || "-"
         } (${providerLabel})`;
-        const providerDisplayValue = isDetailEditMode.value
-          ? editData.value.output_values?.[key]?.price_reference ??
-            field.price_reference ??
-            ""
-          : field.price_reference || "-";
 
         data.push({
           columnName: providerColumnName,
-          value: providerDisplayValue,
-          editable: isDetailEditMode.value && isChanged,
+          value: field.price_reference || "-",
+          editable: false,
           fieldType: "input",
           originalType: "string",
-          isChanged:
-            isDetailEditMode.value &&
-            originalItemData.value?.output_values?.[key]?.price_reference !==
-              providerDisplayValue,
         });
-        // }
       }
     );
   }
@@ -616,22 +627,16 @@ const specVerticalData = computed(() => {
   // 3. search_criteria 동적 추가
   if (item.search_criteria) {
     Object.entries(item.search_criteria).forEach(
-      ([key, field]: [string, any]) => {
-        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
-        const displayValue = isDetailEditMode.value
-          ? editData.value.search_criteria?.[key]?.value ?? field.value
-          : field.value;
+      ([_key, field]: [string, any]) => {
+        const displayValue = field.value;
 
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? displayValue
-            : typeof displayValue === "number"
+          value: typeof displayValue === "number"
             ? displayValue.toLocaleString()
             : displayValue,
           editable: false,
           fieldType: "input",
-          //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
         });
       }
@@ -641,31 +646,18 @@ const specVerticalData = computed(() => {
   // 4. specifications 동적 추가
   if (item.specifications) {
     Object.entries(item.specifications).forEach(
-      ([key, field]: [string, any]) => {
-        // if (
-        //   isDetailEditMode.value ||
-        //   (field.value !== null &&
-        //     field.value !== undefined &&
-        //     field.value !== "")
-        // ) {
-        // 수정 모드일 때는 editData의 값을 사용, 아닐 때는 원본 값 사용
-        const displayValue = isDetailEditMode.value
-          ? editData.value.specifications?.[key]?.value ?? field.value
-          : field.value;
+      ([_key, field]: [string, any]) => {
+        const displayValue = field.value;
 
         data.push({
           columnName: isEnglish ? field.key || "-" : field.name_kr || "-",
-          value: isDetailEditMode.value
-            ? displayValue
-            : typeof displayValue === "number"
+          value: typeof displayValue === "number"
             ? displayValue.toLocaleString()
             : displayValue,
-          editable: true,
+          editable: false,
           fieldType: "input",
-          //fieldType: typeof field.value === "number" ? "number" : "input",
           originalType: typeof field.value,
         });
-        // }
       }
     );
   }
@@ -675,14 +667,14 @@ const specVerticalData = computed(() => {
     columnName: "3D",
     value: (item as any).model_file_info?.original_filename || "-",
     filePath: (item as any).model_file_info?.download_url,
-    editable: true,
+    editable: false,
     fieldType: "file",
   });
   data.push({
     columnName: t("common.thumbnail"),
     value: (item as any).thumbnail_file_info?.original_filename || "-",
     filePath: (item as any).thumbnail_file_info?.download_url,
-    editable: true,
+    editable: false,
     fieldType: "file",
   });
   data.push({
@@ -696,12 +688,123 @@ const specVerticalData = computed(() => {
     columnName: t("common.symbol"),
     value: (item as any).symbol_file_info?.original_filename || "-",
     filePath: (item as any).symbol_file_info?.download_url,
-    editable: true,
+    editable: false,
     fieldType: "file",
   });
 
   return data;
 });
+
+// 3D 라이브러리용 VerticalDataTable 데이터 - 동적 생성
+const libraryVerticalData = computed(() => {
+  if (!libraryDetailData.value) return [];
+  const data: any[] = [];
+
+  // 1. 기본 정보 필드
+  data.push({
+    columnName: "단위",
+    value: libraryDetailData.value.unit || "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "3D ASSET 카테고리",
+    value: libraryDetailData.value.category || "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "3D 모델명",
+    value: libraryDetailData.value.modelName || "-",
+    editable: false,
+    fieldType: "input",
+  });
+
+  // 2. 파일 필드
+  data.push({
+    columnName: "3D모델 업로드",
+    value: libraryDetailData.value.modelFileName || "-",
+    filePath: libraryDetailData.value.modelDownloadUrl,
+    editable: false,
+    fieldType: "file",
+  });
+  data.push({
+    columnName: "3D모델 썸네일",
+    value: libraryDetailData.value.thumbnailFileName || "-",
+    filePath: libraryDetailData.value.thumbnailDownloadUrl,
+    editable: false,
+    fieldType: "file",
+  });
+
+  return data;
+});
+
+// 프리셋 유형 코드를 라벨로 변환
+const getPresetTypeLabel = (typeValue: string) => {
+  // pipeStore.secondDepth에서 먼저 찾기
+  const foundInStore = pipeStore.secondDepth.find(
+    (item: any) => item.code_key === typeValue
+  );
+  if (foundInStore) {
+    return foundInStore.code_value;
+  }
+  // 기본 옵션에서 찾기 (fallback)
+  const typeOptions = [
+    { value: "FIT_PIPE", label: "배관" },
+    { value: "P_VALV", label: "수동 벨브" },
+  ];
+  const found = typeOptions.find((opt) => opt.value === typeValue);
+  return found ? found.label : typeValue;
+};
+
+// 프리셋용 VerticalDataTable 데이터 - 동적 생성
+const presetVerticalData = computed(() => {
+  if (!presetDetailData.value) return [];
+  const data: any[] = [];
+
+  // 1. 기본 정보 필드
+  data.push({
+    columnName: "단위",
+    value: presetDetailData.value.unit || "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "연결기계",
+    value: presetDetailData.value.machine || "-",
+    editable: false,
+    fieldType: "input",
+  });
+  data.push({
+    columnName: "프리셋 명",
+    value: presetDetailData.value.presetName || "-",
+    editable: false,
+    fieldType: "input",
+  });
+
+  // 2. 파일 필드
+  data.push({
+    columnName: "썸네일 업로드",
+    value: presetDetailData.value.thumbnailFileName || "-",
+    filePath: presetDetailData.value.thumbnailDownloadUrl,
+    editable: false,
+    fieldType: "file",
+  });
+
+  return data;
+});
+
+// 프리셋 선택 항목 그리드 컬럼 정의
+const presetTableColumns: TableColumn[] = [
+  { key: "no", title: "순번", width: "50px", sortable: false },
+  { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
+  { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
+  { key: "diameter", title: "직경", width: "80px", sortable: false },
+  { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
+  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
+  { key: "code", title: "코드", width: "auto", sortable: false },
+  { key: "cellName", title: "썸네일", width: "100px", sortable: false },
+];
 
 // 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
 
@@ -854,8 +957,32 @@ const handleDelete = async () => {
           if (!response || !response.success) {
             throw new Error(response?.message || "프리셋 삭제에 실패했습니다.");
           }
+        } else if (item.model_type === "3D_LIBRARY") {
+          // 3D 라이브러리인 경우 라이브러리 삭제 API 호출
+          const libraryId = (item as any).library_id || item.equipment_id || (item as any).id || "";
+          if (!libraryId) {
+            console.error("library_id를 찾을 수 없습니다:", item);
+            continue;
+          }
+
+          console.log("3D 라이브러리 삭제 API 호출:", `/api/asset3D/library/delete/${libraryId}`);
+          
+          const response = await request(
+            `/api/asset3D/library/delete/${libraryId}`,
+            undefined,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response || !response.success) {
+            throw new Error(response?.message || "3D 라이브러리 삭제에 실패했습니다.");
+          }
         } else {
-          // 3D 라이브러리인 경우 기존 로직 사용
+          // 기타 항목인 경우 기존 로직 사용
           const deleteParams: any = {
             equipment_type: item.equipment_type,
             model_file_id: item.model_file_id,
@@ -893,12 +1020,302 @@ const openDetailPanel = async (item: Asset3DItem) => {
   // 이전 썸네일 초기화 (새 항목을 열 때마다 초기화)
   thumbnailImageUrl.value = "";
   isThumbnailLoading.value = false;
+  libraryDetailData.value = null;
+  isLibraryDetail.value = false;
+  presetDetailData.value = null;
+  isPresetDetail.value = false;
 
-  // 원본 데이터 백업 (깊은 복사)
-  originalItemData.value = JSON.parse(JSON.stringify(item));
+  // 프리셋인 경우 별도 처리
+  if (item.model_type === "PRESET") {
+    isPresetDetail.value = true;
+    detailItemData.value = item;
+    isDetailPanelOpen.value = true;
+
+    try {
+      const presetId = (item as any).preset_id || item.equipment_id || (item as any).id || "";
+      
+      if (!presetId) {
+        console.error("preset_id를 찾을 수 없습니다:", item);
+        return;
+      }
+
+      const requestParams = {
+        search_field: "preset_id",
+        search_value: presetId,
+      };
+
+      // API 호출: /api/asset3D/search/PRESET
+      const response = await request("/api/asset3D/search/PRESET", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestParams),
+      });
+
+      if (response && response.success && response.response) {
+        const data = response.response;
+        // 배열인 경우 첫 번째 항목 사용
+        const presetItem = Array.isArray(data) ? data[0] : (data.items && Array.isArray(data.items) ? data.items[0] : data);
+
+        if (presetItem) {
+          // 단위 시스템 이름 찾기
+          const unitSystem = asset3DStore.unitSystems.find(
+            (unit) => unit.system_code === presetItem.unit_system_code
+          );
+          const unitName = unitSystem ? unitSystem.system_name : presetItem.unit_system_code || "";
+
+          // 연결기계 이름 변환
+          const machineName = presetItem.root_equipment_type === "M_PUMP" ? "펌프" : 
+                             presetItem.root_equipment_type === "M_AEBL" ? "송풍기" : 
+                             presetItem.root_equipment_type || "";
+
+          // 썸네일 파일 정보
+          const thumbnailFile = presetItem.thumbnail_file as Record<string, unknown> | undefined;
+          const thumbnailFileName = thumbnailFile && thumbnailFile.file_name 
+            ? String(thumbnailFile.file_name) 
+            : (presetItem.thumbnail_file_name ? String(presetItem.thumbnail_file_name) : "");
+          const thumbnailDownloadUrl = thumbnailFile && thumbnailFile.download_url 
+            ? String(thumbnailFile.download_url) 
+            : "";
+          
+          // 썸네일 미리보기 URL
+          let thumbnailPreviewUrl = "";
+          if (thumbnailFile && thumbnailFile.download_url) {
+            thumbnailPreviewUrl = String(thumbnailFile.download_url);
+          } else if (presetItem.thumbnail_id) {
+            try {
+              const url = new URL(`/api/file/download/${presetItem.thumbnail_id}`, window.location.origin);
+              const headers: Record<string, string> = {
+                system_code: import.meta.env.VITE_SYSTEM_CODE,
+                user_Id: localStorage.getItem("authUserId") || "",
+                wai_lang: localStorage.getItem("wai_lang") || "ko",
+                authSuper: localStorage.getItem("authSuper") || "false",
+              };
+              
+              const fileResponse = await fetch(url.toString(), {
+                method: "GET",
+                headers,
+                credentials: "include",
+              });
+              
+              if (fileResponse.ok) {
+                const blob = await fileResponse.blob();
+                thumbnailPreviewUrl = URL.createObjectURL(blob);
+              }
+            } catch (error) {
+              console.error("썸네일 로드 실패:", error);
+            }
+          }
+
+          // 프리셋 상세 정보 조회 (선택 항목 그리드 데이터)
+          let tableRows: PresetTableRow[] = [];
+          try {
+            const detailResponse = await request(`/api/asset3D/preset/${presetId}/detail`, undefined, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (detailResponse && detailResponse.success && detailResponse.response) {
+              const detailData = detailResponse.response;
+              const detailItems = detailData.data || (Array.isArray(detailData) ? detailData : []);
+
+              if (detailItems && detailItems.length > 0) {
+                let nextRowId = 1;
+                // 세부구분 라벨 변환을 위한 공통코드 캐시
+                const subCategoryLabelCache: Record<string, Record<string, string>> = {};
+
+                for (const detailItem of detailItems) {
+                  // preset_category 코드를 라벨로 변환
+                  const pipeCategoryCode = String(detailItem.preset_category || "");
+                  const pipeCategoryLabel = getPresetTypeLabel(pipeCategoryCode);
+
+                  // preset_subcategory 코드를 라벨로 변환
+                  const subCategoryCode = String(detailItem.preset_subcategory || "");
+                  let subCategoryLabel = subCategoryCode;
+
+                  // 세부구분 라벨 변환 시도 (캐시 사용)
+                  if (subCategoryCode && pipeCategoryCode) {
+                    if (!subCategoryLabelCache[pipeCategoryCode]) {
+                      try {
+                        await asset3DStore.fetchThirdDepth(pipeCategoryCode, 3);
+                        const thirdDepthItems = (asset3DStore.thirdDepth as any[] | undefined) || [];
+                        subCategoryLabelCache[pipeCategoryCode] = {};
+                        thirdDepthItems.forEach((item: any) => {
+                          subCategoryLabelCache[pipeCategoryCode][item.code_key] = item.code_value;
+                        });
+                      } catch (error) {
+                        console.warn(`세부구분 라벨 변환 실패 (${pipeCategoryCode}):`, error);
+                        subCategoryLabelCache[pipeCategoryCode] = {};
+                      }
+                    }
+
+                    if (subCategoryLabelCache[pipeCategoryCode] && subCategoryLabelCache[pipeCategoryCode][subCategoryCode]) {
+                      subCategoryLabel = subCategoryLabelCache[pipeCategoryCode][subCategoryCode];
+                    }
+                  }
+
+                  const newRow: PresetTableRow = {
+                    id: nextRowId++,
+                    no: detailItem.sequence_order || 0,
+                    pipeCategory: pipeCategoryLabel,
+                    subCategory: subCategoryLabel,
+                    fittingType: subCategoryLabel,
+                    diameter: String(detailItem.diameter_before || ""),
+                    diameterAfter: String(detailItem.diameter_after || ""),
+                    pipeType: "",
+                    code: String(detailItem.equipment_code || ""),
+                    cellName: "",
+                    ...detailItem,
+                  };
+
+                  tableRows.push(newRow);
+                }
+
+                // sequence_order 기준으로 정렬
+                tableRows.sort((a, b) => {
+                  const orderA = (a as any).sequence_order || a.no || 0;
+                  const orderB = (b as any).sequence_order || b.no || 0;
+                  return orderA - orderB;
+                });
+              }
+            }
+          } catch (error) {
+            console.error("프리셋 상세 정보 조회 실패:", error);
+          }
+
+          presetDetailData.value = {
+            unit: unitName,
+            machine: machineName,
+            presetName: String(presetItem.preset_name_ko || presetItem.equipment_name || ""),
+            thumbnailFileName,
+            thumbnailPreviewUrl,
+            thumbnailDownloadUrl,
+            tableRows,
+          };
+        }
+      }
+    } catch (error) {
+      console.error("프리셋 상세 정보 조회 실패:", error);
+    }
+    return;
+  }
+
+  // 3D 라이브러리인 경우 별도 처리
+  if (item.model_type === "3D_LIBRARY") {
+    isLibraryDetail.value = true;
+    detailItemData.value = item;
+    isDetailPanelOpen.value = true;
+
+    try {
+      const libraryId = (item as any).library_id || item.equipment_id || (item as any).id || "";
+      
+      if (!libraryId) {
+        console.error("library_id를 찾을 수 없습니다:", item);
+        return;
+      }
+
+      const requestParams = {
+        search_field: "library_id",
+        search_value: libraryId,
+      };
+
+      // API 호출: /api/asset3D/search/3D_LIBRARY
+      const response = await request("/api/asset3D/search/3D_LIBRARY", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestParams),
+      });
+
+      if (response && response.success && response.response) {
+        const data = response.response;
+        // 배열인 경우 첫 번째 항목 사용
+        const libraryItem = Array.isArray(data) ? data[0] : (data.items && Array.isArray(data.items) ? data.items[0] : data);
+
+        if (libraryItem) {
+          // 단위 시스템 이름 찾기
+          const unitSystem = asset3DStore.unitSystems.find(
+            (unit) => unit.system_code === libraryItem.unit_system_code
+          );
+          const unitName = unitSystem ? unitSystem.system_name : libraryItem.unit_system_code || "";
+
+          // 카테고리 이름 변환
+          const categoryName = libraryItem.category === "INTERIOR" ? "인테리어" : 
+                              libraryItem.category === "STRUCTURE" ? "구조물" : 
+                              libraryItem.category || "";
+
+          // 3D 모델 파일 정보
+          const dtdxFile = libraryItem.dtdx_file as Record<string, unknown> | undefined;
+          const modelFileName = dtdxFile && dtdxFile.file_name 
+            ? String(dtdxFile.file_name) 
+            : (libraryItem.dtdx_model_file_name ? String(libraryItem.dtdx_model_file_name) : "");
+          const modelDownloadUrl = dtdxFile && dtdxFile.download_url 
+            ? String(dtdxFile.download_url) 
+            : "";
+
+          // 썸네일 파일 정보
+          const thumbnailFile = libraryItem.thumbnail_file as Record<string, unknown> | undefined;
+          const thumbnailFileName = thumbnailFile && thumbnailFile.file_name 
+            ? String(thumbnailFile.file_name) 
+            : (libraryItem.thumbnail_file_name ? String(libraryItem.thumbnail_file_name) : "");
+          const thumbnailDownloadUrl = thumbnailFile && thumbnailFile.download_url 
+            ? String(thumbnailFile.download_url) 
+            : "";
+          
+          // 썸네일 미리보기 URL
+          let thumbnailPreviewUrl = "";
+          if (thumbnailFile && thumbnailFile.download_url) {
+            thumbnailPreviewUrl = String(thumbnailFile.download_url);
+          } else if (libraryItem.thumbnail_id) {
+            try {
+              const url = new URL(`/api/file/download/${libraryItem.thumbnail_id}`, window.location.origin);
+              const headers: Record<string, string> = {
+                system_code: import.meta.env.VITE_SYSTEM_CODE,
+                user_Id: localStorage.getItem("authUserId") || "",
+                wai_lang: localStorage.getItem("wai_lang") || "ko",
+                authSuper: localStorage.getItem("authSuper") || "false",
+              };
+              
+              const fileResponse = await fetch(url.toString(), {
+                method: "GET",
+                headers,
+                credentials: "include",
+              });
+              
+              if (fileResponse.ok) {
+                const blob = await fileResponse.blob();
+                thumbnailPreviewUrl = URL.createObjectURL(blob);
+              }
+            } catch (error) {
+              console.error("썸네일 로드 실패:", error);
+            }
+          }
+
+          libraryDetailData.value = {
+            unit: unitName,
+            category: categoryName,
+            modelName: String(libraryItem.model_name || ""),
+            modelFileName,
+            modelDownloadUrl,
+            thumbnailFileName,
+            thumbnailPreviewUrl,
+            thumbnailDownloadUrl,
+          };
+        }
+      }
+    } catch (error) {
+      console.error("3D 라이브러리 상세 정보 조회 실패:", error);
+    }
+    return;
+  }
+
+  // 기존 로직 (프리셋 등)
   detailItemData.value = item;
   isDetailPanelOpen.value = true;
-  isDetailEditMode.value = false;
 
   try {
     // 3D Asset 공통 상세 정보 조회
@@ -932,492 +1349,15 @@ const openDetailPanel = async (item: Asset3DItem) => {
 const closeDetailPanel = () => {
   isDetailPanelOpen.value = false;
   detailItemData.value = null;
-  originalItemData.value = null;
-  isDetailEditMode.value = false;
+  libraryDetailData.value = null;
+  isLibraryDetail.value = false;
 
   // 썸네일 이미지 URL 및 로딩 상태 초기화
   thumbnailImageUrl.value = "";
   isThumbnailLoading.value = false;
 };
 
-const toggleEditMode = () => {
-  if (!isDetailEditMode.value && detailItemData.value) {
-    // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화
-    editData.value = {
-      equipmentType: detailItemData.value.equipment_type || "",
-      vendor_id: detailItemData.value.vendor_id || "",
-      modelNumber: detailItemData.value.model_number || "",
-      model3dFile: "",
-      revitFile: "",
-      symbolFile: "",
-      thumbnailFile: "",
-      output_values: {},
-      search_criteria: {},
-      specifications: {},
-    };
-
-    // output_values, search_criteria, specifications 초기화 (전체 객체 구조 유지)
-    const item = detailItemData.value;
-
-    if (item.output_values) {
-      Object.entries(item.output_values).forEach(
-        ([key, field]: [string, any]) => {
-          // 전체 필드 객체를 복사하되, value만 editData에서 관리
-          editData.value.output_values[key] = { ...field };
-        }
-      );
-    }
-
-    if (item.search_criteria) {
-      Object.entries(item.search_criteria).forEach(
-        ([key, field]: [string, any]) => {
-          // 전체 필드 객체를 복사하되, value만 editData에서 관리
-          editData.value.search_criteria[key] = { ...field };
-        }
-      );
-    }
-
-    if (item.specifications) {
-      Object.entries(item.specifications).forEach(
-        ([key, field]: [string, any]) => {
-          // 전체 필드 객체를 복사하되, value만 editData에서 관리
-          editData.value.specifications[key] = { ...field };
-        }
-      );
-    }
-  }
-  isDetailEditMode.value = !isDetailEditMode.value;
-};
-
-const cancelEditMode = () => {
-  // 수정 모드 취소 시 원본 데이터로 되돌리기
-  if (originalItemData.value && detailItemData.value) {
-    // 원본 데이터로 복원 (깊은 복사)
-    detailItemData.value = JSON.parse(JSON.stringify(originalItemData.value));
-
-    // 썸네일 이미지 URL도 복원
-    const thumbnailInfo = (originalItemData.value as any).thumbnail_file_info;
-    if (thumbnailInfo?.download_url) {
-      thumbnailImageUrl.value = thumbnailInfo.download_url;
-    } else {
-      thumbnailImageUrl.value = "";
-    }
-  }
-
-  // editData 초기화
-  editData.value = {
-    equipmentType: "",
-    vendor_id: "",
-    modelNumber: "",
-    model3dFile: "",
-    revitFile: "",
-    symbolFile: "",
-    thumbnailFile: "",
-    output_values: {},
-    search_criteria: {},
-    specifications: {},
-  };
-
-  isDetailEditMode.value = false;
-};
-
-const saveDetailChanges = async () => {
-  if (!detailItemData.value) return;
-
-  // 업체명 필수 검증
-  if (!editData.value.vendor_id) {
-    alert(t("messages.warning.selectManufacturer"));
-    return;
-  }
-
-  try {
-    const item = detailItemData.value;
-
-    // 업데이트 파라미터 준비
-    const updateParams: any = {
-      equipment_type: item.equipment_type,
-      vendor_id: editData.value.vendor_id,
-      model_number: editData.value.modelNumber,
-    };
-
-    // output_values, search_criteria, specifications 추가
-    if (Object.keys(editData.value.output_values).length > 0) {
-      updateParams.output_values = editData.value.output_values;
-    }
-    if (Object.keys(editData.value.search_criteria).length > 0) {
-      updateParams.search_criteria = editData.value.search_criteria;
-    }
-    if (Object.keys(editData.value.specifications).length > 0) {
-      updateParams.specifications = editData.value.specifications;
-    }
-
-    // 새로 추가된 파일들 확인
-    if (file3d.value?.files?.[0]) {
-      updateParams.dtd_model_file = file3d.value.files[0];
-    }
-    if (fileThumbnail.value?.files?.[0]) {
-      updateParams.thumbnail_file = fileThumbnail.value.files[0];
-    }
-    if (fileRevit.value?.files?.[0]) {
-      updateParams.revit_model_file = fileRevit.value.files[0];
-    }
-    if (fileSymbol.value?.files?.[0]) {
-      updateParams.symbol_file = fileSymbol.value.files[0];
-    }
-
-    // API 호출
-    const response = await asset3DStore.updateAsset3D(
-      item.equipment_id,
-      updateParams
-    );
-
-    if (response?.success) {
-      // 저장 성공 후 편집 모드 종료
-      isDetailEditMode.value = false;
-
-      // 가격 이력 생성 로직 제거됨
-
-      alert(t("messages.success.saved"));
-
-      // 데이터 새로고침 (loadData에서 상세정보창 닫기 처리)
-      await loadData();
-    } else {
-      throw new Error(response?.message || "저장에 실패했습니다.");
-    }
-  } catch (error) {
-    console.error("저장 중 오류 발생:", error);
-    const errorMessage = translateMessage(
-      error && typeof error === "object" && "message" in error
-        ? (error as { message: string }).message
-        : undefined,
-      "messages.error.saveFailed"
-    );
-    alert(errorMessage);
-  }
-};
-
-// 파일 첨부 관련 함수들
-
-const handleFileSelect = (type: string, event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (file) {
-    // 파일 확장자 validation
-    const allowedExtensions = {
-      "3d": [".dtdx"],
-      revit: [".rfa"],
-      symbol: [".svg"],
-      thumbnail: [".jpg", ".jpeg", ".png", ".gif"],
-    };
-
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
-    const allowedExts =
-      allowedExtensions[type as keyof typeof allowedExtensions];
-
-    if (!allowedExts.includes(fileExtension)) {
-      alert(
-        t("messages.warning.invalidFileExtension", {
-          extensions: allowedExts.join(", "),
-        })
-      );
-      // 파일 input 초기화
-      target.value = "";
-      return;
-    }
-
-    // 파일명 validation (확장자 제외)
-    // 여러 확장자 중 하나를 사용할 수 있는 경우 (예: thumbnail의 경우 .jpg, .jpeg, .png, .gif)
-    // 가장 긴 확장자부터 매칭하여 제거
-    let fileNameWithoutExt = file.name;
-    for (const ext of allowedExts.sort((a, b) => b.length - a.length)) {
-      if (file.name.toLowerCase().endsWith(ext.toLowerCase())) {
-        fileNameWithoutExt = file.name.substring(
-          0,
-          file.name.length - ext.length
-        );
-        break;
-      }
-    }
-
-    // 100자 이내 체크
-    if (fileNameWithoutExt.length > 100) {
-      alert(t("messages.warning.invalidFormulaFileNameFormat"));
-      target.value = "";
-      return;
-    }
-
-    // 파일명 validation: 영문만 사용, 공백 불가, 100자 이내, 특수 기호는 "_ - ()."만 허용
-    const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
-    if (!fileNameRegex.test(fileNameWithoutExt)) {
-      alert(t("messages.warning.invalidFormulaFileNameFormat"));
-      target.value = "";
-      return;
-    }
-
-    switch (type) {
-      case "3d":
-        editData.value.model3dFile = file.name;
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).model_file_info) {
-            (detailItemData.value as any).model_file_info = {};
-          }
-          (detailItemData.value as any).model_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "revit":
-        editData.value.revitFile = file.name;
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).rfa_file_info) {
-            (detailItemData.value as any).rfa_file_info = {};
-          }
-          (detailItemData.value as any).rfa_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "symbol":
-        editData.value.symbolFile = file.name;
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).symbol_file_info) {
-            (detailItemData.value as any).symbol_file_info = {};
-          }
-          (detailItemData.value as any).symbol_file_info.original_filename =
-            file.name;
-        }
-        break;
-      case "thumbnail":
-        editData.value.thumbnailFile = file.name;
-        // 그리드 데이터도 업데이트
-        if (detailItemData.value) {
-          if (!(detailItemData.value as any).thumbnail_file_info) {
-            (detailItemData.value as any).thumbnail_file_info = {};
-          }
-          (detailItemData.value as any).thumbnail_file_info.original_filename =
-            file.name;
-        }
-        break;
-    }
-  }
-};
-
-// 그리드에서 필드 변경 처리
-const handleFieldChange = (fieldName: string, value: string) => {
-  const isEnglish = locale.value === "en";
-
-  // editData에 반영
-  // 제조사 필드 확인 (columns.asset3D.company)
-  if (fieldName === t("columns.asset3D.company")) {
-    editData.value.vendor_id = value;
-  }
-  // 모델명 필드 확인 (columns.asset3D.model)
-  else if (fieldName === t("columns.asset3D.model")) {
-    editData.value.modelNumber = value;
-  }
-  // 동적 필드 처리 (output_values, search_criteria, specifications)
-  else {
-    // detailItemData에서 해당 필드 찾기
-    const item = detailItemData.value;
-    if (!item) return;
-
-    const providerSuffix = ` (${t("common.provider")})`;
-
-    // output_values에서 찾기
-    if (item.output_values) {
-      if (fieldName.endsWith(providerSuffix)) {
-        const baseFieldName = fieldName.slice(
-          0,
-          fieldName.length - providerSuffix.length
-        );
-        const providerField = Object.entries(item.output_values).find(
-          ([_, field]: [string, any]) => {
-            const displayName = isEnglish ? field.key : field.name_kr;
-            return displayName === baseFieldName;
-          }
-        );
-        if (providerField) {
-          const [key] = providerField;
-          if (editData.value.output_values[key]) {
-            editData.value.output_values[key].price_reference = value?.trim?.()
-              ? value.trim()
-              : value;
-          }
-          return;
-        }
-      }
-
-      const outputField = Object.entries(item.output_values).find(
-        ([_, field]: [string, any]) => {
-          const displayName = isEnglish ? field.key : field.name_kr;
-          return displayName === fieldName;
-        }
-      );
-      if (outputField) {
-        const [key] = outputField;
-        // 객체 구조를 유지하면서 value만 업데이트
-        if (editData.value.output_values[key]) {
-          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-          const numValue = Number(value);
-          const newValue = !isNaN(numValue) && value !== "" ? numValue : value;
-          editData.value.output_values[key].value = newValue;
-
-          // value가 원래 값으로 돌아가면 price_reference도 원래 값으로 복원
-          if (originalItemData.value?.output_values?.[key]) {
-            const originalValue =
-              originalItemData.value.output_values[key].value;
-            const normalizedOriginal =
-              originalValue == null || originalValue === ""
-                ? null
-                : originalValue;
-            const normalizedNew =
-              newValue == null || newValue === "" ? null : newValue;
-
-            // 값이 원래 값과 같으면 price_reference도 원래 값으로 복원
-            if (normalizedOriginal === normalizedNew) {
-              editData.value.output_values[key].price_reference =
-                originalItemData.value.output_values[key].price_reference ??
-                null;
-            }
-          }
-        }
-        return;
-      }
-    }
-
-    // search_criteria에서 찾기
-    if (item.search_criteria) {
-      const searchField = Object.entries(item.search_criteria).find(
-        ([_, field]: [string, any]) => {
-          const displayName = isEnglish ? field.key : field.name_kr;
-          return displayName === fieldName;
-        }
-      );
-      if (searchField) {
-        const [key] = searchField;
-        // 객체 구조를 유지하면서 value만 업데이트
-        if (editData.value.search_criteria[key]) {
-          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-          const numValue = Number(value);
-          editData.value.search_criteria[key].value =
-            !isNaN(numValue) && value !== "" ? numValue : value;
-        }
-        return;
-      }
-    }
-
-    // specifications에서 찾기
-    if (item.specifications) {
-      const specField = Object.entries(item.specifications).find(
-        ([_, field]: [string, any]) => {
-          const displayName = isEnglish ? field.key : field.name_kr;
-          return displayName === fieldName;
-        }
-      );
-      if (specField) {
-        const [key] = specField;
-        // 객체 구조를 유지하면서 value만 업데이트
-        if (editData.value.specifications[key]) {
-          // 입력값이 숫자로만 구성되어 있으면 Number로 변환
-          const numValue = Number(value);
-          editData.value.specifications[key].value =
-            !isNaN(numValue) && value !== "" ? numValue : value;
-        }
-        return;
-      }
-    }
-  }
-};
-
-// 파일 input refs
-const file3d = ref<HTMLInputElement>();
-const fileRevit = ref<HTMLInputElement>();
-const fileSymbol = ref<HTMLInputElement>();
-const fileThumbnail = ref<HTMLInputElement>();
-
-// 그리드에서 파일 첨부 처리
-const handleFileAttach = (fieldName: string) => {
-  switch (fieldName) {
-    case "3D":
-      if (file3d.value) {
-        file3d.value.click();
-      }
-      break;
-    case "Revit":
-      if (fileRevit.value) {
-        fileRevit.value.click();
-      }
-      break;
-    case t("common.symbol"):
-      if (fileSymbol.value) {
-        fileSymbol.value.click();
-      }
-      break;
-    case t("common.thumbnail"):
-      if (fileThumbnail.value) {
-        fileThumbnail.value.click();
-      }
-      break;
-    default:
-      console.error(`지원하지 않는 필드명: ${fieldName}`);
-  }
-};
-
-// 그리드에서 파일 첨부 취소 처리
-const handleFileRemove = (fieldName: string) => {
-  switch (fieldName) {
-    case "3D":
-      editData.value.model3dFile = "";
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).model_file_info = null;
-      }
-      // 파일 input 초기화
-      if (file3d.value) {
-        file3d.value.value = "";
-      }
-      break;
-    case "Revit":
-      editData.value.revitFile = "";
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).rfa_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileRevit.value) {
-        fileRevit.value.value = "";
-      }
-      break;
-    case t("common.symbol"):
-      editData.value.symbolFile = "";
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).symbol_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileSymbol.value) {
-        fileSymbol.value.value = "";
-      }
-      break;
-    case t("common.thumbnail"):
-      editData.value.thumbnailFile = "";
-      if (detailItemData.value) {
-        // 기존 파일 정보 초기화
-        (detailItemData.value as any).thumbnail_file_info = null;
-      }
-      // 파일 input 초기화
-      if (fileThumbnail.value) {
-        fileThumbnail.value.value = "";
-      }
-      break;
-    default:
-      console.error(`지원하지 않는 필드명: ${fieldName}`);
-  }
-};
+// 편집 기능 제거됨 (보기 전용)
 
 // 파일 다운로드 핸들러
 const handleFileDownload = (fieldName: string) => {
@@ -1455,6 +1395,129 @@ const handleFileDownload = (fieldName: string) => {
     document.body.removeChild(link);
   } else {
     alert(t("messages.warning.noFileToDownload"));
+  }
+};
+
+// 3D 라이브러리 파일 다운로드 핸들러
+const handleLibraryFileDownload = (fieldName: string) => {
+  if (!libraryDetailData.value) return;
+
+  if (fieldName === "3D모델 업로드" && libraryDetailData.value.modelDownloadUrl) {
+    handleLibraryModelDownload();
+  } else if (fieldName === "3D모델 썸네일" && libraryDetailData.value.thumbnailDownloadUrl) {
+    handleLibraryThumbnailDownload();
+  } else {
+    alert(t("messages.warning.noFileToDownload"));
+  }
+};
+
+// 프리셋 파일 다운로드 핸들러
+const handlePresetFileDownload = (fieldName: string) => {
+  if (!presetDetailData.value) return;
+
+  if (fieldName === "썸네일 업로드" && presetDetailData.value.thumbnailDownloadUrl) {
+    handlePresetThumbnailDownload();
+  } else {
+    alert(t("messages.warning.noFileToDownload"));
+  }
+};
+
+// 프리셋 썸네일 다운로드 핸들러
+const handlePresetThumbnailDownload = async () => {
+  if (!presetDetailData.value || !presetDetailData.value.thumbnailDownloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    const response = await fetch(presetDetailData.value.thumbnailDownloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = presetDetailData.value.thumbnailFileName || "thumbnail";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("썸네일 다운로드 실패:", error);
+    alert("다운로드 중 오류가 발생했습니다.");
+  }
+};
+
+// 3D 라이브러리 모델 다운로드 핸들러
+const handleLibraryModelDownload = async () => {
+  if (!libraryDetailData.value || !libraryDetailData.value.modelDownloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    const response = await fetch(libraryDetailData.value.modelDownloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = libraryDetailData.value.modelFileName || "model.dtdx";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("3D 모델 다운로드 실패:", error);
+    alert("다운로드 중 오류가 발생했습니다.");
+  }
+};
+
+// 3D 라이브러리 썸네일 다운로드 핸들러
+const handleLibraryThumbnailDownload = async () => {
+  if (!libraryDetailData.value || !libraryDetailData.value.thumbnailDownloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    const response = await fetch(libraryDetailData.value.thumbnailDownloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = libraryDetailData.value.thumbnailFileName || "thumbnail";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("썸네일 다운로드 실패:", error);
+    alert("다운로드 중 오류가 발생했습니다.");
   }
 };
 
@@ -2025,7 +2088,32 @@ onMounted(async () => {
 
 // VerticalDataTable 스타일 오버라이드
 .detail-section :deep(.vertical-data-table-container) {
+  // 스타일 오버라이드 필요 시 여기에 추가
+}
 
+// 프리셋 선택 항목 그리드 스타일
+.preset-selection-grid {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e7e6ed;
+
+  .selection-grid-title {
+    margin-bottom: 1rem;
+    padding-left: 16px;
+    border-left: 4px solid #32ade6;
+    color: #333333;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  :deep(.data-table) {
+    font-size: 0.875rem;
+  }
+
+  .table-text {
+    font-size: 0.875rem;
+    color: #202020;
+  }
 }
 
 .detail-section :deep(.vertical-data-table) {
@@ -2276,4 +2364,5 @@ $tablet: 1024px;
     overflow-y: visible !important;
   }
 }
+
 </style>

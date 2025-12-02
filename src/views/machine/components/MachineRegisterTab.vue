@@ -57,7 +57,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-register lg"
+          class="btn btn-regist"
           @click="handleMachineRegister"
         >
           {{ t("common.machineRegister") }}
@@ -72,7 +72,7 @@
         <div class="file-upload-group">
           <button
             type="button"
-            class="btn btn-file lg"
+            class="btn btn-file"
             @click="bulkFileInput?.click()"
           >
             {{ t("common.bulkModelUpload") }}
@@ -93,7 +93,7 @@
           />
           <button
             type="button"
-            class="btn btn-register lg"
+            class="btn btn-regist"
             @click="handleModelRegister"
           >
             {{ t("common.modelRegister") }}

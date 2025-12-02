@@ -23,9 +23,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
+  width: auto;
   height: 40px;
-  padding: 0 10px;
+  padding: 0 16px;
   color: #ffffff;
   font-size: $font-size-base;
   font-weight: $font-weight-md;
@@ -39,7 +39,6 @@ button {
 
 /* btn-secondary */
 .btn-secondary {
-  width: 45px;
   height: 32px;
   line-height: 32px;
   font-size: 14px;
@@ -54,7 +53,6 @@ button {
 /* //btn-secondary */
 
 .btn-primary.p-id {
-  width: auto;
   height: 32px;
   line-height: 32px;
   padding: 0 10px;
@@ -69,8 +67,6 @@ button {
 
 /* 검색 버튼 */
 .btn-search {
-  min-width: 60px;
-  width: 60px;
   height: 40px;
   text-align: center;
   background-color: #222E77;
@@ -107,10 +103,9 @@ button {
 }
 .btn-delete.sm,
 .btn-cancel.sm {
-  width: 45px;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
 
@@ -122,11 +117,10 @@ button {
 
 /* 보기 버튼 */
 .btn-view {
-  width: 45px;
   height: 32px;
   line-height: 32px;
   background-color: #3e435e;
-  padding: 0 4px;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
 
@@ -159,31 +153,19 @@ button {
   }
 }
 .btn-register.sm {
-  width: 45px;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
-
+  
   &::before {
     background: none;
   }
 }
 .btn-register.md {
-  width: auto;
   height: 40px;
   line-height: 40px;
-  padding: 0 10px;
-  font-size: 14px;
-  font-weight: 500;
-
-  &::before {
-    background: none;
-  }
-}
-.btn-register.lg {
-  width: auto;
   padding: 0 10px;
 
   &::before {
@@ -197,11 +179,15 @@ button {
   &:hover {
     background-color: #29378C;
   }
+
+  &::before {
+    background: none;
+  }
 }
 
 .btn-regist.sm {
-  width: auto;
   height: 40px;
+  line-height: 40px;
   padding: 0 10px;
 }
 /* //등록 버튼 + 코드관리 모달 등록 버튼 + 기계 등록 버튼 */
@@ -231,10 +217,9 @@ button {
 }
 .btn-edit.sm,
 .btn-update.sm {
-  width: 45px;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
 
@@ -300,11 +285,9 @@ button {
 .btn-file {
   display: inline-block;
   text-align: center;
-  width: 88px;
-  min-width: 88px;
   height: 40px;
   line-height: 40px;
-  padding: 0;
+  padding: 0 16px;
   background: #3e435e;
 
   &:hover {
@@ -315,15 +298,11 @@ button {
     display: none;
   }
 }
-.btn-file.lg {
-  width: auto;
-  padding: 0 10px;
-}
+
 .btn-file.sm {
-  width: 70px;
-  min-width: 70px;
   height: 32px;
   line-height: 32px;
+  padding: 0 10px;
   font-size: 14px;
 }
 
@@ -342,9 +321,6 @@ button {
   padding: 4px 8px;
   font-size: 12px;
   background-color: #3e435e;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
 
   .ico-download {
     position: absolute;
@@ -354,6 +330,10 @@ button {
     width: 24px;
     height: 24px;
     background: url(../assets/icons/ico_download.svg) no-repeat center / 24px auto;
+  }
+
+  &:hover {
+    background-color: #3c4973;
   }
 }
 
@@ -373,10 +353,9 @@ button {
 }
 
 .btn-save.sm {
-  width: 45px;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
 }
@@ -392,17 +371,15 @@ button {
 }
 
 .btn-add.sm {
-  width: 45px;
   height: 32px;
   line-height: 32px;
-  padding: 0;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 500;
 }
 /* //추가 버튼 */
 
 .btn-excel {
-  width: auto;
   height: 40px;
   background: #222e77;
   padding: 0 10px;

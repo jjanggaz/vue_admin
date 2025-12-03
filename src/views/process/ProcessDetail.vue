@@ -405,7 +405,7 @@
                 <div class="file-selection-group">
                   <input
                     type="file"
-                    accept=".dwg,.pdf,.png,.jpg,.jpeg"
+                    accept=".dwg"
                     @change="handlePfdFileChange(item, $event)"
                     style="display: none"
                     :data-pfd-input="item.id"
@@ -928,7 +928,7 @@
           <input
             type="file"
             multiple
-            accept=".dwg,.pdf,.png,.jpg,.jpeg"
+            accept=".dwg"
             @change="handlePfdFilesSelected"
             style="display: none"
             ref="pfdFileInput"
@@ -2212,32 +2212,20 @@ const handlePfdFilesSelected = (event: Event) => {
       return;
     }
 
-    // 공정카드 관련 파일만 필터링
+    // 공정카드 관련 파일만 필터링 (.dwg만 허용)
     const pfdFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
-      return (
-        fileName.endsWith(".dwg") ||
-        fileName.endsWith(".pdf") ||
-        fileName.endsWith(".png") ||
-        fileName.endsWith(".jpg") ||
-        fileName.endsWith(".jpeg")
-      );
+      return fileName.endsWith(".dwg");
     });
 
     const unsupportedFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
-      return (
-        !fileName.endsWith(".dwg") &&
-        !fileName.endsWith(".pdf") &&
-        !fileName.endsWith(".png") &&
-        !fileName.endsWith(".jpg") &&
-        !fileName.endsWith(".jpeg")
-      );
+      return !fileName.endsWith(".dwg");
     });
 
     if (unsupportedFiles.length > 0) {
       alert(
-        `공정카드 관련 파일(.dwg, .pdf, .png, .jpg, .jpeg)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles
+        `공정카드 관련 파일(.dwg)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles
           .map((f) => f.name)
           .join("\n")}`
       );
@@ -5357,6 +5345,14 @@ const handlePfdFileChange = (item: any, event: Event) => {
       return;
     }
 
+    // 확장자 검증 (.dwg만 허용)
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith(".dwg")) {
+      alert("공정카드 관련 파일(.dwg)만 선택 가능합니다.");
+      target.value = "";
+      return;
+    }
+
     // processStore.pfdList에서 해당 항목을 찾아서 업데이트
     const itemIndex = processStore.pfdList.findIndex(
       (pfdItem) => pfdItem.id === item.id
@@ -7544,6 +7540,13 @@ const handlePfdSelectionChange = () => {
   // 공정카드 row가 선택되면 P&ID 버튼 클릭 이벤트 호출
   if (selectedPfdItems.value) {
     const selectedItem = selectedPfdItems.value;
+    
+    // 새로 추가된 row(아직 저장되지 않은 row)인 경우 P&ID 매핑 모달을 열지 않음
+    if (!selectedItem.drawing_id || selectedItem.drawing_id.startsWith("temp_pfd_drawing_")) {
+      console.log("새로 추가된 공정카드 row - P&ID 매핑 모달을 열지 않음");
+      return;
+    }
+    
     console.log("공정카드 선택으로 인한 P&ID 버튼 클릭 시뮬레이션");
     openMappingPidModal(selectedItem);
   }

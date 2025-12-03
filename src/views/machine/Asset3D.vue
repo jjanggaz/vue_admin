@@ -746,12 +746,6 @@ const libraryVerticalData = computed(() => {
     editable: false,
     fieldType: "file",
   });
-  data.push({
-    columnName: "비고",
-    value: libraryDetailData.value.remarks || "-",
-    editable: false,
-    fieldType: "input",
-  });
 
   return data;
 });
@@ -829,12 +823,6 @@ const presetVerticalData = computed(() => {
     filePath: presetDetailData.value.thumbnailDownloadUrl,
     editable: false,
     fieldType: "file",
-  });
-  data.push({
-    columnName: "메모",
-    value: presetDetailData.value.note || "-",
-    editable: false,
-    fieldType: "input",
   });
 
   return data;

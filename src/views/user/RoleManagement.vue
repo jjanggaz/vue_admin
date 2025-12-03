@@ -790,44 +790,16 @@ const closeMenuPermissionsModal = () => {
   font-weight: 600;
 }
 
-.search-bar {
-  flex: 1;
-  margin-right: 20px;
-}
-
 .search-inputs {
   display: flex;
   gap: 10px;
   align-items: center;
-}
 
-.search-select {
-  appearance: none;
-  background-image: url(../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-  width: 240px;
-  height: 40px;
-  padding: 8px 32px 8px 8px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-  min-width: 120px;
-
-  &:focus {
-    background-image: url(../../assets/icons/ico_select-up.svg);
+  .search-select {
+    margin-right: 10px;
   }
 }
 
-.search-input {
-  min-width: 240px;
-  height: 40px;
-  padding: 8px 12px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-}
 
 .modal-container {
   min-width: 900px;
@@ -836,7 +808,6 @@ const closeMenuPermissionsModal = () => {
 
 .column-regist {
   grid-template-columns: repeat(4, minmax(200px, 1fr));
-  gap: 20px 10px;
   margin-bottom: 0;
 
   .regist-item {
@@ -848,29 +819,6 @@ const closeMenuPermissionsModal = () => {
 
 .column-regist dt {
   font-size: 13px;
-  font-weight: 600;
-  color: #333333;
-}
-
-.column-regist input,
-.column-regist textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.column-regist textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
 }
 
 .menu-permissions {

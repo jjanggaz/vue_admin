@@ -41,7 +41,7 @@
             </option>
           </select>
         </div>
-        <div class="filter-item">
+        <div class="filter-item" style="margin-right: 10px;">
           <label for="structureTypeDetail">{{
             t("columns.machine.structureTypeDetail")
           }}</label>
@@ -651,34 +651,12 @@ onMounted(async () => {
 <style scoped lang="scss">
 @use "sass:color";
 
+// 반응형 브레이크포인트
+$mobile: 768px;
+$tablet: 1024px;
+
 .structure-page {
   padding: 40px 24px;
-}
-
-.search-filter-bar {
-  margin-bottom: 20px;
-}
-
-.form-select {
-  appearance: none;
-  background-image: url(../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-  width: 240px;
-  height: 40px;
-  padding: 8px 32px 8px 8px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-  min-width: 120px;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-    background-image: url(../../assets/icons/ico_select-up.svg);
-  }
 }
 
 .structure-list-header {
@@ -694,106 +672,12 @@ onMounted(async () => {
   }
 }
 
+.filter-group {
+  gap: 0;
+}
+
 .action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-// 반응형 브레이크포인트
-$mobile: 768px;
-$tablet: 1024px;
-
-.tabs-wrapper {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  overflow-x: auto; // 탭이 많을 때 스크롤 가능
-
-  @media (max-width: $mobile) {
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-  }
-}
-
-.tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: border 0.2s, color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  @media (max-width: $mobile) {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
-}
-
-.tab.active {
-  color: #1a73e8;
-  border-bottom: 2px solid #1a73e8;
-  font-weight: bold;
-}
-
-.tab-content {
-  margin-top: 1.5rem;
-
-  @media (max-width: $mobile) {
-    margin-top: 1rem;
-  }
-}
-
-.column-regist {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 1rem;
-  align-items: center;
-
-  @media (max-width: $mobile) {
-    grid-template-columns: 100px 1fr;
-    gap: 0.75rem;
-  }
-
-  dt {
-    font-weight: bold;
-    color: $text-color;
-    font-size: 0.9rem;
-
-    @media (max-width: $mobile) {
-      font-size: 0.8rem;
-    }
-
-    &.essential::after {
-      content: " *";
-      color: red;
-    }
-  }
-
-  dd {
-    margin: 0;
-  }
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid $border-color;
-  border-radius: 4px;
-  font-size: 0.9rem;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 0.4rem;
-    font-size: 0.8rem;
-  }
+  margin-bottom: 0;
 }
 
 // 다운로드 링크 스타일

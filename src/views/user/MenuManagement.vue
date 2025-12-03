@@ -300,13 +300,13 @@ onMounted(() => {
 <style scoped lang="scss">
 .header-section {
   margin-bottom: 10px;
-}
 
-.page-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #000000;
-  margin-bottom: 20px;
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 20px;
+  }
 }
 
 .menu-type-section {
@@ -349,7 +349,6 @@ onMounted(() => {
 
 .column-regist {
   grid-template-columns: repeat(1, minmax(150px, 1fr));
-  gap: 20px 10px;
   margin-bottom: 0;
 
   .regist-item {
@@ -367,6 +366,7 @@ onMounted(() => {
   }
 }
 
+/* 라디오 탭 유형 */
 .radio-group {
   gap: 0;
 
@@ -394,4 +394,5 @@ onMounted(() => {
     }
   }
 }
+/* //라디오 탭 유형 */
 </style>

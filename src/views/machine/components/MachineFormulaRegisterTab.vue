@@ -806,25 +806,6 @@ select {
   }
 }
 
-// 테이블 반응형 처리
-:deep(.data-table) {
-  overflow-x: auto;
-
-  @media (max-width: $mobile) {
-    font-size: 12px;
-  }
-}
-
-// 모달 내부 스크롤 처리
-:deep(.modal-body) {
-  max-height: 70vh;
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    max-height: 60vh;
-  }
-}
-
 // 파일 업로드 영역 스타일
 .upload-section {
   margin-top: 20px;

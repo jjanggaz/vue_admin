@@ -757,21 +757,6 @@ $desktop: 1200px;
   display: none;
 }
 
-.input {
-  height: 32px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 0 8px;
-  background: #fff;
-  width: 100%;
-  min-width: 0; // input이 축소될 수 있도록 함
-
-  @media (max-width: $mobile) {
-    height: 28px;
-    font-size: 12px;
-  }
-}
-
 .select-sm {
   min-width: 120px;
 
@@ -896,25 +881,6 @@ $desktop: 1200px;
 
   .input {
     flex: 1;
-  }
-}
-
-// 테이블 반응형 처리
-:deep(.data-table) {
-  overflow-x: auto;
-
-  @media (max-width: $mobile) {
-    font-size: 12px;
-  }
-}
-
-// 모달 내부 스크롤 처리
-:deep(.modal-body) {
-  max-height: 70vh;
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    max-height: 60vh;
   }
 }
 

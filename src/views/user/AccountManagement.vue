@@ -928,10 +928,7 @@ const handleEdit = () => {
 }
 
 dl.column-regist {
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(150px, 1fr) minmax(200px, 2fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
 
   dt,
   dd {
@@ -985,32 +982,5 @@ dl.column-regist {
 
 .btn-cancel-password {
   margin-top: 10px;
-}
-
-.form-item {
-  width: 240px;
-
-  select {
-    appearance: none;
-    background-image: url(../../assets/icons/ico_select-down.svg);
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px auto;
-    width: 240px;
-    height: 40px;
-    padding: 8px 32px 8px 8px;
-    border: 1px solid #e7e6ed;
-    border-radius: 4px;
-    font-size: 15px;
-    font-weight: 400;
-    min-width: 120px;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      background-image: url(../../assets/icons/ico_select-up.svg);
-      z-index: 2;
-    }
-  }
 }
 </style>

@@ -689,114 +689,8 @@ $tablet: 1024px;
 $desktop: 1200px;
 
 .filter-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr));
-  align-items: end;
-  gap: 20px 10px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-
-  input,
-  select {
-    appearance: none;
-    position: relative;
-    width: 100%;
-    min-width: 0;
-    height: 40px;
-    border: 1px solid #e7e6ed;
-    border-radius: 4px;
-    font-size: 15px;
-    font-weight: 400;
-
-    &:disabled {
-      border: 1px solid #dfdfdf;
-      background-color: #f0f0f0;
-    }
-  }
-
   input {
-    padding: 0 10px;
-
-    &:focus {
-      border-color: #3b82f6;
-    }
-  }
-
-  select {
-    padding: 0 32px 0 10px;
-    background-color: transparent;
-    background-image: url(../../../assets/icons/ico_select-down.svg);
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 12px auto;
-
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      background-image: url(../../../assets/icons/ico_select-up.svg);
-    }
-  }
-
-  // 태블릿 크기에서 2열로 변경
-  @media (max-width: $tablet) {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
-    gap: 20px 10px;
-  }
-
-  // 모바일 크기에서 1열로 변경
-  @media (max-width: $mobile) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-}
-
-.group-form {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0; // flex 아이템이 축소될 수 있도록 함
-
-  &.wide {
-    grid-column: span 2;
-
-    @media (max-width: $tablet) {
-      grid-column: span 1;
-    }
-  }
-
-  &.inline {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-}
-
-.label {
-  color: #333333;
-  font-size: 13px;
-  font-weight: 600;
-  min-width: 100px;
-  flex-shrink: 0;
-
-  &.required::after {
-    content: "*";
-    color: #333333;
-    margin-left: 4px;
-  }
-
-  &.long-label {
-    line-height: 1.4;
-    white-space: normal;
-    min-width: 120px;
-    text-align: left;
-  }
-
-  @media (max-width: $mobile) {
-    min-width: auto;
-    font-size: 12px;
-
-    &.long-label {
-      min-width: auto;
-    }
+    width: 100%;
   }
 }
 
@@ -886,18 +780,7 @@ $desktop: 1200px;
 }
 
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin: 20px 0 10px;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  @media (max-width: $mobile) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-  }
 }
 
 .section-actions {
@@ -931,25 +814,6 @@ $desktop: 1200px;
 
   .input {
     flex: 1;
-  }
-}
-
-// 테이블 반응형 처리
-:deep(.data-table) {
-  overflow-x: auto;
-
-  @media (max-width: $mobile) {
-    font-size: 12px;
-  }
-}
-
-// 모달 내부 스크롤 처리
-:deep(.modal-body) {
-  max-height: 70vh;
-  overflow-y: auto;
-
-  @media (max-width: $mobile) {
-    max-height: 60vh;
   }
 }
 

@@ -467,13 +467,6 @@ const resetForm = () => {
       flex-direction: column;
 
       .section-header {
-        margin-bottom: $spacing-xs;
-        padding-bottom: $spacing-xs;
-        flex-shrink: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
         h3 {
           color: #202020;
           font-size: 16px;

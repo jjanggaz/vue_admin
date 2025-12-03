@@ -204,6 +204,7 @@ const handleLogin = async () => {
 .login-form {
   .form-group {
     input {
+      width: 100%;
       height: 50px;
       font-weight: 500;
     }
@@ -229,12 +230,10 @@ const handleLogin = async () => {
         height: 20px;
         border: none;
         background-color: transparent;
-        background: url(../../assets/icons/ico_check-off.svg) no-repeat center /
-          20px auto;
+        background: url(../../assets/icons/ico_check-off.svg) no-repeat center / 20px auto;
         background-repeat: no-repeat;
         background-position: center;
         background-size: 20px auto;
-        cursor: pointer;
 
         &:checked {
           background-image: url(../../assets/icons/ico_login-check-on.svg);

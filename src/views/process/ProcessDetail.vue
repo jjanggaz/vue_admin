@@ -11261,6 +11261,8 @@ onMounted(async () => {
         subCategory: props.initialSubCategory || "",
         processName: "",
         processSymbol: "",
+        ccs_file_name: "",
+        ccs_file_id: null,
       });
 
       // 공정 등록 모드에서는 중분류와 공정명 옵션 초기화
@@ -11326,6 +11328,12 @@ onMounted(async () => {
 
       // 생성된 공정 ID 초기화
       createdProcessId.value = null;
+
+      // 용량계산서 파일명 초기화
+      processStore.handleCapacityCalculationFileDelete();
+      if (capacityCalculationFileInput.value) {
+        capacityCalculationFileInput.value.value = "";
+      }
 
       // 공정 타입 옵션들 로드
       await processStore.loadProcessTypeCodes();

@@ -164,7 +164,7 @@
           >
             {{ item.model_file_name }}
           </a>
-          <span v-else>{{ item.model_file_name || "-" }}</span>
+          <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : "모델없음" }}</span>
         </template>
         <template #cell-cellName="{ item }">
           <a
@@ -702,7 +702,6 @@ interface MaterialListItem {
 const materialListColumns: TableColumn[] = [
   { key: "no", title: "#", width: "50px", sortable: false },
   { key: "code", title: t("asset3D.columns.code"), width: "auto", sortable: false },
-  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "150px", sortable: false },
   { key: "equipment_type_name", title: t("asset3D.columns.equipmentTypeName"), width: "200px", sortable: false },
   { key: "vendor_name", title: t("asset3D.columns.vendorName"), width: "150px", sortable: false },
   { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "120px", sortable: false },

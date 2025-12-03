@@ -271,7 +271,7 @@
                   >
                     {{ item.model_file_name }}
                   </a>
-                  <span v-else>{{ item.model_file_name || "-" }}</span>
+                  <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : "모델없음" }}</span>
                 </template>
                 <template #cell-cellName="{ item }">
                   <a

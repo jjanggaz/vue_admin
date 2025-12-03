@@ -176,7 +176,7 @@
           >
             <img
               :src="item.thumbnail_download_url"
-              :alt="item.cellName || '썸네일'"
+              :alt="item.cellName || t('asset3D.columns.thumbnail')"
               class="thumbnail-image"
               @error="handleThumbnailError"
             />
@@ -701,16 +701,16 @@ interface MaterialListItem {
 // 자재 리스트 컬럼 정의
 const materialListColumns: TableColumn[] = [
   { key: "no", title: "#", width: "50px", sortable: false },
-  { key: "code", title: "코드", width: "auto", sortable: false },
-  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
-  { key: "equipment_type_name", title: "배관유형명", width: "200px", sortable: false },
-  { key: "vendor_name", title: "공급업체명", width: "150px", sortable: false },
-  { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
-  { key: "diameter", title: "직경", width: "80px", sortable: false },
-  { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
-  { key: "unit_price_KRW", title: "단가(원)", width: "100px", sortable: false },
-  { key: "joining", title: "접합방식(코드)", width: "150px", sortable: false },
-  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
+  { key: "code", title: t("asset3D.columns.code"), width: "auto", sortable: false },
+  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "150px", sortable: false },
+  { key: "equipment_type_name", title: t("asset3D.columns.equipmentTypeName"), width: "200px", sortable: false },
+  { key: "vendor_name", title: t("asset3D.columns.vendorName"), width: "150px", sortable: false },
+  { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "120px", sortable: false },
+  { key: "diameter", title: t("asset3D.columns.diameter"), width: "80px", sortable: false },
+  { key: "diameterAfter", title: t("asset3D.columns.diameterAfter"), width: "80px", sortable: false },
+  { key: "unit_price_KRW", title: t("asset3D.columns.unitPrice"), width: "100px", sortable: false },
+  { key: "joining", title: t("asset3D.columns.joining"), width: "150px", sortable: false },
+  { key: "model_file_name", title: t("asset3D.columns.modelFileName"), width: "200px", sortable: false },
 ];
 
 // 자재 리스트 데이터 (computed)
@@ -823,15 +823,15 @@ const getTypeLabel = (typeValue: string) => {
 
 // 테이블 컬럼 정의 (자재 리스트와 동일한 구성)
 const tableColumns: TableColumn[] = [
-  { key: "no", title: "순번", width: "50px", sortable: false },
-  { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
-  { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
-  { key: "diameter", title: "직경", width: "80px", sortable: false },
-  { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
-  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
-  { key: "code", title: "코드", width: "auto", sortable: false },
-  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
-  { key: "cellName", title: "썸네일", width: "100px", sortable: false },
+  { key: "no", title: t("asset3D.columns.no"), width: "50px", sortable: false },
+  { key: "pipeCategory", title: t("asset3D.columns.pipeCategory"), width: "100px", sortable: false },
+  { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "120px", sortable: false },
+  { key: "diameter", title: t("asset3D.columns.diameter"), width: "80px", sortable: false },
+  { key: "diameterAfter", title: t("asset3D.columns.diameterAfter"), width: "80px", sortable: false },
+  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "150px", sortable: false },
+  { key: "code", title: t("asset3D.columns.code"), width: "auto", sortable: false },
+  { key: "model_file_name", title: t("asset3D.columns.modelFileName"), width: "200px", sortable: false },
+  { key: "cellName", title: t("asset3D.columns.thumbnail"), width: "100px", sortable: false },
 ];
 
 // 썸네일 이미지 에러 핸들러
@@ -848,7 +848,7 @@ const handleThumbnailDownloadClick = async (item: any) => {
   const fileName = item.thumbnail_file_name || item.cellName || "thumbnail";
 
   if (!downloadUrl) {
-    alert("다운로드할 파일이 없습니다.");
+    alert(t("asset3D.error.noFileToDownload"));
     return;
   }
 
@@ -875,7 +875,8 @@ const handleThumbnailDownloadClick = async (item: any) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("썸네일 다운로드 실패:", error);
-    alert(`썸네일 다운로드 실패: ${error instanceof Error ? error.message : String(error)}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    alert(t("asset3D.error.downloadFailedWithMessage", { message: errorMessage }));
   }
 };
 
@@ -1552,10 +1553,10 @@ const ensureManualValveTree = async (forceReload = false) => {
     if (error && typeof error === "object" && "message" in error) {
       manualValveTreeError.value =
         String((error as { message?: string }).message) ||
-        "세부유형 트리 정보를 불러오지 못했습니다.";
+        t("asset3D.error.subTypeTreeLoadFailed");
     } else {
       manualValveTreeError.value =
-        "세부유형 트리 정보를 불러오지 못했습니다.";
+        t("asset3D.error.subTypeTreeLoadFailed");
     }
   } finally {
     manualValveTreeLoading.value = false;
@@ -2458,7 +2459,7 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
     
   } catch (error) {
     console.error("자재 리스트 조회 실패:", error);
-    materialListError.value = "자재 리스트를 불러오는데 실패했습니다.";
+    materialListError.value = t("asset3D.error.materialListLoadFailed");
     materialListItems.value = [];
   } finally {
     materialListLoading.value = false;
@@ -2599,7 +2600,7 @@ const handleDebugSearch = async () => {
     }
   } catch (error) {
     console.error("디버그 검색 실패:", error);
-    materialListError.value = "검색에 실패했습니다.";
+    materialListError.value = t("asset3D.error.searchFailed");
     materialListItems.value = [];
   } finally {
     materialListLoading.value = false;

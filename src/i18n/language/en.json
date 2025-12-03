@@ -1327,7 +1327,12 @@
       "selectItemsFromMaterialList": "Please select items to add from the material list.",
       "enterEquipmentType": "Please enter equipment_type.",
       "itemsSaveFailed": "Failed to save {count} items.",
-      "itemsProcessFailed": "Failed to process {count} items."
+      "itemsProcessFailed": "Failed to process {count} items.",
+      "thumbnailDownloadFailed": "Thumbnail download failed",
+      "materialListLoadFailed": "Failed to load material list.",
+      "searchFailed": "Search failed.",
+      "subTypeTreeLoadFailed": "Failed to load sub type tree information.",
+      "downloadFailedWithMessage": "Download failed: {message}"
     },
     "success": {
       "thumbnailDeleted": "Thumbnail deleted.",
@@ -1339,7 +1344,22 @@
       "deleteThumbnail": "Are you sure you want to delete the thumbnail?"
     },
     "defaultModelFileName": "model.dtdx",
-    "defaultThumbnailFileName": "thumbnail"
+    "defaultThumbnailFileName": "thumbnail",
+    "columns": {
+      "no": "No.",
+      "code": "Code",
+      "pipeType": "Pipe Type",
+      "equipmentTypeName": "Equipment Type Name",
+      "vendorName": "Vendor Name",
+      "fittingType": "Fitting Type",
+      "diameter": "Diameter",
+      "diameterAfter": "Diameter After",
+      "unitPrice": "Unit Price (KRW)",
+      "joining": "Joining (Code)",
+      "modelFileName": "3D Model Name",
+      "pipeCategory": "Pipe Category",
+      "thumbnail": "Thumbnail"
+    }
   },
   "pipe": {
     "pipeType": "Pipe Type",

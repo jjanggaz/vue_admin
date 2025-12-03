@@ -1323,7 +1323,12 @@
       "selectItemsFromMaterialList": "자재 리스트에서 추가할 항목을 선택해주세요.",
       "enterEquipmentType": "equipment_type을 입력하세요.",
       "itemsSaveFailed": "{count}개의 항목 저장에 실패했습니다.",
-      "itemsProcessFailed": "{count}개의 항목 처리에 실패했습니다."
+      "itemsProcessFailed": "{count}개의 항목 처리에 실패했습니다.",
+      "thumbnailDownloadFailed": "썸네일 다운로드 실패",
+      "materialListLoadFailed": "자재 리스트를 불러오는데 실패했습니다.",
+      "searchFailed": "검색에 실패했습니다.",
+      "subTypeTreeLoadFailed": "세부유형 트리 정보를 불러오지 못했습니다.",
+      "downloadFailedWithMessage": "다운로드 실패: {message}"
     },
     "success": {
       "thumbnailDeleted": "썸네일이 삭제되었습니다.",
@@ -1335,7 +1340,22 @@
       "deleteThumbnail": "썸네일을 삭제하시겠습니까?"
     },
     "defaultModelFileName": "model.dtdx",
-    "defaultThumbnailFileName": "thumbnail"
+    "defaultThumbnailFileName": "thumbnail",
+    "columns": {
+      "no": "순번",
+      "code": "코드",
+      "pipeType": "배관유형",
+      "equipmentTypeName": "배관유형명",
+      "vendorName": "공급업체명",
+      "fittingType": "피팅방식",
+      "diameter": "직경",
+      "diameterAfter": "직경후",
+      "unitPrice": "단가(원)",
+      "joining": "접합방식(코드)",
+      "modelFileName": "3D 모델명",
+      "pipeCategory": "배관구분",
+      "thumbnail": "썸네일"
+    }
   },
   "pipe": {
     "pipeType": "배관종류",

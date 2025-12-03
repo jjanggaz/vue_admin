@@ -257,13 +257,38 @@
                   <span class="table-text">{{ item.diameterAfter || "-" }}</span>
                 </template>
                 <template #cell-pipeType="{ item }">
-                  <span class="table-text">{{ item.pipeType || "-" }}</span>
+                  <span class="table-text">{{ item.equipment_type_name || "-" }}</span>
                 </template>
                 <template #cell-code="{ item }">
                   <span class="table-text">{{ item.code || "-" }}</span>
                 </template>
+                <template #cell-model_file_name="{ item }">
+                  <a
+                    v-if="item.model_download_url && item.model_file_name && item.model_file_name !== '-'"
+                    :href="item.model_download_url"
+                    target="_blank"
+                    class="file-download-link"
+                  >
+                    {{ item.model_file_name }}
+                  </a>
+                  <span v-else>{{ item.model_file_name || "-" }}</span>
+                </template>
                 <template #cell-cellName="{ item }">
-                  <span class="table-text">{{ item.cellName || "-" }}</span>
+                  <a
+                    v-if="item.thumbnail_download_url"
+                    :href="item.thumbnail_download_url"
+                    :download="item.thumbnail_file_name || item.cellName"
+                    class="thumbnail-link"
+                    @click.prevent="handlePresetThumbnailDownloadClick(item)"
+                  >
+                    <img
+                      :src="item.thumbnail_download_url"
+                      :alt="item.cellName || '썸네일'"
+                      class="thumbnail-image"
+                      @error="handleThumbnailError"
+                    />
+                  </a>
+                  <span v-else class="table-text">{{ item.cellName || "-" }}</span>
                 </template>
               </DataTable>
             </div>
@@ -547,7 +572,12 @@ interface PresetTableRow {
   diameterAfter: string;
   pipeType: string;
   code: string;
+  model_file_name?: string;
+  model_download_url?: string;
   cellName: string;
+  thumbnail_download_url?: string;
+  thumbnail_file_name?: string;
+  equipment_type_name?: string;
   [key: string]: unknown;
 }
 
@@ -837,6 +867,7 @@ const presetTableColumns: TableColumn[] = [
   { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
   { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
   { key: "code", title: "코드", width: "auto", sortable: false },
+  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
   { key: "cellName", title: "썸네일", width: "100px", sortable: false },
 ];
 
@@ -1239,6 +1270,32 @@ const openDetailPanel = async (item: Asset3DItem) => {
                     }
                   }
 
+                  // model_file_info에서 file_name과 download_url 추출
+                  let modelFileName = "";
+                  let modelDownloadUrl = "";
+                  const modelFileInfo = detailItem.model_file_info as Record<string, unknown> | undefined;
+                  if (modelFileInfo) {
+                    if (modelFileInfo.file_name) {
+                      modelFileName = String(modelFileInfo.file_name);
+                    }
+                    if (modelFileInfo.download_url) {
+                      modelDownloadUrl = String(modelFileInfo.download_url);
+                    }
+                  }
+
+                  // thumbnail_file_info에서 download_url 추출
+                  let thumbnailDownloadUrl = "";
+                  let thumbnailFileName = "";
+                  const thumbnailFileInfo = detailItem.thumbnail_file_info as Record<string, unknown> | undefined;
+                  if (thumbnailFileInfo) {
+                    if (thumbnailFileInfo.download_url) {
+                      thumbnailDownloadUrl = String(thumbnailFileInfo.download_url);
+                    }
+                    if (thumbnailFileInfo.file_name) {
+                      thumbnailFileName = String(thumbnailFileInfo.file_name);
+                    }
+                  }
+
                   const newRow: PresetTableRow = {
                     id: nextRowId++,
                     no: detailItem.sequence_order || 0,
@@ -1247,9 +1304,13 @@ const openDetailPanel = async (item: Asset3DItem) => {
                     fittingType: subCategoryLabel,
                     diameter: String(detailItem.diameter_before || ""),
                     diameterAfter: String(detailItem.diameter_after || ""),
-                    pipeType: "",
+                    pipeType: String(detailItem.equipment_type_name || ""),
                     code: String(detailItem.equipment_code || ""),
-                    cellName: "",
+                    model_file_name: modelFileName || "-",
+                    model_download_url: modelDownloadUrl || "",
+                    cellName: thumbnailFileName || "",
+                    thumbnail_download_url: thumbnailDownloadUrl || "",
+                    thumbnail_file_name: thumbnailFileName || "",
                     ...detailItem,
                   };
 
@@ -1551,6 +1612,51 @@ const handlePresetDtdxDownload = async () => {
 };
 
 // 프리셋 썸네일 다운로드 핸들러
+// 썸네일 이미지 에러 핸들러
+const handleThumbnailError = (e: Event) => {
+  const img = e.target as HTMLImageElement;
+  if (img) {
+    img.style.display = "none";
+  }
+};
+
+// 프리셋 선택 항목 그리드 썸네일 다운로드 핸들러
+const handlePresetThumbnailDownloadClick = async (item: any) => {
+  const downloadUrl = item.thumbnail_download_url;
+  const fileName = item.thumbnail_file_name || item.cellName || "thumbnail";
+
+  if (!downloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    // fetch로 파일을 blob으로 받아서 다운로드
+    const response = await fetch(downloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("썸네일 다운로드 실패:", error);
+    alert(`썸네일 다운로드 실패: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
 const handlePresetThumbnailDownload = async () => {
   if (!presetDetailData.value || !presetDetailData.value.thumbnailDownloadUrl) {
     alert("다운로드할 파일이 없습니다.");
@@ -2198,6 +2304,31 @@ onMounted(async () => {
   .table-text {
     font-size: 0.875rem;
     color: #202020;
+  }
+
+  .thumbnail-link {
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .thumbnail-image {
+    max-width: 40px;
+    max-height: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .file-download-link {
+    color: #1a73e8;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      color: #1557b0;
+      text-decoration: underline;
+    }
   }
 }
 

@@ -269,9 +269,9 @@ watch(
   (rows) => {
     if (rows && rows.length > 0 && rows[0]) {
       const firstRow = rows[0] as { file_name?: string };
-      formulaFileName.value = firstRow.file_name || "";
+      formulaFileName.value = firstRow.file_name || "-";
     } else {
-      formulaFileName.value = "";
+      formulaFileName.value = "-";
     }
   },
   { immediate: true, deep: true }
@@ -320,7 +320,7 @@ onMounted(async () => {
         // 0번째 항목의 파일명을 formulaFileName에 설정
         if (editModeRows.value.length > 0 && editModeRows.value[0]) {
           const firstRow = editModeRows.value[0] as { file_name?: string };
-          formulaFileName.value = firstRow.file_name || "";
+          formulaFileName.value = firstRow.file_name || "-";
         }
       }
     }

@@ -500,6 +500,10 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+.project-management {
+  padding: 40px 24px;
+}
+
 // 모달이 제대로 표시되도록 하는 스타일
 :deep(.modal-overlay) {
   position: fixed !important;

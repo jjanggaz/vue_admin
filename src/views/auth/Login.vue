@@ -203,8 +203,6 @@ const handleLogin = async () => {
 
 .login-form {
   .form-group {
-    margin-bottom: $spacing-md;
-
     input {
       height: 50px;
       font-weight: 500;

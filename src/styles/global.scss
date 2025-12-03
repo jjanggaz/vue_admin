@@ -150,15 +150,133 @@ body {
 .action-bar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  gap: 40px;
   margin-bottom: 20px;
 
   .title {
     display: flex;
     align-items: center;
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: $text-color;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+  }
+
+  .search-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    // 각 줄의 스타일
+    .search-row {
+      display: flex;
+      gap: 10px 0;
+      align-items: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+
+      &.first-row {
+        // 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
+        flex-wrap: wrap;
+
+        .group-form {
+          flex: 0 0 auto;
+          min-width: 0;
+          margin-right: 20px;
+
+          &:last-of-type {
+            margin-right: 0;
+          }
+
+          &.button-group-right {
+            margin-left: auto;
+          }
+
+          // 셀렉트 폭 조정
+          .form-select {
+            appearance: none;
+            background-image: url(../../assets/icons/ico_select-down.svg);
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px auto;
+            min-width: 240px;
+            height: 40px;
+            padding: 8px 32px 8px 8px;
+            font-size: 15px;
+            font-weight: 400;
+
+            &:focus {
+              background-image: url(../../assets/icons/ico_select-up.svg);
+            }
+          }
+
+          // 라벨 폭 조정
+          .label-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333333;
+            white-space: nowrap;
+          }
+
+          .form-item {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+          }
+        }
+      }
+
+      &.second-row {
+        // 두 번째 줄: 등록/삭제 버튼들
+        .group-form {
+          flex: 0 0 auto;
+          min-width: 0;
+
+          // 라벨 폭 조정
+          .label-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333333;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    .group-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+
+      // 버튼 그룹 스타일
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+
+        .btn {
+          margin-right: 0;
+        }
+      }
+    }
+  }
+}
+
+.caution-message {
+  position: relative;
+  text-align: center;
+  padding: 20px 0;
+
+  .caution-ico {
+    display: inline-block;
+    padding: 2px 0 1.5px 18px;
+    color: #FF3B30;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Noto Sans KR";
+    letter-spacing: -0.056px;
+    background: url(../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
   }
 }
 

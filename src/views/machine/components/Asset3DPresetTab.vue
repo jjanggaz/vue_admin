@@ -263,7 +263,7 @@
           <input
             type="text"
               v-model="selectionFilter.searchText"
-              class="form-input"
+              class="form-input lg"
               :placeholder="t('asset3D.keywordPlaceholder')"
               :disabled="!isSelectionGridEnabled"
               @keyup.enter="handleSelectionSearch"
@@ -3474,30 +3474,12 @@ $mobile: 768px;
 $tablet: 1024px;
 
 .filter-bar {
-  display: grid;
   grid-template-columns: 180px 180px 1fr 1fr 100px; // 단위, 연결기계, 프리셋명, 썸네일, 등록버튼 (프리셋명과 썸네일 같은 폭)
-  align-items: flex-end;
-  gap: 10px;
-  // 태블릿 크기에서 2열로 변경
-  @media (max-width: $tablet) {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
-  }
-  // 모바일 크기에서 1열로 변경
-  @media (max-width: $mobile) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex-shrink: 0;
   margin-bottom: 0;
   width: 100%;
-  grid-template-columns: 1 -1;
 
   &.right-align {
     justify-content: flex-end;
@@ -3508,11 +3490,7 @@ $tablet: 1024px;
 }
 
 label {
-  display: inline-block;
-  margin-bottom: 0;
-  color: #333333;
   font-size: 13px;
-  font-weight: 600;
   min-width: 100px;
   flex-shrink: 0;
 
@@ -3520,47 +3498,6 @@ label {
     content: "*";
     color: #333333;
     margin-left: 4px;
-  }
-}
-
-input,
-select {
-  appearance: none;
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  height: 40px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-
-  &:disabled {
-    border: 1px solid #dfdfdf;
-    background-color: #f0f0f0;
-  }
-}
-
-input {
-  padding: 0 10px;
-
-  &:focus {
-    border-color: #3b82f6;
-  }
-}
-
-select {
-  padding: 0 32px 0 10px;
-  background-color: transparent;
-  background-image: url(../../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background-image: url(../../../assets/icons/ico_select-up.svg);
   }
 }
 
@@ -3599,7 +3536,6 @@ select {
     flex-shrink: 0;
     display: block;
   }
-
 
   .thumbnail-close-btn {
     display: flex;
@@ -3921,6 +3857,7 @@ select {
   padding: 2px 6px;
   line-height: 1.4;
 }
+
 .btn-search-subtype {
   padding: 8px 14px;
   background: #0863e2;
@@ -3979,16 +3916,8 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 10px;
+  gap: 40px;
   flex-wrap: wrap;
-
-  .filter-group {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    flex: 1;
-  }
 
   .filter-item {
     display: flex;
@@ -3996,21 +3925,11 @@ select {
     align-items: flex-start;
     gap: 4px;
 
-    label {
-      font-size: 12px;
-      color: #475467;
-      font-weight: 500;
-    }
-
-    .form-select,
-    .form-input {
-      height: 32px;
-      min-width: 160px;
+    .form-input.lg {
+      min-width: 300px;
     }
 
     &.subtype-filter-item {
-      min-width: 280px;
-
       .filter-tree-select-wrapper {
         position: relative;
         width: 100%;

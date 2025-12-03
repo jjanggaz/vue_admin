@@ -1280,19 +1280,23 @@ const handleEdit = () => {
 </script>
 
 <style scoped lang="scss">
+.code-management {
+  padding: 40px 24px;
+}
+
 .search-section {
   margin-bottom: 20px;
 
   .search-filters {
     display: flex;
-    gap: 20px 10px;
+    gap: 10px 0;
     flex-wrap: wrap;
 
     .filter-group {
-      margin-right: 40px;
+      margin-right: 20px;
 
       &:last-of-type {
-        margin-right: 0;
+        margin-right: 10px;
       }
 
       .filter-select {

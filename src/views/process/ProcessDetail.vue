@@ -11936,23 +11936,6 @@ watch(
   height: 64px;
 }
 
-.caution-message {
-  position: relative;
-  text-align: center;
-  padding: 20px 0;
-
-  .caution-ico {
-    display: inline-block;
-    padding: 2px 0 1.5px 18px;
-    color: #FF3B30;
-    font-size: 14px;
-    font-weight: 400;
-    font-family: "Noto Sans KR";
-    letter-spacing: -0.056px;
-    background: url(../../assets/icons/ico_caution.svg) no-repeat 0 center / 16px auto;
-  }
-}
-
 /* 필수 입력 표시 스타일 */
 .required {
   font-weight: 600;
@@ -11975,19 +11958,11 @@ watch(
 }
 
 .form-group {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
   margin-bottom: 0;
 }
 
 .form-group label {
-  font-weight: 600;
-  color: #333333;
   font-size: 13px;
-  white-space: nowrap;
 }
 
 .form-group select {
@@ -12545,8 +12520,7 @@ watch(
 }
 
 .capacity-calculation-section
-  .file-input-group
-  input[type="text"].form-control {
+.file-input-group input[type="text"].form-control {
   flex: 1;
   width: 400px;
   height: 32px;

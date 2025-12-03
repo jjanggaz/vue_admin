@@ -93,11 +93,7 @@
                   {{ option.label }}
                 </option>
               </select>
-            </div>
-          </div>
 
-          <div class="group-form">
-            <div class="form-item button-group">
               <button class="btn btn-search" @click="handleSearch">
                 {{ t("common.search") }}
               </button>
@@ -1572,32 +1568,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @use "sass:color";
-
 .process-page {
   padding: 40px 24px;
-}
-
-:deep(.process-page .data-table) {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-
-  table {
-    min-width: 100%;
-  }
-}
-
-:deep(.process-page .data-table .table-header) {
-  background-color: $background-light;
-}
-
-:deep(.process-page .data-table .table-header .header-cell:hover) {
-  background-color: $background-light;
-  color: inherit;
-}
-
-:deep(.process-page .data-table .table-body tr:nth-child(even)) {
-  background-color: #f8f9fb;
 }
 
 // 공정심볼 텍스트 스타일
@@ -1616,102 +1588,7 @@ onMounted(async () => {
   padding: $spacing-lg;
 }
 
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.search-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: flex-start;
-
-  // 각 줄의 스타일
-  .search-row {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-    width: 100%;
-    flex-wrap: wrap;
-
-    &.first-row {
-      // 조회조건: 단위, 공정구분, 공정중분류, 공정명, 검색/등록/삭제 버튼
-      flex-wrap: wrap;
-
-      .group-form {
-        flex: 0 0 auto;
-        min-width: 0;
-
-        &.button-group-right {
-          margin-left: auto;
-        }
-
-        // 셀렉트 폭 조정
-        .form-select {
-          appearance: none;
-          background-image: url(../../assets/icons/ico_select-down.svg);
-          background-repeat: no-repeat;
-          background-position: right 10px center;
-          background-size: 12px auto;
-          // max-width: 240px;
-          min-width: 240px;
-          height: 40px;
-          padding: 8px 32px 8px 8px;
-          font-size: 15px;
-          font-weight: 400;
-
-          &:focus {
-            background-image: url(../../assets/icons/ico_select-up.svg);
-          }
-        }
-
-        // 라벨 폭 조정
-        .label-title {
-          font-size: 16px;
-          font-weight: 600;
-          color: #333333;
-          white-space: nowrap;
-        }
-      }
-    }
-
-    &.second-row {
-      // 두 번째 줄: 등록/삭제 버튼들
-      .group-form {
-        flex: 0 0 auto;
-        min-width: 0;
-
-        // 라벨 폭 조정
-        .label-title {
-          font-size: 16px;
-          font-weight: 600;
-          color: #333333;
-          white-space: nowrap;
-        }
-      }
-    }
-  }
-
-  .group-form {
-    min-width: 0;
-
-    // 버튼 그룹 스타일
-    .button-group {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-
-      .btn {
-        margin-right: 0;
-      }
-    }
-  }
-}
-
-// ProcessDetail 모달 스타일
+/* ProcessDetail 모달 스타일 */
 .detail-modal-overlay {
   display: flex;
   align-items: center;
@@ -1784,6 +1661,7 @@ onMounted(async () => {
     }
   }
 }
+/* //ProcessDetail 모달 스타일 */
 
 // 공정심볼 행 스타일
 .process-symbol-row {
@@ -2050,18 +1928,5 @@ onMounted(async () => {
       }
     }
   }
-}
-
-// 공정심볼 파일 입력 그룹 스타일 (ProcessDetail.vue와 동일)
-.file-input-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.selected-file {
-  color: #007bff;
-  font-size: 13px;
-  flex: 1;
 }
 </style>

@@ -150,13 +150,38 @@
           <span class="table-text">{{ item.diameterAfter || "-" }}</span>
         </template>
         <template #cell-pipeType="{ item }">
-          <span class="table-text">{{ item.pipeType || "-" }}</span>
+          <span class="table-text">{{ item.equipment_type_name || "-" }}</span>
         </template>
         <template #cell-code="{ item }">
           <span class="table-text">{{ item.code || "-" }}</span>
         </template>
+        <template #cell-model_file_name="{ item }">
+          <a
+            v-if="item.model_download_url && item.model_file_name && item.model_file_name !== '-'"
+            :href="item.model_download_url"
+            target="_blank"
+            class="file-download-link"
+          >
+            {{ item.model_file_name }}
+          </a>
+          <span v-else>{{ item.model_file_name || "-" }}</span>
+        </template>
         <template #cell-cellName="{ item }">
-          <span class="table-text">{{ item.cellName || "-" }}</span>
+          <a
+            v-if="item.thumbnail_download_url"
+            :href="item.thumbnail_download_url"
+            :download="item.thumbnail_file_name || item.cellName"
+            class="thumbnail-link"
+            @click.prevent="handleThumbnailDownloadClick(item)"
+          >
+            <img
+              :src="item.thumbnail_download_url"
+              :alt="item.cellName || '썸네일'"
+              class="thumbnail-image"
+              @error="handleThumbnailError"
+            />
+          </a>
+          <span v-else class="table-text">{{ item.cellName || "-" }}</span>
         </template>
       </DataTable>
     </div>
@@ -805,8 +830,54 @@ const tableColumns: TableColumn[] = [
   { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
   { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
   { key: "code", title: "코드", width: "auto", sortable: false },
+  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
   { key: "cellName", title: "썸네일", width: "100px", sortable: false },
 ];
+
+// 썸네일 이미지 에러 핸들러
+const handleThumbnailError = (e: Event) => {
+  const img = e.target as HTMLImageElement;
+  if (img) {
+    img.style.display = "none";
+  }
+};
+
+// 선택 항목 그리드 썸네일 다운로드 핸들러
+const handleThumbnailDownloadClick = async (item: any) => {
+  const downloadUrl = item.thumbnail_download_url;
+  const fileName = item.thumbnail_file_name || item.cellName || "thumbnail";
+
+  if (!downloadUrl) {
+    alert("다운로드할 파일이 없습니다.");
+    return;
+  }
+
+  try {
+    // fetch로 파일을 blob으로 받아서 다운로드
+    const response = await fetch(downloadUrl, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("썸네일 다운로드 실패:", error);
+    alert(`썸네일 다운로드 실패: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
 
 // 썸네일 파일 변경 핸들러
 const handleThumbnailFileChange = (e: Event) => {
@@ -1226,6 +1297,32 @@ const reloadPresetDetailData = async (presetId: string) => {
             }
           }
 
+          // model_file_info에서 file_name과 download_url 추출
+          let modelFileName = "";
+          let modelDownloadUrl = "";
+          const modelFileInfo = detailItem.model_file_info as Record<string, unknown> | undefined;
+          if (modelFileInfo) {
+            if (modelFileInfo.file_name) {
+              modelFileName = String(modelFileInfo.file_name);
+            }
+            if (modelFileInfo.download_url) {
+              modelDownloadUrl = String(modelFileInfo.download_url);
+            }
+          }
+
+          // thumbnail_file_info에서 download_url 추출
+          let thumbnailDownloadUrl = "";
+          let thumbnailFileName = "";
+          const thumbnailFileInfo = detailItem.thumbnail_file_info as Record<string, unknown> | undefined;
+          if (thumbnailFileInfo) {
+            if (thumbnailFileInfo.download_url) {
+              thumbnailDownloadUrl = String(thumbnailFileInfo.download_url);
+            }
+            if (thumbnailFileInfo.file_name) {
+              thumbnailFileName = String(thumbnailFileInfo.file_name);
+            }
+          }
+
           const newRow: TableRow = {
             id: nextRowId++,
             no: detailItem.sequence_order || 0, // API 응답의 sequence_order 그대로 사용
@@ -1234,9 +1331,13 @@ const reloadPresetDetailData = async (presetId: string) => {
             fittingType: subCategoryLabel, // 세부구분을 피팅방식에도 표시
             diameter: String(detailItem.diameter_before || ""),
             diameterAfter: String(detailItem.diameter_after || ""),
-            pipeType: "", // API 응답에 없음
+            pipeType: String(detailItem.equipment_type_name || ""),
             code: String(detailItem.equipment_code || ""),
-            cellName: "", // API 응답에 없음
+            model_file_name: modelFileName || "-",
+            model_download_url: modelDownloadUrl || "",
+            cellName: thumbnailFileName || "",
+            thumbnail_download_url: thumbnailDownloadUrl || "",
+            thumbnail_file_name: thumbnailFileName || "",
             // 원본 데이터 보존
             equipment_id: detailItem.equipment_id || null,
             equipment_code: detailItem.equipment_code || "",
@@ -2010,15 +2111,59 @@ const handleAddSelection = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pipeType: _pipeType, ...materialItemWithoutNoAndPipeType } = materialItemWithoutNo;
 
+    // model_file_info에서 file_name과 download_url 추출
+    let modelFileName = "";
+    let modelDownloadUrl = "";
+    const modelFileInfo = (materialItem as Record<string, unknown>).model_file_info as Record<string, unknown> | undefined;
+    if (modelFileInfo) {
+      if (modelFileInfo.file_name) {
+        modelFileName = String(modelFileInfo.file_name);
+      }
+      if (modelFileInfo.download_url) {
+        modelDownloadUrl = String(modelFileInfo.download_url);
+      }
+    }
+    // materialItem에서 직접 model_file_name과 model_download_url도 확인 (fallback)
+    if (!modelFileName && (materialItem as Record<string, unknown>).model_file_name) {
+      modelFileName = String((materialItem as Record<string, unknown>).model_file_name);
+    }
+    if (!modelDownloadUrl && (materialItem as Record<string, unknown>).model_download_url) {
+      modelDownloadUrl = String((materialItem as Record<string, unknown>).model_download_url);
+    }
+
+    // thumbnail_file_info에서 download_url 추출
+    let thumbnailDownloadUrl = "";
+    let thumbnailFileName = "";
+    const thumbnailFileInfo = (materialItem as Record<string, unknown>).thumbnail_file_info as Record<string, unknown> | undefined;
+    if (thumbnailFileInfo) {
+      if (thumbnailFileInfo.download_url) {
+        thumbnailDownloadUrl = String(thumbnailFileInfo.download_url);
+      }
+      if (thumbnailFileInfo.file_name) {
+        thumbnailFileName = String(thumbnailFileInfo.file_name);
+      }
+    }
+    // materialItem에서 직접 thumbnail_download_url과 cellName도 확인 (fallback)
+    if (!thumbnailDownloadUrl && (materialItem as Record<string, unknown>).thumbnail_download_url) {
+      thumbnailDownloadUrl = String((materialItem as Record<string, unknown>).thumbnail_download_url);
+    }
+    if (!thumbnailFileName && materialItem.cellName) {
+      thumbnailFileName = String(materialItem.cellName);
+    }
+
     const newRow: TableRow = {
       id: nextRowId++,
       pipeCategory: String(materialItem.pipeCategory || ""),
       subCategory: String(materialItem.subCategory || ""),
       diameter: String(materialItem.diameter || ""),
       diameterAfter: String(materialItem.diameterAfter || ""),
-      pipeType: "", // 배관유형 항목 제외
+      pipeType: String((materialItem as Record<string, unknown>).equipment_type_name || ""),
       code: String(materialItem.code || ""),
-      cellName: String(materialItem.cellName || ""),
+      model_file_name: modelFileName || "-",
+      model_download_url: modelDownloadUrl || "",
+      cellName: thumbnailFileName || "",
+      thumbnail_download_url: thumbnailDownloadUrl || "",
+      thumbnail_file_name: thumbnailFileName || "",
       // 원본 데이터 보존 (equipment_id, equipment_code 포함)
       equipment_id: equipmentId,
       equipment_code: equipmentCode,
@@ -2221,11 +2366,17 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           }
         }
         
-        // thumbnail_file_info.file_name 에서 썸네일 파일명 추출
+        // thumbnail_file_info에서 file_name과 download_url 추출
         let thumbnailFileName = "";
+        let thumbnailDownloadUrl = "";
         const thumbnailFileInfo = item.thumbnail_file_info as Record<string, unknown> | undefined;
-        if (thumbnailFileInfo && thumbnailFileInfo.file_name) {
-          thumbnailFileName = String(thumbnailFileInfo.file_name);
+        if (thumbnailFileInfo) {
+          if (thumbnailFileInfo.file_name) {
+            thumbnailFileName = String(thumbnailFileInfo.file_name);
+          }
+          if (thumbnailFileInfo.download_url) {
+            thumbnailDownloadUrl = String(thumbnailFileInfo.download_url);
+          }
         }
         
         // vendor_info에서 vendor_name 추출
@@ -2283,6 +2434,8 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           vendor_name: vendorName,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
+          thumbnail_download_url: thumbnailDownloadUrl || "",
+          thumbnail_file_name: thumbnailFileName || "",
           unit_price_KRW: unitPriceKRW || "-",
           joining: joiningValue || "-",
           model_file_name: modelFileName || "-",
@@ -2398,11 +2551,17 @@ const handleDebugSearch = async () => {
           }
         }
         
-        // thumbnail_file_info.file_name 에서 썸네일 파일명 추출
+        // thumbnail_file_info에서 file_name과 download_url 추출
         let thumbnailFileName = "";
+        let thumbnailDownloadUrl = "";
         const thumbnailFileInfo = item.thumbnail_file_info as Record<string, unknown> | undefined;
-        if (thumbnailFileInfo && thumbnailFileInfo.file_name) {
-          thumbnailFileName = String(thumbnailFileInfo.file_name);
+        if (thumbnailFileInfo) {
+          if (thumbnailFileInfo.file_name) {
+            thumbnailFileName = String(thumbnailFileInfo.file_name);
+          }
+          if (thumbnailFileInfo.download_url) {
+            thumbnailDownloadUrl = String(thumbnailFileInfo.download_url);
+          }
         }
         
         // vendor_info에서 vendor_name 추출
@@ -2423,6 +2582,8 @@ const handleDebugSearch = async () => {
           vendor_name: vendorName,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
+          thumbnail_download_url: thumbnailDownloadUrl || "",
+          thumbnail_file_name: thumbnailFileName || "",
           ...item,
         };
       });
@@ -4107,6 +4268,19 @@ select {
   background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+}
+
+.thumbnail-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.thumbnail-image {
+  max-width: 40px;
+  max-height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .material-table-wrapper {

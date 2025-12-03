@@ -132,15 +132,6 @@ select {
 }
 /* //textarea & select */
 
-/* 공통 -management */
-div[class$="-management"] {
-  padding: 40px 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* //공통 -management */
-
 .criteria,
 .search-bar {
   display: flex;
@@ -148,13 +139,18 @@ div[class$="-management"] {
 }
 
 .form-group {
-  margin-bottom: $spacing-md;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+  margin-bottom: 10px;
 
   label {
     display: block;
-    margin-bottom: $spacing-xs;
-    font-weight: $font-weight-md;
-    color: $text-color;
+    font-weight: 600;
+    color: #333333;
   }
 
   input,
@@ -184,10 +180,6 @@ div[class$="-management"] {
 }
 
 .group-form {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
   input {
     width: 240px;
   }
@@ -206,10 +198,6 @@ div[class$="-management"] {
       background: transparent url("../assets/images/common/ico_search.svg") no-repeat center center;
     }
   }
-}
-
-.form-item {
-  flex: 1;
 }
 
 dl.column-regist {

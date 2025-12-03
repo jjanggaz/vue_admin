@@ -277,5 +277,9 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-
+.project-management {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 24px;
+}
 </style>

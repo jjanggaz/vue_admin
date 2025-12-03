@@ -1293,6 +1293,7 @@ const handleEdit = () => {
     flex-wrap: wrap;
 
     .filter-group {
+      gap: 10px;
       margin-right: 20px;
 
       &:last-of-type {

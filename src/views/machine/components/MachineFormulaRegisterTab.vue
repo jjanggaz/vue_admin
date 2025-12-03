@@ -626,14 +626,10 @@ $tablet: 1024px;
 $desktop: 1200px;
 
 .filter-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr));
-  gap: 20px 10px;
-  align-items: flex-end;
-
   // 계산식 파일 그룹 (전체 너비 사용)
   .formula-file-group {
     grid-column: 1 / -1; // 전체 컬럼 차지
+    align-items: center;
   }
 
   // 태블릿 크기에서 2열로 변경
@@ -657,34 +653,6 @@ $desktop: 1200px;
   }
 }
 
-.group-form {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0; // flex 아이템이 축소될 수 있도록 함
-  width: 100%; // 전체 너비 사용
-
-  &.inline {
-    flex-direction: column;
-    align-items: flex-start;
-
-    .label {
-      flex-shrink: 0; // 라벨은 축소되지 않음
-      white-space: nowrap; // 라벨 텍스트 줄바꿈 방지
-    }
-
-    .input,
-    select {
-      min-width: 0;
-    }
-
-    .file-upload-group {
-      // flex: 1;
-      width: 100%;
-    }
-  }
-}
-
 .label {
   color: #333333;
   font-size: 13px;
@@ -701,47 +669,6 @@ $desktop: 1200px;
 
 .label .req {
   display: none;
-}
-
-input,
-select {
-  appearance: none;
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  height: 40px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-
-  &:disabled {
-    border: 1px solid #dfdfdf;
-    background-color: #f0f0f0;
-  }
-}
-
-input {
-  padding: 0 10px;
-
-  &:focus {
-    border-color: #3b82f6;
-  }
-}
-
-select {
-  padding: 0 32px 0 10px;
-  background-color: transparent;
-  background-image: url(../../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background-image: url(../../../assets/icons/ico_select-up.svg);
-  }
 }
 
 .select-sm {
@@ -783,12 +710,7 @@ select {
 }
 
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
   margin: 20px 0 10px;
-  flex-wrap: wrap;
-  gap: 8px;
 
   @media (max-width: $mobile) {
     margin: 40px 0 10px;
@@ -844,14 +766,6 @@ select {
 }
 
 .file-name-input {
-  flex: 1;
-  min-width: 200px;
-  background: #fff;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
-
   @media (max-width: $mobile) {
     min-width: auto;
   }

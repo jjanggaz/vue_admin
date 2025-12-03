@@ -2481,262 +2481,6 @@ onMounted(async () => {
   padding-top: 40px;
 }
 
-.detail-panel {
-  background: #ffffff;
-  border-left: 1px solid #b2bbd2;
-  display: flex;
-  flex-direction: column;
-  min-width: 320px;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-
-  .detail-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px 8px;
-    flex-shrink: 0;
-
-    .detail-panel-head {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    h3 {
-      color: #202020;
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    .header-buttons {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-  }
-
-  .detail-panel-body {
-    flex: 1;
-    padding: 10px 20px 20px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
-    -webkit-overflow-scrolling: touch;
-
-    &.with-scroll {
-      overflow-y: auto;
-    }
-    &::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: #e7e6ed;
-      border-radius: 3px;
-
-      &:hover {
-        background-color: #d7d5e4;
-      }
-    }
-    &::-webkit-scrollbar-button:end:increment {
-      display: block;
-      height: 20px;
-      width: 0;
-      background-color: transparent;
-    }
-
-    .model-thumbnail-section {
-      width: 100%;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: center;
-
-      .thumbnail-image-container {
-        width: 280px;
-        height: 210px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        position: relative;
-
-        .thumbnail-image {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-          transition: opacity 0.3s;
-
-          &.hidden {
-            opacity: 0;
-          }
-        }
-
-        .thumbnail-loading-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(2px);
-          gap: 0.75rem;
-          z-index: 1;
-
-          .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid $border-color;
-            border-top-color: $primary-color;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-          }
-
-          .loading-text {
-            color: $text-light;
-            font-size: 0.875rem;
-          }
-        }
-      }
-
-      .thumbnail-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 200px;
-        height: 150px;
-        border: 2px dashed #888888;
-        border-radius: 8px;
-
-        .thumbnail-text {
-          color: $text-light;
-          font-size: 0.875rem;
-          text-align: center;
-        }
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-    }
-
-    .edit-fields-section {
-      margin-top: 20px;
-      padding: 1rem;
-      border: 1px solid $border-color;
-      border-radius: 8px;
-      background: $background-light;
-
-      .edit-section-title {
-        margin: 0 0 1rem 0;
-        color: $text-color;
-        font-size: 1rem;
-        font-weight: 600;
-      }
-
-      .edit-field-group {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      .edit-field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        .edit-label {
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: $text-color;
-        }
-
-        .edit-select {
-          padding: 0.5rem;
-          border: 1px solid $border-color;
-          border-radius: 4px;
-          background: white;
-          color: $text-color;
-          font-size: 0.875rem;
-
-          &:focus {
-            outline: none;
-            border-color: $primary-color;
-          }
-        }
-
-        .file-input-group {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-
-          .edit-input {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid $border-color;
-            border-radius: 4px;
-            background: white;
-            color: $text-color;
-            font-size: 0.875rem;
-
-            &:focus {
-              outline: none;
-              border-color: $primary-color;
-            }
-          }
-
-          .btn-attach {
-            padding: 0.5rem 1rem;
-            border: 1px solid $border-color;
-            border-radius: 4px;
-            background: $background-light;
-            color: $text-color;
-            cursor: pointer;
-            font-size: 0.875rem;
-            white-space: nowrap;
-
-            &:hover {
-              background: $primary-color;
-              color: white;
-              border-color: $primary-color;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-.detail-tables-container {
-  width: 100%;
-  overflow: hidden;
-}
-
-.detail-section {
-  width: 100%;
-
-  .section-title {
-    margin-bottom: 10px;
-    padding-left: 16px;
-    border-left: 4px solid #32ade6;
-    color: #333333;
-    font-size: 16px;
-    font-weight: 600;
-  }
-}
-
 .price-history-section {
   margin-top: 24px;
 
@@ -2784,10 +2528,6 @@ onMounted(async () => {
 
 .search-filter-bar {
   margin-bottom: 20px;
-
-  .filter-group {
-    flex-wrap: wrap;
-  }
 }
 
 // 상세검색 패널 스타일
@@ -2854,28 +2594,6 @@ onMounted(async () => {
           padding: 0.25rem 0.5rem;
           border-radius: 4px;
           border-left: 3px solid #ff69b4;
-        }
-      }
-
-      .form-select {
-        flex: 1;
-        min-width: 0;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #e7e6ed;
-        border-radius: 4px;
-        font-size: 0.875rem;
-
-        &:focus {
-          outline: none;
-          border-color: $primary-color;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        &:disabled {
-          background-color: #f5f5f5;
-          color: #999;
-          cursor: not-allowed;
-          border-color: #ddd;
         }
       }
 
@@ -2958,31 +2676,6 @@ onMounted(async () => {
         border-left: 3px solid #888;
       }
     }
-
-    .form-input,
-    .form-select {
-      height: 40px;
-      padding: 0 10px;
-      border: 1px solid #d7d6ed;
-      border-radius: 4px;
-      font-size: 15px;
-      font-weight: 400;
-      flex: 1;
-      min-width: 0;
-
-      &:focus {
-        outline: none;
-        border-color: $primary-color;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-      }
-
-      &:disabled {
-        background-color: #f5f5f5;
-        color: #999;
-        cursor: not-allowed;
-        border-color: #ddd;
-      }
-    }
   }
 }
 
@@ -3028,47 +2721,6 @@ onMounted(async () => {
   &:hover {
     background-color: #3c4973;
   }
-}
-
-.form-select {
-  appearance: none;
-  background-image: url(../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-  width: 240px;
-  height: 40px;
-  padding: 8px 32px 8px 8px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-  min-width: 120px;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-    background-image: url(../../assets/icons/ico_select-up.svg);
-    z-index: 2;
-  }
-}
-
-.machine-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-
-  h2 {
-    color: #000000;
-    font-size: 20px;
-    font-weight: 500;
-  }
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
 }
 
 .link-download {
@@ -3150,25 +2802,6 @@ $tablet: 1024px;
 
   dd {
     margin: 0;
-  }
-}
-
-.form-input {
-  width: 240px;
-  height: 40px;
-  padding: 0.5rem;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 0.9rem;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-  }
-
-  @media (max-width: $mobile) {
-    padding: 0.4rem;
-    font-size: 0.8rem;
   }
 }
 </style>

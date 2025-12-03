@@ -659,27 +659,6 @@ $tablet: 1024px;
   padding: 40px 24px;
 }
 
-.structure-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-
-  h2 {
-    color: #000000;
-    font-size: 20px;
-    font-weight: 500;
-  }
-}
-
-.filter-group {
-  gap: 0;
-}
-
-.action-buttons {
-  margin-bottom: 0;
-}
-
 // 다운로드 링크 스타일
 .download-link {
   color: $primary-color;

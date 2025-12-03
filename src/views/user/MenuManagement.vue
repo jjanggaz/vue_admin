@@ -361,7 +361,7 @@ onMounted(() => {
   dt {
     min-width: 80px;
     color: #333333;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
   }
 }

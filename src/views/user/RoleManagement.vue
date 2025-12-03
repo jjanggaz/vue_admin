@@ -815,6 +815,20 @@ const closeMenuPermissionsModal = () => {
     flex-direction: column;
     gap: 4px;
   }
+
+  .column-regist input,
+  .column-regist textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .column-regist textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
 }
 
 .column-regist dt {

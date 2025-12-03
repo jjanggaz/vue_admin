@@ -30,6 +30,14 @@ textarea {
   &:disabled {
     cursor: default;
   }
+
+  &:read-only {
+    cursor: default;
+    
+    &:focus {
+      border: 1px solid #e7e6ed;
+    }
+  }
 }
 /* //공통 form */
 
@@ -97,12 +105,16 @@ input[type="radio"] {
 }
 /* //radio */
 
-/* textarea & select */
+/* textarea */
 textarea {
   width: 100%;
+  min-height: 40px;
   padding: 6px 10px;
+  resize: vertical;
 }
+/* textarea */
 
+/* select */
 select {
   appearance: none;
   position: relative;
@@ -124,13 +136,18 @@ select {
   cursor: pointer;
 
   &:focus {
+    border: 1px solid #279bd8;
     background-image: url(../assets/icons/ico_select-up.svg);
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 12px auto;
   }
+
+  &:disabled {
+    cursor: default;
+  }
 }
-/* //textarea & select */
+/* //select */
 
 .form-group {
   position: relative;

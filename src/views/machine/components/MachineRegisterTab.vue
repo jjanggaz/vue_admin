@@ -801,113 +801,8 @@ $mobile: 768px;
 $tablet: 1024px;
 $desktop: 1200px;
 
-.filter-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(200px, 1fr));
-  align-items: flex-end;
-  gap: 10px;
-
-  // 태블릿 크기에서 2열로 변경
-  @media (max-width: $tablet) {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
-  }
-
-  // 모바일 크기에서 1열로 변경
-  @media (max-width: $mobile) {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-}
-
-.group-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0; // flex 아이템이 축소될 수 있도록 함
-
-  &.wide {
-    grid-column: span 2;
-
-    @media (max-width: $tablet) {
-      grid-column: span 1;
-    }
-  }
-
-  &.inline {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  &.inline:last-child {
-    flex-direction: row;
-  }
-
-  &.right-align {
-    justify-content: flex-start;
-
-    @media (max-width: $mobile) {
-      justify-content: flex-end;
-    }
-  }
-}
-
-.label {
-  color: #333333;
-  font-size: 13px;
-  font-weight: 600;
-  min-width: 100px;
-  flex-shrink: 0;
-
-  &.required::after {
-    content: "*";
-    color: #333333;
-    margin-left: 4px;
-  }
-}
-
 .label .req {
   display: none;
-}
-
-input,
-select {
-  appearance: none;
-  position: relative;
-  width: 100%;
-  min-width: 0;
-  height: 40px;
-  border: 1px solid #e7e6ed;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-
-  &:disabled {
-    border: 1px solid #dfdfdf;
-    background-color: #f0f0f0;
-  }
-}
-
-input {
-  padding: 0 10px;
-
-  &:focus {
-    border-color: #3b82f6;
-  }
-}
-
-select {
-  padding: 0 32px 0 10px;
-  background-color: transparent;
-  background-image: url(../../../assets/icons/ico_select-down.svg);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px auto;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background-image: url(../../../assets/icons/ico_select-up.svg);
-  }
 }
 
 .select-sm {
@@ -957,24 +852,6 @@ select {
 }
 
 .file-name-input {
-  flex: 1;
-  min-width: 120px;
-  height: 40px;
-  padding: 8px 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  background-color: #f9fafb;
-  color: #4b5563;
-  font-size: 14px;
-  cursor: default;
-  width: 100%;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    background-color: white;
-  }
-
   @media (max-width: $mobile) {
     font-size: 12px;
     padding: 6px 8px;
@@ -987,16 +864,9 @@ select {
 }
 
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin: 20px 0 10px;
-  flex-wrap: wrap;
-  gap: 10px;
 
   @media (max-width: $mobile) {
-    flex-direction: column;
-    align-items: stretch;
     gap: 4px 10px;
     margin: 40px 0 10px;
   }

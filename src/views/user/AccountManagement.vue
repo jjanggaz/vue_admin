@@ -940,7 +940,8 @@ dl.column-regist {
   }
 
   .textarea-dd {
-    height: 40px;
+    min-height: 40px;
+    height: auto;
   }
 
   .user-id-check {
@@ -948,10 +949,10 @@ dl.column-regist {
     gap: 10px;
 
     .btn-check-id {
-      width: 88px;
-      min-width: 88px;
+      width: auto;
       height: 40px;
-      padding: 0 10px;
+      padding: 0 16px;
+      white-space: nowrap;
       background: #3e435e;
       border-radius: 5px;
       color: #ffffff;

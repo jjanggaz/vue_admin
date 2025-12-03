@@ -503,7 +503,7 @@ const loadData = async () => {
     console.error("데이터 로드 실패:", error);
     const errorMessage = translateMessage(
       error?.message,
-      "messages.error.dataLoadFailed"
+      "messages.error.loadFailed"
     );
     alert(errorMessage);
   }
@@ -556,7 +556,10 @@ const handleSortChange = async (sortInfo: {
     await userStore.fetchUsers(params);
   } catch (error: any) {
     console.error("정렬 실패:", error);
-    const errorMessage = error?.message || "정렬에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.sortFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -597,7 +600,10 @@ const handleSearch = async () => {
     });
   } catch (error: any) {
     console.error("검색 실패:", error);
-    const errorMessage = error?.message || "검색에 실패했습니다.";
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.searchFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -776,7 +782,10 @@ const saveUser = async () => {
     isIdChecked.value = false;
   } catch (error: any) {
     console.error("사용자 저장 실패:", error);
-    const errorMessage = error?.message || t("messages.error.saveFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.saveFailed"
+    );
     alert(errorMessage);
   }
 };
@@ -805,8 +814,10 @@ const handleCheckId = async () => {
     }
   } catch (error: any) {
     console.error("중복 체크 실패:", error);
-    const errorMessage =
-      error?.message || t("messages.error.duplicateCheckFailed");
+    const errorMessage = translateMessage(
+      error?.message,
+      "messages.error.duplicateCheckFailed"
+    );
     alert(errorMessage);
   } finally {
     // 로딩 상태 복원
@@ -830,7 +841,7 @@ const handleDelete = async () => {
       selectedItems.value = []; // 선택 항목 초기화(또는 최신 객체로 재할당)
     } catch (error: any) {
       console.error("삭제 실패:", error);
-      const errorMessage = error?.message || t("messages.error.deleteFailed");
+      const errorMessage = t("messages.error.deleteUserFailed");
       alert(errorMessage);
     }
   }
@@ -968,7 +979,7 @@ dl.column-regist {
   background-color: #3e435e;
 
   &:hover {
-    background-color: #3c4973; 
+    background-color: #3c4973;
   }
 }
 

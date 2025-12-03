@@ -1609,6 +1609,7 @@
       "idAlreadyExists": "ID already exists.",
       "registrationError": "Registration error occurred.",
       "deleteFailed": "Delete failed.",
+      "deleteUserFailed": "Cannot delete an account that is in use. Please check ongoing projects and then delete.",
       "structureDeleteFail": "Structure deletion failed. Please try again.",
       "saveFailed": "Save failed.",
       "updateFailed": "Update failed.",

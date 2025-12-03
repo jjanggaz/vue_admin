@@ -3,9 +3,9 @@
     <!-- 상단 검색/필터 영역 (이미지 레이아웃 참고) -->
     <div class="filter-bar">
       <div class="group-form inline">
-        <span class="label required"
-          >{{ t("common.structureMajorCategory") }}</span
-        >
+        <span class="label required">{{
+          t("common.structureMajorCategory")
+        }}</span>
         <select
           class="input select-md"
           v-model="selectedStructureType"
@@ -22,9 +22,9 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label required"
-          >{{ t("columns.machine.structureTypeDetail") }}</span
-        >
+        <span class="label required">{{
+          t("columns.machine.structureTypeDetail")
+        }}</span>
         <select
           class="input select-md"
           v-model="selectedMachineName"
@@ -242,6 +242,10 @@ const thumbnailFileName = ref<string>("");
 const revitFileInput = ref<HTMLInputElement | null>(null);
 const revitFileName = ref<string>("");
 
+// 수정 모드용 데이터 (구조물 공식 검색 결과 기준)
+const editModeRows = ref<Array<Record<string, unknown>>>([]);
+const selectedItems = ref<Array<Record<string, unknown>>>([]);
+
 // props에서 받은 데이터로 파일명들 설정
 watch(
   () => props.selectedItem,
@@ -250,13 +254,27 @@ watch(
       selectedStructureType.value = newItem.structure_type || "";
       selectedMachineName.value = newItem.structure_type || "";
       remarks.value = newItem.description || "";
-      formulaFileName.value = newItem.formula_file_name || "";
+      // formulaFileName은 editModeRows의 0번째 항목에서 가져옴
       dtdFileName.value = newItem.dtdx_model_file_name || "";
       thumbnailFileName.value = newItem.thumbnail_file_name || "";
       revitFileName.value = newItem.rvt_model_file_name || "";
     }
   },
   { immediate: true }
+);
+
+// editModeRows의 0번째 항목 파일명을 formulaFileName에 설정
+watch(
+  () => editModeRows.value,
+  (rows) => {
+    if (rows && rows.length > 0 && rows[0]) {
+      const firstRow = rows[0] as { file_name?: string };
+      formulaFileName.value = firstRow.file_name || "";
+    } else {
+      formulaFileName.value = "";
+    }
+  },
+  { immediate: true, deep: true }
 );
 
 // 컴포넌트 마운트 시 공통 코드 조회
@@ -299,6 +317,11 @@ onMounted(async () => {
             uploaded_at: item.uploaded_at || "-",
           })
         );
+        // 0번째 항목의 파일명을 formulaFileName에 설정
+        if (editModeRows.value.length > 0 && editModeRows.value[0]) {
+          const firstRow = editModeRows.value[0] as { file_name?: string };
+          formulaFileName.value = firstRow.file_name || "";
+        }
       }
     }
   } catch (error) {
@@ -322,10 +345,6 @@ const editModeColumns: TableColumn[] = [
 ];
 
 // 등록용 데이터 제거
-
-// 수정 모드용 데이터 (구조물 공식 검색 결과 기준)
-const editModeRows = ref<Array<Record<string, unknown>>>([]);
-const selectedItems = ref<Array<Record<string, unknown>>>([]);
 
 // 선택 변경 핸들러
 const handleSelectionChange = (selected: Array<Record<string, unknown>>) => {

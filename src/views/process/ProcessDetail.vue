@@ -2642,7 +2642,7 @@ const loadPidComponentData = async (pidItem: any) => {
 
 // P&ID 컴포넌트 데이터 로드 (기존 데이터 유지)
 const loadPidComponentDataWithoutClear = async (pidItem: any) => {
-  await loadPidComponentDataInternal(pidItem);
+  await loadPidComponentDataInternal(pidItem, false);
 };
 
 // component_hierachy 파싱 함수
@@ -2998,10 +2998,16 @@ const generateSelectOptionsFromLoadedData = async () => {
   console.log("=== 로드된 데이터 기반 select 옵션 자동 생성 완료 ===");
 };
 // P&ID 컴포넌트 데이터 로드 내부 함수
-const loadPidComponentDataInternal = async (pidItem: any) => {
+const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boolean = true) => {
   // drawing_id가 있는 경우에만 API 호출
   if (pidItem.drawing_id) {
     try {
+      // 초기화 후 다시 조회
+      if (clearBeforeLoad) {
+        pidComponentList.value = [];
+        initialPidComponentList.value = [];
+      }
+      
       console.log("=== P&ID 컴포넌트 API 호출 시작 ===");
       console.log("사용할 drawing_id:", pidItem.drawing_id);
 
@@ -3075,7 +3081,7 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
                 `loaded_comp_${Date.now()}_${Math.random()
                   .toString(36)
                   .substr(2, 9)}_${index}`, // 고유한 id 생성
-              no: pidComponentList.value.length + index + 1, // 기존 데이터 개수를 고려한 번호
+              no: (clearBeforeLoad ? 0 : pidComponentList.value.length) + index + 1, // 초기화 여부에 따라 번호 설정
               _isLoadedFromServer: true, // 서버에서 로드된 데이터임을 표시
               // 파싱된 hierarchy 데이터 추가
               level1_code_key: hierarchyData.level1_code_key,
@@ -3105,8 +3111,13 @@ const loadPidComponentDataInternal = async (pidItem: any) => {
           }
         );
 
-        // 기존 데이터에 새로운 데이터 추가
-        pidComponentList.value = [...pidComponentList.value, ...newComponents];
+        // 초기화 후 새로운 데이터 할당
+        if (clearBeforeLoad) {
+          pidComponentList.value = newComponents;
+        } else {
+          // 기존 데이터에 새로운 데이터 추가 (loadPidComponentDataWithoutClear 사용 시)
+          pidComponentList.value = [...pidComponentList.value, ...newComponents];
+        }
 
         console.log("=== P&ID Components 그리드 데이터 최종 결과 ===");
         console.log("총 컴포넌트 수:", pidComponentList.value.length);

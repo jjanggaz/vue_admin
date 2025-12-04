@@ -425,7 +425,7 @@ const parseExcelFile = (file: File) => {
             const firstRow = (seenCodeKeys.get(keyStr) ?? 0) + 2; // 헤더 포함 행 번호
             const currentRow = i + 2;
             alert(
-              `${keyStr} 값이 ${firstRow}행과 ${currentRow}행에서 중복되었습니다.`
+              `${keyStr} 값이 ${firstRow}번째 행과 ${currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.`
             );
             return;
           }

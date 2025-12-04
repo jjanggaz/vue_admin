@@ -1300,18 +1300,6 @@ const handleEdit = () => {
         margin-right: 10px;
       }
 
-      .filter-select {
-        width: 240px;
-        background-image: url(../../assets/icons/ico_select-down.svg);
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        background-size: 12px auto;
-
-        &:focus {
-          background-image: url(../../assets/icons/ico_select-up.svg);
-        }
-      }
-
       .filter-label {
         font-size: 16px;
         font-weight: 600;
@@ -1331,21 +1319,7 @@ const handleEdit = () => {
 
   dt {
     .required {
-      color: #333333;
       margin: 0 0 2px 3px;
-    }
-  }
-
-  dd {
-    select {
-      background-image: url(../../assets/icons/ico_select-down.svg);
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      background-size: 12px auto;
-
-      &:focus {
-        background-image: url(../../assets/icons/ico_select-up.svg);
-      }
     }
   }
 }

@@ -431,6 +431,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
     height: 50px;
     max-height: 50px;
     text-align: left;
+    // white-space: nowrap;
   }
 
   th {

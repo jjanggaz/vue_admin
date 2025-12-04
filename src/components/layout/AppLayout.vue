@@ -27,7 +27,15 @@ import AppHeader from './AppHeader.vue'
   display: flex;
   flex-direction: column;
   margin-left: 260px; // Sidebar width
+  transition: margin-left .3s ease;
 }
+
+// .sidebar:not(.closed) ~ .main-wrapper {
+//   margin-left: 260px;
+// }
+// .sidebar.closed ~ .main-wrapper {
+//   margin-left: 0;
+// }
 
 .main-content {
   flex: 1;

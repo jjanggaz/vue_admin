@@ -228,6 +228,11 @@ const currentPageTitle = computed<string>(() => {
   background-color: #ffffff;
   border-bottom: 1px solid $border-form;
   z-index: 90;
+  transition: left .3s ease;
+}
+
+:deep(.sidebar) {
+  background-color: red !important;
 }
 
 .header-content {

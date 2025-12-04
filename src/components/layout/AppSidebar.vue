@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar"> <!-- :class="{ closed : isclosed}" -->
     <div class="sidebar-content">
       <!-- <img src="/public/images/logo/logo_wai_sd.svg" alt="" /> -->
        <a href="/dashboard" title="대쉬보드 바로가기">
@@ -30,14 +30,15 @@
       </nav>
     </div>
 
-    <!-- <div class="side-btn on">
-      <button></button>
-    </div> -->
+    <!-- <div class="side-btn"> --> <!-- :class="{ on : !isclosed }" -->
+      <!-- <button></button> --> <!-- @click="toggleSideBar" -->
+    <!-- </div> -->
   </aside>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+// import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import logoWaiSd from "@/assets/images/logo/logo_wai_sd.svg";
@@ -46,6 +47,42 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
+
+// 사이드바
+// const breakPoint = 1024;
+// const isclosed = ref(false);
+// const userToggle = ref(false);
+// const lastScreenSmall = ref(false);
+
+// const toggleSideBar = () => {
+//   isclosed.value = !isclosed.value;
+//   userToggle.value = true;
+// }
+
+// const checkScreen = () => {
+//   const ScreenSmall = window.innerWidth <= breakPoint;
+
+//   if(ScreenSmall !== lastScreenSmall.value) {
+//     userToggle.value = false;
+//   }
+//   if(!userToggle.value){
+//     if(ScreenSmall) {
+//       isclosed.value = true;
+//     } else {
+//       isclosed.value = false;
+//     }
+//   }
+//   lastScreenSmall.value = ScreenSmall;
+// };
+
+// onMounted(() => {
+//   checkScreen();
+//   window.addEventListener('resize', checkScreen);
+// })
+// onUnmounted(() => {
+//   checkScreen();
+//   window.removeEventListener('resize', checkScreen);
+// })
 
 // 코드 기반 메뉴 정의
 const codeBasedMenus = {
@@ -118,8 +155,6 @@ const availableMenus = computed(() => {
   //   return router.hasRoute(menu.path.substring(1)); // '/' 제거
   // });
 });
-
-
 </script>
 
 <style scoped lang="scss">
@@ -131,6 +166,12 @@ const availableMenus = computed(() => {
   height: 100vh;
   background-color: $background-darker;
   z-index: 100;
+  transform: translateX(0);
+  transition: transform .3s ease;
+
+  // &.closed {
+  //   transform: translateX(-100%);
+  // }
 
   .sidebar-content {
     height: 100%;
@@ -196,8 +237,8 @@ const availableMenus = computed(() => {
   }
 
   // .side-btn {
-  //   position: absolute;
-  //   top: 50%;
+  //   position: fixed;
+  //   top: 49.75%;
   //   right: -35px;
   //   transform: translateY(-50%);
   //   width: 35px;
@@ -205,8 +246,8 @@ const availableMenus = computed(() => {
 
   //   button {
   //     position: relative;
-  //     width: 25px;
-  //     height: 50px;
+  //     width: 30px;
+  //     height: 60px;
   //     background-color: #1f2937;
   //     border-radius: 0 20px 20px 0;
 
@@ -237,14 +278,17 @@ const availableMenus = computed(() => {
   // }
 }
 
+// .sidebar.closed .app-header {
+//   left: 0;
+// }
+
 @media (max-width: $breakpoint-lg) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
 
-    &.open {
-      transform: translateX(0);
-    }
+    // &:not(.closed) {
+    //   transform: translateX(0);
+    // }
   }
 }
 </style>

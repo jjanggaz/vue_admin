@@ -438,11 +438,11 @@
           </dl>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
-            {{ t("common.cancel") }}
-          </button>
           <button class="btn btn-primary" @click="updateCode">
             {{ t("common.save") }}
+          </button>
+          <button class="btn btn-secondary" @click="isRegistModalOpen = false">
+            {{ t("common.cancel") }}
           </button>
         </div>
       </div>

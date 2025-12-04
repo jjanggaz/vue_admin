@@ -349,7 +349,7 @@
         <div class="modal-header">
           <h3>{{ isEditModalMode ? t("common.edit") : t("common.register") }}</h3>
           <button
-            class="btn-close"
+            class="close-btn"
             @click="closeRegistModal"
             aria-label="Close"
           >

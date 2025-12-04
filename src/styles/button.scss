@@ -423,3 +423,9 @@ button {
   }
 }
 /* //···버튼 */
+
+.btn-close {
+  width: 24px;
+  height: 24px;
+  background: url(../assets/icons/ico_modal-close.svg) no-repeat center / 18px auto;
+}

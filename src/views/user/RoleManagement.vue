@@ -111,7 +111,7 @@
                 : t("columns.roleGroup.register")
             }}
           </h3>
-          <button class="btn-close" @click="closeModal"></button>
+          <button class="close-btn" @click="closeModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="handleSubmit">
@@ -249,7 +249,7 @@
               selectedRoleDetail?.description
             }})
           </h3>
-          <button class="btn-close" @click="closeMenuPermissionsModal">
+          <button class="close-btn" @click="closeMenuPermissionsModal">
           </button>
         </div>
         <div class="modal-body">

@@ -3,7 +3,7 @@
     <div class="modal-container-large">
       <div class="modal-header">
         <h3>{{ t("common.registerCode") }}</h3>
-        <button class="btn-close" @click="handleClose"></button>
+        <button class="close-btn" @click="handleClose"></button>
       </div>
       <div class="modal-body">
         <!-- Top Section - Search/Filter Controls -->

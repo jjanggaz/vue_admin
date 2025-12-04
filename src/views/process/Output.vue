@@ -84,7 +84,7 @@
         <div class="modal-header">
           <h3>{{ t("common.register") }}</h3>
           <button
-            class="btn-close"
+            class="close-btn"
             @click="isRegistModalOpen = false"
             aria-label="Close"
           >

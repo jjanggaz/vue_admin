@@ -56,7 +56,7 @@
         <div class="modal-header">
           <h3>{{ t("common.register") }}</h3>
           <button
-            class="modal-close"
+            class="close-btn"
             @click="closeUploadModal"
             aria-label="Close"
           >
@@ -133,7 +133,7 @@
         <div class="modal-header">
           <h3>{{ t("common.editFile") }}</h3>
           <button
-            class="modal-close"
+            class="close-btn"
             @click="closeEditModal"
             aria-label="Close"
           >

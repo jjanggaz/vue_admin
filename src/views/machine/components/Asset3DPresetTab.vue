@@ -67,11 +67,6 @@
             </button>
           </div>
           <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
-            <img
-              :src="thumbnailPreviewUrl"
-              :alt="t('asset3D.thumbnailPreview')"
-              class="thumbnail-preview"
-            />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="btn download-btn"
@@ -80,6 +75,11 @@
             >
               <span class="ico-download"></span>
             </button>
+            <img
+              :src="thumbnailPreviewUrl"
+              :alt="t('asset3D.thumbnailPreview')"
+              class="thumbnail-preview"
+            />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="thumbnail-close-btn"
@@ -3474,7 +3474,18 @@ $mobile: 768px;
 $tablet: 1024px;
 
 .filter-bar {
-  grid-template-columns: 180px 180px 1fr 1fr 100px; // 단위, 연결기계, 프리셋명, 썸네일, 등록버튼 (프리셋명과 썸네일 같은 폭)
+  grid-template-columns: 240px 240px 1fr 1fr 100px; // 단위, 연결기계, 프리셋명, 썸네일, 등록버튼 (프리셋명과 썸네일 같은 폭)
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 20px 10px;
+  }
+
+  // 모바일 크기에서 1열로 변경
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px 10px;
+  }
 }
 
 .form-group {
@@ -3483,9 +3494,17 @@ $tablet: 1024px;
 
   &.right-align {
     justify-content: flex-end;
-    align-items: flex-start;
+    align-items: flex-end;
     flex: 0 0 auto;
     margin-left: auto;
+
+    @media (max-width: 1024px) {
+      align-items: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      align-items: flex-end;
+    }
   }
 }
 
@@ -3503,13 +3522,13 @@ label {
 
 .file-upload-wrapper {
   display: flex;
-  gap: 8px;
-  align-items: flex-start;
+  gap: 10px;
+  align-items: flex-end;
 }
 
 .file-upload-group {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   flex: 1;
   min-width: 0;
@@ -3523,9 +3542,8 @@ label {
 .thumbnail-preview-wrapper {
   position: relative;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
-  margin-top: 10px;
 
   .thumbnail-preview {
     width: 64px;

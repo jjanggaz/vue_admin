@@ -34,9 +34,7 @@
     >
       <div class="modal-header">
         <h3>{{ t("projectDetail.title") }}</h3>
-        <button class="modal-close" @click="onClose" aria-label="Close">
-          ×
-        </button>
+        <button class="close-btn" @click="onClose" aria-label="Close"></button>
       </div>
 
       <div class="modal-body">

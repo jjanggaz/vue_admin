@@ -107,7 +107,7 @@
               isEditMode ? t("common.accountEdit") : t("common.accountRegister")
             }}
           </h3>
-          <button class="btn-close" @click="isRegistModalOpen = false"></button>
+          <button class="close-btn" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">

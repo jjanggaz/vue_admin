@@ -921,7 +921,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>{{ t("process.pfdFileAttachment") }}</h3>
-        <button @click="closePfdModal" class="btn-close"></button>
+        <button @click="closePfdModal" class="close-btn"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -978,7 +978,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>P&ID 파일 첨부</h3>
-        <button @click="closePidModal" class="btn-close"></button>
+        <button @click="closePidModal" class="close-btn"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">

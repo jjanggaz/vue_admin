@@ -165,7 +165,7 @@
         <div class="modal-header">
           <h3>{{ t("common.register") }}</h3>
           <button
-            class="btn-close"
+            class="close-btn"
             @click="closeRegistModal"
             aria-label="Close"
           >
@@ -396,7 +396,7 @@
         <div class="modal-header">
           <h3>{{ t("common.catalog") || "카탈로그" }}</h3>
           <button
-            class="btn-close"
+            class="close-btn"
             @click="closeCatalogModal"
             aria-label="Close"
           >

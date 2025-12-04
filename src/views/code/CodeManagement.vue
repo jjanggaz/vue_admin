@@ -206,7 +206,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("common.registerCode") }}</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false"></button>
+          <button class="close-btn" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -329,7 +329,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <h3>{{ t("common.editCode") }}</h3>
-          <button class="btn-close" @click="isRegistModalOpen = false"></button>
+          <button class="close-btn" @click="isRegistModalOpen = false"></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">

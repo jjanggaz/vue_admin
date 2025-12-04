@@ -921,7 +921,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>{{ t("process.pfdFileAttachment") }}</h3>
-        <button @click="closePfdModal" class="close-btn"></button>
+        <button @click="closePfdModal" class="btn-close"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -978,7 +978,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h3>P&ID 파일 첨부</h3>
-        <button @click="closePidModal" class="close-btn"></button>
+        <button @click="closePidModal" class="btn-close"></button>
       </div>
       <div class="modal-body">
         <div class="file-input-group">
@@ -5809,6 +5809,8 @@ const handleSvgFileSelected = (event: Event) => {
 // P&ID 그리드 저장 시 Excel 파일 업로드 함수
 const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
   try {
+    console.log("⚠️⚠️⚠️ handleExcelFileUploadForPid 함수 호출됨 ⚠️⚠️⚠️");
+    console.log("🔍 Excel API 호출 스택 추적:", new Error().stack);
     console.log("P&ID Excel 파일 업로드 시작:", {
       pidItem: pidItem,
       excelFile: excelFile.name,
@@ -5927,7 +5929,8 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
 
       for (const altEndpoint of alternativeEndpoints) {
         try {
-          console.log(`대안 API 엔드포인트 시도: ${altEndpoint}`);
+          console.log(`⚠️ 대안 API 엔드포인트 시도: ${altEndpoint}`);
+          console.log(`🔍 호출 스택:`, new Error().stack);
           response = await request(altEndpoint, undefined, {
             method: "POST",
             body: formData,
@@ -10087,33 +10090,94 @@ const confirmMappingPid = async (silent: boolean = false) => {
           const pidFileChanged =
             currentPidFile &&
             (!initialPidFile || currentPidFile.name !== initialPidFile?.name);
-          // Excel 파일 변경 감지: 새 파일이 선택되었거나, 기존 파일과 다른 파일로 변경된 경우
-          const excelFileChanged =
-            currentExcelFile &&
-            (!initialExcelFile ||
-              currentExcelFile.name !== initialExcelFile?.name);
           
-          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+          // Excel 파일명 추출 (초기 상태와 현재 상태)
           const currentExcelFileName =
             item.excelFileName || item.excel_file_name;
           const initialExcelFileName =
             initialItem?.excelFileName || initialItem?.excel_file_name || "";
-          const excelFileNameChanged =
-            (currentExcelFileName || "") !== (initialExcelFileName || "");
           
-          // 실제 Excel 파일 변경 여부 (파일 객체나 파일명 중 하나라도 변경된 경우)
-          const actualExcelFileChanged =
-            excelFileChanged || excelFileNameChanged;
-          
-          const hasMainFileChanges =
-            pidFileChanged || actualExcelFileChanged || isNewItem;
-
-          // Excel 파일 중복 저장 방지 로직
+          // 이미 저장된 Excel 파일이 있는지 확인
           const hasExistingExcelFile =
             item.excel_drawing_id &&
             !item.excel_drawing_id.startsWith("temp_") &&
             (item.excel_file_name || item.excelFileName);
+          
+          // Excel 파일 변경 감지: 초기 상태와 현재 상태를 비교
+          // 특수 케이스 1: 이미 저장된 Excel 파일이 있고, 현재 Excel 파일 객체가 있고, 파일명이 같으면 → 변경 안됨 (재선택)
+          // 특수 케이스 2: SVG 파일만 변경된 경우, Excel 파일 객체가 있더라도 Excel 파일명이 변경되지 않았으면 → 변경 안됨
+          let excelFileChanged: boolean;
+          const isReSelectSameFile = hasExistingExcelFile && currentExcelFile && currentExcelFileName && currentExcelFile.name === currentExcelFileName;
+          const excelFileNameNotChanged = (currentExcelFileName || "") === (initialExcelFileName || "");
+          
+          if (isReSelectSameFile) {
+            // 기존에 저장된 파일과 같은 파일을 재선택한 경우 → 변경 안됨
+            excelFileChanged = false;
+          } else if (svgFileChanged && excelFileNameNotChanged) {
+            // SVG 파일만 변경되고 Excel 파일명이 변경되지 않은 경우 → Excel 파일 변경 안됨
+            excelFileChanged = false;
+          } else {
+            // 일반적인 경우: 초기 상태와 현재 상태를 비교
+            // 1. 초기 상태에 Excel 파일이 없고 현재 Excel 파일이 있으면 → 변경됨
+            // 2. 초기 상태에 Excel 파일이 있고 현재 Excel 파일이 없으면 → 변경됨 (삭제)
+            // 3. 둘 다 있지만 파일명이 다르면 → 변경됨
+            // 4. 둘 다 있고 파일명이 같으면 → 변경 안됨
+            excelFileChanged =
+              (currentExcelFile && !initialExcelFile) || // 새로 추가됨
+              (!currentExcelFile && initialExcelFile) || // 삭제됨
+              (currentExcelFile && initialExcelFile && currentExcelFile.name !== initialExcelFile.name); // 파일명 변경됨
+          }
+
+          // 디버깅: Excel 파일 비교 상세 로그
+          const excelChangeReason = excelFileChanged 
+            ? (isReSelectSameFile 
+                ? '재선택 (변경 안됨)' 
+                : svgFileChanged && excelFileNameNotChanged 
+                  ? 'SVG만 변경 (변경 안됨)' 
+                  : isNewItem
+                    ? '새 항목 추가 (변경됨)'
+                    : '실제 변경됨')
+            : '변경 안됨';
+          
+          console.log("=== Excel 파일 변경 감지 상세 확인 ===", {
+            itemId: item.id,
+            drawing_id: item.drawing_id,
+            isNewItem,
+            currentExcelFile_exists: !!currentExcelFile,
+            initialExcelFile_exists: !!initialExcelFile,
+            currentExcelFile_name: currentExcelFile?.name,
+            initialExcelFile_name: initialExcelFile?.name,
+            currentExcelFile_type: currentExcelFile ? typeof currentExcelFile : 'undefined',
+            initialExcelFile_type: initialExcelFile ? typeof initialExcelFile : 'undefined',
+            filesAreEqual: currentExcelFile && initialExcelFile ? currentExcelFile.name === initialExcelFile.name : false,
+            excelFileChanged_result: excelFileChanged,
+            hasExistingExcelFile,
+            currentExcelFileName,
+            initialExcelFileName,
+            excelFileNameNotChanged,
+            isReSelectSameFile,
+            svgFileChanged,
+            reason: excelChangeReason,
+          });
+          
+          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+          const excelFileNameChanged =
+            (currentExcelFileName || "") !== (initialExcelFileName || "");
+          
+          // 실제 Excel 파일 변경 여부 (파일 객체나 파일명 중 하나라도 변경된 경우)
+          // 단, Excel 파일 객체가 실제로 없고 파일명만 변경된 경우는 제외 (SVG 파일 변경 시 Excel 파일명이 영향을 받을 수 있음)
+          const actualExcelFileChanged =
+            excelFileChanged || (excelFileNameChanged && currentExcelFile);
+          
+          const hasMainFileChanges =
+            pidFileChanged || actualExcelFileChanged || isNewItem;
           const shouldSkipExcelSave = hasExistingExcelFile && !currentExcelFile && !excelFileNameChanged;
+
+          // SVG 파일만 변경된 경우 Excel 업로드 건너뛰기
+          // Excel 파일이 실제로 변경되지 않았는데 SVG 파일만 변경된 경우
+          // Excel 파일 객체가 없고, Excel 파일명도 변경되지 않았어야 함
+          // 새로 추가된 항목이 아닌 경우에만 적용 (새 항목은 Excel 파일이 처음 선택된 것이므로 업로드 필요)
+          const isSvgOnlyChange = !isNewItem && svgFileChanged && !excelFileChanged && (!excelFileNameChanged || !currentExcelFile);
 
           // 파일 변경 상태 로깅
           console.log("=== P&ID 저장 시 파일 변경 상태 확인 ===", {
@@ -10124,6 +10188,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
             excelFileNameChanged,
             actualExcelFileChanged,
             svgFileChanged,
+            isSvgOnlyChange,
             hasMainFileChanges,
             isNewItem,
             hasExistingExcelFile: hasExistingExcelFile,
@@ -10132,12 +10197,56 @@ const confirmMappingPid = async (silent: boolean = false) => {
             excel_file_name: item.excel_file_name || item.excelFileName,
             currentExcelFileName: currentExcelFileName,
             initialExcelFileName: initialExcelFileName,
+            currentExcelFile: !!currentExcelFile,
+            currentExcelFileName_value: currentExcelFileName,
+            initialExcelFileName_value: initialExcelFileName,
+            excelFileNameChanged_detail: {
+              current: currentExcelFileName,
+              initial: initialExcelFileName,
+              changed: excelFileNameChanged,
+            },
+            isSvgOnlyChange_detail: {
+              svgFileChanged,
+              excelFileChanged,
+              excelFileNameChanged,
+              currentExcelFile_exists: !!currentExcelFile,
+              result: isSvgOnlyChange,
+            },
           });
 
           // Excel 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
           // 이미 저장된 Excel 파일이 있는 경우 중복 저장 방지
+          // SVG 파일만 변경된 경우는 Excel 업로드를 호출하지 않음
 
-          if (actualExcelFileChanged && !shouldSkipExcelSave) {
+          console.log("=== Excel API 호출 조건 확인 ===", {
+            actualExcelFileChanged,
+            shouldSkipExcelSave,
+            isSvgOnlyChange,
+            willCallExcelApi: actualExcelFileChanged && !shouldSkipExcelSave && !isSvgOnlyChange,
+            conditionBreakdown: {
+              condition1_actualExcelFileChanged: actualExcelFileChanged,
+              condition2_notShouldSkipExcelSave: !shouldSkipExcelSave,
+              condition3_notIsSvgOnlyChange: !isSvgOnlyChange,
+            },
+            detailedCheck: {
+              svgFileChanged,
+              excelFileChanged,
+              excelFileNameChanged,
+              currentExcelFile_exists: !!currentExcelFile,
+              initialExcelFile_exists: !!initialExcelFile,
+              currentExcelFile_name: currentExcelFile?.name,
+              initialExcelFile_name: initialExcelFile?.name,
+              currentExcelFileName_value: currentExcelFileName,
+              initialExcelFileName_value: initialExcelFileName,
+            },
+            excelFileComparison: {
+              currentExcelFile_type: currentExcelFile ? typeof currentExcelFile : 'undefined',
+              initialExcelFile_type: initialExcelFile ? typeof initialExcelFile : 'undefined',
+              filesAreSame: currentExcelFile && initialExcelFile ? currentExcelFile.name === initialExcelFile.name : false,
+            },
+          });
+
+          if (actualExcelFileChanged && !shouldSkipExcelSave && !isSvgOnlyChange) {
             console.log("🔄 Excel 파일 변경 감지 - Excel 전용 API 호출 시작");
             if (currentExcelFile) {
               console.log(
@@ -10219,7 +10328,16 @@ const confirmMappingPid = async (silent: boolean = false) => {
               hasNewFile: !!currentExcelFile,
             });
           } else {
-            console.log("ℹ️ Excel 파일 변경 없음 - Excel API 호출 건너뛰기");
+            console.log("ℹ️ Excel 파일 변경 없음 - Excel API 호출 건너뛰기", {
+              actualExcelFileChanged,
+              shouldSkipExcelSave,
+              isSvgOnlyChange,
+              reason: isSvgOnlyChange 
+                ? "SVG 파일만 변경됨 (Excel 업로드 불필요)" 
+                : actualExcelFileChanged 
+                  ? "shouldSkipExcelSave가 true" 
+                  : "Excel 파일 변경 없음",
+            });
           }
 
           // Svg 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
@@ -12140,7 +12258,7 @@ watch(
 );
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .process-info-section {
   margin-bottom: 20px;
 }
@@ -12204,7 +12322,7 @@ watch(
   border: 1px solid #e7e6ed;
   border-radius: 4px;
   font-size: 15px;
-  background-image: url(../../assets/icons/ico_select-down.svg);
+  background-image: url("../../assets/icons/ico_select-down.svg");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 12px auto;
@@ -12213,7 +12331,7 @@ watch(
     outline: none;
     border-color: #3b82f6;
     box-shadow: none;
-    background-image: url(../../assets/icons/ico_select-up.svg);
+    background-image: url("../../assets/icons/ico_select-up.svg");
   }
 }
 
@@ -12729,6 +12847,16 @@ watch(
     align-items: center;
     gap: 10px;
   }
+
+  .file-input-group input[type="text"].form-control {
+    flex: 1;
+    width: 400px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 4px;
+    border: 1px solid #e7e6ed;
+    font-size: 15px;
+  }
 }
 
 .file-upload-container {
@@ -12744,22 +12872,8 @@ watch(
   }
 }
 
-
 .file-input-group .form-control {
   flex: 1;
-}
-
-.capacity-calculation-section
-.file-input-group input[type="text"].form-control {
-  flex: 1;
-  width: 400px;
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 4px;
-  padding: 0 10px;
-  border-radius: 4px;
-  border: 1px solid #e7e6ed;;
-  font-size: 15px;
 }
 
 .symbol-state {
@@ -12809,7 +12923,8 @@ watch(
       transform: translate(-50%, -50%);
       width: 7px;
       height: 7px;
-      background: url(../../assets/icons/ico_delete-symbol.svg) no-repeat center / 7px auto;
+      background: url("../../assets/icons/ico_delete-symbol.svg") no-repeat center;
+      background-size: 7px auto;
     }
   }
 

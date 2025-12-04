@@ -985,7 +985,7 @@
           <input
             type="file"
             multiple
-            accept=".dwg,.pdf,.png,.jpg,.jpeg"
+            accept=".dwg"
             @change="handlePidFilesSelected"
             style="display: none"
             ref="pidModalFileInput"
@@ -2259,35 +2259,26 @@ const handlePidFilesSelected = (event: Event) => {
       return;
     }
 
-    // P&ID 관련 파일만 필터링
+    // P&ID 관련 파일만 필터링 (.dwg만 허용)
     const pidFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
-      return (
-        fileName.endsWith(".dwg") ||
-        fileName.endsWith(".pdf") ||
-        fileName.endsWith(".png") ||
-        fileName.endsWith(".jpg") ||
-        fileName.endsWith(".jpeg")
-      );
+      return fileName.endsWith(".dwg");
     });
 
     const unsupportedFiles = validFiles.filter((file) => {
       const fileName = file.name.toLowerCase();
-      return (
-        !fileName.endsWith(".dwg") &&
-        !fileName.endsWith(".pdf") &&
-        !fileName.endsWith(".png") &&
-        !fileName.endsWith(".jpg") &&
-        !fileName.endsWith(".jpeg")
-      );
+      return !fileName.endsWith(".dwg");
     });
 
     if (unsupportedFiles.length > 0) {
       alert(
-        `P&ID 관련 파일(.dwg, .pdf, .png, .jpg, .jpeg)만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles
+        `P&ID 파일은 *.dwg 형식만 선택 가능합니다.\n\n선택된 파일 중 지원하지 않는 파일:\n${unsupportedFiles
           .map((f) => f.name)
           .join("\n")}`
       );
+      target.value = ""; // 파일 선택 초기화
+      selectedPidFiles.value = []; // 선택된 파일 목록 초기화
+      return;
     }
 
     selectedPidFiles.value = pidFiles;
@@ -5911,6 +5902,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
 
     let response;
     let apiEndpoint = "/api/process/excel/child/upload";
+    let lastError: any = null;
 
     try {
       response = await request(apiEndpoint, undefined, {
@@ -5920,8 +5912,10 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
           Accept: "application/json",
         },
       });
+      lastError = response.success ? null : response;
     } catch (firstError) {
       console.warn("첫 번째 API 엔드포인트 실패, 대안 시도:", firstError);
+      lastError = firstError;
 
       // 대안 1: 다른 Excel 업로드 엔드포인트 시도
       const alternativeEndpoints = [
@@ -5945,16 +5939,22 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
           if (response.success) {
             console.log(`✅ 대안 API 성공: ${altEndpoint}`);
             apiEndpoint = altEndpoint;
+            lastError = null;
             break;
+          } else {
+            // 실패한 응답을 마지막 오류로 저장
+            lastError = response;
+            console.warn(`대안 API 실패: ${altEndpoint}`, response);
           }
         } catch (altError) {
           console.warn(`대안 API 실패: ${altEndpoint}`, altError);
+          lastError = altError;
         }
       }
 
-      // 모든 대안이 실패한 경우 원래 에러 사용
+      // 모든 대안이 실패한 경우 마지막 오류 사용
       if (!response || !response.success) {
-        throw firstError;
+        response = lastError || firstError;
       }
     }
 
@@ -6127,14 +6127,20 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         console.error("4. parent_drawing_id가 유효하지 않음");
         console.error("5. excelFile 파라미터는 올바르게 전달됨");
 
-        const error = new Error(
+        const error: any = new Error(
           `Excel 파일 업로드 실패 (400 에러): ${errorMsg}`
         );
-        alert(error.message);
+        // 이미 alert가 표시되었음을 표시하는 플래그
+        error.alertShown = true;
+        // Excel 업로드 실패는 별도 메시지로 표시
+        alert(`Excel 파일 업로드 실패: ${errorMsg}`);
         throw error;
       } else {
-        const error = new Error(`Excel 파일 업로드 실패: ${errorMsg}`);
-        alert(error.message);
+        const error: any = new Error(`Excel 파일 업로드 실패: ${errorMsg}`);
+        // 이미 alert가 표시되었음을 표시하는 플래그
+        error.alertShown = true;
+        // Excel 업로드 실패는 별도 메시지로 표시
+        alert(`Excel 파일 업로드 실패: ${errorMsg}`);
         throw error;
       }
     }
@@ -6154,7 +6160,30 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
       mappingPidList.value = [...mappingPidList.value];
     }
 
-    // 오류를 상위 함수로 전달 (상위 함수에서 alert 표시)
+    // 이미 alert가 표시된 경우 중복 표시 방지
+    if (error?.alertShown) {
+      // 오류를 상위 함수로 전달
+      throw error;
+    }
+
+    // 오류 메시지 추출
+    let errorMessage = "Excel 업로드에 실패했습니다.";
+    if (error?.message) {
+      errorMessage = error.message;
+    } else if (error?.response?.detail) {
+      errorMessage = error.response.detail;
+    } else if (error?.response?.message) {
+      errorMessage = error.response.message;
+    } else if (typeof error === "string") {
+      errorMessage = error;
+    }
+
+    // 사용자에게 오류 메시지 표시
+    alert(`Excel 파일 업로드 실패: ${errorMessage}`);
+    // alert가 표시되었음을 표시하는 플래그
+    error.alertShown = true;
+
+    // 오류를 상위 함수로 전달
     throw error;
   }
 };
@@ -7564,7 +7593,7 @@ const handlePfdSelectionChange = () => {
 };
 
 // 삭제 함수들
-const handleFormulaDelete = () => {
+const handleFormulaDelete = async () => {
   if (!selectedFormulaItems.value) {
     alert(t("process.selectItemToDelete"));
     return;
@@ -7584,9 +7613,18 @@ const handleFormulaDelete = () => {
   });
 
   console.log("계산식 그리드에서 삭제 완료");
+
+  // 삭제 후 바로 저장 처리 (메시지 없이)
+  try {
+    await handleFormulaSave(true);
+    console.log("계산식 삭제 후 저장 완료");
+  } catch (error: any) {
+    console.error("계산식 삭제 후 저장 실패:", error);
+    // 삭제는 이미 완료되었으므로 저장 실패해도 롤백하지 않음
+  }
 };
 // 계산식 저장 핸들러
-const handleFormulaSave = async () => {
+const handleFormulaSave = async (silent: boolean = false) => {
   try {
     console.log("계산식 저장 버튼 클릭");
 
@@ -7638,10 +7676,14 @@ const handleFormulaSave = async () => {
       // 렌더 강제 갱신
       formulaTableKey.value++;
 
-      alert(t("processDetail.formulaSaveCompleted"));
+      if (!silent) {
+        alert(t("processDetail.formulaSaveCompleted"));
+      }
     } else {
       console.log("저장할 변경사항이 없습니다.");
-      alert(t("processDetail.noFormulaChangesToSave"));
+      if (!silent) {
+        alert(t("processDetail.noFormulaChangesToSave"));
+      }
     }
   } catch (error: any) {
     console.error("계산식 저장 실패:", error);
@@ -8067,7 +8109,14 @@ const processFormulaChanges = async (processId: string) => {
   }
 };
 
-const handlePfdDelete = () => {
+const handlePfdDelete = async () => {
+  console.log("=== 공정카드 삭제 시작 ===");
+  console.log("삭제 전 상태:");
+  console.log("- showPidListInMain:", showPidListInMain.value);
+  console.log("- showPidComponentSection:", showPidComponentSection.value);
+  console.log("- currentPfdItemForMapping:", currentPfdItemForMapping.value);
+  console.log("- selectedPidForComponent:", selectedPidForComponent.value);
+
   if (!selectedPfdItems.value) {
     alert(t("process.selectItemToDelete"));
     return;
@@ -8076,40 +8125,56 @@ const handlePfdDelete = () => {
   const confirmed = confirm(t("processDetail.deletePfdConfirm"));
   if (!confirmed) return;
 
-  // 삭제될 PFD 항목의 drawing_id 확인
+  // 삭제될 PFD 항목의 정보 저장
+  const deletedItemId = selectedPfdItems.value.id;
   const deletedDrawingId = selectedPfdItems.value.drawing_id;
+  console.log("삭제될 항목 정보:", {
+    id: deletedItemId,
+    drawing_id: deletedDrawingId,
+  });
 
-  // P&ID Components 섹션이 열려있고, 삭제될 PFD와 연관된 경우 섹션 닫기
-  if (showPidComponentSection.value && selectedPidForComponent.value) {
-    // 현재 열린 P&ID Components가 삭제될 PFD와 연관된 경우 확인
-    if (
-      selectedPidForComponent.value.parent_drawing_id === deletedDrawingId ||
-      pidComponentDrawingId.value === deletedDrawingId
-    ) {
-      console.log("삭제되는 PFD와 연관된 P&ID Components 섹션 닫기");
-      closePidComponentSection();
-    }
-  }
+  // 삭제될 항목과 연관된 P&ID 매핑/Components 확인
+  const isPidMappingOpen = showPidListInMain.value && currentPfdItemForMapping.value;
+  const isPidComponentOpen = showPidComponentSection.value && selectedPidForComponent.value;
+  const isDeletingPidMappingItem = isPidMappingOpen && (
+    currentPfdItemForMapping.value?.drawing_id === deletedDrawingId ||
+    currentPfdItemForMapping.value?.id === deletedItemId
+  );
+  const isDeletingPidComponentItem = isPidComponentOpen && (
+    selectedPidForComponent.value?.parent_drawing_id === deletedDrawingId ||
+    pidComponentDrawingId.value === deletedDrawingId
+  );
 
-  // P&ID 매핑 영역이 열려있고, 삭제될 PFD와 연관된 경우 영역 닫기
-  if (showPidListInMain.value && currentPfdItemForMapping.value) {
-    // 현재 열린 P&ID 매핑이 삭제될 PFD와 연관된 경우 확인
-    if (
-      currentPfdItemForMapping.value.drawing_id === deletedDrawingId ||
-      currentPfdItemForMapping.value.id === selectedPfdItems.value.id
-    ) {
-      console.log("삭제되는 PFD와 연관된 P&ID 매핑 영역 닫기");
-      closePidListInMain();
-    }
-  }
+  console.log("연관된 영역 확인:", {
+    isPidMappingOpen,
+    isPidComponentOpen,
+    isDeletingPidMappingItem,
+    isDeletingPidComponentItem,
+  });
 
+  // 리스트에서 항목 삭제
   const updatedList = processStore.pfdList.filter(
-    (item) => item.id !== selectedPfdItems.value.id
+    (item) => item.id !== deletedItemId
   );
   processStore.setPfdList(updatedList);
   selectedPfdItems.value = null;
 
-  console.log("공정카드 삭제 완료 - P&ID 관련 영역들도 함께 닫힘");
+  console.log("공정카드 그리드에서 삭제 완료");
+
+  // 삭제 후 바로 저장 처리 (메시지 없이)
+  try {
+    console.log("handleUpdate 호출 전 상태:");
+    console.log("- showPidListInMain:", showPidListInMain.value);
+    console.log("- showPidComponentSection:", showPidComponentSection.value);
+    await handleUpdate(true);
+    console.log("공정카드 삭제 후 저장 완료");
+    console.log("handleUpdate 호출 후 상태:");
+    console.log("- showPidListInMain:", showPidListInMain.value);
+    console.log("- showPidComponentSection:", showPidComponentSection.value);
+  } catch (error: any) {
+    console.error("공정카드 삭제 후 저장 실패:", error);
+    // 삭제는 이미 완료되었으므로 저장 실패해도 롤백하지 않음
+  }
 };
 
 // 메인 저장 버튼 핸들러 (기본 정보만 저장)
@@ -8538,7 +8603,7 @@ const saveBasicProcessInfo = async (processId: string) => {
 };
 
 // 메인 업데이트 함수
-const handleUpdate = async () => {
+const handleUpdate = async (silent: boolean = false) => {
   try {
     console.log("공정 수정 처리 시작");
 
@@ -8952,6 +9017,48 @@ const handleUpdate = async () => {
             console.log(
               `삭제된 PFD 처리 완료: ${successfulDeletes.length}개 삭제, ${skippedDeletes.length}개 건너뛰기`
             );
+
+            // 삭제 완료 후 P&ID 매핑/Components 그리드 닫기 (조건 확인 없이 무조건 닫기)
+            console.log("=== PFD 삭제 후 P&ID 영역 닫기 ===");
+            console.log("- showPidListInMain:", showPidListInMain.value);
+            console.log("- showPidComponentSection:", showPidComponentSection.value);
+
+            // P&ID 매핑 영역 닫기 (조건 확인 없이)
+            if (showPidListInMain.value) {
+              console.log("✅ P&ID 매핑 영역 닫기 실행");
+              showPidListInMain.value = false;
+              mappingPidList.value = [];
+              selectedMappingPidItems.value = null;
+              initialMappingPidList.value = [];
+              currentPfdItemForMapping.value = null;
+              console.log("✅ P&ID 매핑 영역 닫기 완료");
+            }
+
+            // P&ID Components 영역 닫기 (조건 확인 없이)
+            if (showPidComponentSection.value) {
+              console.log("✅ P&ID Components 영역 닫기 실행");
+              showPidComponentSection.value = false;
+              pidComponentList.value = [];
+              selectedPidComponentItems.value = [];
+              initialPidComponentList.value = [];
+              selectedPidForComponent.value = null;
+              currentDrawingId.value = "";
+              console.log("✅ P&ID Components 영역 닫기 완료");
+            }
+
+            // 삭제 완료 후 initialPfdList 업데이트하여 변경사항 감지 방지
+            const updatedInitialPfdList = processStore.initialPfdList.filter(
+              (initialItem) => {
+                return !deletedPfdRows.some(
+                  (deletedRow) =>
+                    deletedRow.drawing_id &&
+                    initialItem.drawing_id &&
+                    deletedRow.drawing_id === initialItem.drawing_id
+                );
+              }
+            );
+            processStore.setInitialPfdList(updatedInitialPfdList);
+            console.log("PFD 삭제 후 initialPfdList 업데이트 완료");
           } catch (error) {
             console.error("PFD 삭제 실패:", error);
             // 개별 삭제 실패는 전체 프로세스를 중단시키지 않음
@@ -9159,10 +9266,19 @@ const handleUpdate = async () => {
     }
 
     if (hasAnyChanges) {
-      alert(t("processDetail.processUpdateCompleted"));
-      emit("update-success");
+      if (!silent) {
+        alert(t("processDetail.processUpdateCompleted"));
+        // silent가 false일 때만 update-success 이벤트 발생 (모달 닫기)
+        emit("update-success");
+      } else {
+        // silent가 true일 때는 이벤트 발생하지 않음 (삭제 등의 경우 모달 유지)
+        console.log("silent 모드: update-success 이벤트 발생하지 않음 (모달 유지)");
+      }
     } else {
-      alert("변경사항이 없습니다.");
+      // silent가 true이면 메시지 표시하지 않음 (삭제 등의 경우)
+      if (!silent) {
+        alert("변경사항이 없습니다.");
+      }
     }
   } catch (error: any) {
     console.error("공정 수정 실패:", error);
@@ -9219,14 +9335,22 @@ const openMappingPidModal = async (pfdItem: any) => {
 };
 
 // P&ID 목록 메인화면 닫기
-const closePidListInMain = () => {
+const closePidListInMain = (skipConfirm: boolean = false) => {
+  console.log("=== closePidListInMain 호출됨 ===");
+  console.log("- skipConfirm:", skipConfirm);
+  console.log("- 호출 스택:", new Error().stack);
+
   // 변경사항 확인 (P&ID와 공정카드 모두 확인)
-  if (hasMappingPidChanges() || hasPfdChanges()) {
+  // skipConfirm이 true이면 확인 팝업 없이 바로 닫기 (삭제 등의 경우)
+  if (!skipConfirm && (hasMappingPidChanges() || hasPfdChanges())) {
+    console.log("변경사항 확인 팝업 표시");
     if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+      console.log("사용자가 취소함");
       return;
     }
   }
 
+  console.log("P&ID 매핑 영역 닫기 실행");
   showPidListInMain.value = false;
   currentPfdItemForMapping.value = null;
   mappingPidList.value = [];
@@ -9234,12 +9358,14 @@ const closePidListInMain = () => {
   initialMappingPidList.value = [];
 
   // P&ID Components 설정도 함께 닫기
+  console.log("P&ID Components 영역도 닫기 실행");
   showPidComponentSection.value = false;
   selectedPidForComponent.value = null;
   pidComponentList.value = [];
   selectedPidComponentItems.value = [];
   currentDrawingId.value = ""; // drawing_id 초기화
   initialPidComponentList.value = []; // 초기 상태 초기화
+  console.log("closePidListInMain 완료");
 };
 
 // P&ID 매핑 폼 초기화 함수
@@ -9464,7 +9590,7 @@ const refreshFormulaData = async () => {
     console.error("계산식 데이터 새로고침 실패:", error);
   }
 };
-const confirmMappingPid = async () => {
+const confirmMappingPid = async (silent: boolean = false) => {
   try {
     console.log("P&ID 매핑 확인:", mappingPidList.value);
     console.log("현재 PFD 아이템:", currentPfdItemForMapping.value);
@@ -9590,7 +9716,7 @@ const confirmMappingPid = async () => {
           const currentExcelFileName =
             item.excelFileName || item.excel_file_name;
           const initialExcelFileName =
-            initialItem.excelFileName || initialItem.excel_file_name;
+            initialItem?.excelFileName || initialItem?.excel_file_name || "";
           // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
           const excelFileNameChanged =
             (currentExcelFileName || "") !== (initialExcelFileName || "");
@@ -9608,7 +9734,7 @@ const confirmMappingPid = async () => {
           // Svg 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
           const currentSvgFileName = item.svgFileName || item.svg_file_name;
           const initialSvgFileName =
-            initialItem.svgFileName || initialItem.svg_file_name;
+            initialItem?.svgFileName || initialItem?.svg_file_name || "";
           // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
           const svgFileNameChanged =
             (currentSvgFileName || "") !== (initialSvgFileName || "");
@@ -9739,7 +9865,9 @@ const confirmMappingPid = async () => {
 
     // 삭제만 수행하는 경우 (삭제할 항목이 있고, 저장할 새 데이터가 없는 경우)
     if (deletedRows.length > 0 && validMappings.length === 0) {
-      alert("P&ID 매핑이 저장되었습니다.");
+      if (!silent) {
+        alert("P&ID 매핑이 저장되었습니다.");
+      }
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
       await refreshPfdData();
 
@@ -9964,14 +10092,28 @@ const confirmMappingPid = async () => {
             currentExcelFile &&
             (!initialExcelFile ||
               currentExcelFile.name !== initialExcelFile?.name);
+          
+          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+          const currentExcelFileName =
+            item.excelFileName || item.excel_file_name;
+          const initialExcelFileName =
+            initialItem?.excelFileName || initialItem?.excel_file_name || "";
+          const excelFileNameChanged =
+            (currentExcelFileName || "") !== (initialExcelFileName || "");
+          
+          // 실제 Excel 파일 변경 여부 (파일 객체나 파일명 중 하나라도 변경된 경우)
+          const actualExcelFileChanged =
+            excelFileChanged || excelFileNameChanged;
+          
           const hasMainFileChanges =
-            pidFileChanged || excelFileChanged || isNewItem;
+            pidFileChanged || actualExcelFileChanged || isNewItem;
 
           // Excel 파일 중복 저장 방지 로직
           const hasExistingExcelFile =
             item.excel_drawing_id &&
+            !item.excel_drawing_id.startsWith("temp_") &&
             (item.excel_file_name || item.excelFileName);
-          const shouldSkipExcelSave = hasExistingExcelFile && !currentExcelFile;
+          const shouldSkipExcelSave = hasExistingExcelFile && !currentExcelFile && !excelFileNameChanged;
 
           // 파일 변경 상태 로깅
           console.log("=== P&ID 저장 시 파일 변경 상태 확인 ===", {
@@ -9979,6 +10121,8 @@ const confirmMappingPid = async () => {
             pidFileName: item.pidFileName,
             pidFileChanged,
             excelFileChanged,
+            excelFileNameChanged,
+            actualExcelFileChanged,
             svgFileChanged,
             hasMainFileChanges,
             isNewItem,
@@ -9986,12 +10130,14 @@ const confirmMappingPid = async () => {
             shouldSkipExcelSave: shouldSkipExcelSave,
             excel_drawing_id: item.excel_drawing_id,
             excel_file_name: item.excel_file_name || item.excelFileName,
+            currentExcelFileName: currentExcelFileName,
+            initialExcelFileName: initialExcelFileName,
           });
 
           // Excel 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
           // 이미 저장된 Excel 파일이 있는 경우 중복 저장 방지
 
-          if (excelFileChanged && !shouldSkipExcelSave) {
+          if (actualExcelFileChanged && !shouldSkipExcelSave) {
             console.log("🔄 Excel 파일 변경 감지 - Excel 전용 API 호출 시작");
             if (currentExcelFile) {
               console.log(
@@ -10014,7 +10160,14 @@ const confirmMappingPid = async () => {
               };
               console.log("Excel 업로드 전 상태:", beforeUploadState);
 
-              await handleExcelFileUploadForPid(item, currentExcelFile);
+              try {
+                await handleExcelFileUploadForPid(item, currentExcelFile);
+              } catch (excelError: any) {
+                // Excel 업로드 실패는 별도로 처리하고 P&ID 매핑 저장은 계속 진행
+                console.error("Excel 파일 업로드 실패:", excelError);
+                // Excel 업로드 실패 메시지는 handleExcelFileUploadForPid에서 이미 표시됨
+                // P&ID 매핑 저장은 계속 진행
+              }
 
               // Excel 업로드 후 그리드에서 excel_drawing_id 확인 및 업데이트
               console.log(
@@ -10387,8 +10540,10 @@ const confirmMappingPid = async () => {
             }
           });
 
-          // 저장 완료 메시지
-          alert("P&ID 매핑이 저장되었습니다.");
+          // 저장 완료 메시지 (삭제 후 자동 저장인 경우 메시지 표시하지 않음)
+          if (!silent) {
+            alert("P&ID 매핑이 저장되었습니다.");
+          }
 
           // PFD 아이템의 hasPidMapping 상태 업데이트
           if (currentPfdItemForMapping.value) {
@@ -10456,6 +10611,12 @@ const confirmMappingPid = async () => {
         }
       } catch (error: any) {
         console.error("P&ID 매핑 저장 실패:", error);
+        // Excel 업로드 관련 에러인지 확인
+        if (error.message && error.message.includes("Excel 파일 업로드 실패")) {
+          // Excel 업로드 실패는 이미 별도 alert로 표시되었으므로 여기서는 추가 메시지 없음
+          console.error("Excel 파일 업로드 실패로 인한 P&ID 매핑 저장 중단");
+          return;
+        }
         alert(`P&ID 매핑 저장 실패: ${error.message}`);
         return;
       }
@@ -10510,6 +10671,13 @@ const confirmMappingPid = async () => {
     // 변경사항 없음 오류는 무시
     if (error.message === "변경사항 없음 - 함수 종료") {
       console.log("변경사항 없음으로 함수 종료됨");
+      return;
+    }
+
+    // Excel 업로드 관련 에러인지 확인
+    if (error.message && error.message.includes("Excel 파일 업로드 실패")) {
+      // Excel 업로드 실패는 이미 별도 alert로 표시되었으므로 여기서는 추가 메시지 없음
+      console.error("Excel 파일 업로드 실패로 인한 P&ID 매핑 저장 중단");
       return;
     }
 
@@ -11085,9 +11253,25 @@ const handleExcelFileSelected = (event: Event) => {
       mappingPidList.value[itemIndex].excelFileName = file.name;
       mappingPidList.value[itemIndex].excel_file_name = file.name; // API 응답 필드와 동기화
       mappingPidList.value[itemIndex].excelFile = file;
-      mappingPidList.value[
-        itemIndex
-      ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+      // 기존 excel_drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+      const existingExcelDrawingId = mappingPidList.value[itemIndex].excel_drawing_id;
+      if (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) {
+        // 기존 Excel 파일을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+        mappingPidList.value[itemIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+      } else if (!existingExcelDrawingId) {
+        // 새로운 Excel 파일 선택
+        mappingPidList.value[itemIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+      }
+
+      // initialMappingPidList도 업데이트하여 변경 감지 로직이 제대로 작동하도록 함
+      const initialItemIndex = initialMappingPidList.value.findIndex(
+        (item) => item.id === mappingPidList.value[itemIndex].id
+      );
+      if (initialItemIndex !== -1) {
+        // initialMappingPidList의 excelFile을 null로 설정하여 변경으로 감지되도록 함
+        (initialMappingPidList.value[initialItemIndex] as any).excelFile = null;
+        console.log("✅ initialMappingPidList의 excelFile을 null로 설정하여 변경 감지 활성화");
+      }
 
       // 반응성을 위해 Vue의 반응형 시스템에 알림
       mappingPidList.value = [...mappingPidList.value];
@@ -11097,6 +11281,7 @@ const handleExcelFileSelected = (event: Event) => {
         fileName: file.name,
         itemId: mappingPidList.value[itemIndex].id,
         hasFileObject: !!(mappingPidList.value[itemIndex] as any).excelFile,
+        excel_drawing_id: mappingPidList.value[itemIndex].excel_drawing_id,
       });
     } else {
       console.error(
@@ -11113,9 +11298,25 @@ const handleExcelFileSelected = (event: Event) => {
         mappingPidList.value[alternativeIndex].excelFileName = file.name;
         mappingPidList.value[alternativeIndex].excel_file_name = file.name;
         mappingPidList.value[alternativeIndex].excelFile = file;
-        mappingPidList.value[
-          alternativeIndex
-        ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+        // 기존 excel_drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+        const existingExcelDrawingId = mappingPidList.value[alternativeIndex].excel_drawing_id;
+        if (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) {
+          // 기존 Excel 파일을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+          mappingPidList.value[alternativeIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+        } else if (!existingExcelDrawingId) {
+          // 새로운 Excel 파일 선택
+          mappingPidList.value[alternativeIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+        }
+
+        // initialMappingPidList도 업데이트하여 변경 감지 로직이 제대로 작동하도록 함
+        const initialItemIndex = initialMappingPidList.value.findIndex(
+          (item) => item.drawing_id === mappingPidList.value[alternativeIndex].drawing_id
+        );
+        if (initialItemIndex !== -1) {
+          // initialMappingPidList의 excelFile을 null로 설정하여 변경으로 감지되도록 함
+          (initialMappingPidList.value[initialItemIndex] as any).excelFile = null;
+          console.log("✅ initialMappingPidList의 excelFile을 null로 설정하여 변경 감지 활성화 (대체 방법)");
+        }
 
         // 반응성을 위해 Vue의 반응형 시스템에 알림
         mappingPidList.value = [...mappingPidList.value];
@@ -11128,6 +11329,7 @@ const handleExcelFileSelected = (event: Event) => {
             drawingId: mappingPidList.value[alternativeIndex].drawing_id,
             hasFileObject: !!(mappingPidList.value[alternativeIndex] as any)
               .excelFile,
+            excel_drawing_id: mappingPidList.value[alternativeIndex].excel_drawing_id,
           }
         );
       } else {
@@ -11179,7 +11381,7 @@ const handleMappingPidSelectionChange = async () => {
   }
 };
 
-const deleteSelectedMappingPidItems = () => {
+const deleteSelectedMappingPidItems = async () => {
   if (!selectedMappingPidItems.value) {
     alert("삭제할 항목을 선택해주세요.");
     return;
@@ -11208,6 +11410,15 @@ const deleteSelectedMappingPidItems = () => {
     );
     selectedMappingPidItems.value = null;
     console.log("선택된 P&ID 항목 삭제 완료");
+
+    // 삭제 후 바로 저장 처리 (메시지 없이)
+    try {
+      await confirmMappingPid(true);
+      console.log("P&ID 삭제 후 저장 완료");
+    } catch (error: any) {
+      console.error("P&ID 삭제 후 저장 실패:", error);
+      // 삭제는 이미 완료되었으므로 저장 실패해도 롤백하지 않음
+    }
   }
 };
 

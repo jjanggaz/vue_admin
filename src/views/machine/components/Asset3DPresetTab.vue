@@ -822,15 +822,15 @@ const getTypeLabel = (typeValue: string) => {
 
 // 테이블 컬럼 정의 (자재 리스트와 동일한 구성)
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("asset3D.columns.no"), width: "50px", sortable: false },
+  { key: "no", title: t("asset3D.columns.no"), width: "20px", sortable: false },
   { key: "pipeCategory", title: t("asset3D.columns.pipeCategory"), width: "100px", sortable: false },
-  { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "120px", sortable: false },
+  { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "100px", sortable: false },
   { key: "diameter", title: t("asset3D.columns.diameter"), width: "80px", sortable: false },
   { key: "diameterAfter", title: t("asset3D.columns.diameterAfter"), width: "80px", sortable: false },
-  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "150px", sortable: false },
-  { key: "code", title: t("asset3D.columns.code"), width: "auto", sortable: false },
+  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "100px", sortable: false },
+  { key: "code", title: t("asset3D.columns.code"), width: "300px", sortable: false },
   { key: "model_file_name", title: t("asset3D.columns.modelFileName"), width: "200px", sortable: false },
-  { key: "cellName", title: t("asset3D.columns.thumbnail"), width: "100px", sortable: false },
+  { key: "cellName", title: t("asset3D.columns.thumbnail"), width: "50px", sortable: false },
 ];
 
 // 썸네일 이미지 에러 핸들러
@@ -3651,14 +3651,15 @@ label {
 
   :deep(.data-table th),
   :deep(.data-table td) {
-    white-space: nowrap;
-    // overflow: hidden; //"직경 후" 영역 텍스트 짤림
-    text-overflow: ellipsis;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
 
   :deep(.data-table th.checkbox-cell),
   :deep(.data-table td.checkbox-cell) {
-    text-overflow: clip;
+    white-space: nowrap;
     overflow: visible;
   }
 }
@@ -3711,6 +3712,10 @@ label {
   font-size: 13px;
   line-height: 28px;
   color: #344054;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .subtype-cell-wrapper {
@@ -4233,25 +4238,32 @@ label {
 
   :deep(.data-table) {
     width: 100%;
-    min-width: max-content;
-    table-layout: auto;
+    table-layout: fixed;
 
     td {
       font-size: 13px;
-      white-space: nowrap;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
       padding: 8px 10px;
-      overflow: visible;
-      text-overflow: ellipsis;
     }
 
     th {
-      white-space: nowrap;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
       text-align: center;
       font-size: 13px;
       padding: 10px 8px;
       min-width: 60px;
+    }
+
+    th.checkbox-cell,
+    td.checkbox-cell {
+      white-space: nowrap;
       overflow: visible;
-      text-overflow: ellipsis;
     }
   }
 }

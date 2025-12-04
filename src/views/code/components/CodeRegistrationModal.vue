@@ -337,6 +337,11 @@ const handleExcelFileUpload = (event: Event) => {
     console.log("Excel 파일 업로드:", file.name);
     parseExcelFile(file);
   }
+
+  // 동일한 파일을 다시 선택해도 change 이벤트가 발생하도록 input 초기화
+  if (target) {
+    target.value = "";
+  }
 };
 
 const parseExcelFile = (file: File) => {
@@ -361,6 +366,72 @@ const parseExcelFile = (file: File) => {
 
       // 헤더 행 제거하고 데이터만 추출
       const dataRows = jsonData.slice(1) as any[][];
+
+      // code_order 숫자 검증
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        // 빈 행은 건너뛰기
+        if (
+          !row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== ""
+          )
+        ) {
+          continue;
+        }
+
+        const codeOrderValue = row[3];
+        // code_order가 있고, 숫자가 아닌 경우 오류
+        if (
+          codeOrderValue !== undefined &&
+          codeOrderValue !== null &&
+          codeOrderValue !== ""
+        ) {
+          const orderStr = String(codeOrderValue).trim();
+          // 숫자로 변환 가능한지 확인 (정수 또는 소수)
+          const orderNum = Number(orderStr);
+          if (isNaN(orderNum) || orderStr === "") {
+            const rowNumber = i + 2; // 헤더 행(1) + 인덱스(0부터 시작) + 1
+            alert(
+              `${t(
+                "columns.code.order"
+              )}는 숫자만 입력 가능합니다. (${rowNumber}번째 행)`
+            );
+            return;
+          }
+        }
+      }
+
+      // code_key 중복 검증
+      const seenCodeKeys = new Map<string, number>();
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        // 빈 행은 건너뛰기
+        if (
+          !row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== ""
+          )
+        ) {
+          continue;
+        }
+
+        const codeKeyValue = row[0];
+        if (
+          codeKeyValue !== undefined &&
+          codeKeyValue !== null &&
+          String(codeKeyValue).trim() !== ""
+        ) {
+          const keyStr = String(codeKeyValue).trim();
+          if (seenCodeKeys.has(keyStr)) {
+            const firstRow = (seenCodeKeys.get(keyStr) ?? 0) + 2; // 헤더 포함 행 번호
+            const currentRow = i + 2;
+            alert(
+              `${keyStr} 값이 ${firstRow}행과 ${currentRow}행에서 중복되었습니다.`
+            );
+            return;
+          }
+          seenCodeKeys.set(keyStr, i);
+        }
+      }
 
       // 데이터를 CodeCreateRequest 형태로 변환
       const parsedData: CodeCreateRequest[] = dataRows

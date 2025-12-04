@@ -1720,7 +1720,7 @@
       "menuSearchFail": "Failed to search menu.",
       "menuUpdateFail": "Failed to update menu.",
       "codesArrayEmpty": "Codes array is empty.",
-      "codesMultiCreatePartialFail": "Duplicate code registration failed.",
+      "codesMultiCreatePartialFail": "Some code registration failed.",
       "invalidSearchCondition": "Invalid search condition. Please check the search condition.",
       "allItemsDeleteFailed": "Failed to delete all items.",
       "svgContentNotFound": "SVG content not found.",

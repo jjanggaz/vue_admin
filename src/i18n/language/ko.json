@@ -1717,7 +1717,7 @@
       "menuSearchFail": "메뉴 검색에 실패했습니다.",
       "menuUpdateFail": "메뉴 수정에 실패했습니다.",
       "codesArrayEmpty": "코드 배열이 비어있습니다.",
-      "codesMultiCreatePartialFail": "중복된 코드 등록으로 등록 실패하였습니다.",
+      "codesMultiCreatePartialFail": "일부 코드 등록을 실패하였습니다.",
       "invalidSearchCondition": "검색 조건이 올바르지 않습니다. 검색 조건을 확인해주세요.",
       "allItemsDeleteFailed": "모든 항목 삭제에 실패했습니다.",
       "svgContentNotFound": "SVG 내용을 찾을 수 없습니다.",

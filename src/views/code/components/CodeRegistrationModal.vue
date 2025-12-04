@@ -211,6 +211,48 @@ const tableColumns: TableColumn[] = [
     sortable: false,
   },
   {
+    key: "code_order",
+    title: t("columns.code.order"),
+    width: "80px",
+    sortable: false,
+  },
+  {
+    key: "is_active",
+    title: t("columns.code.usageStatus"),
+    width: "100px",
+    sortable: false,
+    formatter: (value) => {
+      if (value === true || value === "true" || value === "Y") {
+        return t("common.used");
+      }
+      return t("common.unused");
+    },
+  },
+  {
+    key: "is_leaf",
+    title: t("columns.code.isLeaf"),
+    width: "100px",
+    sortable: false,
+    formatter: (value) => {
+      if (value === true || value === "true" || value === "Y") {
+        return "Y";
+      }
+      return "N";
+    },
+  },
+  {
+    key: "is_admin_only",
+    title: t("columns.code.isAdminOnly"),
+    width: "120px",
+    sortable: false,
+    formatter: (value) => {
+      if (value === true || value === "true" || value === "Y") {
+        return t("common.yes");
+      }
+      return t("common.noOption");
+    },
+  },
+  {
     key: "description",
     title: t("columns.code.codeDescription"),
     width: "120px",
@@ -246,6 +288,30 @@ const handleClose = () => {
 
 // CodeManagement.vue의 handleModalSave와 일치하는 함수명
 const handleSave = () => {
+  console.log("handleSave 호출됨");
+  console.log("codeList.value:", codeList.value);
+  console.log("codeList.value.length:", codeList.value.length);
+
+  // 데이터가 비어있는지 확인
+  if (!codeList.value || codeList.value.length === 0) {
+    alert(t("messages.warning.pleaseSelectCodeGroupForMultiRegister"));
+    return;
+  }
+
+  // 필수 필드 검증
+  const invalidItems = codeList.value.filter((item) => {
+    return (
+      !item.code_key || !item.code_value || !item.code_group || !item.code_level
+    );
+  });
+
+  if (invalidItems.length > 0) {
+    console.error("필수 필드가 누락된 항목:", invalidItems);
+    alert(t("messages.warning.pleaseCompleteAllFields"));
+    return;
+  }
+
+  console.log("저장할 데이터:", codeList.value);
   emit("save", codeList.value);
 };
 
@@ -254,8 +320,8 @@ const downloadExcelForm = () => {
   console.log("Excel 양식 다운로드");
 
   const link = document.createElement("a");
-  link.href = "/form/코드등록Tmp.xlsx";
-  link.download = "코드등록Tmp.xlsx";
+  link.href = "/form/코드등록양식.xlsx";
+  link.download = "코드등록양식.xlsx";
   link.click();
 };
 
@@ -306,21 +372,35 @@ const parseExcelFile = (file: File) => {
             code_key: String(row[0] || ""),
             code_value: String(row[1] || ""),
             code_value_en: String(row[2] || ""),
-            description: String(row[3] || ""),
+            code_order: String(row[3] || ""),
+            is_active:
+              String(row[4]) === "true" || String(row[4]) === "Y"
+                ? true
+                : false,
+            is_leaf:
+              String(row[5]) === "true" || String(row[5]) === "Y"
+                ? true
+                : false,
+            is_admin_only:
+              String(row[6]) === "true" || String(row[6]) === "Y"
+                ? true
+                : false,
+            description: String(row[7] || ""),
             parent_key: props.selectedParentKey || "",
             code_level: props.selectedCodeLevel || "",
             code_group:
               searchCodeGroupInput.value || props.selectedCodeGroup?.key || "",
-            code_order: "1",
-            is_active: true,
-            is_leaf: false,
           };
         });
 
       console.log("변환된 데이터:", parsedData);
+      console.log("변환된 데이터 개수:", parsedData.length);
 
       // 파싱된 데이터로 모달 테이블 덮어쓰기
       codeList.value = parsedData;
+
+      console.log("codeList.value에 할당된 데이터:", codeList.value);
+      console.log("codeList.value.length:", codeList.value.length);
 
       alert(t("messages.success.excelDataImported"));
     } catch (error: any) {

@@ -374,15 +374,18 @@ const parseExcelFile = (file: File) => {
             code_value_en: String(row[2] || ""),
             code_order: String(row[3] || ""),
             is_active:
-              String(row[4]) === "true" || String(row[4]) === "Y"
+              String(row[4]).toLowerCase() === "true" ||
+              String(row[4]).toUpperCase() === "Y"
                 ? true
                 : false,
             is_leaf:
-              String(row[5]) === "true" || String(row[5]) === "Y"
+              String(row[5]).toLowerCase() === "true" ||
+              String(row[5]).toUpperCase() === "Y"
                 ? true
                 : false,
             is_admin_only:
-              String(row[6]) === "true" || String(row[6]) === "Y"
+              String(row[6]).toLowerCase() === "true" ||
+              String(row[6]).toUpperCase() === "Y"
                 ? true
                 : false,
             description: String(row[7] || ""),
@@ -489,7 +492,7 @@ onMounted(async () => {
   width: 100%;
 
   @media (max-width: 980px) {
-    flex-direction: column; 
+    flex-direction: column;
   }
 }
 
@@ -498,10 +501,10 @@ onMounted(async () => {
   gap: 4px 10px;
   align-items: flex-start;
   flex: 1;
-  
+
   @media (max-width: 980px) {
     width: 100%;
-    flex-direction: column; 
+    flex-direction: column;
   }
 }
 

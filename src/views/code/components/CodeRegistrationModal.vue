@@ -101,7 +101,7 @@
         </div>
         <!-- Action Buttons -->
         <div class="modal-action-buttons">
-          <button class="btn btn-success" @click="downloadExcelForm">
+          <button class="btn btn-excel" @click="downloadExcelForm">
             {{ t("common.excelFormDownload") }}
           </button>
           <div class="excel-upload-group">
@@ -112,7 +112,7 @@
               @change="handleExcelFileUpload"
               style="display: none"
             />
-            <button class="btn btn-primary" @click="triggerExcelFileUpload">
+            <button class="btn btn-excel" @click="triggerExcelFileUpload">
               {{ t("common.excelGetData") }}
             </button>
           </div>
@@ -128,7 +128,7 @@
           />
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer lg">
         <button class="btn btn-secondary" @click="handleClose">
           {{ t("common.cancel") }}
         </button>
@@ -476,122 +476,49 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-container-large {
-  background: white;
-  border-radius: 8px;
-  width: 95%;
-  max-width: 1200px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-}
-
-.modal-body {
-  padding: 20px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-// 검색 섹션 스타일
 .search-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .search-filters {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
   flex-wrap: wrap;
+  width: 100%;
+
+  @media (max-width: 980px) {
+    flex-direction: column; 
+  }
 }
 
 .filter-group {
-  display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 120px;
+  gap: 4px 10px;
+  align-items: flex-start;
   flex: 1;
-}
-
-.filter-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
+  
+  @media (max-width: 980px) {
+    width: 100%;
+    flex-direction: column; 
+  }
 }
 
 .filter-select {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 14px;
-  background: white;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
-  &:disabled {
-    background-color: #f3f4f6;
-    color: #6b7280;
-    cursor: not-allowed;
-    border-color: #d1d5db;
-  }
+  width: 100%;
 }
 
-// 액션 버튼 스타일
+.filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+}
+
 .modal-action-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-bottom: 20px;
-}
-
-.excel-upload-group {
-  display: flex;
-  align-items: center;
-}
-
-.modal-table-section {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 </style>

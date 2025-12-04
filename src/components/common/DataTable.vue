@@ -422,7 +422,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
 }
 
 .data-table {
-  width: max-content;
+  width: 100%;
   min-width: 100%;
   border-collapse: collapse;
 
@@ -609,13 +609,26 @@ const formatCellValue = (item: any, column: TableColumn) => {
   }
 }
 
-// 반응형 처리
-@media (max-width: $breakpoint-md) {
+/* 반응형 처리 */
+@media (max-width: 1024px) {
   .data-table {
-    th,
+    th {
+      padding: 0 10px;
+    }
     td {
-      padding: $spacing-sm $spacing-md;
-      font-size: 12px;
+      padding: 3px 10px;
+    }
+
+    thead {
+      th {
+        font-size: 13px;
+      }
+    }
+
+    tbody {
+      td {
+        font-size: 13px;
+      }
     }
 
     thead th .th-content .sort-icon {
@@ -625,4 +638,28 @@ const formatCellValue = (item: any, column: TableColumn) => {
     }
   }
 }
+
+@media (max-width: 768px) {
+  .data-table {
+    th {
+      padding: 0 6px;
+    }
+    td {
+      padding: 1px 6px;
+    }
+
+    thead {
+      th {
+        font-size: 11px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 11px;
+      }
+    }
+  }
+}
+/* //반응형 처리 */
 </style>

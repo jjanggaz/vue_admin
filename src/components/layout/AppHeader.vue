@@ -309,24 +309,19 @@ const currentPageTitle = computed<string>(() => {
   }
 
   .logout-btn {
-    width: 72px;
+    min-width: 72px;
     height: 32px;
-    line-height: 28px;
     padding: 0 $spacing-xs;
     background-color: transparent;
     border: 1px solid #333333;
-    border-radius: $border-radius-sm;
+    border-radius: 5px;
     color: #333333;
     font-size: 15px;
     font-weight: 600;
 
-    cursor: pointer;
-    transition: $transition-base;
-
     &:hover {
-      background-color: $background-light;
-      border-color: $primary-color;
-      color: $primary-color;
+      border-color: #279bd8;
+      color: #279bd8;
     }
   }
 }

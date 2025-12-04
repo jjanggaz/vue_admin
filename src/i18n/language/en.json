@@ -1882,5 +1882,9 @@
     "alphanumeric": "{field} must contain only letters and numbers.",
     "usernameRequired": "Please enter your username.",
     "passwordRequired": "Please enter your password."
+  },
+  "excel": {
+    "codeOrderNotNumeric": "Order must be numeric at row {row}.\nPlease modify and try again.",
+    "codeKeyDuplicate": "Value {codeKey} is duplicated at rows {firstRow} and {currentRow}. Registration is not allowed.\nPlease modify and try again."
   }
 }

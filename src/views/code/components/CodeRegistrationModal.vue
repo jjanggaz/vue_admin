@@ -392,9 +392,9 @@ const parseExcelFile = (file: File) => {
           if (isNaN(orderNum) || orderStr === "") {
             const rowNumber = i + 2; // 헤더 행(1) + 인덱스(0부터 시작) + 1
             alert(
-              `${t(
-                "columns.code.order"
-              )}는 숫자만 입력 가능합니다. (${rowNumber}번째 행)`
+              t("excel.codeOrderNotNumeric", {
+                row: rowNumber,
+              })
             );
             return;
           }
@@ -425,7 +425,11 @@ const parseExcelFile = (file: File) => {
             const firstRow = (seenCodeKeys.get(keyStr) ?? 0) + 2; // 헤더 포함 행 번호
             const currentRow = i + 2;
             alert(
-              `${keyStr} 값이 ${firstRow}번째 행과 ${currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.`
+              t("excel.codeKeyDuplicate", {
+                codeKey: keyStr,
+                firstRow,
+                currentRow,
+              })
             );
             return;
           }

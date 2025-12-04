@@ -1879,5 +1879,9 @@
     "alphanumeric": "{field}은(는) 영문자와 숫자만 입력 가능합니다.",
     "usernameRequired": "아이디를 입력해주세요.",
     "passwordRequired": "비밀번호를 입력해주세요."
+  },
+  "excel": {
+    "codeOrderNotNumeric": "{row}번째 행의 순서는 숫자만 입력 가능합니다.\n수정후 다시 시도해주세요.",
+    "codeKeyDuplicate": "{codeKey} 값이 {firstRow}번째 행과 {currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.\n수정후 다시 시도해주세요."
   }
 }

@@ -129,11 +129,11 @@
         </div>
       </div>
       <div class="modal-footer lg">
-        <button class="btn btn-secondary" @click="handleClose">
-          {{ t("common.cancel") }}
-        </button>
         <button class="btn btn-primary" @click="handleSave">
           {{ t("common.save") }}
+        </button>
+        <button class="btn btn-secondary" @click="handleClose">
+          {{ t("common.cancel") }}
         </button>
       </div>
     </div>

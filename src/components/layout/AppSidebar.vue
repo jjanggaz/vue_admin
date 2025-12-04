@@ -29,6 +29,10 @@
         </router-link> -->
       </nav>
     </div>
+
+    <!-- <div class="side-btn on">
+      <button></button>
+    </div> -->
   </aside>
 </template>
 
@@ -114,6 +118,8 @@ const availableMenus = computed(() => {
   //   return router.hasRoute(menu.path.substring(1)); // '/' 제거
   // });
 });
+
+
 </script>
 
 <style scoped lang="scss">
@@ -188,6 +194,47 @@ const availableMenus = computed(() => {
       }
     }
   }
+
+  // .side-btn {
+  //   position: absolute;
+  //   top: 50%;
+  //   right: -35px;
+  //   transform: translateY(-50%);
+  //   width: 35px;
+  //   height: 35px;
+
+  //   button {
+  //     position: relative;
+  //     width: 25px;
+  //     height: 50px;
+  //     background-color: #1f2937;
+  //     border-radius: 0 20px 20px 0;
+
+  //     &:hover {
+  //       background: #394a61;
+  //     }
+
+  //     &::after {
+  //       content: "";
+  //       position: absolute;
+  //       top: 50%;
+  //       left: 50%;
+  //       margin: -6px -8px;
+  //       width: 12px;
+  //       height: 12px;
+  //       background: url(../../assets/icons/ico_detail-arrow.svg) no-repeat center / 12px auto;
+  //       transform: rotate(-90deg);
+  //     }
+  //   }
+  // }
+
+  // .side-btn.on {
+  //   button {
+  //     &::after {
+  //       transform: rotate(90deg);
+  //     }
+  //   }
+  // }
 }
 
 @media (max-width: $breakpoint-lg) {

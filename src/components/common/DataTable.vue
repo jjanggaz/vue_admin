@@ -423,7 +423,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
 .data-table {
   width: 100%;
-  min-width: 100%;
+  // min-width: 100%;
   border-collapse: collapse;
 
   th,
@@ -609,7 +609,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
   }
 }
 
-/* 반응형 처리 */
+// 반응형 처리
 @media (max-width: 1024px) {
   .data-table {
     th {
@@ -661,5 +661,4 @@ const formatCellValue = (item: any, column: TableColumn) => {
     }
   }
 }
-/* //반응형 처리 */
 </style>

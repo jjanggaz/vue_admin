@@ -2453,10 +2453,9 @@ const uploadFormulaFiles = () => {
     };
   });
 
-  const updatedFormulaList = [...processStore.formulaList, ...newFormulaItems];
+  // 첫 번째 행에 추가 (번호가 역순으로 표시되므로 새 항목들은 가장 큰 번호를 가짐)
+  const updatedFormulaList = [...newFormulaItems, ...processStore.formulaList];
   processStore.setFormulaList(updatedFormulaList);
-
-  alert(t("processDetail.formulaFilesAddedToGrid", { count: newFormulaItems.length }));
 
   closeFormulaModal();
 };

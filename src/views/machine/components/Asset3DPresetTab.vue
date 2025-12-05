@@ -822,7 +822,7 @@ const getTypeLabel = (typeValue: string) => {
 
 // 테이블 컬럼 정의 (자재 리스트와 동일한 구성)
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("asset3D.columns.no"), width: "20px", sortable: false },
+  { key: "no", title: t("asset3D.columns.no"), width: "50px", sortable: false },
   { key: "pipeCategory", title: t("asset3D.columns.pipeCategory"), width: "100px", sortable: false },
   { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "100px", sortable: false },
   { key: "diameter", title: t("asset3D.columns.diameter"), width: "80px", sortable: false },
@@ -960,7 +960,7 @@ const handleAddRow = () => {
 };
 
 // 행 삭제 핸들러
-const handleDeleteRow = () => {
+const handleDeleteRow = async () => {
   if (selectedRows.value.length === 0) {
     alert(t("asset3D.error.selectRowToDelete"));
     return;
@@ -978,10 +978,13 @@ const handleDeleteRow = () => {
   selectedRows.value = [];
   // 번호 재정렬
   updateRowNumbers();
+
+  // 삭제 후 바로 저장 API 호출
+  await handleSaveSelectedItems(true);
 };
 
 // 선택 항목 저장 핸들러
-const handleSaveSelectedItems = async () => {
+const handleSaveSelectedItems = async (silent: boolean = false) => {
   // preset_id 확인
   if (!currentPresetId.value) {
     alert(t("asset3D.error.noPresetId"));
@@ -1056,7 +1059,10 @@ const handleSaveSelectedItems = async () => {
         throw new Error(t("asset3D.error.itemsSaveFailed", { count: failedResponses.length }));
       }
 
-      alert(t("common.saved"));
+      // 저장 후 확인 메시지 (silent 모드가 아닌 경우만)
+      if (!silent) {
+        alert(t("common.saved"));
+      }
       console.log("저장 성공:", addResponses);
       return;
     }
@@ -1094,7 +1100,9 @@ const handleSaveSelectedItems = async () => {
 
     // 추가된 항목이 없고 삭제된 항목도 없으면 저장할 것이 없음
     if (addedRows.length === 0 && deletedDetailIds.length === 0) {
-      alert(t("asset3D.error.noChangedItems"));
+      if (!silent) {
+        alert(t("asset3D.error.noChangedItems"));
+      }
       return;
     }
 
@@ -1218,7 +1226,10 @@ const handleSaveSelectedItems = async () => {
       throw new Error(t("asset3D.error.itemsProcessFailed", { count: failedResponses.length }));
     }
 
-    alert(t("common.saved"));
+    // 저장 후 확인 메시지 (silent 모드가 아닌 경우만)
+    if (!silent) {
+      alert(t("common.saved"));
+    }
     console.log("저장 성공:", responses);
     
     // 저장 성공 후 선택 항목 그리드 새로고침 (수정 모드인 경우만)

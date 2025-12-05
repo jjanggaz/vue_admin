@@ -530,6 +530,9 @@
               @change="handleMappingPidSelectionChange"
             />
           </template>
+          <template #cell-no="{ item, index }">
+            <span>{{ (mappingPidList?.length || 0) - index }}</span>
+          </template>
           <template #cell-pidFile="{ item }">
             <div class="file-selection-group">
               <button
@@ -2467,11 +2470,20 @@ const uploadPfdFiles = () => {
   }
 
   const newPfdItems = selectedPfdFiles.value.map((file, index) => {
+    // 현재 시간을 YYYY-MM-DD HH:MM 형식으로 생성
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const registrationDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+    
     return {
       id: `pfd_${Date.now()}_${index}`,
       no: processStore.pfdList.length + index + 1,
       pfdFileName: file.name,
-      registrationDate: formatDate(new Date()),
+      registrationDate: registrationDate,
       mappingPidList: t("processDetail.view"),
       remarks: "",
       _file: file,
@@ -2479,7 +2491,8 @@ const uploadPfdFiles = () => {
     };
   });
 
-  const updatedPfdList = [...processStore.pfdList, ...newPfdItems];
+  // 첫 번째 행에 추가 (번호가 역순으로 표시되므로 새 항목들은 가장 큰 번호를 가짐)
+  const updatedPfdList = [...newPfdItems, ...processStore.pfdList];
   processStore.setPfdList(updatedPfdList);
 
   closePfdModal();
@@ -2506,12 +2519,13 @@ const uploadPidFiles = () => {
     };
   });
 
-  mappingPidList.value.push(...newPidItems);
+  // 첫 번째 행에 추가 (번호가 역순으로 표시되므로 새 항목들은 가장 큰 번호를 가짐)
+  mappingPidList.value = [...newPidItems, ...mappingPidList.value];
 
-  // 마지막으로 추가된 항목을 현재 선택된 항목으로 설정
+  // 첫 번째로 추가된 항목을 현재 선택된 항목으로 설정
   if (newPidItems.length > 0) {
-    currentPidItemForMapping.value = newPidItems[newPidItems.length - 1];
-    (selectedMappingPidItems.value as any) = newPidItems[newPidItems.length - 1];
+    currentPidItemForMapping.value = newPidItems[0];
+    (selectedMappingPidItems.value as any) = newPidItems[0];
   }
 
   closePidModal();

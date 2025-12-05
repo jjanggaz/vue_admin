@@ -504,7 +504,7 @@
             >
               삭제
             </button>
-            <button @click="confirmMappingPid" class="btn btn-save sm">
+            <button @click="() => confirmMappingPid()" class="btn btn-save sm">
               저장
             </button>
             <button @click="closePidListInMain" class="btn btn-secondary">
@@ -709,9 +709,6 @@
           <h4>P&ID Components</h4>
         </div>
         <div class="tab-actions">
-          <button @click="handlePidComponentSave" class="btn btn-save sm">
-            저장
-          </button>
           <button @click="closePidComponentSection" class="btn btn-secondary">
             닫기
           </button>
@@ -725,26 +722,13 @@
         :max-height="pidComponentTableMaxHeight"
         :sticky-header="pidComponentTableMaxHeight !== 'auto'"
       >
-        <template #cell-select="{ item, index }">
-          <input
-            type="checkbox"
-            :value="item"
-            v-model="selectedPidComponentItems"
-            @change="handlePidComponentSelectionChange"
-          />
-        </template>
         <template #cell-no="{ item, index }">
           <span>{{ item.no || index + 1 }}</span>
         </template>
         <template #cell-pid_id="{ item }">
-          <input
-            v-model.number="item.input_poc"
-            type="number"
-            class="form-control"
-            placeholder="POC IN 입력"
-            min="0"
-            step="1"
-          />
+          <span class="pid-component-text">
+            {{ item.input_poc ?? "-" }}
+          </span>
         </template>
         <template #cell-category="{ item }">
           <span class="pid-component-text">
@@ -767,14 +751,9 @@
           </span>
         </template>
         <template #cell-total_quantity="{ item }">
-          <input
-            type="number"
-            v-model="item.total_quantity"
-            class="form-control"
-            placeholder="0"
-            min="0"
-            step="1"
-          />
+          <span class="pid-component-text">
+            {{ item.total_quantity ?? "-" }}
+          </span>
         </template>
         <template #cell-spare_quantity="{ item }">
           <input
@@ -1275,9 +1254,8 @@ const mappingPidColumns: TableColumn[] = [
 
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
-  { key: "select", title: t("processDetail.select"), sortable: false, width: "60px" },
   { key: "no", title: t("processDetail.no"), sortable: false, width: "50px" },
-  { key: "pid_id", title: t("processDetail.pocIn"), sortable: false, width: "80px" },
+  { key: "pid_id", title: t("processDetail.pocIn"), sortable: false, width: "80px", hidden: true },
   { key: "category", title: t("processDetail.division"), sortable: false, width: "100px" },
   { key: "smallCategory", title: t("processDetail.majorCategory"), sortable: false, width: "120px" },
   { key: "middleCategory", title: t("processDetail.middleCategory"), sortable: false, width: "120px" },
@@ -3591,21 +3569,83 @@ const hasPfdChanges = () => {
 };
 
 const hasMappingPidChanges = () => {
-  const currentList = mappingPidList.value.map((item) => ({
-    id: item.id,
-    drawing_id: item.drawing_id,
-    pidFileName: item.pidFileName,
-    excelFileName: item.excelFileName,
-    svgFileName: item.svgFileName,
-  }));
-  const initialList = initialMappingPidList.value.map((item) => ({
-    id: item.id,
-    drawing_id: item.drawing_id,
-    pidFileName: item.pidFileName,
-    excelFileName: item.excelFileName,
-    svgFileName: item.svgFileName,
-  }));
-  return JSON.stringify(initialList) !== JSON.stringify(currentList);
+  // 빈 배열 체크
+  if (mappingPidList.value.length === 0 && initialMappingPidList.value.length === 0) {
+    console.log("hasMappingPidChanges: 두 배열 모두 비어있음");
+    return false;
+  }
+
+  // 정규화 함수: undefined를 빈 문자열로, 필드명 통일
+  const normalizeItem = (item: any) => {
+    const excelFileName = item.excelFileName || item.excel_file_name || "";
+    const svgFileName = item.svgFileName || item.svg_file_name || "";
+    
+    return {
+      id: item.id || "",
+      drawing_id: item.drawing_id || "",
+      pidFileName: item.pidFileName || "",
+      excelFileName: excelFileName,
+      svgFileName: svgFileName,
+    };
+  };
+
+  const currentList = mappingPidList.value.map(normalizeItem).sort((a, b) => {
+    // drawing_id 기준으로 정렬 (없으면 id 기준)
+    const aId = a.drawing_id || a.id || "";
+    const bId = b.drawing_id || b.id || "";
+    return aId.localeCompare(bId);
+  });
+  
+  const initialList = initialMappingPidList.value.map(normalizeItem).sort((a, b) => {
+    const aId = a.drawing_id || a.id || "";
+    const bId = b.drawing_id || b.id || "";
+    return aId.localeCompare(bId);
+  });
+
+  console.log("hasMappingPidChanges 비교:", {
+    currentLength: currentList.length,
+    initialLength: initialList.length,
+    currentList: currentList,
+    initialList: initialList,
+  });
+
+  // 길이가 다르면 변경됨
+  if (currentList.length !== initialList.length) {
+    console.log("hasMappingPidChanges: 배열 길이가 다름");
+    return true;
+  }
+
+  // 각 항목 비교 (정렬된 상태이므로 같은 인덱스끼리 비교)
+  for (let i = 0; i < currentList.length; i++) {
+    const current = currentList[i];
+    const initial = initialList[i];
+    
+    // 파일명 비교만으로 변경 감지 (파일 객체는 저장 시점에만 필요)
+    // 파일을 다시 선택하지 않았는데도 변경으로 인식되는 문제 방지
+    if (
+      current.id !== initial.id ||
+      current.drawing_id !== initial.drawing_id ||
+      current.pidFileName !== initial.pidFileName ||
+      current.excelFileName !== initial.excelFileName ||
+      current.svgFileName !== initial.svgFileName
+    ) {
+      console.log(`hasMappingPidChanges: 항목 ${i}가 다름`, {
+        current,
+        initial,
+        differences: {
+          id: current.id !== initial.id,
+          drawing_id: current.drawing_id !== initial.drawing_id,
+          pidFileName: current.pidFileName !== initial.pidFileName,
+          excelFileName: current.excelFileName !== initial.excelFileName,
+          svgFileName: current.svgFileName !== initial.svgFileName,
+        },
+      });
+      return true;
+    }
+  }
+
+  console.log("hasMappingPidChanges: 변경사항 없음");
+  return false;
 };
 
 const hasPidComponentChanges = () => {
@@ -3625,7 +3665,8 @@ const hasPidComponentChanges = () => {
       middleCategory: item.middleCategory ?? null,
       smallCategory: item.smallCategory ?? null,
       equipmentType: item.equipmentType ?? null,
-      total_quantity: Number(item.total_quantity ?? 0),
+      spare_quantity: Number(item.spare_quantity ?? 0),
+      // input_poc와 total_quantity는 읽기 전용이므로 변경사항 확인에서 제외
     }));
 
   const normalizedInitial = normalize(initial);
@@ -3916,9 +3957,31 @@ const validatePidComponentData = () => {
 };
 
 const handlePidComponentSave = async () => {
+  // 저장 기능 비활성화
+  console.log("P&ID 컴포넌트 저장 기능이 비활성화되어 있습니다.");
+  return;
+  
   try {
     console.log("P&ID 컴포넌트 저장 버튼 클릭");
     console.log("저장할 P&ID 컴포넌트 데이터:", pidComponentList.value);
+
+    // 변경사항 확인 (삭제된 항목 포함)
+    const hasDeletions =
+      deletedPidComponentIds.value.length > 0 ||
+      deletedPidComponentIds.value.tempItemIds?.length > 0;
+    const hasDataChanges = hasPidComponentChanges();
+    
+    console.log("P&ID Components 변경사항 확인:", {
+      hasDeletions,
+      hasDataChanges,
+      deletedIds: deletedPidComponentIds.value,
+    });
+    
+    // 변경사항이 없는 경우 메시지 표시 후 종료
+    if (!hasDeletions && !hasDataChanges) {
+      alert("변경사항이 없습니다.");
+      return;
+    }
 
     // 필수입력 검증
     const validationErrors = validatePidComponentData();
@@ -3929,10 +3992,6 @@ const handlePidComponentSave = async () => {
       return;
     }
 
-    // 삭제할 컴포넌트들 처리
-    const hasDeletions =
-      deletedPidComponentIds.value.length > 0 ||
-      deletedPidComponentIds.value.tempItemIds?.length > 0;
     const hasData = pidComponentList.value.length > 0;
 
     if (hasDeletions) {
@@ -4066,8 +4125,7 @@ const handlePidComponentSave = async () => {
           mapping_type: "PID_EXCEL", // 고정값
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           // 기존 항목 수정 시에는 hierarchy 필드들(category, middleCategory, smallCategory, equipmentType) 제외
-          input_poc: Number(item.input_poc) || 0, // POC IN 값
-          total_quantity: Number(item.total_quantity) || 0, // 수량(상용)
+          // input_poc와 total_quantity는 읽기 전용이므로 저장 시 제외
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true, // 고정값
         };
@@ -4081,8 +4139,7 @@ const handlePidComponentSave = async () => {
           mapping_type: componentData.mapping_type,
           pid_id: componentData.pid_id,
           // component_type 제거됨 (기존 항목 수정 시 hierarchy 필드 제외)
-          input_poc: componentData.input_poc,
-          total_quantity: componentData.total_quantity,
+          // input_poc와 total_quantity는 읽기 전용이므로 저장 시 제외
           spare_quantity: componentData.spare_quantity,
           is_active: componentData.is_active,
         });
@@ -4126,8 +4183,7 @@ const handlePidComponentSave = async () => {
           mapping_type: "PID_EXCEL", // 고정값
           pid_id: pidComponentDrawingId.value || currentDrawingId.value, // P&ID 선택행에서 전달받은 drawing_id
           component_type: item.equipmentType, // 장비유형 select의 code
-          input_poc: Number(item.input_poc) || 0, // POC IN 값
-          total_quantity: Number(item.total_quantity) || 0, // 수량(상용)
+          // input_poc와 total_quantity는 읽기 전용이므로 저장 시 제외
           spare_quantity: Number(item.spare_quantity) || 0, // 수량(예비)
           is_active: true, // 고정값
         };
@@ -6895,7 +6951,9 @@ const processPfdChanges = async (processId: string) => {
     if (finalAddedRows.length > 0) {
       try {
         console.log("=== PFD 추가 API 호출 시작 ===");
-        for (const pfdItem of finalAddedRows) {
+        // 먼저 추가된 아래쪽 데이터부터 저장하기 위해 역순으로 처리
+        const reversedFinalAddedRows = [...finalAddedRows].reverse();
+        for (const pfdItem of reversedFinalAddedRows) {
           const file = (pfdItem as any)._file;
           const svgFile = (pfdItem as any).svgFile;
 
@@ -7648,9 +7706,11 @@ const processFormulaChanges = async (processId: string) => {
         console.log("processId:", processId);
         console.log("추가할 계산식 개수:", addedRows.length);
 
+        // 먼저 추가된 아래쪽 데이터부터 저장하기 위해 역순으로 처리
+        const reversedAddedRows = [...addedRows].reverse();
         const results = await Promise.allSettled(
-          addedRows.map((formula, index) => {
-            console.log(`계산식 ${index + 1} API 호출 시작:`, {
+          reversedAddedRows.map((formula, index) => {
+            console.log(`계산식 ${index + 1} API 호출 시작 (역순 처리):`, {
               processId: processId,
               formulaName: formula.registeredFormula,
               formulaCode: formula.formula_code || "",
@@ -7671,7 +7731,7 @@ const processFormulaChanges = async (processId: string) => {
 
         results.forEach((result, index) => {
           if (result.status === "fulfilled") {
-            const addedRow = addedRows[index];
+            const addedRow = reversedAddedRows[index];
             const apiResponse = result.value;
 
             // API 응답 구조 디버깅
@@ -7752,11 +7812,11 @@ const processFormulaChanges = async (processId: string) => {
             successfulFormulas.push(addedRow);
           } else {
             failedFormulas.push({
-              formula: addedRows[index],
+              formula: reversedAddedRows[index],
               error: result.reason,
             });
             console.warn(
-              `계산식 추가 실패: ${addedRows[index].registeredFormula}`,
+              `계산식 추가 실패: ${reversedAddedRows[index].registeredFormula}`,
               result.reason
             );
           }
@@ -9167,9 +9227,12 @@ const closePidListInMain = (skipConfirm: boolean = false) => {
   console.log("- skipConfirm:", skipConfirm);
   console.log("- 호출 스택:", new Error().stack);
 
-  // 변경사항 확인 (P&ID와 공정카드 모두 확인)
+  // 변경사항 확인 (P&ID만 확인 - P&ID 그리드가 열린 경우)
   // skipConfirm이 true이면 확인 팝업 없이 바로 닫기 (삭제 등의 경우)
-  if (!skipConfirm && (hasMappingPidChanges() || hasPfdChanges())) {
+  const pidHasChanges = hasMappingPidChanges();
+  console.log("P&ID 변경사항 확인 결과:", pidHasChanges);
+  
+  if (!skipConfirm && pidHasChanges) {
     console.log("변경사항 확인 팝업 표시");
     if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
       console.log("사용자가 취소함");
@@ -9238,6 +9301,7 @@ const updatePfdPidMappingInfo = async (
           search_field: "drawing_id",
           search_value: drawingId,
           order_by: "created_at",
+          order_direction: "desc",
         }),
       }
     );
@@ -9316,6 +9380,7 @@ const refreshPfdData = async () => {
                     search_field: "drawing_id",
                     search_value: drawingId,
                     order_by: "created_at",
+                    order_direction: "desc",
                   }),
                 }
               );
@@ -9418,7 +9483,36 @@ const refreshFormulaData = async () => {
   }
 };
 const confirmMappingPid = async (silent: boolean = false) => {
+  console.log("=== confirmMappingPid 함수 호출됨 ===");
+  console.log("silent 파라미터:", silent);
+  
+  // silent가 boolean이 아닌 경우 (이벤트 객체 등) false로 처리
+  const isSilent = typeof silent === 'boolean' ? silent : false;
+  console.log("isSilent:", isSilent);
+  
   try {
+    console.log("=== confirmMappingPid 시작 ===");
+    console.log("silent:", isSilent);
+
+    // 변경사항이 없는 경우 먼저 확인
+    console.log("hasMappingPidChanges() 호출 전");
+    const hasChanges = hasMappingPidChanges();
+    console.log("hasMappingPidChanges() 결과:", hasChanges);
+    console.log("hasChanges 타입:", typeof hasChanges);
+    console.log("!hasChanges:", !hasChanges);
+    
+    if (!hasChanges) {
+      console.log("변경사항 없음 - 메시지 표시 및 종료");
+      if (!isSilent) {
+        console.log("alert 호출 전");
+        alert("변경사항이 없습니다.");
+        console.log("alert 호출 후");
+      }
+      console.log("함수 종료 (변경사항 없음)");
+      return;
+    }
+    
+    console.log("변경사항 있음 - 저장 진행");
 
     // process_id 설정
     let processId: string;
@@ -9477,63 +9571,67 @@ const confirmMappingPid = async (silent: boolean = false) => {
         );
 
         if (initialItem) {
-          // P&ID 파일 변경 감지
-          const currentPidFile = (item as any).pidFile;
-          const initialPidFile = (initialItem as any)?.pidFile;
-          const pidFileChanged =
-            currentPidFile &&
-            (!initialPidFile || currentPidFile.name !== initialPidFile?.name);
-
-          // Excel 파일 변경 감지 (더 정확한 로직)
+          // 파일명 기준으로 변경 감지 (더 정확하고 안정적)
+          const normalizeFileName = (fileName: string | undefined | null) => fileName || "";
+          
+          // P&ID 파일명 비교
+          const currentPidFileName = normalizeFileName(item.pidFileName);
+          const initialPidFileName = normalizeFileName(initialItem?.pidFileName);
+          
+          // Excel 파일명 비교
+          const currentExcelFileName = normalizeFileName(item.excelFileName || item.excel_file_name);
+          const initialExcelFileName = normalizeFileName(initialItem?.excelFileName || initialItem?.excel_file_name);
+          
+          // SVG 파일명 비교
+          const currentSvgFileName = normalizeFileName(item.svgFileName || item.svg_file_name);
+          const initialSvgFileName = normalizeFileName(initialItem?.svgFileName || initialItem?.svg_file_name);
+          
+          // 파일 객체가 있는 경우 파일명 비교 (새로 선택한 파일)
+          const currentPidFile = (item as any).pidFile || (item as any)._file;
+          const initialPidFile = (initialItem as any)?.pidFile || (initialItem as any)?._file;
           const currentExcelFile = (item as any).excelFile;
           const initialExcelFile = (initialItem as any)?.excelFile;
-          // Excel 파일이 새로 선택되었거나, 기존 파일과 다른 파일로 변경된 경우만 변경으로 감지
-          const excelFileChanged =
-            currentExcelFile &&
-            (!initialExcelFile ||
-              currentExcelFile.name !== initialExcelFile?.name);
-
-          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
-          const currentExcelFileName =
-            item.excelFileName || item.excel_file_name;
-          const initialExcelFileName =
-            initialItem?.excelFileName || initialItem?.excel_file_name || "";
-          // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
-          const excelFileNameChanged =
-            (currentExcelFileName || "") !== (initialExcelFileName || "");
-
-          // Svg 파일 변경 감지
           const currentSvgFile = (item as any).svgFile;
           const initialSvgFile = (initialItem as any)?.svgFile;
-          // SVG 파일이 새로 선택되었거나, 기존 파일과 다른 파일로 변경된 경우만 변경으로 감지
+          
+          // P&ID 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
+          const pidFileChanged = 
+            currentPidFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            (!currentPidFile && currentPidFileName !== initialPidFileName && (currentPidFileName || initialPidFileName)); // 파일명 변경됨
+          
+          // Excel 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
+          const excelFileChanged =
+            currentExcelFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            (!currentExcelFile && currentExcelFileName !== initialExcelFileName && (currentExcelFileName || initialExcelFileName)) || // 파일명 변경됨
+            (!currentExcelFile && initialExcelFile); // 삭제됨
+          
+          // SVG 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
           const svgFileChanged =
-            (currentSvgFile &&
-              (!initialSvgFile ||
-                currentSvgFile.name !== initialSvgFile?.name)) ||
-            (!currentSvgFile && initialSvgFile);
+            currentSvgFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            (!currentSvgFile && currentSvgFileName !== initialSvgFileName && (currentSvgFileName || initialSvgFileName)) || // 파일명 변경됨
+            (!currentSvgFile && initialSvgFile); // 삭제됨
 
-          // Svg 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
-          const currentSvgFileName = item.svgFileName || item.svg_file_name;
-          const initialSvgFileName =
-            initialItem?.svgFileName || initialItem?.svg_file_name || "";
-          // 파일명이 실제로 변경된 경우만 변경으로 감지 (빈 문자열과 undefined는 동일하게 처리)
-          const svgFileNameChanged =
-            (currentSvgFileName || "") !== (initialSvgFileName || "");
-
-          // 실제 파일 변경 여부 확인 (파일 객체나 파일명 중 하나라도 변경된 경우)
-          const actualExcelFileChanged =
-            excelFileChanged || excelFileNameChanged;
-          const actualSvgFileChanged = svgFileChanged || svgFileNameChanged;
-
-          const hasFileChanges =
-            pidFileChanged || actualExcelFileChanged || actualSvgFileChanged;
-
+          // 모든 파일이 동일하면 변경 없음 (false 반환하여 validMappings에서 제외)
+          const hasFileChanges = pidFileChanged || excelFileChanged || svgFileChanged;
           return hasFileChanges;
         }
+        
+        // initialItem을 찾지 못한 경우 (새로 추가된 항목으로 취급하지 않음)
+        // 파일 객체가 있으면 변경으로 간주
+        const hasAnyFile = !!(item as any).pidFile || !!(item as any)._file || !!(item as any).excelFile || !!(item as any).svgFile;
+        return hasAnyFile;
       }
 
       return false;
     });
+
+    // 변경사항이 없는 경우 메시지 표시 후 종료
+    if (deletedRows.length === 0 && validMappings.length === 0) {
+      if (!isSilent) {
+        alert("변경사항이 없습니다.");
+      }
+      return;
+    }
 
     // 1. 삭제 처리
     if (deletedRows.length > 0) {
@@ -9595,7 +9693,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
     // 2. 삭제만 수행하는 경우 처리
     // 삭제만 수행하는 경우 (삭제할 항목이 있고, 저장할 새 데이터가 없는 경우)
     if (deletedRows.length > 0 && validMappings.length === 0) {
-      if (!silent) {
+      if (!isSilent) {
         alert("P&ID 매핑이 저장되었습니다.");
       }
       // 공정카드 그리드 새로고침 (P&ID 버튼 상태 업데이트를 위해)
@@ -9717,7 +9815,15 @@ const confirmMappingPid = async (silent: boolean = false) => {
           "개"
         );
 
-        const pidMappingPromises = validMappings.map(async (item) => {
+        // 새로 추가된 항목과 기존 항목 분리
+        const newItems = validMappings.filter((item) => !item.drawing_id);
+        const existingItems = validMappings.filter((item) => item.drawing_id);
+        
+        // 먼저 추가된 아래쪽 데이터부터 저장하기 위해 새 항목만 역순으로 처리
+        const reversedNewItems = [...newItems].reverse();
+        const orderedValidMappings = [...existingItems, ...reversedNewItems];
+        
+        const pidMappingPromises = orderedValidMappings.map(async (item) => {
           // parent_drawing_id 설정
           if (!item.parent_drawing_id) {
             item.parent_drawing_id = parentDrawingId;
@@ -9774,23 +9880,31 @@ const confirmMappingPid = async (silent: boolean = false) => {
           );
           const initialSvgFile = (initialItem as any)?.svgFile;
 
-          // Svg 파일 변경 감지
-          const svgFileChanged =
-            (currentSvgFile &&
-              (!initialSvgFile ||
-                (currentSvgFile as any).name !==
-                  (initialSvgFile as any).name)) ||
-            (!currentSvgFile && initialSvgFile);
-
           // P&ID 파일이나 Excel 파일 변경 여부 확인
           const currentPidFile = (item as any).pidFile;
           const currentExcelFile = (item as any).excelFile;
           const initialPidFile = (initialItem as any)?.pidFile;
           const initialExcelFile = (initialItem as any)?.excelFile;
 
-          const pidFileChanged =
-            currentPidFile &&
-            (!initialPidFile || currentPidFile.name !== initialPidFile?.name);
+          // P&ID 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+          let pidFileChanged: boolean;
+          if (currentPidFile) {
+            // 현재 P&ID 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            pidFileChanged = true;
+          } else {
+            // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
+            pidFileChanged = !currentPidFile && !!initialPidFile;
+          }
+
+          // SVG 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+          let svgFileChanged: boolean;
+          if (currentSvgFile) {
+            // 현재 SVG 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            svgFileChanged = true;
+          } else {
+            // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
+            svgFileChanged = !currentSvgFile && !!initialSvgFile;
+          }
           
           // Excel 파일명 추출 (초기 상태와 현재 상태)
           const currentExcelFileName =
@@ -9805,26 +9919,24 @@ const confirmMappingPid = async (silent: boolean = false) => {
             (item.excel_file_name || item.excelFileName);
           
           // Excel 파일 변경 감지: 초기 상태와 현재 상태를 비교
-          // 특수 케이스 1: 이미 저장된 Excel 파일이 있고, 현재 Excel 파일 객체가 있고, 파일명이 같으면 → 변경 안됨 (재선택)
-          // 특수 케이스 2: SVG 파일만 변경된 경우, Excel 파일 객체가 있더라도 Excel 파일명이 변경되지 않았으면 → 변경 안됨
+          // 동일한 파일명의 Excel 파일을 다시 선택하더라도 수정된 항목으로 처리
+          // 특수 케이스: SVG 파일만 변경된 경우, Excel 파일 객체가 있더라도 Excel 파일명이 변경되지 않았으면 → 변경 안됨
           let excelFileChanged: boolean;
-          const isReSelectSameFile = hasExistingExcelFile && currentExcelFile && currentExcelFileName && currentExcelFile.name === currentExcelFileName;
           const excelFileNameNotChanged = (currentExcelFileName || "") === (initialExcelFileName || "");
           
-          if (isReSelectSameFile) {
-            // 기존에 저장된 파일과 같은 파일을 재선택한 경우 → 변경 안됨
-            excelFileChanged = false;
+          // Excel 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+          if (currentExcelFile) {
+            // 현재 Excel 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            excelFileChanged = true;
           } else if (svgFileChanged && excelFileNameNotChanged) {
             // SVG 파일만 변경되고 Excel 파일명이 변경되지 않은 경우 → Excel 파일 변경 안됨
             excelFileChanged = false;
           } else {
             // 일반적인 경우: 초기 상태와 현재 상태를 비교
-            // 1. 초기 상태에 Excel 파일이 없고 현재 Excel 파일이 있으면 → 변경됨
+            // 1. 초기 상태에 Excel 파일이 없고 현재 Excel 파일이 있으면 → 변경됨 (위에서 처리됨)
             // 2. 초기 상태에 Excel 파일이 있고 현재 Excel 파일이 없으면 → 변경됨 (삭제)
             // 3. 둘 다 있지만 파일명이 다르면 → 변경됨
-            // 4. 둘 다 있고 파일명이 같으면 → 변경 안됨
             excelFileChanged =
-              (currentExcelFile && !initialExcelFile) || // 새로 추가됨
               (!currentExcelFile && initialExcelFile) || // 삭제됨
               (currentExcelFile && initialExcelFile && currentExcelFile.name !== initialExcelFile.name); // 파일명 변경됨
           }
@@ -9979,7 +10091,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
           });
 
           // 저장 완료 메시지 (삭제 후 자동 저장인 경우 메시지 표시하지 않음)
-          if (!silent) {
+          if (!isSilent) {
             alert("P&ID 매핑이 저장되었습니다.");
           }
 

@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAsset3DStore } from "@/stores/asset3DStore";
 import { request } from "@/utils/request";
@@ -315,6 +315,10 @@ watch(
               modelName: modelName.value,
               unit: selectedUnit.value,
             });
+            
+            // 데이터 로드 완료 후 초기값 저장
+            await nextTick();
+            saveInitialLibraryData();
           } else {
             console.warn("[Asset3DLibraryTab] 응답 데이터가 없습니다.");
           }
@@ -324,6 +328,10 @@ watch(
       } catch (error) {
         console.error("[Asset3DLibraryTab] API 호출 중 오류:", error);
       }
+    } else {
+      // 등록 모드에서는 빈 상태로 초기값 저장
+      await nextTick();
+      saveInitialLibraryData();
     }
   },
   { immediate: true }
@@ -1325,6 +1333,84 @@ const handleRegister = async () => {
     alert(errorMessage);
   }
 };
+
+// 초기값 저장용
+interface InitialLibraryData {
+  selectedUnit: string;
+  selectedCategory: string;
+  modelName: string;
+  modelFileName: string;
+  modelDownloadUrl: string;
+  thumbnailFileName: string;
+  thumbnailDownloadUrl: string;
+  hasModelFile: boolean;
+  hasThumbnailFile: boolean;
+}
+
+const initialLibraryData = ref<InitialLibraryData | null>(null);
+
+// 초기값 저장 함수
+const saveInitialLibraryData = () => {
+  initialLibraryData.value = {
+    selectedUnit: selectedUnit.value,
+    selectedCategory: selectedCategory.value,
+    modelName: modelName.value,
+    modelFileName: modelFileName.value,
+    modelDownloadUrl: modelDownloadUrl.value,
+    thumbnailFileName: thumbnailFileName.value,
+    thumbnailDownloadUrl: thumbnailDownloadUrl.value,
+    hasModelFile: !!modelFile.value,
+    hasThumbnailFile: !!thumbnailFile.value,
+  };
+};
+
+// 변경사항 확인 함수
+const hasLibraryChanges = (): boolean => {
+  if (!initialLibraryData.value) {
+    // 초기값이 저장되지 않은 경우, 현재 입력값이 있는지 확인
+    return !!(
+      selectedUnit.value ||
+      selectedCategory.value ||
+      modelName.value ||
+      modelFile.value ||
+      thumbnailFile.value ||
+      modelFileName.value ||
+      thumbnailFileName.value
+    );
+  }
+
+  const current = {
+    selectedUnit: selectedUnit.value || "",
+    selectedCategory: selectedCategory.value || "",
+    modelName: modelName.value || "",
+    modelFileName: modelFileName.value || "",
+    modelDownloadUrl: modelDownloadUrl.value || "",
+    thumbnailFileName: thumbnailFileName.value || "",
+    thumbnailDownloadUrl: thumbnailDownloadUrl.value || "",
+    hasModelFile: !!modelFile.value,
+    hasThumbnailFile: !!thumbnailFile.value,
+  };
+
+  const initial = initialLibraryData.value;
+
+  return (
+    current.selectedUnit !== initial.selectedUnit ||
+    current.selectedCategory !== initial.selectedCategory ||
+    current.modelName !== initial.modelName ||
+    current.modelFileName !== initial.modelFileName ||
+    current.modelDownloadUrl !== initial.modelDownloadUrl ||
+    current.thumbnailFileName !== initial.thumbnailFileName ||
+    current.thumbnailDownloadUrl !== initial.thumbnailDownloadUrl ||
+    current.hasModelFile !== initial.hasModelFile ||
+    current.hasThumbnailFile !== initial.hasThumbnailFile
+  );
+};
+
+// defineExpose로 변경사항 확인 함수 노출
+defineExpose({
+  hasLibraryChanges,
+  saveInitialLibraryData,
+});
 </script>
 
 <style scoped lang="scss">

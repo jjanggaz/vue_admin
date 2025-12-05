@@ -374,6 +374,7 @@
           <div class="tab-content">
             <Asset3DLibraryTab 
               v-if="modalActiveTab === 0" 
+              ref="libraryTabRef"
               :is-edit-mode="isEditModalMode"
               :edit-item="editTargetItem"
             />
@@ -416,7 +417,8 @@ const translateMessage = useTranslateMessage();
 const asset3DStore = useAsset3DStore();
 const pipeStore = usePipeStore();
 
-// 프리셋 탭 컴포넌트 참조
+// 탭 컴포넌트 참조
+const libraryTabRef = ref<any>(null);
 const presetTabRef = ref<any>(null);
 
 // 모달 탭 구성 - 등록 모드만 사용
@@ -975,6 +977,24 @@ const handleEdit = () => {
 };
 
 const closeRegistModal = async () => {
+  // 변경사항 확인
+  let hasChanges = false;
+  
+  if (modalActiveTab.value === 0 && libraryTabRef.value) {
+    // 3D 라이브러리 탭의 변경사항 확인
+    hasChanges = libraryTabRef.value.hasLibraryChanges?.() || false;
+  } else if (modalActiveTab.value === 1 && presetTabRef.value) {
+    // 프리셋 탭의 변경사항 확인
+    hasChanges = presetTabRef.value.hasPresetChanges?.() || false;
+  }
+  
+  // 변경사항이 있으면 확인 메시지 표시
+  if (hasChanges) {
+    if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+      return; // 사용자가 취소하면 함수 종료
+    }
+  }
+  
   // 프리셋 등록 탭이 선택되어 있는 경우 직경 값 동기화 확인 (등록 모드 및 수정 모드 모두)
   if (modalActiveTab.value === 1 && presetTabRef.value) {
     try {

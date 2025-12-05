@@ -2791,6 +2791,10 @@ watch(
 
             // 프리셋 상세 정보 조회 (선택 항목 그리드 데이터 로드)
             await reloadPresetDetailData(presetId);
+            
+            // 데이터 로드 완료 후 초기값 저장
+            await nextTick();
+            saveInitialPresetData();
           } else {
             console.warn("[Asset3DPresetTab] 응답 데이터가 없습니다.");
           }
@@ -2803,6 +2807,10 @@ watch(
     } else if (!props.isEditMode) {
       // 등록 모드로 전환 시 초기화
       currentPresetId.value = null;
+      
+      // 등록 모드에서는 빈 상태로 초기값 저장
+      await nextTick();
+      saveInitialPresetData();
     }
   },
   { immediate: true }
@@ -3458,6 +3466,73 @@ const handleThumbnailRegister = async () => {
   }
 };
 
+// 초기값 저장용
+interface InitialPresetData {
+  selectedUnit: string;
+  selectedMachine: string;
+  presetName: string;
+  thumbnailFileName: string;
+  thumbnailDownloadUrl: string;
+  masterDiameterValue: number;
+  tableRowsCount: number;
+  hasThumbnailFile: boolean;
+}
+
+const initialPresetData = ref<InitialPresetData | null>(null);
+
+// 초기값 저장 함수
+const saveInitialPresetData = () => {
+  initialPresetData.value = {
+    selectedUnit: selectedUnit.value,
+    selectedMachine: selectedMachine.value,
+    presetName: presetName.value,
+    thumbnailFileName: thumbnailFileName.value,
+    thumbnailDownloadUrl: thumbnailDownloadUrl.value,
+    masterDiameterValue: masterDiameterValue.value,
+    tableRowsCount: tableRows.value.length,
+    hasThumbnailFile: !!thumbnailFile.value,
+  };
+};
+
+// 변경사항 확인 함수
+const hasPresetChanges = (): boolean => {
+  if (!initialPresetData.value) {
+    // 초기값이 저장되지 않은 경우, 현재 입력값이 있는지 확인
+    return !!(
+      selectedUnit.value ||
+      selectedMachine.value ||
+      presetName.value ||
+      thumbnailFile.value ||
+      thumbnailFileName.value ||
+      tableRows.value.length > 0
+    );
+  }
+
+  const current = {
+    selectedUnit: selectedUnit.value || "",
+    selectedMachine: selectedMachine.value || "",
+    presetName: presetName.value || "",
+    thumbnailFileName: thumbnailFileName.value || "",
+    thumbnailDownloadUrl: thumbnailDownloadUrl.value || "",
+    masterDiameterValue: masterDiameterValue.value,
+    tableRowsCount: tableRows.value.length,
+    hasThumbnailFile: !!thumbnailFile.value,
+  };
+
+  const initial = initialPresetData.value;
+
+  return (
+    current.selectedUnit !== initial.selectedUnit ||
+    current.selectedMachine !== initial.selectedMachine ||
+    current.presetName !== initial.presetName ||
+    current.thumbnailFileName !== initial.thumbnailFileName ||
+    current.thumbnailDownloadUrl !== initial.thumbnailDownloadUrl ||
+    Math.abs(current.masterDiameterValue - initial.masterDiameterValue) > 0.001 ||
+    current.tableRowsCount !== initial.tableRowsCount ||
+    current.hasThumbnailFile !== initial.hasThumbnailFile
+  );
+};
+
 // 부모 컴포넌트에서 접근할 수 있도록 expose
 defineExpose({
   // 마스터의 diameter_value 반환
@@ -3477,6 +3552,10 @@ defineExpose({
   },
   // 저장 버튼 이벤트 (handleThumbnailRegister)
   handleThumbnailRegister,
+  // 변경사항 확인 함수
+  hasPresetChanges,
+  // 초기값 저장 함수
+  saveInitialPresetData,
 });
 </script>
 

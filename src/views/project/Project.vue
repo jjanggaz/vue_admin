@@ -502,6 +502,10 @@ onMounted(async () => {
 <style scoped lang="scss">
 .project-management {
   padding: 40px 24px;
+
+  @media (max-width: 1024px) {
+    padding: 40px 0;
+  }
 }
 
 // 모달이 제대로 표시되도록 하는 스타일
@@ -518,4 +522,73 @@ onMounted(async () => {
   position: relative !important;
   z-index: 10000 !important;
 }
+
+/* data-table 반응형 */
+@media (max-width: 1650px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 8px;
+    }
+    td {
+      padding: 4px 8px;
+    }
+
+    thead {
+      th {
+        font-size: 14px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 14px;
+      }
+    }
+  }
+}
+@media (max-width: 1320px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 6px;
+    }
+    td {
+      padding: 2px 6px;
+    }
+
+    thead {
+      th {
+        font-size: 12px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 12px;
+      }
+    }
+  }
+}
+@media (max-width: 1150px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 3px;
+    }
+    td {
+      padding: 0 3px;
+    }
+
+    thead {
+      th {
+        font-size: 11px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 11px;
+      }
+    }
+  }
+}
+/* //data-table 반응형 */
 </style>

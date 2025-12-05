@@ -251,6 +251,10 @@ const currentPageTitle = computed<string>(() => {
     color: $text-color;
     margin: 0;
     white-space: nowrap;
+
+    @media (max-width: 768px) {
+      font-size: 18px;
+    }
   }
 }
 

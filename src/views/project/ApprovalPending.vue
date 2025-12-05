@@ -281,5 +281,78 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   padding: 40px 24px;
+
+  @media (max-width: 1050px) {
+    padding: 40px 0;
+  }
 }
+
+/* data-table 반응형 */
+@media (max-width: 1650px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 8px;
+    }
+    td {
+      padding: 4px 8px;
+    }
+
+    thead {
+      th {
+        font-size: 14px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 14px;
+      }
+    }
+  }
+}
+@media (max-width: 1350px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 6px;
+    }
+    td {
+      padding: 2px 6px;
+    }
+
+    thead {
+      th {
+        font-size: 12px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 12px;
+      }
+    }
+  }
+}
+@media (max-width: 1180px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 3px;
+    }
+    td {
+      padding: 0 3px;
+    }
+
+    thead {
+      th {
+        font-size: 11px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 11px;
+      }
+    }
+  }
+}
+/* //data-table 반응형 */
 </style>

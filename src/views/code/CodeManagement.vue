@@ -1282,6 +1282,10 @@ const handleEdit = () => {
 <style scoped lang="scss">
 .code-management {
   padding: 40px 24px;
+
+  @media (max-width: 768px) {
+    padding: 20px 0;
+  }
 }
 
 .search-section {
@@ -1323,4 +1327,73 @@ const handleEdit = () => {
     }
   }
 }
+
+/* data-table 반응형 */
+@media (max-width: 1550px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 8px;
+    }
+    td {
+      padding: 4px 8px;
+    }
+
+    thead {
+      th {
+        font-size: 14px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 14px;
+      }
+    }
+  }
+}
+@media (max-width: 1280px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 6px;
+    }
+    td {
+      padding: 2px 6px;
+    }
+
+    thead {
+      th {
+        font-size: 12px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 12px;
+      }
+    }
+  }
+}
+@media (max-width: 1110px) {
+  :deep(.data-table) {
+    th {
+      padding: 0 3px;
+    }
+    td {
+      padding: 0 3px;
+    }
+
+    thead {
+      th {
+        font-size: 11px;
+      }
+    }
+  
+    tbody {
+      td {
+        font-size: 11px;
+      }
+    }
+  }
+}
+/* //data-table 반응형 */
 </style>

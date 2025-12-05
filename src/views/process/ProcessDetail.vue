@@ -3615,16 +3615,32 @@ const hasMappingPidChanges = () => {
     return true;
   }
 
-  // 각 항목 비교 (정렬된 상태이므로 같은 인덱스끼리 비교)
+  // 각 항목 비교 (drawing_id 기준으로 찾아서 비교)
   for (let i = 0; i < currentList.length; i++) {
     const current = currentList[i];
-    const initial = initialList[i];
+    
+    // drawing_id 또는 id를 기준으로 초기 항목 찾기
+    const initial = initialList.find((item) => {
+      if (current.drawing_id && item.drawing_id) {
+        return current.drawing_id === item.drawing_id;
+      }
+      if (current.id && item.id) {
+        return current.id === item.id;
+      }
+      return false;
+    });
+    
+    // 초기 항목을 찾지 못한 경우 (새로 추가된 항목) - 변경됨
+    if (!initial) {
+      console.log(`hasMappingPidChanges: 항목 ${i}가 초기 목록에 없음 (새 항목)`, {
+        current,
+      });
+      return true;
+    }
     
     // 파일명 비교만으로 변경 감지 (파일 객체는 저장 시점에만 필요)
     // 파일을 다시 선택하지 않았는데도 변경으로 인식되는 문제 방지
     if (
-      current.id !== initial.id ||
-      current.drawing_id !== initial.drawing_id ||
       current.pidFileName !== initial.pidFileName ||
       current.excelFileName !== initial.excelFileName ||
       current.svgFileName !== initial.svgFileName
@@ -3633,8 +3649,6 @@ const hasMappingPidChanges = () => {
         current,
         initial,
         differences: {
-          id: current.id !== initial.id,
-          drawing_id: current.drawing_id !== initial.drawing_id,
           pidFileName: current.pidFileName !== initial.pidFileName,
           excelFileName: current.excelFileName !== initial.excelFileName,
           svgFileName: current.svgFileName !== initial.svgFileName,
@@ -3683,12 +3697,8 @@ const hasPidComponentChanges = () => {
 const closePidComponentSection = () => {
   console.log("P&ID 컴포넌트 섹션 닫기 버튼 클릭");
 
-  // 변경사항 확인
-  if (hasPidComponentChanges()) {
-    if (!confirm(t("process.hasChangesConfirm"))) {
-      return;
-    }
-  }
+  // 변경사항 확인 제외 - P&ID Components 그리드는 변경사항 체크에서 제외
+  // 저장 버튼도 숨겨져 있으므로 변경사항 체크 불필요
 
   showPidComponentSection.value = false;
   selectedPidForComponent.value = null;

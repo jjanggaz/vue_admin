@@ -422,6 +422,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
 }
 
 .data-table {
+  width: 100%;
   border-collapse: collapse;
 
   th,

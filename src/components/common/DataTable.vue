@@ -422,8 +422,6 @@ const formatCellValue = (item: any, column: TableColumn) => {
 }
 
 .data-table {
-  width: 100%;
-  // min-width: 100%;
   border-collapse: collapse;
 
   th,
@@ -453,7 +451,6 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
     input[type="checkbox"] {
       appearance: none;
-      // vertical-align: middle;
       width: 20px;
       height: 20px;
       border: none;
@@ -651,13 +648,13 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
     thead {
       th {
-        font-size: 11px;
+        font-size: 12px;
       }
     }
   
     tbody {
       td {
-        font-size: 11px;
+        font-size: 12px;
       }
     }
   }

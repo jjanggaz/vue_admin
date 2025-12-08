@@ -1064,6 +1064,9 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         alert(t("common.saved"));
       }
       console.log("저장 성공:", addResponses);
+      
+      // 저장 성공 후 초기값 업데이트 (팝업 닫기 시 저장 확인 메시지 방지)
+      saveInitialPresetData();
       return;
     }
 
@@ -1236,6 +1239,9 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
     if (props.isEditMode === true && currentPresetId.value) {
       await reloadPresetDetailData(currentPresetId.value);
     }
+    
+    // 저장 성공 후 초기값 업데이트 (팝업 닫기 시 저장 확인 메시지 방지)
+    saveInitialPresetData();
   } catch (error) {
     console.error("저장 실패:", error);
     alert(t("asset3D.error.saveFailed"));

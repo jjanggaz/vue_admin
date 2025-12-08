@@ -1586,7 +1586,7 @@ const searchFormulaAPI = async () => {
       search_field: "process_id",
       search_value: processId + "", // 동적으로 process_id 사용 (API에서 process_id 를 string으로 인식하고 있어 ""추가)
       order_by: "created_at",
-      //process_id: processId // 동적으로 process_id 사용
+      order_direction: "asc",
     };
 
     const response = await request(

@@ -2,7 +2,7 @@
   <aside class="sidebar"> <!-- :class="{ closed : isclosed}" -->
     <div class="sidebar-content">
       <!-- <img src="/public/images/logo/logo_wai_sd.svg" alt="" /> -->
-       <a href="/dashboard" title="대쉬보드 바로가기">
+       <a href="/code" title="코드관리 바로가기">
          <img :src="logoWaiSd" alt="WAI SD Logo" />
        </a>
 

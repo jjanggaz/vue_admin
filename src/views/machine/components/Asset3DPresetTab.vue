@@ -665,8 +665,14 @@ const materialPageSize = ref(10);
 // 디버깅용 equipment_type 검색
 const debugEquipmentType = ref("");
 
-// 하단 검색 버튼 활성화 여부 (구분과 세부구분이 모두 선택된 경우만 활성화)
+// 하단 검색 버튼 활성화 여부 (구분과 세부구분이 모두 선택된 경우 또는 키워드가 입력된 경우 활성화)
 const isSelectionSearchEnabled = computed(() => {
+  // 키워드가 입력된 경우: 세부구분 없이도 검색 가능
+  const hasKeyword = selectionFilter.value.searchText && selectionFilter.value.searchText.trim();
+  if (hasKeyword) {
+    return true;
+  }
+  
   // 구분이 선택되지 않은 경우 비활성화
   if (!selectionFilter.value.pipeCategory) {
     return false;
@@ -1037,7 +1043,8 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         return {
           sequence_order: row.no,
           preset_category: originalPipeCategoryCode || "",
-          preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
+          // 피팅방식 컬럼은 세부구분 label로 전달받아 그리드에 표시된 값(fittingType)을 그대로 저장
+          preset_subcategory: row.fittingType || originalSubCategoryCode || row.subCategory || "",
           diameter_before: diameterBefore || "",
           diameter_after: diameterAfter || "",
           length: "",
@@ -1186,7 +1193,8 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         return {
           sequence_order: row.no,
           preset_category: originalPipeCategoryCode || "",
-          preset_subcategory: originalSubCategoryCode || row.subCategory || row.fittingType || "",
+          // 피팅방식 컬럼은 세부구분 label로 전달받아 그리드에 표시된 값(fittingType)을 그대로 저장
+          preset_subcategory: row.fittingType || originalSubCategoryCode || row.subCategory || "",
           diameter_before: diameterBefore || "",
           diameter_after: diameterAfter || "",
           length: "",
@@ -1811,13 +1819,23 @@ const handleSubTypeSearch = (item: TableRow) => {
 
 // 선택 항목 필터 검색
 const handleSelectionSearch = () => {
-  // 수동 밸브인 경우 세부구분(트리 선택값) 검증
+  // 키워드 검색이 아닌 경우에만 세부구분 필수 검증
+  const hasKeyword = selectionFilter.value.searchText && selectionFilter.value.searchText.trim();
+  
+  // 수동 밸브인 경우: 키워드 입력 여부와 관계없이 세부구분 필수 검증 제외
   if (selectionFilter.value.pipeCategory === "P_VALV") {
-    if (!selectionFilter.value.fittingType) {
-      alert(t("asset3D.error.selectSubCategory"));
-      return;
+    // 수동 밸브는 세부구분 검증 없이 진행
+  } else if (!hasKeyword) {
+    // 키워드가 없고 수동 밸브가 아닌 경우: 세부구분 필수 검증
+    if (selectionFilter.value.pipeCategory) {
+      // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 검증
+      if (!selectionFilter.value.fittingType) {
+        alert(t("asset3D.error.selectSubCategory"));
+        return;
+      }
     }
   }
+  // 키워드가 있는 경우(수동 밸브 제외): 세부구분 필수 검증 제외
   
   console.log("자재 리스트 검색:", {
     ...selectionFilter.value,
@@ -2093,13 +2111,10 @@ const handleAddSelection = () => {
     return;
   }
 
-  // 세부구분 값 검증
+  // 세부구분 값 검증 (수동 밸브인 경우 제외)
   if (selectionFilter.value.pipeCategory === "P_VALV") {
-    // 수동 밸브인 경우: 트리에서 선택한 세부구분 필요
-    if (!filterSelectedCode.value && !filterSubTypeLabel.value) {
-      alert(t("asset3D.error.selectSubCategory"));
-      return;
-    }
+    // 수동 밸브인 경우: 세부구분 필수 선택 제외
+    // 검증 없이 진행
   } else if (selectionFilter.value.pipeCategory) {
     // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 필요
     if (!selectionFilter.value.fittingType) {
@@ -2137,8 +2152,20 @@ const handleAddSelection = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { no: _no, ...materialItemWithoutNo } = materialItem as Record<string, unknown>;
 
-    // 자재 리스트 그리드의 피팅방식 값 추출 (원본 데이터에서도 확인)
-    const materialFittingType = String(materialItem.fittingType || (materialItemWithoutNo.fittingType as string) || "");
+    // 조회조건의 세부구분 label 값 추출 (피팅방식 컬럼에 사용)
+    let fittingTypeLabel = "";
+    if (selectionFilter.value.pipeCategory === "P_VALV") {
+      // 수동 밸브: 자재 리스트 그리드의 배관유형명(equipment_type_name)을 피팅방식으로 전달
+      fittingTypeLabel = String((materialItem as Record<string, unknown>).equipment_type_name || "");
+    } else if (selectionFilter.value.pipeCategory) {
+      // 배관 또는 기타 구분: 셀렉트에서 선택한 세부구분 라벨
+      if (selectionFilter.value.fittingType) {
+        const selectedOption = filterSubTypeOptions.value.find(
+          opt => opt.value === selectionFilter.value.fittingType
+        );
+        fittingTypeLabel = selectedOption?.label || selectionFilter.value.fittingType || "";
+      }
+    }
 
     // materialItemWithoutNo에서 pipeType 제거 (배관유형 항목 제외)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2206,8 +2233,8 @@ const handleAddSelection = () => {
         ? filterSelectedCode.value 
         : selectionFilter.value.fittingType || "",
       ...materialItemWithoutNoAndPipeType,
-      // 피팅방식은 자재 리스트 그리드의 값을 사용 (마지막에 설정하여 덮어쓰기 방지)
-      fittingType: materialFittingType,
+      // 피팅방식은 조회 조건의 세부구분 label 명칭을 사용 (마지막에 설정하여 덮어쓰기 방지)
+      fittingType: fittingTypeLabel,
       // no 필드는 마지막에 설정하여 덮어쓰기 방지
       no: newNo, // 기존 최대 순번 + 1부터 시작
     };
@@ -3315,7 +3342,7 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
     // 프리셋 생성/수정 요청 데이터 구성
     const presetData: Record<string, unknown> = {
       root_equipment_type: selectedMachine.value,
-      equipment_type: firstRow ? ((firstRow as Record<string, unknown>)._originalSubCategoryCode as string || (firstRow as Record<string, unknown>)._originalPipeCategoryCode as string || "") : "",
+      // equipment_type 필드는 전달하지 않음
       preset_category: "PRESET",
       total_unit_count: tableRows.value.length > 0 ? tableRows.value.length : 1,
       preset_name_ko: presetName.value.trim(),

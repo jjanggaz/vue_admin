@@ -94,7 +94,7 @@
         <button
           type="button"
           class="btn btn-register md"
-          @click="handleThumbnailRegister"
+          @click="() => handleThumbnailRegister()"
           :disabled="!selectedUnit || !selectedMachine || !presetName"
         >
           {{ isEditMode ? t("common.save") : t("common.register") }}
@@ -109,7 +109,7 @@
           <button type="button" class="btn-delete-row" @click="handleDeleteRow">
             {{ t("asset3D.deleteRow") }}
           </button>
-        <button type="button" class="btn btn-save sm" @click="handleSaveSelectedItems">
+        <button type="button" class="btn btn-save sm" @click="() => handleSaveSelectedItems()">
           {{ t("common.save") }}
           </button>
       </div>
@@ -957,6 +957,22 @@ const handleAddRow = () => {
   });
   // 번호 재정렬
   updateRowNumbers();
+};
+
+// 선택 항목 그리드의 첫 번째 row 직경값을 마스터에 업데이트하는 함수 (팝업 닫을 때만 호출)
+const updateMasterDiameterFromFirstRow = () => {
+  if (tableRows.value.length > 0 && tableRows.value[0].diameter) {
+    const firstRowDiameter = tableRows.value[0].diameter;
+    const diameterNum = parseFloat(String(firstRowDiameter).replace(/[^0-9.]/g, ""));
+    if (!isNaN(diameterNum) && diameterNum > 0) {
+      masterDiameterValue.value = diameterNum;
+      console.log("[Asset3DPresetTab] 첫 번째 row 직경값을 마스터에 업데이트:", diameterNum);
+    }
+  } else if (tableRows.value.length === 0) {
+    // 선택 항목이 없으면 마스터 직경값 초기화
+    masterDiameterValue.value = 0;
+    console.log("[Asset3DPresetTab] 선택 항목이 없어 마스터 직경값 초기화");
+  }
 };
 
 // 행 삭제 핸들러
@@ -2108,7 +2124,7 @@ const handleAddSelection = () => {
 
   console.log("[Asset3DPresetTab] 기존 최대 순번:", maxNo, "기존 행 개수:", tableRows.value.length, "신규 행 개수:", selectedMaterialItems.value.length);
 
-  // 선택된 자재 리스트 항목들을 선택 항목 그리드에 순차 추가
+  // 선택된 자재 리스트 항목들을 선택 항목 그리드에 순차 추가 (중복 허용)
   selectedMaterialItems.value.forEach((materialItem, index) => {
     // 원본 데이터에서 equipment_id와 equipment_code 가져오기
     const equipmentId = (materialItem as Record<string, unknown>).equipment_id || null;
@@ -3193,7 +3209,7 @@ const reloadPresetMasterData = async (presetId: string) => {
 };
 
 // 프리셋 등록 핸들러
-const handleThumbnailRegister = async () => {
+const handleThumbnailRegister = async (skipAlert: boolean = false) => {
   // 필수 필드 검증
   if (!selectedUnit.value) {
     alert(t("asset3D.error.selectUnit"));
@@ -3226,9 +3242,12 @@ const handleThumbnailRegister = async () => {
     // 썸네일 파일 처리
     let thumbnailId: string | null = null;
     
-    // 등록 모드에서는 썸네일 파일을 별도로 업로드하지 않고 프리셋 생성 API에 포함
-    // 수정 모드에서만 썸네일 파일을 별도로 업로드
-    if (isEditMode) {
+    // 등록 모드이지만 이미 저장된 데이터인지 확인 (currentPresetId가 있는 경우)
+    const isAlreadySaved = !isEditMode && currentPresetId.value !== null;
+    
+    // 수정 모드이거나 등록 모드에서 이미 저장된 데이터인 경우 썸네일 파일을 별도로 업로드
+    // 등록 모드에서 처음 저장하는 경우는 썸네일 파일을 프리셋 생성 API에 포함
+    if (isEditMode || isAlreadySaved) {
       // 수정 모드: 기존 썸네일 ID 유지 또는 새로 선택한 파일이 있으면 업로드
       console.log("========================================");
       console.log("[Asset3DPreset] 수정 모드 - 썸네일 처리");
@@ -3237,9 +3256,12 @@ const handleThumbnailRegister = async () => {
       console.log("thumbnailFileName.value:", thumbnailFileName.value);
       
       if (thumbnailFile.value) {
-        // 수정 모드에서 새 썸네일 파일이 선택된 경우 - 프리셋 썸네일 업로드 API 호출
+        // 수정 모드 또는 등록 모드에서 이미 저장된 데이터인 경우 새 썸네일 파일이 선택된 경우 - 프리셋 썸네일 업로드 API 호출
         const editItemAny = props.editItem as any;
-        const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId || currentPresetId.value;
+        // 수정 모드에서는 editItem에서, 등록 모드에서는 currentPresetId에서 preset_id 가져오기
+        const presetId = isEditMode
+          ? (editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId || currentPresetId.value)
+          : currentPresetId.value;
         
         if (!presetId) {
           console.error("수정 모드에서 preset_id를 찾을 수 없습니다.");
@@ -3260,8 +3282,14 @@ const handleThumbnailRegister = async () => {
         console.log("프리셋 썸네일 업로드 완료, thumbnail_id:", thumbnailId);
       } else {
         // 썸네일 파일이 선택되지 않은 경우 기존 썸네일 ID 유지
-        const editItemAny = props.editItem as any;
-        thumbnailId = editItemAny.thumbnail_id || null;
+        if (isEditMode) {
+          const editItemAny = props.editItem as any;
+          thumbnailId = editItemAny.thumbnail_id || null;
+        } else if (isAlreadySaved) {
+          // 등록 모드에서 이미 저장된 데이터인 경우, 기존 썸네일 ID는 서버에서 가져와야 함
+          // 현재는 null로 유지 (서버에서 기존 썸네일이 유지됨)
+          thumbnailId = null;
+        }
         console.log("기존 thumbnail_id 유지:", thumbnailId);
       }
       console.log("========================================");
@@ -3287,7 +3315,7 @@ const handleThumbnailRegister = async () => {
     // 프리셋 생성/수정 요청 데이터 구성
     const presetData: Record<string, unknown> = {
       root_equipment_type: selectedMachine.value,
-      equipment_type: firstRow ? (firstRow.subCategory || firstRow.pipeCategory || "") : "",
+      equipment_type: firstRow ? ((firstRow as Record<string, unknown>)._originalSubCategoryCode as string || (firstRow as Record<string, unknown>)._originalPipeCategoryCode as string || "") : "",
       preset_category: "PRESET",
       total_unit_count: tableRows.value.length > 0 ? tableRows.value.length : 1,
       preset_name_ko: presetName.value.trim(),
@@ -3315,26 +3343,45 @@ const handleThumbnailRegister = async () => {
     console.log("========================================");
     console.log("isEditMode (boolean):", isEditMode);
     console.log("hasEditItem:", hasEditItem);
+    console.log("currentPresetId:", currentPresetId.value);
     console.log("editItem 전체:", JSON.stringify(props.editItem, null, 2));
     console.log("========================================");
 
-    if (isEditMode && hasEditItem) {
-      // 수정 모드: 프리셋 업데이트 API 호출
+    // 수정 모드이거나, 등록 모드이지만 이미 저장된 데이터인 경우 (currentPresetId가 있는 경우) 업데이트로 처리
+    const shouldUpdate = (isEditMode && hasEditItem) || (!isEditMode && currentPresetId.value !== null);
+    
+    if (shouldUpdate) {
+      // 이미 저장된 데이터인 경우 변경사항 확인
+      if (!skipAlert && !hasPresetChanges()) {
+        // 변경사항이 없으면 메시지 출력 후 종료
+        alert(t("common.noChanges"));
+        return;
+      }
+      // 수정 모드 또는 등록 모드에서 이미 저장된 데이터: 프리셋 업데이트 API 호출
       const editItemAny = props.editItem as any;
-      const presetId = editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId;
+      // 수정 모드에서는 editItem에서, 등록 모드에서는 currentPresetId에서 preset_id 가져오기
+      const presetId = isEditMode 
+        ? (editItemAny.preset_id || editItemAny.equipment_id || editItemAny.id || editItemAny.presetId)
+        : currentPresetId.value;
       
       console.log("========================================");
       console.log("[Asset3DPreset] 프리셋 ID 추출");
       console.log("========================================");
-      console.log("preset_id:", editItemAny.preset_id);
-      console.log("equipment_id:", editItemAny.equipment_id);
-      console.log("id:", editItemAny.id);
-      console.log("presetId:", editItemAny.presetId);
+      console.log("isEditMode:", isEditMode);
+      console.log("isAlreadySaved:", !isEditMode && currentPresetId.value !== null);
+      if (isEditMode) {
+        console.log("preset_id:", editItemAny.preset_id);
+        console.log("equipment_id:", editItemAny.equipment_id);
+        console.log("id:", editItemAny.id);
+        console.log("presetId:", editItemAny.presetId);
+      } else {
+        console.log("currentPresetId:", currentPresetId.value);
+      }
       console.log("최종 presetId:", presetId);
       console.log("========================================");
       
       if (!presetId) {
-        console.error("프리셋 ID를 찾을 수 없습니다. editItem:", editItemAny);
+        console.error("프리셋 ID를 찾을 수 없습니다. editItem:", editItemAny, "currentPresetId:", currentPresetId.value);
         alert(t("asset3D.error.presetIdNotFound"));
         return;
       }
@@ -3358,7 +3405,9 @@ const handleThumbnailRegister = async () => {
       console.log("📥 프리셋 수정 API 응답:", response);
 
       if (response && response.success) {
-        alert(t("asset3D.success.presetUpdated"));
+        if (!skipAlert) {
+          alert(t("common.saved"));
+        }
         
         // 수정 성공 후 새로 선택한 파일만 초기화 (썸네일 정보는 유지)
         thumbnailFile.value = null;
@@ -3369,6 +3418,9 @@ const handleThumbnailRegister = async () => {
         // 수정 모드에서는 썸네일 파일명과 미리보기는 유지
         // (서버에서 다시 로드하거나 기존 값 유지)
         // 폼의 다른 필드는 초기화하지 않음 (수정 모드이므로)
+        
+        // 저장 성공 후 초기값 업데이트 (팝업 닫기 시 저장 확인 메시지 방지)
+        saveInitialPresetData();
       } else {
         const errorMessage = response?.message || t("asset3D.error.presetUpdateFailed");
         alert(errorMessage);
@@ -3451,9 +3503,18 @@ const handleThumbnailRegister = async () => {
         if (presetId) {
           currentPresetId.value = String(presetId);
           console.log("✅ preset_id 저장:", currentPresetId.value);
+          
+          // preset_id 추출 후 재조회하여 마스터 정보 갱신
+          console.log("========================================");
+          console.log("[Asset3DPreset] 등록 모드 - 마스터 정보 재조회");
+          console.log("========================================");
+          console.log("preset_id:", presetId);
+          console.log("========================================");
+          await reloadPresetMasterData(String(presetId));
         }
         
-        alert(t("asset3D.success.presetRegistered"));
+        // 등록 모드는 항상 메시지 출력 (팝업 닫기 시 호출되지 않음)
+        alert(t("common.saved"));
         
         // 등록 성공 후 상단 폼은 초기화하지 않음 (선택 항목 그리드 활성화를 위해 유지)
         // tableRows는 유지 (선택 항목 그리드에 표시)
@@ -3556,6 +3617,8 @@ defineExpose({
   setMasterDiameterValue: (value: number) => {
     masterDiameterValue.value = value;
   },
+  // 선택 항목 첫 번째 row 직경값을 마스터에 업데이트 (팝업 닫을 때만 호출)
+  updateMasterDiameterFromFirstRow,
   // 저장 버튼 이벤트 (handleThumbnailRegister)
   handleThumbnailRegister,
   // 변경사항 확인 함수

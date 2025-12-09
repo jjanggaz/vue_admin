@@ -702,7 +702,8 @@
     "items": "개 항목을",
     "deleteConfirm": "삭제하시겠습니까?",
     "specifications": "사양 정보",
-    "priceInfo": "단가/견적 정보"
+    "priceInfo": "단가/견적 정보",
+    "noChanges": "변경사항이 없습니다."
   },
 
   "menuManagement": {

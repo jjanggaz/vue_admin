@@ -182,6 +182,9 @@ const thumbnailFileName = ref("");
 const thumbnailPreviewUrl = ref<string>("");
 const thumbnailDownloadUrl = ref<string>("");
 
+// 등록 모드에서 이미 저장된 데이터 추적용
+const currentLibraryId = ref<string | null>(null);
+
 // 파일 input refs
 const modelFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
@@ -330,6 +333,8 @@ watch(
       }
     } else {
       // 등록 모드에서는 빈 상태로 초기값 저장
+      // 등록 모드로 전환 시 currentLibraryId 초기화
+      currentLibraryId.value = null;
       await nextTick();
       saveInitialLibraryData();
     }
@@ -883,11 +888,24 @@ const handleRegister = async () => {
     // 수정 모드인지 확인
     const isEditMode = props.isEditMode === true;
     const hasEditItem = props.editItem !== null && props.editItem !== undefined;
+    const isAlreadySaved = !isEditMode && currentLibraryId.value !== null; // 등록 모드이지만 이미 저장된 데이터인 경우
+    
+    // 수정 모드이거나, 등록 모드이지만 이미 저장된 데이터인 경우 (currentLibraryId가 있는 경우) 업데이트로 처리
+    const shouldUpdate = (isEditMode && hasEditItem) || isAlreadySaved;
     
     console.log("isEditMode:", isEditMode);
     console.log("hasEditItem:", hasEditItem);
+    console.log("isAlreadySaved:", isAlreadySaved);
+    console.log("shouldUpdate:", shouldUpdate);
     console.log("조건 확인 (isEditMode && hasEditItem):", isEditMode && hasEditItem);
     console.log("========================================");
+
+    // 수정 모드이거나 이미 저장된 데이터인 경우 변경사항 확인
+    if (shouldUpdate && !hasLibraryChanges()) {
+      // 변경사항이 없으면 메시지 출력 후 종료
+      alert(t("common.noChanges"));
+      return;
+    }
 
     if (isEditMode && hasEditItem) {
       // 수정 모드 처리
@@ -1141,6 +1159,9 @@ const handleRegister = async () => {
       
       // 수정 모드에서는 썸네일 파일명과 미리보기는 유지
       // (서버에서 다시 로드하거나 기존 값 유지)
+      
+      // 저장 후 초기값 갱신
+      saveInitialLibraryData();
 
       return;
     }
@@ -1153,7 +1174,218 @@ const handleRegister = async () => {
     console.log("  - modelFileName.value:", modelFileName.value);
     console.log("  - thumbnailFile.value:", thumbnailFile.value);
     console.log("  - thumbnailFileName.value:", thumbnailFileName.value);
+    console.log("  - currentLibraryId.value:", currentLibraryId.value);
+    console.log("  - isAlreadySaved:", isAlreadySaved);
     console.log("========================================");
+
+    // 등록 모드이지만 이미 저장된 데이터인 경우 업데이트로 처리
+    if (isAlreadySaved && currentLibraryId.value) {
+      const libraryId = currentLibraryId.value;
+      
+      console.log("========================================");
+      console.log("[Asset3DLibrary] 등록 모드에서 업데이트로 처리");
+      console.log("========================================");
+      console.log("library_id:", libraryId);
+      console.log("========================================");
+
+      // 카테고리 영문명 매핑
+      const categoryEnMap: Record<string, string> = {
+        INTERIOR: "Interior",
+        STRUCTURE: "Structure",
+      };
+      const categoryEn = categoryEnMap[selectedCategory.value] || selectedCategory.value;
+
+      // 라이브러리 업데이트 요청 데이터 구성
+      const updateData: Record<string, unknown> = {
+        category: selectedCategory.value,
+        category_en: categoryEn,
+        model_code: modelName.value.trim(),
+        model_name: modelName.value.trim(),
+        model_name_en: modelName.value.trim(),
+        unit_system_code: selectedUnit.value,
+        metadata: {},
+        is_active: true,
+        remarks: "",
+      };
+
+      // 라이브러리 업데이트 API 호출
+      console.log("========================================");
+      console.log("[Asset3DLibrary] 라이브러리 업데이트 API 호출 시작");
+      console.log("========================================");
+      console.log("📤 API 엔드포인트: /api/asset3D/library/update/" + libraryId);
+      console.log("📤 HTTP 메서드: PATCH");
+      console.log("📤 library_id:", libraryId);
+      console.log("📤 요청 데이터:", JSON.stringify(updateData, null, 2));
+      console.log("========================================");
+
+      try {
+        const updateResponse = await request(`/api/asset3D/library/update/${libraryId}`, undefined, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
+        });
+
+        console.log("📥 업데이트 응답:", updateResponse);
+
+        if (!updateResponse || !updateResponse.success) {
+          const errorMsg = updateResponse?.message || t("asset3D.error.libraryUpdateFailed");
+          throw new Error(errorMsg);
+        }
+
+        // 썸네일 파일 업로드 (있는 경우)
+        if (thumbnailFile.value) {
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 썸네일 파일 업로드 시작 (등록 모드에서 업데이트)");
+          console.log("========================================");
+          console.log("📤 API 엔드포인트: /api/asset3D/library/thumbnail/upload");
+          console.log("📤 HTTP 메서드: POST");
+          console.log("📤 library_id:", libraryId);
+          console.log("📤 파일명:", thumbnailFile.value.name);
+          console.log("📤 파일 크기:", thumbnailFile.value.size, "bytes");
+          console.log("📤 파일 타입:", thumbnailFile.value.type);
+          console.log("========================================");
+
+          const thumbnailFormData = new FormData();
+          thumbnailFormData.append("file", thumbnailFile.value);
+          thumbnailFormData.append("library_id", String(libraryId));
+
+          const url = new URL("/api/asset3D/library/thumbnail/upload", window.location.origin);
+          const headers: Record<string, string> = {
+            system_code: import.meta.env.VITE_SYSTEM_CODE,
+            user_Id: localStorage.getItem("authUserId") || "",
+            wai_lang: localStorage.getItem("wai_lang") || "ko",
+            authSuper: localStorage.getItem("authSuper") || "false",
+          };
+
+          console.log("📤 요청 URL:", url.toString());
+          console.log("📤 요청 헤더:", headers);
+          console.log("📤 FormData 항목:");
+          console.log(`  - file: File(${thumbnailFile.value.name}, ${thumbnailFile.value.size} bytes)`);
+          console.log(`  - library_id: ${libraryId}`);
+          console.log("========================================");
+
+          const thumbnailUploadResponse = await fetch(url.toString(), {
+            method: "POST",
+            headers,
+            credentials: "include",
+            body: thumbnailFormData,
+          });
+
+          console.log("📥 응답 상태:", thumbnailUploadResponse.status, thumbnailUploadResponse.statusText);
+
+          if (!thumbnailUploadResponse.ok) {
+            let errorMessage = `HTTP ${thumbnailUploadResponse.status}: ${thumbnailUploadResponse.statusText}`;
+            try {
+              const errorData = await thumbnailUploadResponse.json();
+              console.error("📥 에러 응답 데이터:", errorData);
+              errorMessage = errorData?.message || errorData?.detail || errorMessage;
+            } catch {
+              const errorText = await thumbnailUploadResponse.text();
+              console.error("📥 에러 응답 텍스트:", errorText);
+            }
+            console.error("[Asset3DLibrary] 썸네일 파일 업로드 실패");
+            console.error("========================================");
+            throw new Error(`${t("asset3D.error.thumbnailUploadFailed")}: ${errorMessage}`);
+          }
+
+          const thumbnailUploadResponseData = await thumbnailUploadResponse.json();
+          console.log("📥 응답 데이터:", thumbnailUploadResponseData);
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 썸네일 파일 업로드 성공");
+          console.log("========================================");
+        } else {
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 썸네일 파일이 선택되지 않아 업로드를 건너뜁니다.");
+          console.log("========================================");
+        }
+
+        // 3D 모델 파일 업로드 (있는 경우)
+        if (modelFile.value) {
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 3D 모델 파일 업로드 시작 (등록 모드에서 업데이트)");
+          console.log("========================================");
+          console.log("📤 API 엔드포인트: /api/asset3D/library/model/upload");
+          console.log("📤 HTTP 메서드: POST");
+          console.log("📤 library_id:", libraryId);
+          console.log("📤 파일명:", modelFile.value.name);
+          console.log("📤 파일 크기:", modelFile.value.size, "bytes");
+          console.log("📤 파일 타입:", modelFile.value.type);
+          console.log("========================================");
+
+          const modelFormData = new FormData();
+          modelFormData.append("file", modelFile.value);
+          modelFormData.append("library_id", String(libraryId));
+
+          const url = new URL("/api/asset3D/library/model/upload", window.location.origin);
+          const headers: Record<string, string> = {
+            system_code: import.meta.env.VITE_SYSTEM_CODE,
+            user_Id: localStorage.getItem("authUserId") || "",
+            wai_lang: localStorage.getItem("wai_lang") || "ko",
+            authSuper: localStorage.getItem("authSuper") || "false",
+          };
+
+          console.log("📤 요청 URL:", url.toString());
+          console.log("📤 요청 헤더:", headers);
+          console.log("📤 FormData 항목:");
+          console.log(`  - file: File(${modelFile.value.name}, ${modelFile.value.size} bytes)`);
+          console.log(`  - library_id: ${libraryId}`);
+          console.log("========================================");
+
+          const modelUploadResponse = await fetch(url.toString(), {
+            method: "POST",
+            headers,
+            credentials: "include",
+            body: modelFormData,
+          });
+
+          console.log("📥 응답 상태:", modelUploadResponse.status, modelUploadResponse.statusText);
+
+          if (!modelUploadResponse.ok) {
+            let errorMessage = `HTTP ${modelUploadResponse.status}: ${modelUploadResponse.statusText}`;
+            try {
+              const errorData = await modelUploadResponse.json();
+              console.error("📥 에러 응답 데이터:", errorData);
+              errorMessage = errorData?.message || errorData?.detail || errorMessage;
+            } catch {
+              const errorText = await modelUploadResponse.text();
+              console.error("📥 에러 응답 텍스트:", errorText);
+            }
+            console.error("[Asset3DLibrary] 3D 모델 파일 업로드 실패");
+            console.error("========================================");
+            throw new Error(`${t("asset3D.error.modelUploadFailed")}: ${errorMessage}`);
+          }
+
+          const uploadResponseData = await modelUploadResponse.json();
+          console.log("📥 응답 데이터:", uploadResponseData);
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 3D 모델 파일 업로드 성공");
+          console.log("========================================");
+        } else {
+          console.log("========================================");
+          console.log("[Asset3DLibrary] 3D 모델 파일이 선택되지 않아 업로드를 건너뜁니다.");
+          console.log("========================================");
+        }
+
+        console.log("========================================");
+        console.log("[Asset3DLibrary] 등록 모드에서 업데이트 완료");
+        console.log("========================================");
+
+        alert(t("common.saved"));
+
+        // 저장 후 초기값 갱신
+        saveInitialLibraryData();
+
+        return;
+      } catch (error) {
+        console.error("========================================");
+        console.error("[Asset3DLibrary] 등록 모드에서 업데이트 실패");
+        console.error("========================================");
+        console.error("에러:", error);
+        throw error;
+      }
+    }
 
     // 등록 모드 처리 - multipart/form-data로 한 번에 전송
     // 카테고리 영문명 매핑
@@ -1305,22 +1537,20 @@ const handleRegister = async () => {
       throw new Error(responseData?.message || t("asset3D.error.registerFailed"));
     }
 
+    // 등록 모드에서 library_id 추출 및 저장
+    const responseDataAny = responseData as any;
+    const libraryId = responseDataAny.response?.library_id || responseDataAny.library_id || responseDataAny.id || null;
+    if (libraryId) {
+      currentLibraryId.value = String(libraryId);
+      console.log("✅ library_id 저장:", currentLibraryId.value);
+    }
+
     alert(t("common.registered"));
 
-    // 성공 시 초기화
-    selectedUnit.value = "";
-    selectedCategory.value = "";
-    modelName.value = "";
-    modelFileName.value = "";
-    modelFile.value = null;
-    thumbnailFileName.value = "";
-    thumbnailFile.value = null;
-    if (modelFileInput.value) {
-      modelFileInput.value.value = "";
-    }
-    if (thumbnailFileInput.value) {
-      thumbnailFileInput.value.value = "";
-    }
+    // 성공 시 초기화하지 않고, 등록 모드에서 이미 저장된 데이터로 처리
+    // (다시 저장 시 업데이트로 동작하도록)
+    // 저장 후 초기값 갱신
+    saveInitialLibraryData();
   } catch (error) {
     console.error("========================================");
     console.error("[Asset3DLibrary] 에러 발생");

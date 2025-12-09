@@ -995,11 +995,13 @@ const closeRegistModal = async () => {
     }
   }
   
-  // 프리셋 등록 탭이 선택되어 있는 경우 직경 값 동기화 확인 (등록 모드 및 수정 모드 모두)
+  // 프리셋 등록 탭이 선택되어 있는 경우 직경 값 동기화 및 마스터 정보 저장 (등록 모드 및 수정 모드 모두)
   if (modalActiveTab.value === 1 && presetTabRef.value) {
     try {
-      // 자식 컴포넌트에서 필요한 데이터 가져오기
-      const masterDiameterValue = presetTabRef.value.getMasterDiameterValue?.() || 0;
+      // 선택 항목 첫 번째 row 직경값을 마스터에 업데이트 (팝업 닫을 때만)
+      presetTabRef.value.updateMasterDiameterFromFirstRow?.();
+      
+      // 자식 컴포넌트에서 첫 행의 직경값 가져오기
       const firstRowDiameterBefore = presetTabRef.value.getFirstRowDiameterBefore?.() || "";
 
       // diameter_before에서 숫자만 추출
@@ -1007,30 +1009,24 @@ const closeRegistModal = async () => {
         ? parseFloat(firstRowDiameterBefore.replace(/[^0-9.]/g, "")) 
         : 0;
 
-      // 값이 다르고, 선택 항목 그리드에 데이터가 있는 경우
-      if (!isNaN(diameterBeforeNum) && diameterBeforeNum > 0 && 
-          Math.abs(masterDiameterValue - diameterBeforeNum) > 0.001) {
-        // 확인 팝업 표시
-        const shouldUpdate = confirm("프리셋 마스터의 직경 값을 업데이트 하시겠습니까?");
+      // 선택 항목 그리드에 데이터가 있고, 직경값이 유효한 경우 마스터 정보 저장
+      if (!isNaN(diameterBeforeNum) && diameterBeforeNum > 0) {
+        // 첫 행의 diameter_before 값을 마스터의 diameter_value로 설정
+        presetTabRef.value.setMasterDiameterValue?.(diameterBeforeNum);
         
-        if (shouldUpdate) {
-          // 첫 행의 diameter_before 값을 마스터의 diameter_value로 설정
-          presetTabRef.value.setMasterDiameterValue?.(diameterBeforeNum);
-          
-          // 저장 버튼 이벤트 호출
-          await presetTabRef.value.handleThumbnailRegister?.();
-          
-          // 저장 후 팝업 닫기
-          isRegistModalOpen.value = false;
-          isEditModalMode.value = false;
-          editTargetItem.value = null;
-          // 등록 모달 닫을 때 데이터 새로고침
-          await loadData();
-          return;
-        }
+        // 마스터 정보 저장 API 호출 (메시지 출력 없이)
+        await presetTabRef.value.handleThumbnailRegister?.(true);
+        
+        // 저장 후 팝업 닫기
+        isRegistModalOpen.value = false;
+        isEditModalMode.value = false;
+        editTargetItem.value = null;
+        // 등록 모달 닫을 때 데이터 새로고침
+        await loadData();
+        return;
       }
     } catch (error) {
-      console.error("직경 값 동기화 확인 중 오류:", error);
+      console.error("직경 값 동기화 및 마스터 정보 저장 중 오류:", error);
     }
   }
 

@@ -702,7 +702,8 @@
     "items": "items",
     "deleteConfirm": "Are you sure you want to delete?",
     "specifications": "Specifications",
-    "priceInfo": "Price Information"
+    "priceInfo": "Price Information",
+    "noChanges": "No changes."
   },
   "placeholder": {
     "search": "Enter search term",

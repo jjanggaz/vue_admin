@@ -159,7 +159,7 @@ const availableMenus = computed(() => {
 
 <style scoped lang="scss">
 .sidebar {
-  position: fixed;
+  //position: fixed;
   left: 0;
   top: 0;
   width: 260px;
@@ -230,7 +230,7 @@ const availableMenus = computed(() => {
       .nav-text {
         font-size: 18px;
         font-weight: 600;
-        line-height: 30px;
+        line-height: 20px;
         letter-spacing: -0.2px;
       }
     }
@@ -284,7 +284,10 @@ const availableMenus = computed(() => {
 
 @media (max-width: $breakpoint-lg) {
   .sidebar {
-    transform: translateX(-100%);
+    overflow: hidden;
+    width: 0;
+    //transform: translateX(-100%);
+    transition: width .3s ease;
 
     // &:not(.closed) {
     //   transform: translateX(0);

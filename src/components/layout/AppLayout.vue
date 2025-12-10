@@ -15,9 +15,19 @@ import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 </script>
 
+<style>
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
 <style scoped lang="scss">
+
 .app-layout {
   display: flex;
+  height: 100%;
   min-height: 100vh;
   background-color: #ffffff;
 }
@@ -26,7 +36,9 @@ import AppHeader from './AppHeader.vue'
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 260px; // Sidebar width
+  overflow: auto;
+  min-width: calc(100% - 260px);
+  //margin-left: 260px; // Sidebar width
   transition: margin-left .3s ease;
 }
 
@@ -47,6 +59,7 @@ import AppHeader from './AppHeader.vue'
 
 @media (max-width: $breakpoint-lg) {
   .main-wrapper {
+    min-width: initial;
     margin-left: 0;
   }
 }

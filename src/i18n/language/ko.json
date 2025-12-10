@@ -593,6 +593,7 @@
     "structureMachineType": "구조물 타입",
     "formula": "계산식",
     "formulaFile": "기계 계산식",
+    "structureFormulaFile": "구조물 계산식",
     "structure3DFormulaFile": "3D 구조물 계산식",
     "dtdModel": "3D 구조물 DTD모델",
     "modelThumbnail": "모델 썸네일",

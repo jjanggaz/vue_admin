@@ -41,7 +41,7 @@
         </select>
       </div>
       <div class="group-form inline">
-        <span class="label">{{ t("common.formulaFile") }}</span>
+        <span class="label">{{ t("common.structureFormulaFile") }}</span>
         <div class="file-input-wrapper">
           <button class="btn btn-file" @click="formulaFileInput?.click()">
             {{ t("common.fileSelect") }}

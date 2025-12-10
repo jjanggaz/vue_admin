@@ -591,6 +591,7 @@
     "structureMachineType": "Structure Type",
     "formula": "Formula",
     "formulaFile": "Machine Formula",
+    "structureFormulaFile": "Structure Formula",
     "dtdModel": "3D Structure DTD Model",
     "modelThumbnail": "Model Thumbnail",
     "revitModel3D": "3D REVIT Model",

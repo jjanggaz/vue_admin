@@ -5340,10 +5340,36 @@ const handleSvgFileChange = (item: any, event: Event) => {
         (pfdItem) => pfdItem.id === item.id
       );
       if (itemIndex !== -1) {
-        processStore.pfdList[itemIndex].svgFileName = file.name;
-        processStore.pfdList[itemIndex].svgFile = file;
-        processStore.pfdList[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        const row = processStore.pfdList[itemIndex] as any;
+        
+        // 기존 파일명 확인
+        const existingFileName = row.svgFileName || "";
+        const isSameFileName = existingFileName && file.name === existingFileName;
+        
+        row.svgFileName = file.name;
+        row.svgFile = file; // 실제 File 객체 저장 (파일명이 동일해도 다시 선택된 것으로 간주)
+        
+        // 기존 svg_drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+        // 또는 파일명이 동일한 경우에도 다시 업로드되도록 temp_로 변경
+        const existingSvgDrawingId = row.svg_drawing_id;
+        if (
+          (existingSvgDrawingId && !existingSvgDrawingId.startsWith("temp_")) ||
+          isSameFileName
+        ) {
+          // 기존 Svg 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+          row.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        } else if (!existingSvgDrawingId) {
+          // 새로운 Svg 파일 선택
+          row.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        }
+        
         console.log("Svg 파일이 processStore.pfdList에 업데이트됨:", file.name);
+        console.log("Svg 파일 객체 저장 확인:", {
+          fileName: file.name,
+          hasFileObject: !!row.svgFile,
+          svgDrawingId: row.svg_drawing_id,
+          isSameFileName,
+        });
       }
     }
 
@@ -5388,14 +5414,35 @@ const handlePfdFileChange = (item: any, event: Event) => {
     // processStore.pfdList에서 해당 항목을 찾아서 업데이트
     const itemIndex = processStore.pfdList.findIndex((pfdItem) => pfdItem.id === item.id);
     if (itemIndex !== -1) {
-      processStore.pfdList[itemIndex].pfdFileName = file.name;
-      (processStore.pfdList[itemIndex] as any)._file = file; // _file 속성으로 저장 (processPfdChanges에서 감지)
-      processStore.pfdList[itemIndex].drawing_id = `temp_pfd_drawing_${Date.now()}`;
+      const row = processStore.pfdList[itemIndex] as any;
+      
+      // 기존 파일명 확인
+      const existingFileName = row.pfdFileName || "";
+      const isSameFileName = existingFileName && file.name === existingFileName;
+      
+      row.pfdFileName = file.name;
+      row._file = file; // 실제 File 객체 저장 (파일명이 동일해도 다시 선택된 것으로 간주)
+      
+      // 기존 drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+      // 또는 파일명이 동일한 경우에도 다시 업로드되도록 temp_로 변경
+      const existingDrawingId = row.drawing_id;
+      if (
+        (existingDrawingId && !existingDrawingId.startsWith("temp_")) ||
+        isSameFileName
+      ) {
+        // 기존 공정카드 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+        row.drawing_id = `temp_pfd_drawing_${Date.now()}`;
+      } else if (!existingDrawingId) {
+        // 새로운 공정카드 파일 선택
+        row.drawing_id = `temp_pfd_drawing_${Date.now()}`;
+      }
+      
       console.log("PFD 파일이 processStore.pfdList에 업데이트됨:", file.name);
       console.log("PFD 파일 객체 저장 확인:", {
         fileName: file.name,
-        hasFileObject: !!(processStore.pfdList[itemIndex] as any)._file,
-        drawingId: processStore.pfdList[itemIndex].drawing_id,
+        hasFileObject: !!row._file,
+        drawingId: row.drawing_id,
+        isSameFileName,
       });
     }
 
@@ -5458,6 +5505,11 @@ const handleFormulaFileChange = (item: any, event: Event) => {
 
     if (itemIndex !== -1) {
       const row = processStore.formulaList[itemIndex] as any;
+      
+      // 기존 파일명 확인
+      const existingFileName = row.file_name || "";
+      const isSameFileName = existingFileName && file.name === existingFileName;
+      
       // 표시 컬럼(file_name)에 파일명 저장
       row.file_name = file.name;
       // 파일 처음 추가 시 등록일자를 현재 시간으로 설정
@@ -5472,9 +5524,23 @@ const handleFormulaFileChange = (item: any, event: Event) => {
       }
       // 하위 호환: 기존 필드도 유지 갱신
       row.registeredFormula = file.name.replace(".py", "");
-      row._file = file;
+      row._file = file; // 실제 File 객체 저장 (파일명이 동일해도 다시 선택된 것으로 간주)
       row.isSaved = false;
-      if (!row.formula_id) row.formula_id = `temp_formula_${Date.now()}`;
+      
+      // 기존 formula_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+      // 또는 파일명이 동일한 경우에도 다시 업로드되도록 temp_로 변경
+      const existingFormulaId = row.formula_id;
+      if (
+        (existingFormulaId && !existingFormulaId.startsWith("temp_")) ||
+        isSameFileName
+      ) {
+        // 기존 계산식 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+        row.formula_id = `temp_formula_${Date.now()}`;
+      } else if (!existingFormulaId) {
+        // 새로운 계산식 파일 선택
+        row.formula_id = `temp_formula_${Date.now()}`;
+      }
+      
       // 반응성 갱신 보장
       processStore.setFormulaList([...processStore.formulaList]);
     } else {

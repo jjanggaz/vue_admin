@@ -1580,7 +1580,7 @@ const ensureManualValveTree = async (forceReload = false) => {
   manualValveTreeError.value = null;
 
   try {
-    const response = await asset3DStore.fetchAsset3DCodeTree("MANUAL_VALVE", forceReload);
+    const response = await asset3DStore.fetchAsset3DCodeTree("P_VALV", forceReload);
     const normalizedTree = normalizeTreeNodes(response || []);
     console.log("[Asset3DPreset] 수동 밸브 트리 응답:", {
       length: normalizedTree.length,
@@ -1829,11 +1829,11 @@ const handleSelectionSearch = () => {
     // 키워드가 없고 수동 밸브가 아닌 경우: 세부구분 필수 검증
     if (selectionFilter.value.pipeCategory) {
       // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 검증
-      if (!selectionFilter.value.fittingType) {
-        alert(t("asset3D.error.selectSubCategory"));
-        return;
-      }
+    if (!selectionFilter.value.fittingType) {
+      alert(t("asset3D.error.selectSubCategory"));
+      return;
     }
+  }
   }
   // 키워드가 있는 경우(수동 밸브 제외): 세부구분 필수 검증 제외
   
@@ -3310,8 +3310,8 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
       } else {
         // 썸네일 파일이 선택되지 않은 경우 기존 썸네일 ID 유지
         if (isEditMode) {
-          const editItemAny = props.editItem as any;
-          thumbnailId = editItemAny.thumbnail_id || null;
+        const editItemAny = props.editItem as any;
+        thumbnailId = editItemAny.thumbnail_id || null;
         } else if (isAlreadySaved) {
           // 등록 모드에서 이미 저장된 데이터인 경우, 기존 썸네일 ID는 서버에서 가져와야 함
           // 현재는 null로 유지 (서버에서 기존 썸네일이 유지됨)
@@ -3397,10 +3397,10 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
       console.log("isEditMode:", isEditMode);
       console.log("isAlreadySaved:", !isEditMode && currentPresetId.value !== null);
       if (isEditMode) {
-        console.log("preset_id:", editItemAny.preset_id);
-        console.log("equipment_id:", editItemAny.equipment_id);
-        console.log("id:", editItemAny.id);
-        console.log("presetId:", editItemAny.presetId);
+      console.log("preset_id:", editItemAny.preset_id);
+      console.log("equipment_id:", editItemAny.equipment_id);
+      console.log("id:", editItemAny.id);
+      console.log("presetId:", editItemAny.presetId);
       } else {
         console.log("currentPresetId:", currentPresetId.value);
       }

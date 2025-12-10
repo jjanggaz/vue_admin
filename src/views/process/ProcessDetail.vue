@@ -27,8 +27,7 @@
 
           <div class="form-group">
             <label class="required"
-              >{{ t("process.processType") }}
-              <span class="required-mark">*</span></label
+              >{{ t("process.processType") }} <span class="required-mark">*</span></label
             >
             <template v-if="props.isRegisterMode">
               <select
@@ -47,22 +46,21 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{ processStore.processDetail.level2_code_value || '-' }}</span>
+              <span class="form-text-display">{{
+                processStore.processDetail.level2_code_value || "-"
+              }}</span>
             </template>
           </div>
 
           <div class="form-group">
             <label class="required"
-              >{{ t("process.subCategory") }}
-              <span class="required-mark">*</span></label
+              >{{ t("process.subCategory") }} <span class="required-mark">*</span></label
             >
             <template v-if="props.isRegisterMode">
               <select
                 :value="processStore.processDetail.subCategory || ''"
                 @change="handleSubCategoryChange"
-                :key="`subCategory-${
-                  processStore.searchSubCategoryOptions?.length || 0
-                }`"
+                :key="`subCategory-${processStore.searchSubCategoryOptions?.length || 0}`"
               >
                 <option value="">{{ t("common.select") }}</option>
                 <option
@@ -75,22 +73,21 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{ processStore.processDetail.level3_code_value || '-' }}</span>
+              <span class="form-text-display">{{
+                processStore.processDetail.level3_code_value || "-"
+              }}</span>
             </template>
           </div>
 
           <div class="form-group">
             <label class="required"
-              >{{ t("process.processName") }}
-              <span class="required-mark">*</span></label
+              >{{ t("process.processName") }} <span class="required-mark">*</span></label
             >
             <template v-if="props.isRegisterMode">
               <select
                 :value="processStore.processDetail.processName || ''"
                 @change="handleProcessNameChange"
-                :key="`processName-${
-                  processStore.searchProcessNameOptions?.length || 0
-                }`"
+                :key="`processName-${processStore.searchProcessNameOptions?.length || 0}`"
               >
                 <option value="">{{ t("common.select") }}</option>
                 <option
@@ -103,7 +100,9 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{ processStore.processDetail.level4_code_value || '-' }}</span>
+              <span class="form-text-display">{{
+                processStore.processDetail.level4_code_value || "-"
+              }}</span>
             </template>
           </div>
 
@@ -126,29 +125,24 @@
               </button>
               <button
                 v-if="
-                  (
-                    // 서버에 저장된 심볼이 있고 실제 미리보기 URL이 존재할 때만 다운로드 버튼 표시
-                    processStore.processDetail.symbolId &&
+                  // 서버에 저장된 심볼이 있고 실제 미리보기 URL이 존재할 때만 다운로드 버튼 표시
+                  (processStore.processDetail.symbolId &&
                     processStore.processDetail.symbolId !==
-                    '00000000-0000-0000-0000-000000000000' &&
-                    processStore.processSymbolPreviewUrl
-                  ) ||
+                      '00000000-0000-0000-0000-000000000000' &&
+                    processStore.processSymbolPreviewUrl) ||
                   // 또는 현재 선택된 로컬 파일이 있을 때 (등록 전 선택된 파일 다운 가능)
                   processStore.selectedFiles['processSymbol']
                 "
-                 @click="downloadProcessSymbol"
-                 class="btn download-btn"
-                 :title="t('processDetail.downloadProcessSymbol')"
-                 style="vertical-align: middle"
-               >
+                @click="downloadProcessSymbol"
+                class="btn download-btn"
+                :title="t('processDetail.downloadProcessSymbol')"
+                style="vertical-align: middle"
+              >
                 <span class="ico-download"></span>
               </button>
               <div class="selected-file">
                 <div class="symbol-state">
-                  <span
-                    class="symbol-txt"
-                    v-if="!processStore.processSymbolPreviewUrl"
-                  >
+                  <span class="symbol-txt" v-if="!processStore.processSymbolPreviewUrl">
                     {{ t("common.noFile") }}
                   </span>
                   <img
@@ -169,8 +163,7 @@
                     "
                     @click="handleDeleteProcessSymbol"
                     :title="t('processDetail.deleteSymbol')"
-                    >
-                  </button>
+                  ></button>
                 </div>
               </div>
             </div>
@@ -201,10 +194,7 @@
           <div class="grid-title">
             <h4>{{ t("processDetail.calculation") }}</h4>
           </div>
-          <div
-            class="tab-actions"
-            v-if="!props.isRegisterMode || isBasicInfoRegistered"
-          >
+          <div class="tab-actions" v-if="!props.isRegisterMode || isBasicInfoRegistered">
             <button @click="openFormulaModal" class="btn btn-add sm">
               {{ t("common.add") }}
             </button>
@@ -215,7 +205,7 @@
             >
               {{ t("common.delete") }}
             </button>
-            <button @click="handleFormulaSave" class="btn btn-save sm">
+            <button @click="() => handleFormulaSave()" class="btn btn-save sm">
               {{ t("processDetail.save") }}
             </button>
           </div>
@@ -308,9 +298,7 @@
               <h4>Components 목록</h4>
             </div>
             <div class="tab-actions">
-              <button @click="closeComponentsGrid" class="btn btn-secondary">
-                닫기
-              </button>
+              <button @click="closeComponentsGrid" class="btn btn-secondary">닫기</button>
             </div>
           </div>
 
@@ -346,8 +334,7 @@
             <div
               class="tab-actions"
               v-if="
-                !props.isRegisterMode ||
-                (props.isRegisterMode && isBasicInfoRegistered)
+                !props.isRegisterMode || (props.isRegisterMode && isBasicInfoRegistered)
               "
             >
               <button @click="openPfdModal" class="btn btn-add sm">
@@ -360,9 +347,7 @@
               >
                 {{ t("common.delete") }}
               </button>
-              <button @click="handlePfdSave" class="btn btn-save sm">
-                저장
-              </button>
+              <button @click="handlePfdSave" class="btn btn-save sm">저장</button>
             </div>
           </div>
 
@@ -378,8 +363,7 @@
 
           <DataTable
             v-if="
-              !props.isRegisterMode ||
-              (props.isRegisterMode && isBasicInfoRegistered)
+              !props.isRegisterMode || (props.isRegisterMode && isBasicInfoRegistered)
             "
             :columns="pfdColumns"
             :data="processStore.pfdList || []"
@@ -467,13 +451,11 @@
               <button
                 class="btn btn-primary p-id"
                 :disabled="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pfd_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_')
                 "
                 @click="openMappingPidModal(item)"
                 :title="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pfd_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pfd_drawing_')
                     ? t('processDetail.savePfdFirst')
                     : item.hasPidMapping
                     ? t('processDetail.viewPidMapping')
@@ -494,9 +476,7 @@
             <h4>P&ID</h4>
           </div>
           <div class="tab-actions">
-            <button class="btn btn-add sm" @click="addMappingPidRow">
-              추가
-            </button>
+            <button class="btn btn-add sm" @click="addMappingPidRow">추가</button>
             <button
               class="btn btn-delete sm"
               @click="deleteSelectedMappingPidItems"
@@ -507,9 +487,7 @@
             <button @click="() => confirmMappingPid()" class="btn btn-save sm">
               저장
             </button>
-            <button @click="closePidListInMain" class="btn btn-secondary">
-              닫기
-            </button>
+            <button @click="closePidListInMain" class="btn btn-secondary">닫기</button>
           </div>
         </div>
 
@@ -535,10 +513,7 @@
           </template>
           <template #cell-pidFile="{ item }">
             <div class="file-selection-group">
-              <button
-                class="btn btn btn-file sm"
-                @click="selectPidFile(item)"
-              >
+              <button class="btn btn btn-file sm" @click="selectPidFile(item)">
                 파일선택
               </button>
               <span v-if="item.pidFileName" class="selected-file">
@@ -561,12 +536,10 @@
                 class="btn btn btn-file sm"
                 @click="selectExcelFile(item)"
                 :disabled="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pid_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
                 "
                 :title="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pid_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
                     ? 'P&ID 파일을 먼저 저장해주세요'
                     : '매핑 Excel 파일 선택'
                 "
@@ -593,8 +566,7 @@
                 </button>
                 <span
                   v-else-if="
-                    (item.excel_file_name || item.excelFileName) &&
-                    !item.excel_drawing_id
+                    (item.excel_file_name || item.excelFileName) && !item.excel_drawing_id
                   "
                   class="text-muted"
                   style="font-size: 11px"
@@ -612,22 +584,17 @@
                 class="btn btn btn-file sm"
                 @click="selectSvgFileForPid(item)"
                 :disabled="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pid_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
                 "
                 :title="
-                  !item.drawing_id ||
-                  item.drawing_id.startsWith('temp_pid_drawing_')
+                  !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
                     ? 'P&ID 파일을 먼저 저장해주세요'
                     : 'Svg 도면 파일 선택'
                 "
               >
                 파일선택
               </button>
-              <span
-                v-if="item.svgFileName || item.svg_file_name"
-                class="selected-file"
-              >
+              <span v-if="item.svgFileName || item.svg_file_name" class="selected-file">
                 {{ item.svg_file_name || item.svgFileName }}
                 <button
                   v-if="item.svgFileName || item.svg_file_name"
@@ -644,8 +611,7 @@
                 </button>
                 <span
                   v-else-if="
-                    (item.svg_file_name || item.svgFileName) &&
-                    !item.svg_drawing_id
+                    (item.svg_file_name || item.svgFileName) && !item.svg_drawing_id
                   "
                   class="text-muted"
                   style="font-size: 11px"
@@ -666,11 +632,7 @@
                 !isPidRowSaved(item)
               "
               @click="openPidComponentModal(item)"
-              :title="
-                !isPidRowSaved(item)
-                  ? 'P&ID를 먼저 저장해주세요'
-                  : 'P&ID 컴포넌트'
-              "
+              :title="!isPidRowSaved(item) ? 'P&ID를 먼저 저장해주세요' : 'P&ID 컴포넌트'"
             >
               P&ID 컴포넌트
             </button>
@@ -816,7 +778,7 @@
             >
               <span class="ico-download"></span>
             </button>
-            
+
             <button
               type="button"
               class="btn btn-register sm"
@@ -842,171 +804,169 @@
       </div>
     </div>
 
-  <!-- 계산식 파일 첨부 모달 -->
-  <div
-    v-if="processStore.showFormulaModal"
-    class="modal-overlay"
-    @click="closeFormulaModal"
-  >
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3>{{ t("process.formulaFileAttachment") }}</h3>
-        <button @click="closeFormulaModal" class="close-btn"></button>
-      </div>
-      <div class="modal-body">
-        <div class="file-input-group">
-          <input
-            type="file"
-            multiple
-            accept=".py"
-            @change="handleFormulaFilesSelected"
-            style="display: none"
-            ref="formulaFileInput"
-          />
-          <button @click="formulaFileInput?.click()" class="btn btn btn-file">
-            {{ t("common.selectFiles") }}
-          </button>
-          <span class="selected-files-info">
-            {{
-              selectedFormulaFiles.length > 0
-                ? t("processDetail.filesSelected", { count: selectedFormulaFiles.length })
-                : t("common.noFilesSelected")
-            }}
-          </span>
+    <!-- 계산식 파일 첨부 모달 -->
+    <div
+      v-if="processStore.showFormulaModal"
+      class="modal-overlay"
+      @click="closeFormulaModal"
+    >
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("process.formulaFileAttachment") }}</h3>
+          <button @click="closeFormulaModal" class="close-btn"></button>
         </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".py"
+              @change="handleFormulaFilesSelected"
+              style="display: none"
+              ref="formulaFileInput"
+            />
+            <button @click="formulaFileInput?.click()" class="btn btn btn-file">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{
+                selectedFormulaFiles.length > 0
+                  ? t("processDetail.filesSelected", {
+                      count: selectedFormulaFiles.length,
+                    })
+                  : t("common.noFilesSelected")
+              }}
+            </span>
+          </div>
 
-        <div v-if="selectedFormulaFiles.length > 0" class="selected-files-list">
-          <h4>{{ t("common.selectedFiles") }}:</h4>
-          <ul>
-            <li v-for="file in selectedFormulaFiles" :key="file.name">
-              {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
-            </li>
-          </ul>
+          <div v-if="selectedFormulaFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedFormulaFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          @click="uploadFormulaFiles"
-          class="btn btn-primary"
-          :disabled="!selectedFormulaFiles.length"
-        >
-          {{ t("common.upload") }}
-        </button>
-        <button @click="closeFormulaModal" class="btn btn-secondary">
-          {{ t("common.cancel") }}
-        </button>
+        <div class="modal-footer">
+          <button
+            @click="uploadFormulaFiles"
+            class="btn btn-primary"
+            :disabled="!selectedFormulaFiles.length"
+          >
+            {{ t("common.upload") }}
+          </button>
+          <button @click="closeFormulaModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  <!-- 공정카드 파일 첨부 모달 -->
-  <div v-if="showPfdModal" class="modal-overlay" @click="closePfdModal">
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3>{{ t("process.pfdFileAttachment") }}</h3>
-        <button @click="closePfdModal" class="close-btn"></button>
-      </div>
-      <div class="modal-body">
-        <div class="file-input-group">
-          <input
-            type="file"
-            multiple
-            accept=".dwg"
-            @change="handlePfdFilesSelected"
-            style="display: none"
-            ref="pfdFileInput"
-          />
-          <button @click="pfdFileInput?.click()" class="btn btn btn-file">
-            {{ t("common.selectFiles") }}
-          </button>
-          <span class="selected-files-info">
-            {{
-              selectedPfdFiles.length > 0
-                ? t("processDetail.filesSelected", { count: selectedPfdFiles.length })
-                : t("common.noFilesSelected")
-            }}
-          </span>
+    <!-- 공정카드 파일 첨부 모달 -->
+    <div v-if="showPfdModal" class="modal-overlay" @click="closePfdModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ t("process.pfdFileAttachment") }}</h3>
+          <button @click="closePfdModal" class="close-btn"></button>
         </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".dwg"
+              @change="handlePfdFilesSelected"
+              style="display: none"
+              ref="pfdFileInput"
+            />
+            <button @click="pfdFileInput?.click()" class="btn btn btn-file">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{
+                selectedPfdFiles.length > 0
+                  ? t("processDetail.filesSelected", { count: selectedPfdFiles.length })
+                  : t("common.noFilesSelected")
+              }}
+            </span>
+          </div>
 
-        <div v-if="selectedPfdFiles.length > 0" class="selected-files-list">
-          <h4>{{ t("common.selectedFiles") }}:</h4>
-          <ul>
-            <li v-for="file in selectedPfdFiles" :key="file.name">
-              {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
-            </li>
-          </ul>
+          <div v-if="selectedPfdFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedPfdFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          @click="uploadPfdFiles"
-          class="btn btn-primary"
-          :disabled="!selectedPfdFiles.length"
-        >
-          {{ t("common.upload") }}
-        </button>
-        <button @click="closePfdModal" class="btn btn-secondary">
-          {{ t("common.cancel") }}
-        </button>
+        <div class="modal-footer">
+          <button
+            @click="uploadPfdFiles"
+            class="btn btn-primary"
+            :disabled="!selectedPfdFiles.length"
+          >
+            {{ t("common.upload") }}
+          </button>
+          <button @click="closePfdModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- P&ID 파일 첨부 모달 -->
-  <div
-    v-if="showPidModal"
-    class="modal-overlay"
-    @click="closePidModal"
-  >
-    <div class="modal-content" @click.stop>
-      <div class="modal-header">
-        <h3>P&ID 파일 첨부</h3>
-        <button @click="closePidModal" class="close-btn"></button>
-      </div>
-      <div class="modal-body">
-        <div class="file-input-group">
-          <input
-            type="file"
-            multiple
-            accept=".dwg"
-            @change="handlePidFilesSelected"
-            style="display: none"
-            ref="pidModalFileInput"
-          />
-          <button @click="pidModalFileInput?.click()" class="btn btn btn-file">
-            {{ t("common.selectFiles") }}
+    <!-- P&ID 파일 첨부 모달 -->
+    <div v-if="showPidModal" class="modal-overlay" @click="closePidModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>P&ID 파일 첨부</h3>
+          <button @click="closePidModal" class="close-btn"></button>
+        </div>
+        <div class="modal-body">
+          <div class="file-input-group">
+            <input
+              type="file"
+              multiple
+              accept=".dwg"
+              @change="handlePidFilesSelected"
+              style="display: none"
+              ref="pidModalFileInput"
+            />
+            <button @click="pidModalFileInput?.click()" class="btn btn btn-file">
+              {{ t("common.selectFiles") }}
+            </button>
+            <span class="selected-files-info">
+              {{
+                selectedPidFiles.length > 0
+                  ? t("processDetail.filesSelected", { count: selectedPidFiles.length })
+                  : t("common.noFilesSelected")
+              }}
+            </span>
+          </div>
+
+          <div v-if="selectedPidFiles.length > 0" class="selected-files-list">
+            <h4>{{ t("common.selectedFiles") }}:</h4>
+            <ul>
+              <li v-for="file in selectedPidFiles" :key="file.name">
+                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            @click="uploadPidFiles"
+            class="btn btn-primary"
+            :disabled="!selectedPidFiles.length"
+          >
+            {{ t("common.upload") }}
           </button>
-          <span class="selected-files-info">
-            {{
-              selectedPidFiles.length > 0
-                ? t("processDetail.filesSelected", { count: selectedPidFiles.length })
-                : t("common.noFilesSelected")
-            }}
-          </span>
+          <button @click="closePidModal" class="btn btn-secondary">
+            {{ t("common.cancel") }}
+          </button>
         </div>
-
-        <div v-if="selectedPidFiles.length > 0" class="selected-files-list">
-          <h4>{{ t("common.selectedFiles") }}:</h4>
-          <ul>
-            <li v-for="file in selectedPidFiles" :key="file.name">
-              {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          @click="uploadPidFiles"
-          class="btn btn-primary"
-          :disabled="!selectedPidFiles.length"
-        >
-          {{ t("common.upload") }}
-        </button>
-        <button @click="closePidModal" class="btn btn-secondary">
-          {{ t("common.cancel") }}
-        </button>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -1057,9 +1017,7 @@ const pipeStore = usePipeStore();
 
 // 공정 등록/수정 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
 const filteredProcessTypeOptions = computed(() => {
-  return processStore.processTypeOptions.filter(
-    (option) => option.value !== "INP_OUTP"
-  );
+  return processStore.processTypeOptions.filter((option) => option.value !== "INP_OUTP");
 });
 
 // 계산식 그리드 데이터 존재 여부 확인
@@ -1106,13 +1064,19 @@ const categoryOptions = ref([
 ]);
 
 // 중분류 옵션 (동적으로 로드됨)
-const middleCategoryOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
+const middleCategoryOptions = ref([
+  { value: null, label: t("processDetail.selectPlease") },
+]);
 
 // 소분류 옵션 (동적으로 로드됨)
-const smallCategoryOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
+const smallCategoryOptions = ref([
+  { value: null, label: t("processDetail.selectPlease") },
+]);
 
 // 장비유형 옵션 (동적으로 로드됨)
-const equipmentTypeOptions = ref([{ value: null, label: t("processDetail.selectPlease") }]);
+const equipmentTypeOptions = ref([
+  { value: null, label: t("processDetail.selectPlease") },
+]);
 
 // P&ID 목록 메인화면 표시 상태
 const showPidListInMain = ref(false);
@@ -1175,16 +1139,13 @@ const pfdTableMaxHeight = computed(() =>
     : "auto"
 );
 const pidTableMaxHeight = computed(() =>
-  ((mappingPidList as any)?.value?.length ||
-    (mappingPidList as any)?.length ||
-    0) > 10
+  ((mappingPidList as any)?.value?.length || (mappingPidList as any)?.length || 0) > 10
     ? "420px"
     : "auto"
 );
 const pidComponentTableMaxHeight = computed(() =>
-  ((pidComponentList as any)?.value?.length ||
-    (pidComponentList as any)?.length ||
-    0) > 10
+  ((pidComponentList as any)?.value?.length || (pidComponentList as any)?.length || 0) >
+  10
     ? "420px"
     : "auto"
 );
@@ -1194,8 +1155,17 @@ const formulaColumns: TableColumn[] = [
   { key: "select", title: t("processDetail.select"), sortable: false },
   { key: "no", title: t("processDetail.no"), sortable: false },
   { key: "file_name", title: t("processDetail.registeredFormula"), sortable: false },
-  { key: "registrationDate", title: t("processDetail.registrationDate"), sortable: false },
-  { key: "component", title: t("processDetail.component"), sortable: false, hidden: true },
+  {
+    key: "registrationDate",
+    title: t("processDetail.registrationDate"),
+    sortable: false,
+  },
+  {
+    key: "component",
+    title: t("processDetail.component"),
+    sortable: false,
+    hidden: true,
+  },
   { key: "formula_id", title: "Formula ID", sortable: false, hidden: true },
   {
     key: "process_dependencies",
@@ -1255,11 +1225,37 @@ const mappingPidColumns: TableColumn[] = [
 // P&ID 컴포넌트 컬럼 정의
 const pidComponentColumns: TableColumn[] = [
   { key: "no", title: t("processDetail.no"), sortable: false, width: "50px" },
-  { key: "pid_id", title: t("processDetail.pocIn"), sortable: false, width: "80px", hidden: true },
-  { key: "category", title: t("processDetail.division"), sortable: false, width: "100px" },
-  { key: "smallCategory", title: t("processDetail.majorCategory"), sortable: false, width: "120px" },
-  { key: "middleCategory", title: t("processDetail.middleCategory"), sortable: false, width: "120px" },
-  { key: "equipmentType", title: t("processDetail.type"), sortable: false, width: "250px" },
+  {
+    key: "pid_id",
+    title: t("processDetail.pocIn"),
+    sortable: false,
+    width: "80px",
+    hidden: true,
+  },
+  {
+    key: "category",
+    title: t("processDetail.division"),
+    sortable: false,
+    width: "100px",
+  },
+  {
+    key: "smallCategory",
+    title: t("processDetail.majorCategory"),
+    sortable: false,
+    width: "120px",
+  },
+  {
+    key: "middleCategory",
+    title: t("processDetail.middleCategory"),
+    sortable: false,
+    width: "120px",
+  },
+  {
+    key: "equipmentType",
+    title: t("processDetail.type"),
+    sortable: false,
+    width: "250px",
+  },
   {
     key: "total_quantity",
     title: t("processDetail.totalQuantity"),
@@ -1287,9 +1283,7 @@ const formatDate = (date: Date): string => {
 };
 
 // 날짜를 YYYY-MM-DD 포맷으로 변환하는 헬퍼 함수
-const formatDateString = (
-  dateValue: string | Date | undefined | null
-): string => {
+const formatDateString = (dateValue: string | Date | undefined | null): string => {
   if (!dateValue) return "";
 
   // 이미 YYYY-MM-DD 포맷인 경우
@@ -1318,9 +1312,7 @@ const formatDateString = (
 };
 
 // 날짜를 YYYY-MM-DD HH:MI 형식으로 변환하는 헬퍼 함수
-const formatDateTime = (
-  dateValue: string | Date | undefined | null
-): string => {
+const formatDateTime = (dateValue: string | Date | undefined | null): string => {
   if (!dateValue) {
     return "";
   }
@@ -1444,7 +1436,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
   try {
     console.log("=== 공정카드 그리드 API 호출 시작 ===");
     console.log("processId:", processId);
-    
+
     if (!processId) {
       console.warn("processId가 없어서 빈 배열 반환");
       return [];
@@ -1453,8 +1445,8 @@ const searchPfdDrawingAPI = async (processId: string) => {
     const requestBody = {
       drawing_type: "PFDCARD",
       process_id: parseInt(processId, 10),
-      order_by : "drawing_number",
-      order_direction : "asc"
+      order_by: "drawing_number",
+      order_direction: "asc",
     };
 
     console.log("공정카드 그리드 API 요청:", {
@@ -1479,7 +1471,9 @@ const searchPfdDrawingAPI = async (processId: string) => {
       success: response.success,
       responseType: typeof response.response,
       isArray: Array.isArray(response.response),
-      responseLength: Array.isArray(response.response) ? response.response.length : "배열이 아님",
+      responseLength: Array.isArray(response.response)
+        ? response.response.length
+        : "배열이 아님",
       response: response.response,
     });
 
@@ -1534,8 +1528,7 @@ const searchPfdDrawingAPI = async (processId: string) => {
         const drawingId = item.drawing_id || item.id;
 
         // 등록일자: API 응답의 created_at 찾기 (다양한 위치 확인)
-        const registrationDate =
-          item.created_at || item.current_file?.created_at || null;
+        const registrationDate = item.created_at || item.current_file?.created_at || null;
 
         return {
           id: `pfd-${index + 1}`,
@@ -1662,9 +1655,7 @@ const searchFormulaAPI = async () => {
           response.message?.includes("세션이 만료되었습니다") ||
           response.response?.error_code === "SESSION_REQUIRED"
         ) {
-          console.warn(
-            "⚠️ 400 오류에서 인증 문제를 발견했습니다. 인증이 필요합니다."
-          );
+          console.warn("⚠️ 400 오류에서 인증 문제를 발견했습니다. 인증이 필요합니다.");
 
           return {
             success: false,
@@ -1743,10 +1734,7 @@ const createFormulaAPI = async (
 
     // API 응답에서 status가 'skipped'인 경우 처리 (중복 파일로 인한 건너뛰기)
     if (data.response && data.response.status === "skipped") {
-      console.warn(
-        "계산식이 이미 존재하여 건너뛰었습니다:",
-        data.response.message
-      );
+      console.warn("계산식이 이미 존재하여 건너뛰었습니다:", data.response.message);
       console.log("중복된 계산식 정보:", data.response.data);
 
       // 중복된 파일이 있는 경우 실패로 처리 (최상위 success: true 무시)
@@ -1905,9 +1893,7 @@ const handleUnitChange = () => {
 };
 
 // 파일명 검증 함수
-const validateFileName = (
-  fileName: string
-): { valid: boolean; message?: string } => {
+const validateFileName = (fileName: string): { valid: boolean; message?: string } => {
   // 확장자 분리
   const lastDotIndex = fileName.lastIndexOf(".");
   if (lastDotIndex === -1) {
@@ -2036,10 +2022,7 @@ const toggleComponentsGrid = (formulaItem: any, index: number) => {
   // 해당 행 선택
   selectedFormulaItems.value = formulaItem;
 
-  if (
-    showComponentsGrid.value &&
-    currentFormulaItem.value?.id === formulaItem.id
-  ) {
+  if (showComponentsGrid.value && currentFormulaItem.value?.id === formulaItem.id) {
     // 같은 계산식의 컴포넌트 그리드가 이미 열려있으면 닫기
     closeComponentsGrid();
   } else {
@@ -2140,10 +2123,8 @@ const loadComponentsData = (formulaItem: any) => {
       if (structure.structure_item) {
         const parsedStructure = {
           id: `structure_${index}`,
-          category:
-            structure.structure_item.code_hierarchy?.level1?.value || "", // 분류: level1_value
-          component:
-            structure.structure_item.code_hierarchy?.level2?.value || "", // Components: level2_value
+          category: structure.structure_item.code_hierarchy?.level1?.value || "", // 분류: level1_value
+          component: structure.structure_item.code_hierarchy?.level2?.value || "", // Components: level2_value
           type: structure.structure_item.code_hierarchy?.level3?.value || "", // 유형: level3_value
           codeKey: structure.structure_item.code || "", // 코드 키: code
           item: structure.structure_item.value || "", // ITEM: value
@@ -2157,9 +2138,7 @@ const loadComponentsData = (formulaItem: any) => {
 
   // 데이터가 없을 경우 빈 배열로 초기화
   if (parsedComponents.length === 0) {
-    console.log(
-      "process_dependencies 데이터가 없어 Components 목록을 초기화합니다."
-    );
+    console.log("process_dependencies 데이터가 없어 Components 목록을 초기화합니다.");
     componentsList.value = [];
   } else {
     componentsList.value = parsedComponents;
@@ -2185,7 +2164,9 @@ const handleFormulaFilesSelected = (event: Event) => {
 
     if (invalidFiles.length > 0) {
       alert(
-        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join(
+          "\n"
+        )}`
       );
       target.value = "";
       return;
@@ -2230,7 +2211,9 @@ const handlePfdFilesSelected = (event: Event) => {
 
     if (invalidFiles.length > 0) {
       alert(
-        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join(
+          "\n"
+        )}`
       );
       target.value = "";
       return;
@@ -2277,7 +2260,9 @@ const handlePidFilesSelected = (event: Event) => {
 
     if (invalidFiles.length > 0) {
       alert(
-        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join("\n")}`
+        `${t("messages.warning.invalidFormulaFileNameFormat")}\n\n${invalidFiles.join(
+          "\n"
+        )}`
       );
       target.value = "";
       return;
@@ -2358,10 +2343,7 @@ const handleCapacityCalculationFileDelete = async () => {
       }
 
       if (confirm(t("processDetail.deleteCapacityCalculationConfirm"))) {
-        await processStore.deleteCapacityCalculationFile(
-          processId,
-          ccsFileName
-        );
+        await processStore.deleteCapacityCalculationFile(processId, ccsFileName);
 
         // 삭제 성공 후 공정 상세 정보 다시 로드하여 ccs_file_id, ccs_file_name 초기화
         await processStore.searchProcessById(processId);
@@ -2463,7 +2445,7 @@ const uploadFormulaFiles = () => {
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const registrationDate = `${year}-${month}-${day} ${hours}:${minutes}`;
-    
+
     return {
       id: `formula_${Date.now()}_${index}`,
       no: processStore.formulaList.length + index + 1,
@@ -2499,7 +2481,7 @@ const uploadPfdFiles = () => {
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const registrationDate = `${year}-${month}-${day} ${hours}:${minutes}`;
-    
+
     return {
       id: `pfd_${Date.now()}_${index}`,
       no: processStore.pfdList.length + index + 1,
@@ -2652,9 +2634,7 @@ const openPidComponentModal = async (item: any) => {
 
   // P&ID 컴포넌트 섹션으로 스크롤
   setTimeout(() => {
-    const pidComponentSection = document.querySelector(
-      ".pid-component-section"
-    );
+    const pidComponentSection = document.querySelector(".pid-component-section");
     if (pidComponentSection) {
       pidComponentSection.scrollIntoView({ behavior: "smooth" });
     }
@@ -2704,9 +2684,7 @@ const parseComponentHierarchy = (hierarchyString: string) => {
       console.log(`레벨 ${index + 1} 처리:`, level);
 
       // 각 레벨에서 코드키와 한국어 설명 추출: "(레벨X) CODE_KEY / 한국어설명 / 영어설명" 형태
-      const match = level.match(
-        /\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/\s*([^/]+)\s*\/\s*(.+)$/
-      );
+      const match = level.match(/\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/\s*([^/]+)\s*\/\s*(.+)$/);
       if (match && match[1] && match[2]) {
         const codeKey = match[1];
         const koreanName = match[2].trim();
@@ -2746,30 +2724,22 @@ const generateSelectOptionsFromLoadedData = async () => {
     // 로드된 컴포넌트들에서 고유한 값들 추출
     const uniqueLevel1Codes = [
       ...new Set(
-        pidComponentList.value
-          .map((item) => item.level1_code_key)
-          .filter(Boolean)
+        pidComponentList.value.map((item) => item.level1_code_key).filter(Boolean)
       ),
     ];
     const uniqueLevel2Codes = [
       ...new Set(
-        pidComponentList.value
-          .map((item) => item.level2_code_key)
-          .filter(Boolean)
+        pidComponentList.value.map((item) => item.level2_code_key).filter(Boolean)
       ),
     ];
     const uniqueLevel3Codes = [
       ...new Set(
-        pidComponentList.value
-          .map((item) => item.level3_code_key)
-          .filter(Boolean)
+        pidComponentList.value.map((item) => item.level3_code_key).filter(Boolean)
       ),
     ];
     const uniqueEquipmentTypes = [
       ...new Set(
-        pidComponentList.value
-          .map((item) => item.component_type)
-          .filter(Boolean)
+        pidComponentList.value.map((item) => item.component_type).filter(Boolean)
       ),
     ];
 
@@ -2801,17 +2771,13 @@ const generateSelectOptionsFromLoadedData = async () => {
                 order_direction: "asc",
               };
 
-              const response = await request(
-                "/api/process/code/search",
-                undefined,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(requestData),
-                }
-              );
+              const response = await request("/api/process/code/search", undefined, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              });
 
               if (
                 response.success &&
@@ -2881,17 +2847,13 @@ const generateSelectOptionsFromLoadedData = async () => {
                 order_direction: "asc",
               };
 
-              const response = await request(
-                "/api/process/code/search",
-                undefined,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(requestData),
-                }
-              );
+              const response = await request("/api/process/code/search", undefined, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              });
 
               if (
                 response.success &&
@@ -2961,17 +2923,13 @@ const generateSelectOptionsFromLoadedData = async () => {
                 order_direction: "asc",
               };
 
-              const response = await request(
-                "/api/process/code/search",
-                undefined,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(requestData),
-                }
-              );
+              const response = await request("/api/process/code/search", undefined, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              });
 
               if (
                 response.success &&
@@ -3027,7 +2985,10 @@ const generateSelectOptionsFromLoadedData = async () => {
   console.log("=== 로드된 데이터 기반 select 옵션 자동 생성 완료 ===");
 };
 // P&ID 컴포넌트 데이터 로드 내부 함수
-const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boolean = true) => {
+const loadPidComponentDataInternal = async (
+  pidItem: any,
+  clearBeforeLoad: boolean = true
+) => {
   // drawing_id가 있는 경우에만 API 호출
   if (pidItem.drawing_id) {
     try {
@@ -3036,7 +2997,7 @@ const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boole
         pidComponentList.value = [];
         initialPidComponentList.value = [];
       }
-      
+
       console.log("=== P&ID 컴포넌트 API 호출 시작 ===");
       console.log("사용할 drawing_id:", pidItem.drawing_id);
 
@@ -3049,17 +3010,13 @@ const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boole
       console.log("API 엔드포인트:", "/api/process/components/search");
       console.log("요청 데이터:", requestData);
 
-      const response = await request(
-        "/api/process/components/search",
-        undefined,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestData),
-        }
-      );
+      const response = await request("/api/process/components/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
 
       console.log("=== P&ID 컴포넌트 API 응답 결과 ===");
       console.log("전체 응답 객체:", response);
@@ -3070,10 +3027,7 @@ const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boole
 
       if (response && response.response) {
         console.log("응답 데이터 타입:", typeof response.response);
-        console.log(
-          "응답 데이터가 배열인지:",
-          Array.isArray(response.response)
-        );
+        console.log("응답 데이터가 배열인지:", Array.isArray(response.response));
 
         if (Array.isArray(response.response)) {
           console.log("응답 데이터 길이:", response.response.length);
@@ -3091,54 +3045,48 @@ const loadPidComponentDataInternal = async (pidItem: any, clearBeforeLoad: boole
 
       if (response && response.response && Array.isArray(response.response)) {
         // 응답 데이터에 No 컬럼과 고유 ID 추가, component_hierachy 파싱
-        const newComponents = response.response.map(
-          (item: any, index: number) => {
-            // component_hierachy 파싱
-            const hierarchyData = parseComponentHierarchy(
-              item.component_hierachy
-            );
+        const newComponents = response.response.map((item: any, index: number) => {
+          // component_hierachy 파싱
+          const hierarchyData = parseComponentHierarchy(item.component_hierachy);
 
-            console.log(`컴포넌트 ${index + 1} hierarchy 파싱 결과:`, {
-              원본: item.component_hierachy,
-              파싱결과: hierarchyData,
-            });
+          console.log(`컴포넌트 ${index + 1} hierarchy 파싱 결과:`, {
+            원본: item.component_hierachy,
+            파싱결과: hierarchyData,
+          });
 
-            return {
-              ...item,
-              id:
-                item.component_id ||
-                `loaded_comp_${Date.now()}_${Math.random()
-                  .toString(36)
-                  .substr(2, 9)}_${index}`, // 고유한 id 생성
-              no: (clearBeforeLoad ? 0 : pidComponentList.value.length) + index + 1, // 초기화 여부에 따라 번호 설정
-              _isLoadedFromServer: true, // 서버에서 로드된 데이터임을 표시
-              // 파싱된 hierarchy 데이터 추가
-              level1_code_key: hierarchyData.level1_code_key,
-              level1_korean_name: hierarchyData.level1_korean_name,
-              level2_code_key: hierarchyData.level2_code_key,
-              level2_korean_name: hierarchyData.level2_korean_name,
-              level3_code_key: hierarchyData.level3_code_key,
-              level3_korean_name: hierarchyData.level3_korean_name,
-              level4_code_key: hierarchyData.level4_code_key,
-              level4_korean_name: hierarchyData.level4_korean_name,
-              // P&ID Components 그리드 텍스트 박스용 매핑 (한국어 이름 사용)
-              category: hierarchyData.level1_korean_name || "", // 구분: 기계
-              smallCategory: hierarchyData.level2_korean_name || "", // 대분류: 펌프
-              middleCategory: hierarchyData.level3_korean_name || "", // 중분류: 수중모터펌프
-              equipmentType: hierarchyData.level4_korean_name || "", // 유형: 수중오수모터펌프(자동탈착식)
-              // POC IN 항목을 input_poc로 매핑
-              input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
-              // 총수량 항목을 total_quantity로 매핑 (API 응답에 standard_quantity가 있을 경우 대비)
-              total_quantity: Number(
-                item.total_quantity ?? item.standard_quantity ?? 0
-              ),
-              // 각 행별 개별 옵션 저장
-              _middleCategoryOptions: [],
-              _smallCategoryOptions: [],
-              _equipmentTypeOptions: [],
-            };
-          }
-        );
+          return {
+            ...item,
+            id:
+              item.component_id ||
+              `loaded_comp_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 9)}_${index}`, // 고유한 id 생성
+            no: (clearBeforeLoad ? 0 : pidComponentList.value.length) + index + 1, // 초기화 여부에 따라 번호 설정
+            _isLoadedFromServer: true, // 서버에서 로드된 데이터임을 표시
+            // 파싱된 hierarchy 데이터 추가
+            level1_code_key: hierarchyData.level1_code_key,
+            level1_korean_name: hierarchyData.level1_korean_name,
+            level2_code_key: hierarchyData.level2_code_key,
+            level2_korean_name: hierarchyData.level2_korean_name,
+            level3_code_key: hierarchyData.level3_code_key,
+            level3_korean_name: hierarchyData.level3_korean_name,
+            level4_code_key: hierarchyData.level4_code_key,
+            level4_korean_name: hierarchyData.level4_korean_name,
+            // P&ID Components 그리드 텍스트 박스용 매핑 (한국어 이름 사용)
+            category: hierarchyData.level1_korean_name || "", // 구분: 기계
+            smallCategory: hierarchyData.level2_korean_name || "", // 대분류: 펌프
+            middleCategory: hierarchyData.level3_korean_name || "", // 중분류: 수중모터펌프
+            equipmentType: hierarchyData.level4_korean_name || "", // 유형: 수중오수모터펌프(자동탈착식)
+            // POC IN 항목을 input_poc로 매핑
+            input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
+            // 총수량 항목을 total_quantity로 매핑 (API 응답에 standard_quantity가 있을 경우 대비)
+            total_quantity: Number(item.total_quantity ?? item.standard_quantity ?? 0),
+            // 각 행별 개별 옵션 저장
+            _middleCategoryOptions: [],
+            _smallCategoryOptions: [],
+            _equipmentTypeOptions: [],
+          };
+        });
 
         // 초기화 후 새로운 데이터 할당
         if (clearBeforeLoad) {
@@ -3212,12 +3160,7 @@ const handlePidComponentCategoryChange = async (item: any) => {
         order_direction: "asc",
       };
 
-      console.log(
-        "중분류 옵션 API 호출 - 행 ID:",
-        item.id,
-        "구분:",
-        item.category
-      );
+      console.log("중분류 옵션 API 호출 - 행 ID:", item.id, "구분:", item.category);
 
       const response = await request("/api/process/code/search", undefined, {
         method: "POST",
@@ -3227,11 +3170,7 @@ const handlePidComponentCategoryChange = async (item: any) => {
         body: JSON.stringify(requestData),
       });
 
-      if (
-        response.success &&
-        response.response &&
-        Array.isArray(response.response)
-      ) {
+      if (response.success && response.response && Array.isArray(response.response)) {
         const subCategoryOptions = response.response.map((item: any) => ({
           value: item.code_key,
           label: item.code_value,
@@ -3243,18 +3182,19 @@ const handlePidComponentCategoryChange = async (item: any) => {
           ...subCategoryOptions,
         ];
 
-        console.log(
-          `행 ${item.id} 중분류 옵션 업데이트:`,
-          item._middleCategoryOptions
-        );
+        console.log(`행 ${item.id} 중분류 옵션 업데이트:`, item._middleCategoryOptions);
       } else {
         console.log("P&ID 컴포넌트 중분류 API 응답이 올바르지 않음");
-        item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+        item._middleCategoryOptions = [
+          { value: "", label: t("processDetail.selectPlease") },
+        ];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 중분류 옵션 로드 실패:", error);
       // 에러 발생 시 기본 옵션으로 설정
-      item._middleCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+      item._middleCategoryOptions = [
+        { value: "", label: t("processDetail.selectPlease") },
+      ];
     }
   } else {
     // 구분이 선택되지 않았을 때 중분류 옵션 초기화
@@ -3276,12 +3216,7 @@ const handlePidComponentCategoryChange = async (item: any) => {
 
 // P&ID 컴포넌트 중분류 변경 핸들러
 const handlePidComponentMiddleCategoryChange = async (item: any) => {
-  console.log(
-    "P&ID 컴포넌트 중분류 변경:",
-    item.middleCategory,
-    "- 행 ID:",
-    item.id
-  );
+  console.log("P&ID 컴포넌트 중분류 변경:", item.middleCategory, "- 행 ID:", item.id);
 
   if (item.middleCategory) {
     try {
@@ -3310,11 +3245,7 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
 
       console.log("P&ID 컴포넌트 소분류 API 응답:", response);
 
-      if (
-        response.success &&
-        response.response &&
-        Array.isArray(response.response)
-      ) {
+      if (response.success && response.response && Array.isArray(response.response)) {
         const subCategoryOptions = response.response.map((item: any) => ({
           value: item.code_key,
           label: item.code_value,
@@ -3328,17 +3259,18 @@ const handlePidComponentMiddleCategoryChange = async (item: any) => {
           ...subCategoryOptions,
         ];
 
-        console.log(
-          `행 ${item.id} 소분류 옵션 업데이트:`,
-          item._smallCategoryOptions
-        );
+        console.log(`행 ${item.id} 소분류 옵션 업데이트:`, item._smallCategoryOptions);
       } else {
         console.log("P&ID 컴포넌트 소분류 API 응답이 올바르지 않음");
-        item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+        item._smallCategoryOptions = [
+          { value: "", label: t("processDetail.selectPlease") },
+        ];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 소분류 옵션 로드 실패:", error);
-      item._smallCategoryOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+      item._smallCategoryOptions = [
+        { value: "", label: t("processDetail.selectPlease") },
+      ];
     }
   } else {
     // 중분류가 선택되지 않았을 때 소분류 옵션 초기화
@@ -3382,20 +3314,13 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
 
       console.log("P&ID 컴포넌트 장비유형 API 응답:", response);
 
-      if (
-        response.success &&
-        response.response &&
-        Array.isArray(response.response)
-      ) {
+      if (response.success && response.response && Array.isArray(response.response)) {
         const equipmentTypeOptionsData = response.response.map((item: any) => ({
           value: item.code_key,
           label: item.code_value,
         }));
 
-        console.log(
-          "P&ID 컴포넌트 장비유형 옵션 생성:",
-          equipmentTypeOptionsData
-        );
+        console.log("P&ID 컴포넌트 장비유형 옵션 생성:", equipmentTypeOptionsData);
 
         // 해당 행의 개별 옵션만 업데이트
         item._equipmentTypeOptions = [
@@ -3403,17 +3328,18 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
           ...equipmentTypeOptionsData,
         ];
 
-        console.log(
-          `행 ${item.id} 장비유형 옵션 업데이트:`,
-          item._equipmentTypeOptions
-        );
+        console.log(`행 ${item.id} 장비유형 옵션 업데이트:`, item._equipmentTypeOptions);
       } else {
         console.log("P&ID 컴포넌트 장비유형 API 응답이 올바르지 않음");
-        item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+        item._equipmentTypeOptions = [
+          { value: "", label: t("processDetail.selectPlease") },
+        ];
       }
     } catch (error) {
       console.error("P&ID 컴포넌트 장비유형 옵션 로드 실패:", error);
-      item._equipmentTypeOptions = [{ value: "", label: t("processDetail.selectPlease") }];
+      item._equipmentTypeOptions = [
+        { value: "", label: t("processDetail.selectPlease") },
+      ];
     }
   } else {
     // 소분류가 선택되지 않았을 때 장비유형 옵션 초기화 (해당 행만)
@@ -3428,12 +3354,7 @@ const handlePidComponentSmallCategoryChange = async (item: any) => {
 
 // P&ID 컴포넌트 장비유형 변경 핸들러
 const handlePidComponentEquipmentTypeChange = async (item: any) => {
-  console.log(
-    "P&ID 컴포넌트 장비유형 변경:",
-    item.equipmentType,
-    "- 행 ID:",
-    item.id
-  );
+  console.log("P&ID 컴포넌트 장비유형 변경:", item.equipmentType, "- 행 ID:", item.id);
 
   if (item.equipmentType) {
     try {
@@ -3451,7 +3372,11 @@ const handlePidComponentEquipmentTypeChange = async (item: any) => {
 };
 
 // 공정카드 버튼 클릭 핸들러
-const handleProcessManagementClick = (item: any, index: number, shouldScroll: boolean = true) => {
+const handleProcessManagementClick = (
+  item: any,
+  index: number,
+  shouldScroll: boolean = true
+) => {
   console.log("공정카드 버튼 클릭:", item, index);
 
   // 해당 row 선택
@@ -3490,8 +3415,7 @@ const hasFormulaChanges = () => {
     if (!initialItem.formula_id) return false;
     return !processStore.formulaList.some(
       (currentItem) =>
-        currentItem.formula_id &&
-        currentItem.formula_id === initialItem.formula_id
+        currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
     );
   });
 
@@ -3511,8 +3435,7 @@ const hasFormulaChanges = () => {
     if (!currentItem.formula_id) return false;
     return !processStore.initialFormulaList.some(
       (initialItem) =>
-        initialItem.formula_id &&
-        initialItem.formula_id === currentItem.formula_id
+        initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
     );
   });
 
@@ -3523,8 +3446,7 @@ const hasFormulaChanges = () => {
 
   // 수정된 행 감지 (formula_id가 있는 기존 행의 내용 변경)
   for (const currentItem of processStore.formulaList) {
-    if (!currentItem.formula_id || currentItem.formula_id.startsWith("temp_"))
-      continue;
+    if (!currentItem.formula_id || currentItem.formula_id.startsWith("temp_")) continue;
 
     const initialItem = processStore.initialFormulaList.find(
       (item) => item.formula_id === currentItem.formula_id
@@ -3594,8 +3516,7 @@ const hasPfdChanges = () => {
 
   // 각 항목의 주요 필드가 변경되었는지 확인 (drawing_id 기준)
   for (const currentItem of processStore.pfdList) {
-    if (!currentItem.drawing_id || currentItem.drawing_id.startsWith("temp_"))
-      continue;
+    if (!currentItem.drawing_id || currentItem.drawing_id.startsWith("temp_")) continue;
 
     const initialItem = processStore.initialPfdList.find(
       (item) => item.drawing_id === currentItem.drawing_id
@@ -3629,7 +3550,7 @@ const hasMappingPidChanges = () => {
   const normalizeItem = (item: any) => {
     const excelFileName = item.excelFileName || item.excel_file_name || "";
     const svgFileName = item.svgFileName || item.svg_file_name || "";
-    
+
     return {
       id: item.id || "",
       drawing_id: item.drawing_id || "",
@@ -3645,7 +3566,7 @@ const hasMappingPidChanges = () => {
     const bId = b.drawing_id || b.id || "";
     return aId.localeCompare(bId);
   });
-  
+
   const initialList = initialMappingPidList.value.map(normalizeItem).sort((a, b) => {
     const aId = a.drawing_id || a.id || "";
     const bId = b.drawing_id || b.id || "";
@@ -3660,7 +3581,23 @@ const hasMappingPidChanges = () => {
   // 각 항목 비교 (drawing_id 기준으로 찾아서 비교)
   for (let i = 0; i < currentList.length; i++) {
     const current = currentList[i];
-    
+    const currentItem = mappingPidList.value.find(
+      (item) =>
+        (item.drawing_id && item.drawing_id === current.drawing_id) ||
+        (item.id && item.id === current.id)
+    );
+
+    // 파일 객체가 있으면 변경으로 감지 (새로 선택된 파일)
+    if (currentItem) {
+      const hasExcelFile = !!(currentItem as any).excelFile;
+      const hasPidFile = !!(currentItem as any).pidFile || !!(currentItem as any)._file;
+      const hasSvgFile = !!(currentItem as any).svgFile;
+
+      if (hasExcelFile || hasPidFile || hasSvgFile) {
+        return true; // 파일 객체가 있으면 변경으로 감지
+      }
+    }
+
     // drawing_id 또는 id를 기준으로 초기 항목 찾기
     const initial = initialList.find((item) => {
       if (current.drawing_id && item.drawing_id) {
@@ -3671,12 +3608,12 @@ const hasMappingPidChanges = () => {
       }
       return false;
     });
-    
+
     // 초기 항목을 찾지 못한 경우 (새로 추가된 항목) - 변경됨
     if (!initial) {
       return true;
     }
-    
+
     // 파일명 비교만으로 변경 감지 (파일 객체는 저장 시점에만 필요)
     // 파일을 다시 선택하지 않았는데도 변경으로 인식되는 문제 방지
     if (
@@ -3715,9 +3652,7 @@ const hasPidComponentChanges = () => {
   const normalizedInitial = normalize(initial);
   const normalizedCurrent = normalize(current);
 
-  return (
-    JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedCurrent)
-  );
+  return JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedCurrent);
 };
 
 // 컴포넌트 섹션 닫기
@@ -3775,12 +3710,8 @@ const deletePidComponentRow = () => {
   console.log("선택된 항목들:", selectedPidComponentItems.value);
 
   // 삭제할 항목들을 구분 (저장된 항목과 임시 항목)
-  const savedItems = selectedPidComponentItems.value.filter(
-    (item) => item.component_id
-  );
-  const tempItems = selectedPidComponentItems.value.filter(
-    (item) => !item.component_id
-  );
+  const savedItems = selectedPidComponentItems.value.filter((item) => item.component_id);
+  const tempItems = selectedPidComponentItems.value.filter((item) => !item.component_id);
 
   console.log("저장된 항목 수:", savedItems.length);
   console.log("임시 항목 수:", tempItems.length);
@@ -3854,9 +3785,7 @@ const getCategoryLabel = (categoryCode: string) => {
   if (!categoryCode) return "";
 
   // categoryOptions에서 해당 코드의 이름을 찾기
-  const option = categoryOptions.value.find(
-    (opt) => opt.value === categoryCode
-  );
+  const option = categoryOptions.value.find((opt) => opt.value === categoryCode);
   return option ? option.label : categoryCode;
 };
 
@@ -3895,19 +3824,16 @@ const deletePidComponentAPI = async (componentId: string) => {
   try {
     console.log("P&ID 컴포넌트 삭제 API 호출 시작 - componentId:", componentId);
 
-    const response = await fetch(
-      `/api/process/component/delete/${componentId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          system_code: import.meta.env.VITE_SYSTEM_CODE,
-          user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
-        },
-        credentials: "include",
-      }
-    );
+    const response = await fetch(`/api/process/component/delete/${componentId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+        user_Id: localStorage.getItem("authUserId") || "",
+        wai_lang: localStorage.getItem("wai_lang") || "ko",
+      },
+      credentials: "include",
+    });
 
     const responseData = await response.json();
 
@@ -3928,28 +3854,22 @@ const deletePidComponentAPI = async (componentId: string) => {
 };
 
 // P&ID 컴포넌트 수정 API
-const updatePidComponentAPI = async (
-  componentId: string,
-  componentData: any
-) => {
+const updatePidComponentAPI = async (componentId: string, componentData: any) => {
   try {
     console.log("P&ID 컴포넌트 수정 API 호출 시작 - componentId:", componentId);
     console.log("수정할 데이터:", componentData);
 
-    const response = await fetch(
-      `/api/process/component/update/${componentId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          system_code: import.meta.env.VITE_SYSTEM_CODE,
-          user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
-        },
-        credentials: "include",
-        body: JSON.stringify(componentData),
-      }
-    );
+    const response = await fetch(`/api/process/component/update/${componentId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+        user_Id: localStorage.getItem("authUserId") || "",
+        wai_lang: localStorage.getItem("wai_lang") || "ko",
+      },
+      credentials: "include",
+      body: JSON.stringify(componentData),
+    });
 
     const responseData = await response.json();
 
@@ -3999,7 +3919,7 @@ const handlePidComponentSave = async () => {
   // 저장 기능 비활성화
   console.log("P&ID 컴포넌트 저장 기능이 비활성화되어 있습니다.");
   return;
-  
+
   try {
     console.log("P&ID 컴포넌트 저장 버튼 클릭");
     console.log("저장할 P&ID 컴포넌트 데이터:", pidComponentList.value);
@@ -4009,13 +3929,13 @@ const handlePidComponentSave = async () => {
       deletedPidComponentIds.value.length > 0 ||
       deletedPidComponentIds.value.tempItemIds?.length > 0;
     const hasDataChanges = hasPidComponentChanges();
-    
+
     console.log("P&ID Components 변경사항 확인:", {
       hasDeletions,
       hasDataChanges,
       deletedIds: deletedPidComponentIds.value,
     });
-    
+
     // 변경사항이 없는 경우 메시지 표시 후 종료
     if (!hasDeletions && !hasDataChanges) {
       alert("변경사항이 없습니다.");
@@ -4025,9 +3945,7 @@ const handlePidComponentSave = async () => {
     // 필수입력 검증
     const validationErrors = validatePidComponentData();
     if (validationErrors.length > 0) {
-      alert(
-        "다음 필수입력 항목을 확인해주세요:\n" + validationErrors.join("\n")
-      );
+      alert("다음 필수입력 항목을 확인해주세요:\n" + validationErrors.join("\n"));
       return;
     }
 
@@ -4069,8 +3987,7 @@ const handlePidComponentSave = async () => {
     }
 
     // UUID 형식 검증
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     // 수정할 항목과 신규 추가할 항목 구분
     console.log("=== 항목 구분 디버깅 시작 ===");
@@ -4079,8 +3996,7 @@ const handlePidComponentSave = async () => {
     const updateItems = pidComponentList.value.filter((item) => {
       const isLoadedFromServer = item._isLoadedFromServer === true;
       const hasComponentId = !!item.component_id;
-      const isUuidFormat =
-        item.component_id && uuidRegex.test(item.component_id);
+      const isUuidFormat = item.component_id && uuidRegex.test(item.component_id);
       const isUpdateItem = isLoadedFromServer && hasComponentId && isUuidFormat;
 
       console.log(`항목 ${item.id} 구분 결과:`, {
@@ -4099,13 +4015,9 @@ const handlePidComponentSave = async () => {
       const isNotLoadedFromServer = item._isLoadedFromServer !== true;
       const hasNoComponentId = !item.component_id;
       const isTempId = item.component_id?.startsWith("temp_comp_");
-      const isNotUuidFormat =
-        item.component_id && !uuidRegex.test(item.component_id);
+      const isNotUuidFormat = item.component_id && !uuidRegex.test(item.component_id);
       const isCreateItem =
-        isNotLoadedFromServer ||
-        hasNoComponentId ||
-        isTempId ||
-        isNotUuidFormat;
+        isNotLoadedFromServer || hasNoComponentId || isTempId || isNotUuidFormat;
 
       console.log(`항목 ${item.id} 신규 구분 결과:`, {
         component_id: item.component_id,
@@ -4193,8 +4105,7 @@ const handlePidComponentSave = async () => {
       console.log("신규 추가할 항목들 상세:", createItems);
 
       // UUID 형식 검증
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
       // ProcessDetail 컴포넌트의 processId 가져오기
       let processId: string;
@@ -4212,9 +4123,7 @@ const handlePidComponentSave = async () => {
 
         // UUID 형식이 아닌 경우 에러
         if (!uuidRegex.test(item.pid_id)) {
-          throw new Error(
-            "P&ID ID가 올바른 UUID 형식이 아닙니다: " + item.pid_id
-          );
+          throw new Error("P&ID ID가 올바른 UUID 형식이 아닙니다: " + item.pid_id);
         }
 
         return {
@@ -4247,17 +4156,13 @@ const handlePidComponentSave = async () => {
       });
 
       // API 호출
-      const response = await request(
-        "/api/process/component/create",
-        undefined,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestData),
-        }
-      );
+      const response = await request("/api/process/component/create", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
 
       console.log("=== P&ID 컴포넌트 신규 추가 API 응답 ===");
       console.log("신규 추가 API 응답 전체:", response);
@@ -4292,9 +4197,7 @@ const handlePidComponentSave = async () => {
             `백엔드 오류: current_user.user_id 접근 실패\n백엔드 개발자에게 문의하세요.\n\n오류 세부사항:\n- 파일: process_pid_components.py:51\n- 원인: 'dict' object has no attribute 'user_id'\n- 해결: current_user['user_id'] 사용 필요`
           );
         } else {
-          throw new Error(
-            `신규 추가 실패: ${response.message || "알 수 없는 오류"}`
-          );
+          throw new Error(`신규 추가 실패: ${response.message || "알 수 없는 오류"}`);
         }
       }
 
@@ -4341,9 +4244,7 @@ const handlePidComponentSave = async () => {
         if (itemIndex !== -1) {
           // 저장 완료 상태로 표시
           pidComponentList.value[itemIndex].isSaved = true;
-          console.log(
-            `수정 항목 ${updateItem.component_id} 저장 완료 상태로 업데이트`
-          );
+          console.log(`수정 항목 ${updateItem.component_id} 저장 완료 상태로 업데이트`);
         }
       });
     }
@@ -4357,9 +4258,7 @@ const handlePidComponentSave = async () => {
     // console.log('업데이트된 초기값 데이터 수:', initialPidComponentList.value.length);
 
     // P&ID 컴포넌트 저장 성공 후 그리드 상태만 업데이트 (DIV 닫히는 현상 방지)
-    console.log(
-      "=== P&ID 컴포넌트 저장 완료 - 그리드 상태 업데이트만 수행 ==="
-    );
+    console.log("=== P&ID 컴포넌트 저장 완료 - 그리드 상태 업데이트만 수행 ===");
     console.log("P&ID Components 섹션 유지 (DIV 닫히는 현상 방지)");
   } catch (error) {
     console.error("P&ID 컴포넌트 저장 실패:", error);
@@ -4443,9 +4342,7 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 파일명 추출 (우선순위: Content-Disposition 헤더 > getSvgFileName)
@@ -4486,10 +4383,7 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
     }
 
     // SVG 유효성 검사
-    if (
-      !svgContent.trim().startsWith("<svg") &&
-      !svgContent.trim().startsWith("<?xml")
-    ) {
+    if (!svgContent.trim().startsWith("<svg") && !svgContent.trim().startsWith("<?xml")) {
       throw new Error("유효하지 않은 SVG 형식입니다.");
     }
 
@@ -4516,9 +4410,7 @@ const downloadPfdSvgFile = async (pfdItem: any) => {
     });
   } catch (error) {
     console.error("공정카드 Svg 파일 다운로드 실패:", error);
-    alert(
-      "공정카드 Svg 파일 다운로드에 실패했습니다: " + (error.message || error)
-    );
+    alert("공정카드 Svg 파일 다운로드에 실패했습니다: " + (error.message || error));
   }
 };
 
@@ -4691,9 +4583,7 @@ const downloadPfd = async (drawingId: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 응답을 JSON으로 파싱
@@ -4713,8 +4603,7 @@ const downloadPfd = async (drawingId: string) => {
     }
 
     // 실제 다운로드 URL과 파일 정보 추출
-    const downloadUrl =
-      actualDownloadData?.download_url || responseData.download_url;
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
     const fileInfo = actualDownloadData?.file_info;
 
     console.log("추출된 downloadUrl:", downloadUrl);
@@ -4727,10 +4616,7 @@ const downloadPfd = async (drawingId: string) => {
 
       console.log("파일명 추출 디버깅:");
       console.log("- fileInfo 존재 여부:", !!fileInfo);
-      console.log(
-        "- fileInfo.file_name 존재 여부:",
-        !!(fileInfo && fileInfo.file_name)
-      );
+      console.log("- fileInfo.file_name 존재 여부:", !!(fileInfo && fileInfo.file_name));
       console.log("- fileInfo.file_name 값:", fileInfo?.file_name);
 
       if (fileInfo && fileInfo.file_name) {
@@ -4793,19 +4679,14 @@ const downloadPfd = async (drawingId: string) => {
 
 // Excel 파일 다운로드 함수
 // 매핑 Svg 다운로드 함수 (svg_drawing_id 사용)
-const downloadMappingSvg = async (
-  svgDrawingId: string,
-  svgFileName?: string
-) => {
+const downloadMappingSvg = async (svgDrawingId: string, svgFileName?: string) => {
   try {
     console.log("=== 매핑 Svg 파일 다운로드 시작 ===");
     console.log("svgDrawingId:", svgDrawingId);
     console.log("svgFileName:", svgFileName);
 
     if (!svgDrawingId) {
-      console.error(
-        "svg_drawing_id가 없습니다. 매핑 Svg 다운로드를 할 수 없습니다."
-      );
+      console.error("svg_drawing_id가 없습니다. 매핑 Svg 다운로드를 할 수 없습니다.");
       alert(
         "Svg 파일이 저장되지 않아서 다운로드할 수 없습니다. 먼저 Svg 파일을 저장해주세요."
       );
@@ -4822,23 +4703,18 @@ const downloadMappingSvg = async (
     }
 
     // API 호출하여 파일 다운로드 URL 획득
-    const response = await fetch(
-      `/api/process/drawing/download/${svgDrawingId}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          system_code: import.meta.env.VITE_SYSTEM_CODE,
-          user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
-        },
-      }
-    );
+    const response = await fetch(`/api/process/drawing/download/${svgDrawingId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+        user_Id: localStorage.getItem("authUserId") || "",
+        wai_lang: localStorage.getItem("wai_lang") || "ko",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 응답을 JSON으로 파싱
@@ -4858,8 +4734,7 @@ const downloadMappingSvg = async (
     }
 
     // 실제 다운로드 URL과 파일 정보 추출
-    const downloadUrl =
-      actualDownloadData?.download_url || responseData.download_url;
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
     const fileInfo = actualDownloadData?.file_info;
 
     console.log("매핑 Svg 추출된 downloadUrl:", downloadUrl);
@@ -4873,10 +4748,7 @@ const downloadMappingSvg = async (
       console.log("매핑 Svg 파일명 추출 디버깅:");
       console.log("- 파라미터 svgFileName:", svgFileName);
       console.log("- fileInfo 존재 여부:", !!fileInfo);
-      console.log(
-        "- fileInfo.file_name 존재 여부:",
-        !!(fileInfo && fileInfo.file_name)
-      );
+      console.log("- fileInfo.file_name 존재 여부:", !!(fileInfo && fileInfo.file_name));
       console.log("- fileInfo.file_name 값:", fileInfo?.file_name);
 
       if (svgFileName) {
@@ -4914,19 +4786,14 @@ const downloadMappingSvg = async (
 };
 
 // 매핑 Excel 다운로드 함수 (excel_drawing_id 사용)
-const downloadMappingExcel = async (
-  excelDrawingId: string,
-  excelFileName?: string
-) => {
+const downloadMappingExcel = async (excelDrawingId: string, excelFileName?: string) => {
   try {
     console.log("=== 매핑 Excel 파일 다운로드 시작 ===");
     console.log("excelDrawingId:", excelDrawingId);
     console.log("excelFileName:", excelFileName);
 
     if (!excelDrawingId) {
-      console.error(
-        "excel_drawing_id가 없습니다. 매핑 Excel 다운로드를 할 수 없습니다."
-      );
+      console.error("excel_drawing_id가 없습니다. 매핑 Excel 다운로드를 할 수 없습니다.");
       alert(
         "Excel 파일이 저장되지 않아서 다운로드할 수 없습니다. 먼저 Excel 파일을 저장해주세요."
       );
@@ -4943,23 +4810,18 @@ const downloadMappingExcel = async (
     }
 
     // API 호출하여 파일 다운로드 URL 획득
-    const response = await fetch(
-      `/api/process/drawing/download/${excelDrawingId}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          system_code: import.meta.env.VITE_SYSTEM_CODE,
-          user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
-        },
-      }
-    );
+    const response = await fetch(`/api/process/drawing/download/${excelDrawingId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        system_code: import.meta.env.VITE_SYSTEM_CODE,
+        user_Id: localStorage.getItem("authUserId") || "",
+        wai_lang: localStorage.getItem("wai_lang") || "ko",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 응답을 JSON으로 파싱
@@ -4979,8 +4841,7 @@ const downloadMappingExcel = async (
     }
 
     // 실제 다운로드 URL과 파일 정보 추출
-    const downloadUrl =
-      actualDownloadData?.download_url || responseData.download_url;
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
     const fileInfo = actualDownloadData?.file_info;
 
     console.log("매핑 Excel 추출된 downloadUrl:", downloadUrl);
@@ -4994,10 +4855,7 @@ const downloadMappingExcel = async (
       console.log("매핑 Excel 파일명 추출 디버깅:");
       console.log("- 파라미터 excelFileName:", excelFileName);
       console.log("- fileInfo 존재 여부:", !!fileInfo);
-      console.log(
-        "- fileInfo.file_name 존재 여부:",
-        !!(fileInfo && fileInfo.file_name)
-      );
+      console.log("- fileInfo.file_name 존재 여부:", !!(fileInfo && fileInfo.file_name));
       console.log("- fileInfo.file_name 값:", fileInfo?.file_name);
 
       if (excelFileName) {
@@ -5056,9 +4914,7 @@ const downloadExcel = async (drawingId: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 응답을 JSON으로 파싱
@@ -5078,8 +4934,7 @@ const downloadExcel = async (drawingId: string) => {
     }
 
     // 실제 다운로드 URL과 파일 정보 추출
-    const downloadUrl =
-      actualDownloadData?.download_url || responseData.download_url;
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
     const fileInfo = actualDownloadData?.file_info;
 
     console.log("Excel 추출된 downloadUrl:", downloadUrl);
@@ -5092,10 +4947,7 @@ const downloadExcel = async (drawingId: string) => {
 
       console.log("Excel 파일명 추출 디버깅:");
       console.log("- fileInfo 존재 여부:", !!fileInfo);
-      console.log(
-        "- fileInfo.file_name 존재 여부:",
-        !!(fileInfo && fileInfo.file_name)
-      );
+      console.log("- fileInfo.file_name 존재 여부:", !!(fileInfo && fileInfo.file_name));
       console.log("- fileInfo.file_name 값:", fileInfo?.file_name);
 
       if (fileInfo && fileInfo.file_name) {
@@ -5275,9 +5127,7 @@ const downloadPid = async (drawingId: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `다운로드 실패: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
     }
 
     // 응답을 JSON으로 파싱
@@ -5297,8 +5147,7 @@ const downloadPid = async (drawingId: string) => {
     }
 
     // 실제 다운로드 URL과 파일 정보 추출
-    const downloadUrl =
-      actualDownloadData?.download_url || responseData.download_url;
+    const downloadUrl = actualDownloadData?.download_url || responseData.download_url;
     const fileInfo = actualDownloadData?.file_info;
 
     console.log("P&ID 추출된 downloadUrl:", downloadUrl);
@@ -5311,10 +5160,7 @@ const downloadPid = async (drawingId: string) => {
 
       console.log("P&ID 파일명 추출 디버깅:");
       console.log("- fileInfo 존재 여부:", !!fileInfo);
-      console.log(
-        "- fileInfo.file_name 존재 여부:",
-        !!(fileInfo && fileInfo.file_name)
-      );
+      console.log("- fileInfo.file_name 존재 여부:", !!(fileInfo && fileInfo.file_name));
       console.log("- fileInfo.file_name 값:", fileInfo?.file_name);
 
       if (fileInfo && fileInfo.file_name) {
@@ -5403,10 +5249,7 @@ const handleSvgFileChange = (item: any, event: Event) => {
     }
 
     // 공정카드 그리드에서 선택된 경우
-    if (
-      currentPfdItemForSvg.value &&
-      currentPfdItemForSvg.value.id === item.id
-    ) {
+    if (currentPfdItemForSvg.value && currentPfdItemForSvg.value.id === item.id) {
       // processStore.pfdList에서 해당 항목을 찾아서 업데이트
       const itemIndex = processStore.pfdList.findIndex(
         (pfdItem) => pfdItem.id === item.id
@@ -5414,9 +5257,7 @@ const handleSvgFileChange = (item: any, event: Event) => {
       if (itemIndex !== -1) {
         processStore.pfdList[itemIndex].svgFileName = file.name;
         processStore.pfdList[itemIndex].svgFile = file;
-        processStore.pfdList[
-          itemIndex
-        ].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        processStore.pfdList[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
         console.log("Svg 파일이 processStore.pfdList에 업데이트됨:", file.name);
       }
     }
@@ -5460,15 +5301,11 @@ const handlePfdFileChange = (item: any, event: Event) => {
     }
 
     // processStore.pfdList에서 해당 항목을 찾아서 업데이트
-    const itemIndex = processStore.pfdList.findIndex(
-      (pfdItem) => pfdItem.id === item.id
-    );
+    const itemIndex = processStore.pfdList.findIndex((pfdItem) => pfdItem.id === item.id);
     if (itemIndex !== -1) {
       processStore.pfdList[itemIndex].pfdFileName = file.name;
       (processStore.pfdList[itemIndex] as any)._file = file; // _file 속성으로 저장 (processPfdChanges에서 감지)
-      processStore.pfdList[
-        itemIndex
-      ].drawing_id = `temp_pfd_drawing_${Date.now()}`;
+      processStore.pfdList[itemIndex].drawing_id = `temp_pfd_drawing_${Date.now()}`;
       console.log("PFD 파일이 processStore.pfdList에 업데이트됨:", file.name);
       console.log("PFD 파일 객체 저장 확인:", {
         fileName: file.name,
@@ -5508,9 +5345,7 @@ const handleFormulaFileChange = (item: any, event: Event) => {
 
     // .py 확장자 validation
     const allowedExtensions = [".py"];
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf("."));
 
     if (!allowedExtensions.includes(fileExtension)) {
       alert(t("processDetail.onlyPyFileAllowed"));
@@ -5527,8 +5362,7 @@ const handleFormulaFileChange = (item: any, event: Event) => {
     );
     if (itemIndex === -1 && (item as any).formula_id) {
       itemIndex = processStore.formulaList.findIndex(
-        (formulaItem) =>
-          (formulaItem as any).formula_id === (item as any).formula_id
+        (formulaItem) => (formulaItem as any).formula_id === (item as any).formula_id
       );
     }
     if (itemIndex === -1) {
@@ -5605,7 +5439,6 @@ const handleSvgFileSelected = (event: Event) => {
   if (target.files && target.files[0]) {
     const file = target.files[0];
 
-
     // *.svg 파일만 허용
     if (!file.name.toLowerCase().endsWith(".svg")) {
       alert("Svg 파일은 *.svg 형식만 선택 가능합니다.");
@@ -5629,20 +5462,14 @@ const handleSvgFileSelected = (event: Event) => {
     }
 
     // P&ID 그리드에서 선택된 경우 (우선 처리)
-    if (
-      currentPidItemForSvg.value &&
-      targetItem.id === currentPidItemForSvg.value.id
-    ) {
+    if (currentPidItemForSvg.value && targetItem.id === currentPidItemForSvg.value.id) {
       // targetItem에 저장 (파일명 강제 업데이트)
       targetItem.svgFileName = file.name;
       targetItem.svg_file_name = file.name; // API 응답 필드와 동기화
       targetItem.svgFile = file; // 실제 File 객체 저장
 
       // 기존 svg_drawing_id가 있으면 유지, 없으면 임시 ID 생성
-      if (
-        !targetItem.svg_drawing_id ||
-        targetItem.svg_drawing_id.startsWith("temp_")
-      ) {
+      if (!targetItem.svg_drawing_id || targetItem.svg_drawing_id.startsWith("temp_")) {
         targetItem.svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
       }
 
@@ -5713,7 +5540,6 @@ const handleSvgFileSelected = (event: Event) => {
       currentPfdItemForSvg.value &&
       targetItem.id === currentPfdItemForSvg.value.id
     ) {
-
       // targetItem에 저장
       targetItem.svgFileName = file.name;
       targetItem.svgFile = file; // 실제 File 객체 저장
@@ -5726,11 +5552,12 @@ const handleSvgFileSelected = (event: Event) => {
       if (itemIndex !== -1) {
         processStore.pfdList[itemIndex].svgFileName = file.name;
         processStore.pfdList[itemIndex].svgFile = file;
-        processStore.pfdList[
-          itemIndex
-        ].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
+        processStore.pfdList[itemIndex].svg_drawing_id = `temp_svg_drawing_${Date.now()}`;
       } else {
-        console.error("processStore.pfdList에서 해당 항목을 찾을 수 없음:", targetItem.id);
+        console.error(
+          "processStore.pfdList에서 해당 항목을 찾을 수 없음:",
+          targetItem.id
+        );
       }
     }
   }
@@ -5738,7 +5565,6 @@ const handleSvgFileSelected = (event: Event) => {
 // P&ID 그리드 저장 시 Excel 파일 업로드 함수
 const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
   try {
-
     // processId 확인
     let processId: string;
     if (props.isRegisterMode) {
@@ -5794,14 +5620,11 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
       const excelDrawingIdFromResponse = response.response?.excel_drawing_id;
       const excelDrawingIdDirect = response.excel_drawing_id;
       const drawingIdFromResponse = response.response?.drawing_id;
-      
 
       // 업로드 성공 시 그리드 데이터 업데이트
 
       // 여러 방법으로 해당 항목 찾기
-      let itemIndex = mappingPidList.value.findIndex(
-        (item) => item.id === pidItem.id
-      );
+      let itemIndex = mappingPidList.value.findIndex((item) => item.id === pidItem.id);
 
       if (itemIndex === -1) {
         // ID로 찾지 못한 경우 drawing_id로 찾기
@@ -5845,13 +5668,12 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         if (initialItemIndex !== -1) {
           // excel_drawing_id는 위에서 추출한 값 사용
           if (excelDrawingId) {
-            initialMappingPidList.value[initialItemIndex].excel_drawing_id =
-              excelDrawingId;
+            initialMappingPidList.value[
+              initialItemIndex
+            ].excel_drawing_id = excelDrawingId;
           }
-          initialMappingPidList.value[initialItemIndex].excel_file_name =
-            excelFile.name;
-          initialMappingPidList.value[initialItemIndex].excelFileName =
-            excelFile.name;
+          initialMappingPidList.value[initialItemIndex].excel_file_name = excelFile.name;
+          initialMappingPidList.value[initialItemIndex].excelFileName = excelFile.name;
         }
       }
 
@@ -5876,8 +5698,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
 
       // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
       const itemIndex = mappingPidList.value.findIndex(
-        (item) =>
-          item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
+        (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
       );
       if (itemIndex !== -1) {
         mappingPidList.value[itemIndex].excelFileName = "";
@@ -5897,10 +5718,7 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
         "알 수 없는 오류";
 
       if (response.status === 400) {
-
-        const error: any = new Error(
-          `Excel 파일 업로드 실패 (400 에러): ${errorMsg}`
-        );
+        const error: any = new Error(`Excel 파일 업로드 실패 (400 에러): ${errorMsg}`);
         // 이미 alert가 표시되었음을 표시하는 플래그
         error.alertShown = true;
         // Excel 업로드 실패는 별도 메시지로 표시
@@ -5918,17 +5736,17 @@ const handleExcelFileUploadForPid = async (pidItem: any, excelFile: File) => {
   } catch (error: any) {
     console.error("P&ID Excel 파일 업로드 중 오류:", error);
 
-      // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
-      const itemIndex = mappingPidList.value.findIndex(
-        (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
-      );
-      if (itemIndex !== -1) {
-        mappingPidList.value[itemIndex].excelFileName = "";
-        mappingPidList.value[itemIndex].excel_file_name = "";
-        mappingPidList.value[itemIndex].excelFile = undefined;
-        // Vue 반응성을 위해 배열 재할당
-        mappingPidList.value = [...mappingPidList.value];
-      }
+    // Excel 업로드 실패 시 파일명 및 관련 데이터 초기화
+    const itemIndex = mappingPidList.value.findIndex(
+      (item) => item.id === pidItem.id || item.drawing_id === pidItem.drawing_id
+    );
+    if (itemIndex !== -1) {
+      mappingPidList.value[itemIndex].excelFileName = "";
+      mappingPidList.value[itemIndex].excel_file_name = "";
+      mappingPidList.value[itemIndex].excelFile = undefined;
+      // Vue 반응성을 위해 배열 재할당
+      mappingPidList.value = [...mappingPidList.value];
+    }
 
     // 이미 alert가 표시된 경우 중복 표시 방지
     if (error?.alertShown) {
@@ -5995,7 +5813,6 @@ const handleExcelFileDeleteForPid = async (pidItem: any) => {
       }
 
       // Excel 파일 삭제 완료 - 별도 메시지 없음 (저장 버튼 클릭 시 통합 메시지)
-
     } else {
       console.error("P&ID Excel 파일 삭제 실패:", response);
       alert(`Excel 파일 삭제 실패: ${response.message || "알 수 없는 오류"}`);
@@ -6013,7 +5830,6 @@ const handleExcelFileDeleteForPid = async (pidItem: any) => {
 // P&ID 그리드 저장 시 Svg 도면 파일 업로드 함수
 const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
   try {
-
     // processId 확인
     let processId: string;
     if (props.isRegisterMode) {
@@ -6044,10 +5860,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
     if (pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith("temp_")) {
       formData.append("drawing_id", pidItem.svg_drawing_id);
       formData.append("force_update", "true"); // 기존 SVG 파일 재선택 시 force_update 추가
-      console.log(
-        "✅ 기존 svg_drawing_id를 drawing_id로 포함:",
-        pidItem.svg_drawing_id
-      );
+      console.log("✅ 기존 svg_drawing_id를 drawing_id로 포함:", pidItem.svg_drawing_id);
     }
 
     // siteFile에 선택된 Svg 도면 파일정보 전달
@@ -6065,7 +5878,8 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       siteFile: svgFile.name,
       fileSize: svgFile.size,
       fileType: svgFile.type,
-      note: "parent_drawing_id = 현재 P&ID row의 drawing_id, drawing_id = 기존 svg_drawing_id (있는 경우)",
+      note:
+        "parent_drawing_id = 현재 P&ID row의 drawing_id, drawing_id = 기존 svg_drawing_id (있는 경우)",
     });
 
     // FormData 내용 확인
@@ -6093,9 +5907,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
     console.log("📋 FormData 실제 전송 내용:");
     for (let [key, value] of formData.entries()) {
       if (value instanceof File) {
-        console.log(
-          `${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
-        );
+        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
       } else {
         console.log(`${key}: "${value}"`);
       }
@@ -6112,14 +5924,10 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       })),
     });
 
-    const response = await request(
-      "/api/process/drawing/child/upload",
-      undefined,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await request("/api/process/drawing/child/upload", undefined, {
+      method: "POST",
+      body: formData,
+    });
 
     console.log("🌐 API 응답 수신:", {
       success: response.success,
@@ -6189,9 +5997,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       });
 
       // 여러 방법으로 해당 항목 찾기
-      let itemIndex = mappingPidList.value.findIndex(
-        (item) => item.id === pidItem.id
-      );
+      let itemIndex = mappingPidList.value.findIndex((item) => item.id === pidItem.id);
 
       if (itemIndex === -1) {
         // ID로 찾지 못한 경우 drawing_id로 찾기
@@ -6242,10 +6048,7 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
       }
 
       // 기존 SVG 파일이 재선택된 경우 P&ID 컴포넌트 그리드 갱신
-      if (
-        pidItem.svg_drawing_id &&
-        !pidItem.svg_drawing_id.startsWith("temp_")
-      ) {
+      if (pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith("temp_")) {
         try {
           // 현재 선택된 P&ID 항목이 있는지 확인
           if (
@@ -6258,7 +6061,6 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
           console.error("P&ID 컴포넌트 그리드 갱신 실패:", componentError);
         }
       }
-
     } else {
       console.error("P&ID Svg 도면 업로드 실패:", response);
 
@@ -6280,7 +6082,6 @@ const handleSvgFileUploadForPid = async (pidItem: any, svgFile: File) => {
 // P&ID 그리드에서 Svg 도면 파일 삭제 함수
 const handleSvgFileDeleteForPid = async (pidItem: any) => {
   try {
-
     // svg_drawing_id가 있는 경우에만 삭제 API 호출
     if (pidItem.svg_drawing_id && !pidItem.svg_drawing_id.startsWith("temp_")) {
       const response = await request(
@@ -6301,16 +6102,13 @@ const handleSvgFileDeleteForPid = async (pidItem: any) => {
           mappingPidList.value[itemIndex].svgFileName = "";
           (mappingPidList.value[itemIndex] as any).svgFile = null;
         }
-
       } else {
         console.error("P&ID Svg 도면 삭제 실패:", response);
         alert(`Svg 도면 삭제 실패: ${response.message || "알 수 없는 오류"}`);
       }
     } else {
       // 임시 ID이거나 ID가 없는 경우 로컬에서만 삭제
-      const itemIndex = mappingPidList.value.findIndex(
-        (item) => item.id === pidItem.id
-      );
+      const itemIndex = mappingPidList.value.findIndex((item) => item.id === pidItem.id);
       if (itemIndex !== -1) {
         mappingPidList.value[itemIndex].svg_drawing_id = null;
         mappingPidList.value[itemIndex].svgFileName = "";
@@ -6447,7 +6245,9 @@ const handlePfdSave = async () => {
           // 파일명은 유지 (변경 감지용)
         };
       });
-      processStore.setInitialPfdList(JSON.parse(JSON.stringify(normalizedInitialPfdList)));
+      processStore.setInitialPfdList(
+        JSON.parse(JSON.stringify(normalizedInitialPfdList))
+      );
       console.log("✅ 공정카드 저장 후 initialPfdList 정규화 완료 (파일 객체 제거)");
 
       // P&ID 그리드 새로고침 (현재 선택된 PFD 항목이 있는 경우)
@@ -6466,8 +6266,7 @@ const handlePfdSave = async () => {
             currentPfdItemForMapping.value = {
               ...currentPfdItemForMapping.value,
               drawing_id:
-                updatedPfdItem.drawing_id ||
-                currentPfdItemForMapping.value.drawing_id,
+                updatedPfdItem.drawing_id || currentPfdItemForMapping.value.drawing_id,
             };
 
             // P&ID 그리드 새로고침
@@ -6475,17 +6274,13 @@ const handlePfdSave = async () => {
             console.log("P&ID 그리드 새로고침 완료");
 
             // P&ID Components 그리드 새로고침 (P&ID Components 섹션이 열려있는 경우)
-            if (
-              showPidComponentSection.value &&
-              selectedPidForComponent.value
-            ) {
+            if (showPidComponentSection.value && selectedPidForComponent.value) {
               console.log("P&ID Components 그리드 새로고침 시작...");
               try {
                 // 업데이트된 P&ID 항목 찾기
                 const updatedPidItem = mappingPidList.value.find(
                   (item: any) =>
-                    item.drawing_id ===
-                      selectedPidForComponent.value.drawing_id ||
+                    item.drawing_id === selectedPidForComponent.value.drawing_id ||
                     item.id === selectedPidForComponent.value.id
                 );
 
@@ -6498,17 +6293,12 @@ const handlePfdSave = async () => {
                   );
                 }
               } catch (componentError: any) {
-                console.error(
-                  "P&ID Components 그리드 새로고침 실패:",
-                  componentError
-                );
+                console.error("P&ID Components 그리드 새로고침 실패:", componentError);
                 // 에러가 발생해도 전체 프로세스는 계속 진행
               }
             }
           } else {
-            console.log(
-              "업데이트된 PFD 항목을 찾을 수 없어 P&ID 그리드 새로고침 건너뜀"
-            );
+            console.log("업데이트된 PFD 항목을 찾을 수 없어 P&ID 그리드 새로고침 건너뜀");
           }
         } catch (pidError: any) {
           console.error("P&ID 그리드 새로고침 실패:", pidError);
@@ -6546,10 +6336,7 @@ const processPfdChanges = async (processId: string) => {
         // id가 같은 경우 (같은 행)
         if (currentItem.id === initialItem.id) return true;
         // drawing_id가 같은 경우 (같은 파일)
-        if (
-          currentItem.drawing_id &&
-          currentItem.drawing_id === initialItem.drawing_id
-        )
+        if (currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id)
           return true;
         return false;
       });
@@ -6638,8 +6425,7 @@ const processPfdChanges = async (processId: string) => {
       const initialSvgFile = (initialItem as any)?.svgFile;
 
       // 파일명이 변경된 경우 감지
-      const pfdFileNameChanged =
-        currentItem.pfdFileName !== initialItem.pfdFileName;
+      const pfdFileNameChanged = currentItem.pfdFileName !== initialItem.pfdFileName;
       const svgFileNameChanged =
         (currentItem as any).svgFileName !== (initialItem as any).svgFileName;
 
@@ -6654,10 +6440,7 @@ const processPfdChanges = async (processId: string) => {
         (!currentSvgFile && initialSvgFile);
 
       const isModified =
-        pfdFileNameChanged ||
-        svgFileNameChanged ||
-        pfdFileChanged ||
-        svgFileChanged;
+        pfdFileNameChanged || svgFileNameChanged || pfdFileChanged || svgFileChanged;
 
       console.log(`수정 감지 - 현재항목:`, {
         id: currentItem.id,
@@ -6738,13 +6521,8 @@ const processPfdChanges = async (processId: string) => {
 
             if (!response.success) {
               // 404 Not Found 오류인 경우 무시하고 계속 진행
-              if (
-                response.status === 404 ||
-                response.message?.includes("not found")
-              ) {
-                console.warn(
-                  `PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`
-                );
+              if (response.status === 404 || response.message?.includes("not found")) {
+                console.warn(`PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`);
                 return {
                   success: true,
                   drawing_id: row.drawing_id,
@@ -6763,9 +6541,7 @@ const processPfdChanges = async (processId: string) => {
               (deleteError.message?.includes("DrawingMasters with ID") &&
                 deleteError.message?.includes("not found"))
             ) {
-              console.warn(
-                `PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`
-              );
+              console.warn(`PFD 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`);
               return {
                 success: true,
                 drawing_id: row.drawing_id,
@@ -6834,18 +6610,11 @@ const processPfdChanges = async (processId: string) => {
           console.log("process_id:", processId);
           console.log("drawing_type:", "PFDCARD");
           console.log("siteFile:", file ? file.name : "");
-          console.log(
-            "symbolFile:",
-            svgFile ? (pfdItem as any).svgFileName : ""
-          );
-          const response = await request(
-            "/api/process/drawing/create",
-            undefined,
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          console.log("symbolFile:", svgFile ? (pfdItem as any).svgFileName : "");
+          const response = await request("/api/process/drawing/create", undefined, {
+            method: "POST",
+            body: formData,
+          });
 
           console.log("PFD API 호출 완료:", response);
 
@@ -6855,12 +6624,12 @@ const processPfdChanges = async (processId: string) => {
 
           const responseData = response;
           console.log("PFD 도면 생성 API 응답:", responseData);
-          
+
           // response.data.success가 false인 경우 저장 실패 처리
           if (responseData.response?.data?.success === false) {
-            const errorMessage = 
-              responseData.response?.data?.message || 
-              responseData.response?.data?.detail || 
+            const errorMessage =
+              responseData.response?.data?.message ||
+              responseData.response?.data?.detail ||
               "도면 저장에 실패했습니다.";
             console.error("❌ PFD 도면 저장 실패:", {
               message: errorMessage,
@@ -6870,17 +6639,14 @@ const processPfdChanges = async (processId: string) => {
             });
             throw new Error(errorMessage);
           }
-          
+
           console.log("응답 구조 분석:");
           console.log("- responseData.response:", responseData.response);
           console.log(
             "- responseData.response?.drawing_id:",
             responseData.response?.drawing_id
           );
-          console.log(
-            "- responseData.response?.data:",
-            responseData.response?.data
-          );
+          console.log("- responseData.response?.data:", responseData.response?.data);
           console.log(
             "- responseData.response?.data?.drawing_id:",
             responseData.response?.data?.drawing_id
@@ -6998,8 +6764,7 @@ const processPfdChanges = async (processId: string) => {
           console.log("수정 API 호출용 drawing_id:", {
             currentDrawingId: pfdItem.drawing_id,
             actualDrawingId: actualDrawingId,
-            isUuidFormat:
-              actualDrawingId && !actualDrawingId.startsWith("temp_"),
+            isUuidFormat: actualDrawingId && !actualDrawingId.startsWith("temp_"),
           });
 
           // 변경된 파일 정보 확인
@@ -7040,13 +6805,11 @@ const processPfdChanges = async (processId: string) => {
           const svgFileChanged =
             (currentSvgFile &&
               (!initialSvgFile ||
-                (currentSvgFile as any).name !==
-                  (initialSvgFile as any).name)) ||
+                (currentSvgFile as any).name !== (initialSvgFile as any).name)) ||
             (!currentSvgFile && initialSvgFile);
 
           // 파일명 변경 감지 (추가 확인)
-          const pfdFileNameChanged =
-            pfdItem.pfdFileName !== initialItem.pfdFileName;
+          const pfdFileNameChanged = pfdItem.pfdFileName !== initialItem.pfdFileName;
           const svgFileNameChanged =
             (pfdItem as any).svgFileName !== (initialItem as any).svgFileName;
 
@@ -7064,10 +6827,7 @@ const processPfdChanges = async (processId: string) => {
 
           // 파일 변경 감지 (파일 객체 변경 또는 파일명 변경)
           const hasFileChange =
-            pfdFileChanged ||
-            svgFileChanged ||
-            pfdFileNameChanged ||
-            svgFileNameChanged;
+            pfdFileChanged || svgFileChanged || pfdFileNameChanged || svgFileNameChanged;
 
           if (hasFileChange) {
             console.log("파일 변경 감지:", {
@@ -7088,10 +6848,7 @@ const processPfdChanges = async (processId: string) => {
               !svgFileChanged &&
               !svgFileNameChanged
             ) {
-              console.log(
-                "PFD 파일만 변경 - siteFile만 전달:",
-                currentPfdFile.name
-              );
+              console.log("PFD 파일만 변경 - siteFile만 전달:", currentPfdFile.name);
               formData.append("siteFile", currentPfdFile);
             }
             // SVG 파일만 변경된 경우: drawingId와 symbolFile만 전달
@@ -7121,10 +6878,7 @@ const processPfdChanges = async (processId: string) => {
               formData.append("drawing_type", "PFDCARD");
 
               if (currentPfdFile) {
-                console.log(
-                  "PFD 파일을 siteFile로 업데이트:",
-                  currentPfdFile.name
-                );
+                console.log("PFD 파일을 siteFile로 업데이트:", currentPfdFile.name);
                 formData.append("siteFile", currentPfdFile);
               }
 
@@ -7147,10 +6901,7 @@ const processPfdChanges = async (processId: string) => {
                 formData.append("pfdFileName", pfdItem.pfdFileName);
               }
               if (svgFileNameChanged) {
-                formData.append(
-                  "svgFileName",
-                  (pfdItem as any).svgFileName || ""
-                );
+                formData.append("svgFileName", (pfdItem as any).svgFileName || "");
               }
             }
 
@@ -7169,8 +6920,7 @@ const processPfdChanges = async (processId: string) => {
             }
 
             // UUID 형식 검증
-            const uuidRegex =
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (
               !actualDrawingId ||
               actualDrawingId.startsWith("temp_") ||
@@ -7180,9 +6930,7 @@ const processPfdChanges = async (processId: string) => {
                 actualDrawingId,
                 itemId: pfdItem.id,
                 isTempId: actualDrawingId?.startsWith("temp_"),
-                isUuidFormat: actualDrawingId
-                  ? uuidRegex.test(actualDrawingId)
-                  : false,
+                isUuidFormat: actualDrawingId ? uuidRegex.test(actualDrawingId) : false,
                 message: "UUID 형식이 아니거나 임시 ID입니다.",
               });
               continue;
@@ -7205,9 +6953,9 @@ const processPfdChanges = async (processId: string) => {
 
             // response.data.success가 false인 경우 저장 실패 처리
             if (response.response?.data?.success === false) {
-              const errorMessage = 
-                response.response?.data?.message || 
-                response.response?.data?.detail || 
+              const errorMessage =
+                response.response?.data?.message ||
+                response.response?.data?.detail ||
                 "도면 수정에 실패했습니다.";
               console.error("❌ PFD 도면 수정 실패:", {
                 message: errorMessage,
@@ -7221,8 +6969,7 @@ const processPfdChanges = async (processId: string) => {
             // symbol_id 추출 및 업데이트 (Svg 파일이 변경된 경우)
             if (svgFileChanged) {
               const symbolId =
-                response.response?.symbol_id ||
-                response.response?.data?.symbol_id;
+                response.response?.symbol_id || response.response?.data?.symbol_id;
               if (symbolId !== undefined) {
                 const updatedPfdList = processStore.pfdList.map((item) => {
                   if (item.id === pfdItem.id) {
@@ -7256,11 +7003,7 @@ const processPfdChanges = async (processId: string) => {
     }
 
     // 변경사항이 없으면 false 반환
-    if (
-      deletedRows.length === 0 &&
-      addedRows.length === 0 &&
-      modifiedRows.length === 0
-    ) {
+    if (deletedRows.length === 0 && addedRows.length === 0 && modifiedRows.length === 0) {
       console.log("PFD 변경사항이 없습니다.");
       return false;
     }
@@ -7302,13 +7045,16 @@ const handlePfdSelectionChange = () => {
   // 공정카드 row가 선택되면 P&ID 버튼 클릭 이벤트 호출
   if (selectedPfdItems.value) {
     const selectedItem = selectedPfdItems.value;
-    
+
     // 새로 추가된 row(아직 저장되지 않은 row)인 경우 P&ID 매핑 모달을 열지 않음
-    if (!selectedItem.drawing_id || selectedItem.drawing_id.startsWith("temp_pfd_drawing_")) {
+    if (
+      !selectedItem.drawing_id ||
+      selectedItem.drawing_id.startsWith("temp_pfd_drawing_")
+    ) {
       console.log("새로 추가된 공정카드 row - P&ID 매핑 모달을 열지 않음");
       return;
     }
-    
+
     console.log("공정카드 선택으로 인한 P&ID 버튼 클릭 시뮬레이션");
     openMappingPidModal(selectedItem);
   }
@@ -7369,6 +7115,27 @@ const handleFormulaSave = async (silent: boolean = false) => {
       }
     }
 
+    // 변경사항 확인 (저장 전 체크)
+    if (!hasFormulaChanges()) {
+      console.log("저장할 변경사항이 없습니다.");
+      console.log("silent 값:", silent);
+      if (!silent) {
+        const noChangesMessage = t("common.noChanges");
+        console.log("변경사항 없음 메시지:", noChangesMessage);
+        // setTimeout을 사용하여 alert를 다음 이벤트 루프에서 실행
+        setTimeout(() => {
+          if (noChangesMessage && noChangesMessage.trim()) {
+            alert(noChangesMessage);
+          } else {
+            alert("변경사항이 없습니다.");
+          }
+        }, 0);
+      } else {
+        console.log("silent 모드이므로 메시지 표시하지 않음");
+      }
+      return;
+    }
+
     // 계산식 변경사항 처리
     const hasChanges = await processFormulaChanges(processId);
 
@@ -7377,10 +7144,7 @@ const handleFormulaSave = async (silent: boolean = false) => {
 
       // 저장 완료 후 그리드 상태 확인
       console.log("=== 저장 완료 후 그리드 상태 확인 ===");
-      console.log(
-        "processStore.formulaList 길이:",
-        processStore.formulaList.length
-      );
+      console.log("processStore.formulaList 길이:", processStore.formulaList.length);
       console.log(
         "processStore.formulaList 내용:",
         processStore.formulaList.map((item) => ({
@@ -7401,11 +7165,6 @@ const handleFormulaSave = async (silent: boolean = false) => {
       if (!silent) {
         alert(t("processDetail.formulaSaveCompleted"));
       }
-    } else {
-      console.log("저장할 변경사항이 없습니다.");
-      if (!silent) {
-        alert(t("processDetail.noFormulaChangesToSave"));
-      }
     }
   } catch (error: any) {
     console.error("계산식 저장 실패:", error);
@@ -7417,24 +7176,18 @@ const processFormulaChanges = async (processId: string) => {
   console.log("=== 계산식 변경사항 처리 시작 ===");
   console.log("initialFormulaList 존재:", !!processStore.initialFormulaList);
   console.log("formulaList 존재:", !!processStore.formulaList);
-  console.log(
-    "initialFormulaList 길이:",
-    processStore.initialFormulaList?.length || 0
-  );
+  console.log("initialFormulaList 길이:", processStore.initialFormulaList?.length || 0);
   console.log("formulaList 길이:", processStore.formulaList?.length || 0);
 
   if (processStore.initialFormulaList && processStore.formulaList) {
     // 삭제된 행들 감지
-    const deletedRows = processStore.initialFormulaList.filter(
-      (initialItem) => {
-        if (!initialItem.formula_id) return false;
-        return !processStore.formulaList.some(
-          (currentItem) =>
-            currentItem.formula_id &&
-            currentItem.formula_id === initialItem.formula_id
-        );
-      }
-    );
+    const deletedRows = processStore.initialFormulaList.filter((initialItem) => {
+      if (!initialItem.formula_id) return false;
+      return !processStore.formulaList.some(
+        (currentItem) =>
+          currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
+      );
+    });
 
     // 추가된 행들 감지
     const addedRows = processStore.formulaList.filter((currentItem) => {
@@ -7454,14 +7207,10 @@ const processFormulaChanges = async (processId: string) => {
       if (!currentItem.formula_id) return false;
       const isNewItem = !processStore.initialFormulaList.some(
         (initialItem) =>
-          initialItem.formula_id &&
-          initialItem.formula_id === currentItem.formula_id
+          initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
       );
       if (isNewItem) {
-        console.log(
-          "새로 추가된 계산식 감지 (formula_id 기준):",
-          currentItem.formula_id
-        );
+        console.log("새로 추가된 계산식 감지 (formula_id 기준):", currentItem.formula_id);
       }
       return isNewItem;
     });
@@ -7520,9 +7269,7 @@ const processFormulaChanges = async (processId: string) => {
 
           if (!formulaId) {
             console.error("삭제할 formula_id를 찾을 수 없습니다:", row);
-            return Promise.reject(
-              new Error("삭제할 formula_id를 찾을 수 없습니다")
-            );
+            return Promise.reject(new Error("삭제할 formula_id를 찾을 수 없습니다"));
           }
 
           return deleteFormulaAPI(formulaId);
@@ -7575,10 +7322,7 @@ const processFormulaChanges = async (processId: string) => {
             console.log("=== API 응답 구조 분석 ===");
             console.log("apiResponse:", apiResponse);
             console.log("apiResponse.response:", apiResponse?.response);
-            console.log(
-              "apiResponse.response.data:",
-              apiResponse?.response?.data
-            );
+            console.log("apiResponse.response.data:", apiResponse?.response?.data);
             console.log(
               "apiResponse.response.data.response:",
               apiResponse?.response?.data?.response
@@ -7606,8 +7350,7 @@ const processFormulaChanges = async (processId: string) => {
               apiResponse?.response?.file_name ||
               apiResponse?.file_name ||
               apiResponse?.response?.data?.files?.python?.original_filename ||
-              apiResponse?.response?.data?.response?.files?.python
-                ?.original_filename ||
+              apiResponse?.response?.data?.response?.files?.python?.original_filename ||
               apiResponse?.response?.data?.response?.data?.files?.python
                 ?.original_filename;
             const formulaId =
@@ -7630,12 +7373,9 @@ const processFormulaChanges = async (processId: string) => {
                 `계산식 formula_id 업데이트: ${addedRow.registeredFormula} -> ${formulaId}`
               );
             } else {
-              console.log(
-                `계산식 formula_id 추출 실패: ${addedRow.registeredFormula}`
-              );
+              console.log(`계산식 formula_id 추출 실패: ${addedRow.registeredFormula}`);
               console.log("추출 시도한 경로들:", {
-                "apiResponse?.response?.formula_id":
-                  apiResponse?.response?.formula_id,
+                "apiResponse?.response?.formula_id": apiResponse?.response?.formula_id,
                 "apiResponse?.formula_id": apiResponse?.formula_id,
                 "apiResponse?.response?.data?.formula_id":
                   apiResponse?.response?.data?.formula_id,
@@ -7665,13 +7405,9 @@ const processFormulaChanges = async (processId: string) => {
 
         // 성공한 계산식의 isSaved 상태와 file_name을 업데이트
         const updatedFormulaList = processStore.formulaList.map((item) => {
-          const successfulFormula = successfulFormulas.find(
-            (sf) => sf.id === item.id
-          );
+          const successfulFormula = successfulFormulas.find((sf) => sf.id === item.id);
           if (successfulFormula) {
-            console.log(
-              `계산식 저장 완료 - ${item.registeredFormula} (ID: ${item.id})`
-            );
+            console.log(`계산식 저장 완료 - ${item.registeredFormula} (ID: ${item.id})`);
             return {
               ...item,
               isSaved: true,
@@ -7700,10 +7436,7 @@ const processFormulaChanges = async (processId: string) => {
 
         // 그리드 상태 확인
         console.log("=== 그리드 상태 확인 ===");
-        console.log(
-          "processStore.formulaList 길이:",
-          processStore.formulaList.length
-        );
+        console.log("processStore.formulaList 길이:", processStore.formulaList.length);
         console.log(
           "processStore.formulaList 내용:",
           processStore.formulaList.map((item) => ({
@@ -7742,32 +7475,25 @@ const processFormulaChanges = async (processId: string) => {
       console.log("초기 행 수:", processStore.initialFormulaList.length);
 
       // 현재 행에서 초기 행에 없는 항목들을 찾기
-      const alternativeAddedRows = processStore.formulaList.filter(
-        (currentItem) => {
-          // 초기 목록에 같은 ID나 formula_id가 없으면 새로 추가된 것으로 간주
-          const existsInInitial = processStore.initialFormulaList.some(
-            (initialItem) => {
-              if (initialItem.id === currentItem.id) return true;
-              if (
-                initialItem.formula_id &&
-                currentItem.formula_id &&
-                initialItem.formula_id === currentItem.formula_id
-              )
-                return true;
-              return false;
-            }
-          );
-
-          if (!existsInInitial) {
-            console.log(
-              "대안 로직으로 새로 추가된 계산식 감지:",
-              currentItem.id
-            );
+      const alternativeAddedRows = processStore.formulaList.filter((currentItem) => {
+        // 초기 목록에 같은 ID나 formula_id가 없으면 새로 추가된 것으로 간주
+        const existsInInitial = processStore.initialFormulaList.some((initialItem) => {
+          if (initialItem.id === currentItem.id) return true;
+          if (
+            initialItem.formula_id &&
+            currentItem.formula_id &&
+            initialItem.formula_id === currentItem.formula_id
+          )
             return true;
-          }
           return false;
+        });
+
+        if (!existsInInitial) {
+          console.log("대안 로직으로 새로 추가된 계산식 감지:", currentItem.id);
+          return true;
         }
-      );
+        return false;
+      });
 
       if (alternativeAddedRows.length > 0) {
         console.log(
@@ -7786,17 +7512,12 @@ const processFormulaChanges = async (processId: string) => {
     }
 
     // 초기값 업데이트
-    const updatedFormulaList = JSON.parse(
-      JSON.stringify(processStore.formulaList)
-    );
+    const updatedFormulaList = JSON.parse(JSON.stringify(processStore.formulaList));
     processStore.setInitialFormulaList(updatedFormulaList);
 
     // 초기값 업데이트 후 그리드 상태 재확인
     console.log("=== 초기값 업데이트 후 그리드 상태 ===");
-    console.log(
-      "processStore.formulaList 길이:",
-      processStore.formulaList.length
-    );
+    console.log("processStore.formulaList 길이:", processStore.formulaList.length);
     console.log(
       "processStore.initialFormulaList 길이:",
       processStore.initialFormulaList.length
@@ -7815,18 +7536,12 @@ const processFormulaChanges = async (processId: string) => {
 
     // 최종 그리드 상태 확인
     console.log("=== 최종 그리드 상태 확인 ===");
-    console.log(
-      "processStore.formulaList 최종 길이:",
-      processStore.formulaList.length
-    );
+    console.log("processStore.formulaList 최종 길이:", processStore.formulaList.length);
     console.log(
       "processStore.initialFormulaList 최종 길이:",
       processStore.initialFormulaList.length
     );
-    console.log(
-      "processStore.formulaList 최종 내용:",
-      processStore.formulaList
-    );
+    console.log("processStore.formulaList 최종 내용:", processStore.formulaList);
 
     console.log("=== 계산식 변경사항 처리 완료 ===");
     return true;
@@ -7859,15 +7574,16 @@ const handlePfdDelete = async () => {
 
   // 삭제될 항목과 연관된 P&ID 매핑/Components 확인
   const isPidMappingOpen = showPidListInMain.value && currentPfdItemForMapping.value;
-  const isPidComponentOpen = showPidComponentSection.value && selectedPidForComponent.value;
-  const isDeletingPidMappingItem = isPidMappingOpen && (
-    currentPfdItemForMapping.value?.drawing_id === deletedDrawingId ||
-    currentPfdItemForMapping.value?.id === deletedItemId
-  );
-  const isDeletingPidComponentItem = isPidComponentOpen && (
-    selectedPidForComponent.value?.parent_drawing_id === deletedDrawingId ||
-    pidComponentDrawingId.value === deletedDrawingId
-  );
+  const isPidComponentOpen =
+    showPidComponentSection.value && selectedPidForComponent.value;
+  const isDeletingPidMappingItem =
+    isPidMappingOpen &&
+    (currentPfdItemForMapping.value?.drawing_id === deletedDrawingId ||
+      currentPfdItemForMapping.value?.id === deletedItemId);
+  const isDeletingPidComponentItem =
+    isPidComponentOpen &&
+    (selectedPidForComponent.value?.parent_drawing_id === deletedDrawingId ||
+      pidComponentDrawingId.value === deletedDrawingId);
 
   console.log("연관된 영역 확인:", {
     isPidMappingOpen,
@@ -7877,9 +7593,7 @@ const handlePfdDelete = async () => {
   });
 
   // 리스트에서 항목 삭제
-  const updatedList = processStore.pfdList.filter(
-    (item) => item.id !== deletedItemId
-  );
+  const updatedList = processStore.pfdList.filter((item) => item.id !== deletedItemId);
   processStore.setPfdList(updatedList);
   selectedPfdItems.value = null;
 
@@ -7969,10 +7683,9 @@ const createNewProcess = async () => {
     const symbolFile = processStore.selectedFiles["processSymbol"];
 
     // 공정명에서 실제 코드 값 찾기
-    const selectedProcessNameOption =
-      processStore.searchProcessNameOptions.find(
-        (option) => option.value === processStore.processDetail.processName
-      );
+    const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+      (option) => option.value === processStore.processDetail.processName
+    );
 
     if (!selectedProcessNameOption) {
       alert(t("processDetail.processNameNotFound"));
@@ -7986,10 +7699,7 @@ const createNewProcess = async () => {
     formData.append("unit_system_code", selectedUnit.value);
     formData.append("process_code", selectedProcessNameOption.value);
     formData.append("process_name", selectedProcessNameOption.label);
-    formData.append(
-      "process_type_code",
-      processStore.processDetail.processType
-    );
+    formData.append("process_type_code", processStore.processDetail.processType);
     formData.append("process_category", processStore.processDetail.subCategory);
 
     // 파일 파라미터 (있는 경우에만)
@@ -8017,9 +7727,7 @@ const createNewProcess = async () => {
     const hasError =
       !response.success ||
       (response.status >= 400 && response.status < 600) ||
-      (response.response &&
-        response.response.data &&
-        !response.response.data.success) ||
+      (response.response && response.response.data && !response.response.data.success) ||
       (response.response &&
         response.response.data &&
         response.response.data.status >= 400 &&
@@ -8089,8 +7797,7 @@ const createNewProcess = async () => {
       response.response.data.response &&
       response.response.data.response.process_id
     ) {
-      createdProcessId.value =
-        response.response.data.response.process_id.toString();
+      createdProcessId.value = response.response.data.response.process_id.toString();
       console.log("생성된 공정 ID 저장:", createdProcessId.value);
     } else {
       console.error("process_id를 찾을 수 없습니다. 응답 구조:", response);
@@ -8123,8 +7830,7 @@ const saveBasicProcessInfo = async (processId: string) => {
 
     // 공정심볼 파일 변경 감지
     const symbolFile = processStore.selectedFiles["processSymbol"];
-    const hasProcessSymbolChanged =
-      symbolFile !== undefined && symbolFile !== null;
+    const hasProcessSymbolChanged = symbolFile !== undefined && symbolFile !== null;
 
     // 심볼 파일 삭제 여부 확인
     const originalSymbolId = processStore.processDetail.originalSymbolId;
@@ -8180,10 +7886,9 @@ const saveBasicProcessInfo = async (processId: string) => {
 
     // 공정명 정보 로깅
     if (currentProcessDetail) {
-      const selectedProcessNameOption =
-        processStore.searchProcessNameOptions.find(
-          (option) => option.value === currentProcessDetail.processName
-        );
+      const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+        (option) => option.value === currentProcessDetail.processName
+      );
 
       console.log("현재 기본 정보:", {
         processNm: currentProcessDetail.processNm,
@@ -8202,10 +7907,9 @@ const saveBasicProcessInfo = async (processId: string) => {
 
         // processName을 label 값으로 변환하여 저장
         const processDetailForSave = { ...processStore.processDetail };
-        const selectedProcessNameOption =
-          processStore.searchProcessNameOptions.find(
-            (option) => option.value === processDetailForSave.processName
-          );
+        const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+          (option) => option.value === processDetailForSave.processName
+        );
         if (selectedProcessNameOption) {
           processDetailForSave.processName = selectedProcessNameOption.label;
         }
@@ -8239,10 +7943,7 @@ const saveBasicProcessInfo = async (processId: string) => {
         await processStore.searchProcessById(processId);
         // 새로고침된 symbolId로 미리보기 다시 로드
         const newSymbolId = processStore.processDetail.symbolId;
-        if (
-          newSymbolId &&
-          newSymbolId !== "00000000-0000-0000-0000-000000000000"
-        ) {
+        if (newSymbolId && newSymbolId !== "00000000-0000-0000-0000-000000000000") {
           await processStore.loadProcessSymbolPreview();
         } else {
           // symbolId가 없거나 빈 UUID인 경우 미리보기 URL 해제
@@ -8270,19 +7971,16 @@ const saveBasicProcessInfo = async (processId: string) => {
             console.error("공정심볼 파일 삭제 실패:", deleteError);
             // 삭제 실패해도 계속 진행 (경고만 표시)
             alert(
-              `공정심볼 파일 삭제에 실패했습니다: ${
-                deleteError.message || deleteError
-              }`
+              `공정심볼 파일 삭제에 실패했습니다: ${deleteError.message || deleteError}`
             );
           }
         }
 
         // processName을 label 값으로 변환하여 저장
         const processDetailForSave = { ...processStore.processDetail };
-        const selectedProcessNameOption =
-          processStore.searchProcessNameOptions.find(
-            (option) => option.value === processDetailForSave.processName
-          );
+        const selectedProcessNameOption = processStore.searchProcessNameOptions.find(
+          (option) => option.value === processDetailForSave.processName
+        );
         if (selectedProcessNameOption) {
           processDetailForSave.processName = selectedProcessNameOption.label;
         }
@@ -8292,8 +7990,7 @@ const saveBasicProcessInfo = async (processId: string) => {
 
         // 심볼 파일이 삭제된 경우 symbolId를 빈 UUID로 설정
         if (isSymbolDeleted) {
-          processDetailForSave.symbolId =
-            "00000000-0000-0000-0000-000000000000";
+          processDetailForSave.symbolId = "00000000-0000-0000-0000-000000000000";
           processDetailForSave.processSymbol = "";
         }
 
@@ -8384,40 +8081,34 @@ const handleUpdate = async (silent: boolean = false) => {
     console.log("=== 계산식 삭제 감지 시작 ===");
     console.log("initialFormulaList 존재:", !!processStore.initialFormulaList);
     console.log("formulaList 존재:", !!processStore.formulaList);
-    console.log(
-      "initialFormulaList 길이:",
-      processStore.initialFormulaList?.length || 0
-    );
+    console.log("initialFormulaList 길이:", processStore.initialFormulaList?.length || 0);
     console.log("formulaList 길이:", processStore.formulaList?.length || 0);
 
     if (processStore.initialFormulaList && processStore.formulaList) {
       // 모든 삭제된 항목들 감지
-      const allDeletedRows = processStore.initialFormulaList.filter(
-        (initialItem) => {
-          console.log("초기 항목 확인:", {
-            id: initialItem.id,
-            formula_id: initialItem.formula_id,
-            registeredFormula: initialItem.registeredFormula,
-          });
+      const allDeletedRows = processStore.initialFormulaList.filter((initialItem) => {
+        console.log("초기 항목 확인:", {
+          id: initialItem.id,
+          formula_id: initialItem.formula_id,
+          registeredFormula: initialItem.registeredFormula,
+        });
 
-          // formula_id가 있는 경우 formula_id로 비교
-          if (initialItem.formula_id) {
-            const exists = processStore.formulaList.some(
-              (currentItem) =>
-                currentItem.formula_id &&
-                currentItem.formula_id === initialItem.formula_id
-            );
-            console.log("formula_id로 비교 - 존재 여부:", exists);
-            return !exists;
-          }
-          // formula_id가 없는 경우 id로 비교
+        // formula_id가 있는 경우 formula_id로 비교
+        if (initialItem.formula_id) {
           const exists = processStore.formulaList.some(
-            (currentItem) => currentItem.id === initialItem.id
+            (currentItem) =>
+              currentItem.formula_id && currentItem.formula_id === initialItem.formula_id
           );
-          console.log("id로 비교 - 존재 여부:", exists);
+          console.log("formula_id로 비교 - 존재 여부:", exists);
           return !exists;
         }
-      );
+        // formula_id가 없는 경우 id로 비교
+        const exists = processStore.formulaList.some(
+          (currentItem) => currentItem.id === initialItem.id
+        );
+        console.log("id로 비교 - 존재 여부:", exists);
+        return !exists;
+      });
 
       console.log("감지된 삭제된 항목 수:", allDeletedRows.length);
 
@@ -8455,8 +8146,7 @@ const handleUpdate = async (silent: boolean = false) => {
           currentItem.formula_id &&
           !processStore.initialFormulaList.some(
             (initialItem) =>
-              initialItem.formula_id &&
-              initialItem.formula_id === currentItem.formula_id
+              initialItem.formula_id && initialItem.formula_id === currentItem.formula_id
           )
         );
       });
@@ -8545,19 +8235,13 @@ const handleUpdate = async (silent: boolean = false) => {
             const deletePromises = deletedRows.map((row, index) => {
               // formula_id가 있으면 사용, 없으면 id에서 추출
               let formulaId = row.formula_id;
-              if (
-                !formulaId &&
-                row.id &&
-                row.id.startsWith("existing_formula_")
-              ) {
+              if (!formulaId && row.id && row.id.startsWith("existing_formula_")) {
                 // existing_formula_123 형태에서 123 추출
                 formulaId = row.id.replace("existing_formula_", "");
               }
 
               console.log(
-                `[${index + 1}/${
-                  deletedRows.length
-                }] 계산식 삭제 API 호출 시작:`,
+                `[${index + 1}/${deletedRows.length}] 계산식 삭제 API 호출 시작:`,
                 {
                   id: row.id,
                   formula_id: row.formula_id,
@@ -8568,9 +8252,7 @@ const handleUpdate = async (silent: boolean = false) => {
 
               if (!formulaId) {
                 console.error("삭제할 formula_id를 찾을 수 없습니다:", row);
-                return Promise.reject(
-                  new Error("삭제할 formula_id를 찾을 수 없습니다")
-                );
+                return Promise.reject(new Error("삭제할 formula_id를 찾을 수 없습니다"));
               }
 
               return deleteFormulaAPI(formulaId);
@@ -8589,13 +8271,8 @@ const handleUpdate = async (silent: boolean = false) => {
 
         // 로컬에서 삭제된 항목들 처리
         if (locallyDeletedRows.length > 0) {
-          console.log(
-            "로컬에서 삭제된 계산식 항목 수:",
-            locallyDeletedRows.length
-          );
-          console.log(
-            "로컬에서 삭제된 항목들은 서버 삭제가 필요하지 않습니다."
-          );
+          console.log("로컬에서 삭제된 계산식 항목 수:", locallyDeletedRows.length);
+          console.log("로컬에서 삭제된 항목들은 서버 삭제가 필요하지 않습니다.");
         }
 
         // 추가된 행 처리
@@ -8635,16 +8312,13 @@ const handleUpdate = async (silent: boolean = false) => {
 
     // PFD 그리드 처리
     if (processStore.initialPfdList && processStore.pfdList) {
-      const deletedPfdRows = processStore.initialPfdList.filter(
-        (initialItem) => {
-          if (!initialItem.drawing_id) return false;
-          return !processStore.pfdList.some(
-            (currentItem) =>
-              currentItem.drawing_id &&
-              currentItem.drawing_id === initialItem.drawing_id
-          );
-        }
-      );
+      const deletedPfdRows = processStore.initialPfdList.filter((initialItem) => {
+        if (!initialItem.drawing_id) return false;
+        return !processStore.pfdList.some(
+          (currentItem) =>
+            currentItem.drawing_id && currentItem.drawing_id === initialItem.drawing_id
+        );
+      });
 
       const addedPfdRows = processStore.pfdList.filter((currentItem) => {
         // 새로 추가된 행은 id가 'pfd_'로 시작하고 drawing_id가 임시 ID인 경우
@@ -8658,8 +8332,7 @@ const handleUpdate = async (silent: boolean = false) => {
         if (!currentItem.drawing_id) return false;
         return !processStore.initialPfdList.some(
           (initialItem) =>
-            initialItem.drawing_id &&
-            initialItem.drawing_id === currentItem.drawing_id
+            initialItem.drawing_id && initialItem.drawing_id === currentItem.drawing_id
         );
       });
 
@@ -8733,9 +8406,7 @@ const handleUpdate = async (silent: boolean = false) => {
             });
 
             const results = await Promise.all(deletePromises);
-            const successfulDeletes = results.filter(
-              (r) => r && r.success && !r.skipped
-            );
+            const successfulDeletes = results.filter((r) => r && r.success && !r.skipped);
             const skippedDeletes = results.filter((r) => r && r.skipped);
 
             console.log(
@@ -8813,10 +8484,7 @@ const handleUpdate = async (silent: boolean = false) => {
               console.log("remarks:", pfdItem.remarks || "");
               console.log("siteFile:", pfdItem._file.name);
               console.log("file size:", pfdItem._file.size);
-              console.log(
-                "file type:",
-                pfdItem._file.type || "application/octet-stream"
-              );
+              console.log("file type:", pfdItem._file.type || "application/octet-stream");
 
               // 파일 크기 검증 (10MB 제한)
               const maxFileSize = 10 * 1024 * 1024; // 10MB
@@ -8831,8 +8499,7 @@ const handleUpdate = async (silent: boolean = false) => {
               console.log("PFD 파일 업로드 시작:", {
                 fileName: pfdItem._file.name,
                 fileSize: pfdItem._file.size,
-                fileSizeMB:
-                  (pfdItem._file.size / (1024 * 1024)).toFixed(2) + "MB",
+                fileSizeMB: (pfdItem._file.size / (1024 * 1024)).toFixed(2) + "MB",
                 fileType: pfdItem._file.type || "application/octet-stream", // DWG 파일 타입 설정
               });
 
@@ -8862,16 +8529,12 @@ const handleUpdate = async (silent: boolean = false) => {
               }, 10 * 60 * 1000);
 
               try {
-                const response = await request(
-                  "/api/process/drawing/create",
-                  undefined,
-                  {
-                    method: "POST",
-                    body: formData,
-                    signal: controller.signal,
-                    // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
-                  }
-                );
+                const response = await request("/api/process/drawing/create", undefined, {
+                  method: "POST",
+                  body: formData,
+                  signal: controller.signal,
+                  // headers는 request.ts에서 자동으로 설정됨 (FormData일 때 Content-Type 자동 설정)
+                });
 
                 clearTimeout(timeoutId);
                 console.log("PFD API 호출 완료:", response);
@@ -8911,31 +8574,23 @@ const handleUpdate = async (silent: boolean = false) => {
                   });
                   processStore.setPfdList(updatedPfdList);
 
-                  console.log(
-                    "✅ PFD 모달 업로드 - drawing_id 업데이트 완료:",
-                    {
-                      itemId: pfdItem.id,
-                      oldDrawingId: pfdItem.drawing_id,
-                      newDrawingId: drawingId,
-                    }
-                  );
+                  console.log("✅ PFD 모달 업로드 - drawing_id 업데이트 완료:", {
+                    itemId: pfdItem.id,
+                    oldDrawingId: pfdItem.drawing_id,
+                    newDrawingId: drawingId,
+                  });
 
                   // 업데이트된 drawing_id 유효성 검증
                   const updatedItem = processStore.pfdList.find(
                     (item) => item.id === pfdItem.id
                   );
                   if (updatedItem && updatedItem.drawing_id === drawingId) {
-                    console.log(
-                      "✅ PFD 모달 업로드 - drawing_id 업데이트 검증 성공"
-                    );
+                    console.log("✅ PFD 모달 업로드 - drawing_id 업데이트 검증 성공");
                   } else {
-                    console.error(
-                      "❌ PFD 모달 업로드 - drawing_id 업데이트 검증 실패:",
-                      {
-                        expectedDrawingId: drawingId,
-                        actualDrawingId: updatedItem?.drawing_id,
-                      }
-                    );
+                    console.error("❌ PFD 모달 업로드 - drawing_id 업데이트 검증 실패:", {
+                      expectedDrawingId: drawingId,
+                      actualDrawingId: updatedItem?.drawing_id,
+                    });
                   }
 
                   // PFD 저장 후 그리드 새로고침
@@ -8970,8 +8625,7 @@ const handleUpdate = async (silent: boolean = false) => {
             let errorMessage = "PFD 파일 업로드에 실패했습니다.";
             if (error.message) {
               if (error.message.includes("Failed to fetch")) {
-                errorMessage =
-                  "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
+                errorMessage = "서버 연결에 실패했습니다. 네트워크 상태를 확인해주세요.";
               } else if (error.message.includes("파일 크기가 너무 큽니다")) {
                 errorMessage = error.message;
               } else if (error.message.includes("timeout")) {
@@ -9038,19 +8692,17 @@ const openMappingPidModal = async (pfdItem: any) => {
 
   // P&ID 창이 다시 열릴 때 'P&ID Components' 섹션은 유지 (DIV 닫히는 현상 방지)
   if (showPidComponentSection.value) {
-    console.log(
-      "P&ID Components 섹션이 열려있지만 유지합니다 (DIV 닫히는 현상 방지)"
-    );
+    console.log("P&ID Components 섹션이 열려있지만 유지합니다 (DIV 닫히는 현상 방지)");
   }
 
   currentPfdItemForMapping.value = pfdItem;
   selectedMappingPidItems.value = null; // 선택된 항목들 초기화
-  
+
   // 새로운 PFD를 선택할 때는 기존 그리드 데이터를 초기화
   // (이전 PFD의 데이터로 인해 잘못된 parent_drawing_id를 수집하는 것을 방지)
   mappingPidList.value = [];
   initialMappingPidList.value = [];
-  
+
   showPidListInMain.value = true; // 메인화면에 표시
 
   // P&ID 목록 데이터 로드 - drawing_id를 parent_drawing_id로 전달
@@ -9067,7 +8719,7 @@ const closePidListInMain = (skipConfirm: boolean = false) => {
   // skipConfirm이 true이면 확인 팝업 없이 바로 닫기 (삭제 등의 경우)
   const pidHasChanges = hasMappingPidChanges();
   console.log("P&ID 변경사항 확인 결과:", pidHasChanges);
-  
+
   if (!skipConfirm && pidHasChanges) {
     console.log("변경사항 확인 팝업 표시");
     if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
@@ -9111,16 +8763,11 @@ const resetMappingPidForm = async () => {
 
   // PFD 탭 그리드 새로고침
   await refreshPfdData();
-
 };
 
 // PFD의 P&ID 매핑 정보 확인 및 업데이트 함수
-const updatePfdPidMappingInfo = async (
-  drawingId: string,
-  pfdItemId: string
-) => {
+const updatePfdPidMappingInfo = async (drawingId: string, pfdItemId: string) => {
   try {
-
     // P&ID 도면 검색 API 호출
     const response = await request(
       "/api/process/drawing_child/search",
@@ -9140,11 +8787,7 @@ const updatePfdPidMappingInfo = async (
       }
     );
 
-    if (
-      response.success &&
-      response.response &&
-      Array.isArray(response.response)
-    ) {
+    if (response.success && response.response && Array.isArray(response.response)) {
       const hasPidMapping = response.response.length > 0;
       // PFD 리스트에서 해당 아이템의 hasPidMapping 업데이트
       const updatedPfdList = processStore.pfdList.map((item) => {
@@ -9169,9 +8812,7 @@ const refreshPfdData = async () => {
     if (props.isRegisterMode) {
       // 공정 등록 모드일 때는 생성된 공정 ID 사용
       if (!createdProcessId.value) {
-        console.warn(
-          "공정이 등록되지 않아서 PFD 데이터 새로고침을 건너뜁니다."
-        );
+        console.warn("공정이 등록되지 않아서 PFD 데이터 새로고침을 건너뜁니다.");
         return;
       }
       processId = createdProcessId.value;
@@ -9188,7 +8829,7 @@ const refreshPfdData = async () => {
     });
 
     const pfdDrawingsData = await searchPfdDrawingAPI(processId);
-    
+
     console.log("공정카드 그리드 조회 API 응답:", {
       데이터타입: Array.isArray(pfdDrawingsData) ? "배열" : typeof pfdDrawingsData,
       데이터길이: Array.isArray(pfdDrawingsData) ? pfdDrawingsData.length : "배열이 아님",
@@ -9203,8 +8844,7 @@ const refreshPfdData = async () => {
 
       const pfdItems = await Promise.all(
         pfdDrawingsData.map(async (item: any, index: number) => {
-          const drawingId =
-            item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
+          const drawingId = item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
 
           console.log(`공정카드 항목 ${index + 1} 처리 중:`, {
             drawingId: drawingId,
@@ -9288,7 +8928,9 @@ const refreshPfdData = async () => {
           // 파일명은 유지 (변경 감지용)
         };
       });
-      processStore.setInitialPfdList(JSON.parse(JSON.stringify(normalizedInitialPfdData)));
+      processStore.setInitialPfdList(
+        JSON.parse(JSON.stringify(normalizedInitialPfdData))
+      );
 
       console.log("공정카드 그리드 상태 업데이트 완료:", {
         pfdList항목수: processStore.pfdList.length,
@@ -9330,28 +8972,24 @@ const refreshFormulaData = async () => {
         역순개수: reversedResponseData.length,
       });
 
-      const formulaItems = reversedResponseData.map(
-        (item: any, index: number) => {
-          return {
-            id: `existing_formula_${item.id || index}`,
-            no: (index + 1).toString(),
-            registeredFormula: item.formula_name || item.name || "",
-            file_name: item.file_name || "NONE",
-            formula_code: item.formula_code || "",
-            registrationDate:
-              item.created_at ||
-              item.registration_date ||
-              formatDate(new Date()),
-            infoOverview: item.formula_scope || "",
-            remarks: item.output_type || "",
-            formula_id: item.formula_id || item.id,
-            process_dependencies: item.process_dependencies || null,
-            _file: undefined,
-            isSaved: true, // 새로고침한 데이터는 저장된 상태
-            _originalData: item, // 원본 데이터 보존
-          };
-        }
-      );
+      const formulaItems = reversedResponseData.map((item: any, index: number) => {
+        return {
+          id: `existing_formula_${item.id || index}`,
+          no: (index + 1).toString(),
+          registeredFormula: item.formula_name || item.name || "",
+          file_name: item.file_name || "NONE",
+          formula_code: item.formula_code || "",
+          registrationDate:
+            item.created_at || item.registration_date || formatDate(new Date()),
+          infoOverview: item.formula_scope || "",
+          remarks: item.output_type || "",
+          formula_id: item.formula_id || item.id,
+          process_dependencies: item.process_dependencies || null,
+          _file: undefined,
+          isSaved: true, // 새로고침한 데이터는 저장된 상태
+          _originalData: item, // 원본 데이터 보존
+        };
+      });
 
       processStore.setFormulaList(formulaItems);
       const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
@@ -9369,12 +9007,12 @@ const refreshFormulaData = async () => {
 };
 const confirmMappingPid = async (silent: boolean = false) => {
   // silent가 boolean이 아닌 경우 (이벤트 객체 등) false로 처리
-  const isSilent = typeof silent === 'boolean' ? silent : false;
-  
+  const isSilent = typeof silent === "boolean" ? silent : false;
+
   try {
     // 변경사항이 없는 경우 먼저 확인
     const hasChanges = hasMappingPidChanges();
-    
+
     if (!hasChanges) {
       if (!isSilent) {
         alert("변경사항이 없습니다.");
@@ -9417,7 +9055,6 @@ const confirmMappingPid = async (silent: boolean = false) => {
       });
     });
 
-
     // 새로 추가된 항목들과 파일이 변경된 기존 항목들 필터링
     const validMappings = mappingPidList.value.filter((item) => {
       const isNewItem = !item.drawing_id;
@@ -9440,53 +9077,75 @@ const confirmMappingPid = async (silent: boolean = false) => {
 
         if (initialItem) {
           // 파일명 기준으로 변경 감지 (더 정확하고 안정적)
-          const normalizeFileName = (fileName: string | undefined | null) => fileName || "";
-          
+          const normalizeFileName = (fileName: string | undefined | null) =>
+            fileName || "";
+
           // P&ID 파일명 비교
           const currentPidFileName = normalizeFileName(item.pidFileName);
           const initialPidFileName = normalizeFileName(initialItem?.pidFileName);
-          
+
           // Excel 파일명 비교
-          const currentExcelFileName = normalizeFileName(item.excelFileName || item.excel_file_name);
-          const initialExcelFileName = normalizeFileName(initialItem?.excelFileName || initialItem?.excel_file_name);
-          
+          const currentExcelFileName = normalizeFileName(
+            item.excelFileName || item.excel_file_name
+          );
+          const initialExcelFileName = normalizeFileName(
+            initialItem?.excelFileName || initialItem?.excel_file_name
+          );
+
           // SVG 파일명 비교
-          const currentSvgFileName = normalizeFileName(item.svgFileName || item.svg_file_name);
-          const initialSvgFileName = normalizeFileName(initialItem?.svgFileName || initialItem?.svg_file_name);
-          
+          const currentSvgFileName = normalizeFileName(
+            item.svgFileName || item.svg_file_name
+          );
+          const initialSvgFileName = normalizeFileName(
+            initialItem?.svgFileName || initialItem?.svg_file_name
+          );
+
           // 파일 객체가 있는 경우 파일명 비교 (새로 선택한 파일)
           const currentPidFile = (item as any).pidFile || (item as any)._file;
-          const initialPidFile = (initialItem as any)?.pidFile || (initialItem as any)?._file;
+          const initialPidFile =
+            (initialItem as any)?.pidFile || (initialItem as any)?._file;
           const currentExcelFile = (item as any).excelFile;
           const initialExcelFile = (initialItem as any)?.excelFile;
           const currentSvgFile = (item as any).svgFile;
           const initialSvgFile = (initialItem as any)?.svgFile;
-          
+
           // P&ID 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
-          const pidFileChanged = 
+          const pidFileChanged =
             currentPidFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            (!currentPidFile && currentPidFileName !== initialPidFileName && (currentPidFileName || initialPidFileName)); // 파일명 변경됨
-          
+            (!currentPidFile &&
+              currentPidFileName !== initialPidFileName &&
+              (currentPidFileName || initialPidFileName)); // 파일명 변경됨
+
           // Excel 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
+          // currentExcelFile이 있으면 항상 변경으로 처리 (파일이 새로 선택된 경우)
+          // 또는 파일명이 변경된 경우, 또는 파일이 삭제된 경우
           const excelFileChanged =
-            currentExcelFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            (!currentExcelFile && currentExcelFileName !== initialExcelFileName && (currentExcelFileName || initialExcelFileName)) || // 파일명 변경됨
+            !!currentExcelFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+            (!currentExcelFile &&
+              currentExcelFileName !== initialExcelFileName &&
+              (currentExcelFileName || initialExcelFileName)) || // 파일명 변경됨
             (!currentExcelFile && initialExcelFile); // 삭제됨
-          
+
           // SVG 파일 변경: 동일 파일명 재선택도 수정된 항목으로 처리
           const svgFileChanged =
             currentSvgFile || // 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            (!currentSvgFile && currentSvgFileName !== initialSvgFileName && (currentSvgFileName || initialSvgFileName)) || // 파일명 변경됨
+            (!currentSvgFile &&
+              currentSvgFileName !== initialSvgFileName &&
+              (currentSvgFileName || initialSvgFileName)) || // 파일명 변경됨
             (!currentSvgFile && initialSvgFile); // 삭제됨
 
           // 모든 파일이 동일하면 변경 없음 (false 반환하여 validMappings에서 제외)
           const hasFileChanges = pidFileChanged || excelFileChanged || svgFileChanged;
           return hasFileChanges;
         }
-        
+
         // initialItem을 찾지 못한 경우 (새로 추가된 항목으로 취급하지 않음)
         // 파일 객체가 있으면 변경으로 간주
-        const hasAnyFile = !!(item as any).pidFile || !!(item as any)._file || !!(item as any).excelFile || !!(item as any).svgFile;
+        const hasAnyFile =
+          !!(item as any).pidFile ||
+          !!(item as any)._file ||
+          !!(item as any).excelFile ||
+          !!(item as any).svgFile;
         return hasAnyFile;
       }
 
@@ -9520,9 +9179,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
               (deleteError.message?.includes("DrawingMasters with ID") &&
                 deleteError.message?.includes("not found"))
             ) {
-              console.warn(
-                `P&ID 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`
-              );
+              console.warn(`P&ID 삭제 건너뛰기 - ID가 존재하지 않음: ${row.drawing_id}`);
               return {
                 success: true,
                 drawing_id: row.drawing_id,
@@ -9534,9 +9191,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
         });
 
         const results = await Promise.all(deletePromises);
-        const successfulDeletes = results.filter(
-          (r) => r && r.success && !r.skipped
-        );
+        const successfulDeletes = results.filter((r) => r && r.success && !r.skipped);
         const skippedDeletes = results.filter((r) => r && r.skipped);
 
         // 삭제된 P&ID 중에 현재 열린 P&ID Components와 연관된 것이 있는지 확인
@@ -9545,8 +9200,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
             .map((row) => row.drawing_id)
             .filter(Boolean);
           const currentComponentDrawingId =
-            selectedPidForComponent.value.drawing_id ||
-            pidComponentDrawingId.value;
+            selectedPidForComponent.value.drawing_id || pidComponentDrawingId.value;
 
           if (deletedDrawingIds.includes(currentComponentDrawingId)) {
             closePidComponentSection();
@@ -9571,16 +9225,13 @@ const confirmMappingPid = async (silent: boolean = false) => {
       if (currentPfdItemForMapping.value) {
         // P&ID 삭제 성공 후 초기값 업데이트 (그리드 데이터는 유지)
         // 현재 그리드 데이터를 초기값으로 설정 (삭제된 상태를 반영)
-        const updatedMappingPidList = JSON.parse(
-          JSON.stringify(mappingPidList.value)
-        );
+        const updatedMappingPidList = JSON.parse(JSON.stringify(mappingPidList.value));
         initialMappingPidList.value = updatedMappingPidList;
       }
 
       // P&ID Components 그리드 새로고침 - mappingPidList에서 최신 drawing_id 사용
       if (mappingPidList.value.length > 0) {
-        const latestPidItem =
-          mappingPidList.value[mappingPidList.value.length - 1];
+        const latestPidItem = mappingPidList.value[mappingPidList.value.length - 1];
         await loadPidComponentDataWithoutClear(latestPidItem);
       } else {
         // P&ID가 모두 삭제된 경우 P&ID Components 그리드 초기화 및 섹션 닫기
@@ -9616,16 +9267,12 @@ const confirmMappingPid = async (silent: boolean = false) => {
         const hasSvgFile = !!(item as any).svgFile;
         const hasAnyPidFile = hasPfdFile || hasPfdFileFromUpload;
         const isNewItem = !item.drawing_id; // drawing_id가 없으면 새로 추가된 항목
-        const hasExistingData =
-          item.pidFileName && item.pidFileName.trim() !== ""; // 기존 데이터가 있는지 확인
+        const hasExistingData = item.pidFileName && item.pidFileName.trim() !== ""; // 기존 데이터가 있는지 확인
 
         // 새로 추가된 항목인 경우에만 파일 업로드 검증
         if (isNewItem) {
           // PFD 파일이 있는 경우에만 파일명 검증
-          if (
-            hasAnyPidFile &&
-            (!item.pidFileName || item.pidFileName.trim() === "")
-          ) {
+          if (hasAnyPidFile && (!item.pidFileName || item.pidFileName.trim() === "")) {
             return true;
           }
 
@@ -9656,9 +9303,12 @@ const confirmMappingPid = async (silent: boolean = false) => {
       // 이전 데이터의 drawing_id를 사용하지 않도록 주의
       const parentDrawingId = currentPfdItemForMapping.value?.drawing_id;
       if (!parentDrawingId) {
-        console.error("parent_drawing_id가 없습니다 - 공정카드 그리드에서 행을 선택해주세요", {
-          currentPfdItemForMapping: currentPfdItemForMapping.value,
-        });
+        console.error(
+          "parent_drawing_id가 없습니다 - 공정카드 그리드에서 행을 선택해주세요",
+          {
+            currentPfdItemForMapping: currentPfdItemForMapping.value,
+          }
+        );
         alert(
           "P&ID 매핑을 위한 PFD drawing_id가 없습니다. 공정카드 그리드에서 행을 선택한 후 PFD를 먼저 저장해주세요."
         );
@@ -9676,320 +9326,355 @@ const confirmMappingPid = async (silent: boolean = false) => {
         // 새로 추가된 항목과 기존 항목 분리
         const newItems = validMappings.filter((item) => !item.drawing_id);
         const existingItems = validMappings.filter((item) => item.drawing_id);
-        
+
         // 먼저 추가된 아래쪽 데이터부터 저장하기 위해 새 항목만 역순으로 처리
         const reversedNewItems = [...newItems].reverse();
         const orderedValidMappings = [...existingItems, ...reversedNewItems];
-        
-        const pidMappingPromises = orderedValidMappings.map(async (item, promiseIndex) => {
-          // parent_drawing_id 설정 - 항상 공정카드 그리드에서 선택된 행의 drawing_id 사용
-          // 기존 item.parent_drawing_id를 무시하고 항상 공정카드에서 선택된 행의 drawing_id 사용
-          const originalParentDrawingId = item.parent_drawing_id;
-          item.parent_drawing_id = parentDrawingId;
-          
-          if (originalParentDrawingId && originalParentDrawingId !== parentDrawingId) {
-            console.warn("⚠️ parent_drawing_id 변경됨:", {
-              itemId: item.id,
-              pidFileName: item.pidFileName,
-              originalParentDrawingId: originalParentDrawingId,
-              newParentDrawingId: parentDrawingId,
-              reason: "공정카드 그리드에서 선택된 행의 drawing_id로 강제 설정",
-            });
-          }
 
-          const isNewItem = !item.drawing_id;
+        const pidMappingPromises = orderedValidMappings.map(
+          async (item, promiseIndex) => {
+            // parent_drawing_id 설정 - 항상 공정카드 그리드에서 선택된 행의 drawing_id 사용
+            // 기존 item.parent_drawing_id를 무시하고 항상 공정카드에서 선택된 행의 drawing_id 사용
+            const originalParentDrawingId = item.parent_drawing_id;
+            item.parent_drawing_id = parentDrawingId;
 
-          // uploadPidFiles에서 추가된 파일은 _file 속성에 있음
-          const pidFile = item.pidFile || (item as any)._file;
-
-          // P&ID 파일이 있는 경우 parent_drawing_id 필수 체크
-          // item.parent_drawing_id는 이미 위에서 parentDrawingId로 설정됨
-          const finalParentDrawingId = item.parent_drawing_id;
-          if (pidFile && (!finalParentDrawingId || finalParentDrawingId.trim() === "")) {
-            console.error("⚠️ 경고: P&ID 파일 첨부 시 parent_drawing_id가 필수입니다.", {
-              itemId: item.id,
-              pidFileName: item.pidFileName,
-              itemParentDrawingId: item.parent_drawing_id,
-              parentDrawingId: parentDrawingId,
-              currentPfdItem: currentPfdItemForMapping.value,
-            });
-            alert("P&ID 파일을 첨부하려면 먼저 공정카드(PFD)를 저장해주세요.\n\nparent_drawing_id가 없어 P&ID 파일을 저장할 수 없습니다.");
-            throw new Error(`P&ID 파일 첨부 시 parent_drawing_id가 필수입니다. (항목: ${item.pidFileName || item.id})`);
-          }
-
-          const formData = new FormData();
-
-          // drawingData를 개별 필드로 FormData에 추가
-          formData.append("process_id", processId);
-          formData.append("drawing_type", "PNID");
-          formData.append("parent_drawing_id", finalParentDrawingId || "");
-          formData.append("remarks", item.remarks || "");
-          
-          // parent_drawing_id가 없으면 경고 로그 출력 (P&ID 파일이 없는 경우는 허용)
-          if (!finalParentDrawingId || finalParentDrawingId.trim() === "") {
-            console.warn("⚠️ 경고: P&ID API 호출 시 parent_drawing_id가 없습니다.", {
-              itemId: item.id,
-              pidFileName: item.pidFileName,
-              hasPidFile: !!pidFile,
-              hasExcelFile: !!item.excelFile,
-              hasSvgFile: !!((item as any).svgFile),
-            });
-          }
-
-          // P&ID 파일 추가 (있는 경우에만)
-          if (pidFile) {
-            formData.append("siteFile", pidFile);
-          }
-
-          // Excel 파일 추가 (있는 경우에만)
-          if (item.excelFile) {
-            formData.append("excelFile", item.excelFile);
-          }
-
-          // Svg 파일이 변경된 경우 symbolFile로 전달
-          const currentSvgFile = (item as any).svgFile;
-          const initialItem = initialMappingPidList.value.find(
-            (initialItem) =>
-              initialItem.drawing_id &&
-              initialItem.drawing_id === item.drawing_id
-          );
-          const initialSvgFile = (initialItem as any)?.svgFile;
-
-          // P&ID 파일이나 Excel 파일 변경 여부 확인
-          const currentPidFile = (item as any).pidFile;
-          const currentExcelFile = (item as any).excelFile;
-          const initialPidFile = (initialItem as any)?.pidFile;
-          const initialExcelFile = (initialItem as any)?.excelFile;
-
-          // P&ID 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
-          // 신규행의 경우 _file 속성도 확인
-          const hasPidFile = currentPidFile || (item as any)._file || pidFile;
-          let pidFileChanged: boolean;
-          if (hasPidFile) {
-            // 현재 P&ID 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            pidFileChanged = true;
-          } else {
-            // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
-            pidFileChanged = !hasPidFile && !!initialPidFile;
-          }
-          
-          // SVG 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
-          let svgFileChanged: boolean;
-          if (currentSvgFile) {
-            // 현재 SVG 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            svgFileChanged = true;
-          } else {
-            // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
-            svgFileChanged = !currentSvgFile && !!initialSvgFile;
-          }
-          
-          // Excel 파일명 추출 (초기 상태와 현재 상태)
-          const currentExcelFileName =
-            item.excelFileName || item.excel_file_name;
-          const initialExcelFileName =
-            initialItem?.excelFileName || initialItem?.excel_file_name || "";
-          
-          // 이미 저장된 Excel 파일이 있는지 확인
-          const hasExistingExcelFile =
-            item.excel_drawing_id &&
-            !item.excel_drawing_id.startsWith("temp_") &&
-            (item.excel_file_name || item.excelFileName);
-          
-          // Excel 파일 변경 감지: 초기 상태와 현재 상태를 비교
-          // 동일한 파일명의 Excel 파일을 다시 선택하더라도 수정된 항목으로 처리
-          // 특수 케이스: SVG 파일만 변경된 경우, Excel 파일 객체가 있더라도 Excel 파일명이 변경되지 않았으면 → 변경 안됨
-          let excelFileChanged: boolean;
-          const excelFileNameNotChanged = (currentExcelFileName || "") === (initialExcelFileName || "");
-          
-          // Excel 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
-          if (currentExcelFile) {
-            // 현재 Excel 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
-            excelFileChanged = true;
-          } else if (svgFileChanged && excelFileNameNotChanged) {
-            // SVG 파일만 변경되고 Excel 파일명이 변경되지 않은 경우 → Excel 파일 변경 안됨
-            excelFileChanged = false;
-          } else {
-            // 일반적인 경우: 초기 상태와 현재 상태를 비교
-            // 1. 초기 상태에 Excel 파일이 없고 현재 Excel 파일이 있으면 → 변경됨 (위에서 처리됨)
-            // 2. 초기 상태에 Excel 파일이 있고 현재 Excel 파일이 없으면 → 변경됨 (삭제)
-            // 3. 둘 다 있지만 파일명이 다르면 → 변경됨
-            excelFileChanged =
-              (!currentExcelFile && initialExcelFile) || // 삭제됨
-              (currentExcelFile && initialExcelFile && currentExcelFile.name !== initialExcelFile.name); // 파일명 변경됨
-          }
-
-          // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
-          const excelFileNameChanged =
-            (currentExcelFileName || "") !== (initialExcelFileName || "");
-          
-          // 실제 Excel 파일 변경 여부 (파일 객체나 파일명 중 하나라도 변경된 경우)
-          // 단, Excel 파일 객체가 실제로 없고 파일명만 변경된 경우는 제외 (SVG 파일 변경 시 Excel 파일명이 영향을 받을 수 있음)
-          const actualExcelFileChanged =
-            excelFileChanged || (excelFileNameChanged && currentExcelFile);
-          
-          const hasMainFileChanges =
-            pidFileChanged || actualExcelFileChanged || isNewItem;
-          const shouldSkipExcelSave = hasExistingExcelFile && !currentExcelFile && !excelFileNameChanged;
-
-          // SVG 파일만 변경된 경우 Excel 업로드 건너뛰기
-          // Excel 파일이 실제로 변경되지 않았는데 SVG 파일만 변경된 경우
-          // Excel 파일 객체가 없고, Excel 파일명도 변경되지 않았어야 함
-          // 새로 추가된 항목이 아닌 경우에만 적용 (새 항목은 Excel 파일이 처음 선택된 것이므로 업로드 필요)
-          const isSvgOnlyChange = !isNewItem && svgFileChanged && !excelFileChanged && (!excelFileNameChanged || !currentExcelFile);
-
-          // Excel 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
-          // 이미 저장된 Excel 파일이 있는 경우 중복 저장 방지
-          // SVG 파일만 변경된 경우는 Excel 업로드를 호출하지 않음
-
-          if (actualExcelFileChanged && !shouldSkipExcelSave && !isSvgOnlyChange) {
-            if (currentExcelFile) {
-              try {
-                console.log(`[Excel 업로드 시작 ${promiseIndex}] 항목 ${item.id}:`, {
-                  fileName: currentExcelFile.name,
-                  itemId: item.id,
-                });
-                await handleExcelFileUploadForPid(item, currentExcelFile);
-                console.log(`[Excel 업로드 완료 ${promiseIndex}] 항목 ${item.id}`);
-              } catch (excelError: any) {
-                // Excel 업로드 실패는 별도로 처리하고 P&ID 매핑 저장은 계속 진행
-                console.error(`[Excel 업로드 실패 ${promiseIndex}] 항목 ${item.id}:`, excelError);
-                // Excel 업로드 실패 메시지는 handleExcelFileUploadForPid에서 이미 표시됨
-                // P&ID 매핑 저장은 계속 진행
-              }
-            } else {
-              console.log(`[Excel 삭제 시작 ${promiseIndex}] 항목 ${item.id}`);
-              try {
-                await handleExcelFileDeleteForPid(item);
-                console.log(`[Excel 삭제 완료 ${promiseIndex}] 항목 ${item.id}`);
-              } catch (deleteError: any) {
-                console.error(`[Excel 삭제 실패 ${promiseIndex}] 항목 ${item.id}:`, deleteError);
-                // 삭제 실패해도 계속 진행
-              }
+            if (originalParentDrawingId && originalParentDrawingId !== parentDrawingId) {
+              console.warn("⚠️ parent_drawing_id 변경됨:", {
+                itemId: item.id,
+                pidFileName: item.pidFileName,
+                originalParentDrawingId: originalParentDrawingId,
+                newParentDrawingId: parentDrawingId,
+                reason: "공정카드 그리드에서 선택된 행의 drawing_id로 강제 설정",
+              });
             }
-          }
 
-          // Svg 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
-          if (svgFileChanged) {
-            if (currentSvgFile) {
-              try {
-                console.log(`[SVG 업로드 시작 ${promiseIndex}] 항목 ${item.id}:`, {
-                  fileName: currentSvgFile.name,
+            const isNewItem = !item.drawing_id;
+
+            // uploadPidFiles에서 추가된 파일은 _file 속성에 있음
+            const pidFile = item.pidFile || (item as any)._file;
+
+            // P&ID 파일이 있는 경우 parent_drawing_id 필수 체크
+            // item.parent_drawing_id는 이미 위에서 parentDrawingId로 설정됨
+            const finalParentDrawingId = item.parent_drawing_id;
+            if (
+              pidFile &&
+              (!finalParentDrawingId || finalParentDrawingId.trim() === "")
+            ) {
+              console.error(
+                "⚠️ 경고: P&ID 파일 첨부 시 parent_drawing_id가 필수입니다.",
+                {
                   itemId: item.id,
-                });
-                await handleSvgFileUploadForPid(item, currentSvgFile);
-                console.log(`[SVG 업로드 완료 ${promiseIndex}] 항목 ${item.id}`);
-              } catch (svgError: any) {
-                console.error(`[SVG 업로드 실패 ${promiseIndex}] 항목 ${item.id}:`, svgError);
-                // SVG 업로드 실패해도 계속 진행
-              }
-            } else {
-              console.log(`[SVG 삭제 시작 ${promiseIndex}] 항목 ${item.id}`);
-              try {
-                await handleSvgFileDeleteForPid(item);
-                console.log(`[SVG 삭제 완료 ${promiseIndex}] 항목 ${item.id}`);
-              } catch (deleteError: any) {
-                console.error(`[SVG 삭제 실패 ${promiseIndex}] 항목 ${item.id}:`, deleteError);
-                // 삭제 실패해도 계속 진행
-              }
+                  pidFileName: item.pidFileName,
+                  itemParentDrawingId: item.parent_drawing_id,
+                  parentDrawingId: parentDrawingId,
+                  currentPfdItem: currentPfdItemForMapping.value,
+                }
+              );
+              alert(
+                "P&ID 파일을 첨부하려면 먼저 공정카드(PFD)를 저장해주세요.\n\nparent_drawing_id가 없어 P&ID 파일을 저장할 수 없습니다."
+              );
+              throw new Error(
+                `P&ID 파일 첨부 시 parent_drawing_id가 필수입니다. (항목: ${
+                  item.pidFileName || item.id
+                })`
+              );
             }
-          }
 
-          // Excel/Svg 파일만 변경되고 P&ID 파일은 변경되지 않은 경우 메인 API 호출 건너뛰기
-          // 신규행의 경우 반드시 P&ID 저장 API를 호출해야 하므로 skipped 처리 안함
-          console.log("건너뛰기 조건 확인:", {
-            itemId: item.id,
-            isNewItem: isNewItem,
-            pidFileChanged: pidFileChanged,
-            excelFileChanged: excelFileChanged,
-            svgFileChanged: svgFileChanged,
-            shouldSkip: (svgFileChanged || excelFileChanged) && !pidFileChanged && !isNewItem,
-          });
+            const formData = new FormData();
 
-          if (
-            (svgFileChanged || excelFileChanged) &&
-            !pidFileChanged &&
-            !isNewItem
-          ) {
-            const changeType =
-              svgFileChanged && excelFileChanged
-                ? "excel_svg_change"
-                : svgFileChanged
-                ? "svg_only_change"
-                : "excel_only_change";
-            console.log(`항목 ${item.id} 건너뛰기 (${changeType}):`, {
-              itemId: item.id,
-              drawing_id: item.drawing_id,
-            });
-            return { success: true, skipped: true, reason: changeType };
-          }
-          
-          // 신규행인 경우 drawing_id가 없어야 하므로 확인
-          if (isNewItem && item.drawing_id) {
-            console.warn(`⚠️ 신규행인데 drawing_id가 이미 있음:`, {
-              itemId: item.id,
-              drawing_id: item.drawing_id,
-            });
-          }
+            // drawingData를 개별 필드로 FormData에 추가
+            formData.append("process_id", processId);
+            formData.append("drawing_type", "PNID");
+            formData.append("parent_drawing_id", finalParentDrawingId || "");
+            formData.append("remarks", item.remarks || "");
 
-          let response;
-          if (isNewItem) {
-            // 새 데이터 - 생성 API 호출
-            response = await request("/api/process/drawing/create", undefined, {
-              method: "POST",
-              body: formData,
-            });
-          } else {
-            // 기존 데이터 - 수정 API 호출 (FormData로 파일 포함 전송)
-            // FormData에 drawing_id 추가
-            formData.append("drawing_id", item.drawing_id);
+            // parent_drawing_id가 없으면 경고 로그 출력 (P&ID 파일이 없는 경우는 허용)
+            if (!finalParentDrawingId || finalParentDrawingId.trim() === "") {
+              console.warn("⚠️ 경고: P&ID API 호출 시 parent_drawing_id가 없습니다.", {
+                itemId: item.id,
+                pidFileName: item.pidFileName,
+                hasPidFile: !!pidFile,
+                hasExcelFile: !!item.excelFile,
+                hasSvgFile: !!(item as any).svgFile,
+              });
+            }
 
-            response = await request(
-              `/api/process/drawing/${item.drawing_id}`,
-              undefined,
-              {
-                method: "PATCH",
-                body: formData,
-              }
+            // P&ID 파일 추가 (있는 경우에만)
+            if (pidFile) {
+              formData.append("siteFile", pidFile);
+            }
+
+            // Excel 파일 추가 (있는 경우에만)
+            if (item.excelFile) {
+              formData.append("excelFile", item.excelFile);
+            }
+
+            // Svg 파일이 변경된 경우 symbolFile로 전달
+            const currentSvgFile = (item as any).svgFile;
+            const initialItem = initialMappingPidList.value.find(
+              (initialItem) =>
+                initialItem.drawing_id && initialItem.drawing_id === item.drawing_id
             );
-          }
+            const initialSvgFile = (initialItem as any)?.svgFile;
 
-          if (!response.success) {
-            console.error(`[저장 실패 ${promiseIndex}] P&ID 매핑 아이템 저장 실패:`, {
+            // P&ID 파일이나 Excel 파일 변경 여부 확인
+            const currentPidFile = (item as any).pidFile;
+            const currentExcelFile = (item as any).excelFile;
+            const initialPidFile = (initialItem as any)?.pidFile;
+            const initialExcelFile = (initialItem as any)?.excelFile;
+
+            // P&ID 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+            // 신규행의 경우 _file 속성도 확인
+            const hasPidFile = currentPidFile || (item as any)._file || pidFile;
+            let pidFileChanged: boolean;
+            if (hasPidFile) {
+              // 현재 P&ID 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+              pidFileChanged = true;
+            } else {
+              // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
+              pidFileChanged = !hasPidFile && !!initialPidFile;
+            }
+
+            // SVG 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+            let svgFileChanged: boolean;
+            if (currentSvgFile) {
+              // 현재 SVG 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+              svgFileChanged = true;
+            } else {
+              // 파일 객체가 없는 경우: 삭제된 경우만 변경으로 처리
+              svgFileChanged = !currentSvgFile && !!initialSvgFile;
+            }
+
+            // Excel 파일명 추출 (초기 상태와 현재 상태)
+            const currentExcelFileName = item.excelFileName || item.excel_file_name;
+            const initialExcelFileName =
+              initialItem?.excelFileName || initialItem?.excel_file_name || "";
+
+            // 이미 저장된 Excel 파일이 있는지 확인
+            const hasExistingExcelFile =
+              item.excel_drawing_id &&
+              !item.excel_drawing_id.startsWith("temp_") &&
+              (item.excel_file_name || item.excelFileName);
+
+            // Excel 파일 변경 감지: 초기 상태와 현재 상태를 비교
+            // 동일한 파일명의 Excel 파일을 다시 선택하더라도 수정된 항목으로 처리
+            // 특수 케이스: SVG 파일만 변경된 경우, Excel 파일 객체가 있더라도 Excel 파일명이 변경되지 않았으면 → 변경 안됨
+            let excelFileChanged: boolean;
+            const excelFileNameNotChanged =
+              (currentExcelFileName || "") === (initialExcelFileName || "");
+
+            // Excel 파일 변경 감지: 동일 파일명 재선택도 수정된 항목으로 처리
+            if (currentExcelFile) {
+              // 현재 Excel 파일 객체가 있으면 항상 변경으로 처리 (동일 파일 재선택 포함)
+              excelFileChanged = true;
+            } else if (svgFileChanged && excelFileNameNotChanged) {
+              // SVG 파일만 변경되고 Excel 파일명이 변경되지 않은 경우 → Excel 파일 변경 안됨
+              excelFileChanged = false;
+            } else {
+              // 일반적인 경우: 초기 상태와 현재 상태를 비교
+              // 1. 초기 상태에 Excel 파일이 없고 현재 Excel 파일이 있으면 → 변경됨 (위에서 처리됨)
+              // 2. 초기 상태에 Excel 파일이 있고 현재 Excel 파일이 없으면 → 변경됨 (삭제)
+              // 3. 둘 다 있지만 파일명이 다르면 → 변경됨
+              excelFileChanged =
+                (!currentExcelFile && initialExcelFile) || // 삭제됨
+                (currentExcelFile &&
+                  initialExcelFile &&
+                  currentExcelFile.name !== initialExcelFile.name); // 파일명 변경됨
+            }
+
+            // Excel 파일명 변경 감지 (파일 객체가 없어도 파일명이 변경된 경우)
+            const excelFileNameChanged =
+              (currentExcelFileName || "") !== (initialExcelFileName || "");
+
+            // 실제 Excel 파일 변경 여부 (파일 객체나 파일명 중 하나라도 변경된 경우)
+            // 단, Excel 파일 객체가 실제로 없고 파일명만 변경된 경우는 제외 (SVG 파일 변경 시 Excel 파일명이 영향을 받을 수 있음)
+            const actualExcelFileChanged =
+              excelFileChanged || (excelFileNameChanged && currentExcelFile);
+
+            const hasMainFileChanges =
+              pidFileChanged || actualExcelFileChanged || isNewItem;
+            const shouldSkipExcelSave =
+              hasExistingExcelFile && !currentExcelFile && !excelFileNameChanged;
+
+            // SVG 파일만 변경된 경우 Excel 업로드 건너뛰기
+            // Excel 파일이 실제로 변경되지 않았는데 SVG 파일만 변경된 경우
+            // Excel 파일 객체가 없고, Excel 파일명도 변경되지 않았어야 함
+            // 새로 추가된 항목이 아닌 경우에만 적용 (새 항목은 Excel 파일이 처음 선택된 것이므로 업로드 필요)
+            const isSvgOnlyChange =
+              !isNewItem &&
+              svgFileChanged &&
+              !excelFileChanged &&
+              (!excelFileNameChanged || !currentExcelFile);
+
+            // Excel 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
+            // 이미 저장된 Excel 파일이 있는 경우 중복 저장 방지
+            // SVG 파일만 변경된 경우는 Excel 업로드를 호출하지 않음
+
+            if (actualExcelFileChanged && !shouldSkipExcelSave && !isSvgOnlyChange) {
+              if (currentExcelFile) {
+                try {
+                  console.log(`[Excel 업로드 시작 ${promiseIndex}] 항목 ${item.id}:`, {
+                    fileName: currentExcelFile.name,
+                    itemId: item.id,
+                  });
+                  await handleExcelFileUploadForPid(item, currentExcelFile);
+                  console.log(`[Excel 업로드 완료 ${promiseIndex}] 항목 ${item.id}`);
+                } catch (excelError: any) {
+                  // Excel 업로드 실패는 별도로 처리하고 P&ID 매핑 저장은 계속 진행
+                  console.error(
+                    `[Excel 업로드 실패 ${promiseIndex}] 항목 ${item.id}:`,
+                    excelError
+                  );
+                  // Excel 업로드 실패 메시지는 handleExcelFileUploadForPid에서 이미 표시됨
+                  // P&ID 매핑 저장은 계속 진행
+                }
+              } else {
+                console.log(`[Excel 삭제 시작 ${promiseIndex}] 항목 ${item.id}`);
+                try {
+                  await handleExcelFileDeleteForPid(item);
+                  console.log(`[Excel 삭제 완료 ${promiseIndex}] 항목 ${item.id}`);
+                } catch (deleteError: any) {
+                  console.error(
+                    `[Excel 삭제 실패 ${promiseIndex}] 항목 ${item.id}:`,
+                    deleteError
+                  );
+                  // 삭제 실패해도 계속 진행
+                }
+              }
+            }
+
+            // Svg 파일 변경 시 별도 API 호출 (P&ID 그리드 전용)
+            if (svgFileChanged) {
+              if (currentSvgFile) {
+                try {
+                  console.log(`[SVG 업로드 시작 ${promiseIndex}] 항목 ${item.id}:`, {
+                    fileName: currentSvgFile.name,
+                    itemId: item.id,
+                  });
+                  await handleSvgFileUploadForPid(item, currentSvgFile);
+                  console.log(`[SVG 업로드 완료 ${promiseIndex}] 항목 ${item.id}`);
+                } catch (svgError: any) {
+                  console.error(
+                    `[SVG 업로드 실패 ${promiseIndex}] 항목 ${item.id}:`,
+                    svgError
+                  );
+                  // SVG 업로드 실패해도 계속 진행
+                }
+              } else {
+                console.log(`[SVG 삭제 시작 ${promiseIndex}] 항목 ${item.id}`);
+                try {
+                  await handleSvgFileDeleteForPid(item);
+                  console.log(`[SVG 삭제 완료 ${promiseIndex}] 항목 ${item.id}`);
+                } catch (deleteError: any) {
+                  console.error(
+                    `[SVG 삭제 실패 ${promiseIndex}] 항목 ${item.id}:`,
+                    deleteError
+                  );
+                  // 삭제 실패해도 계속 진행
+                }
+              }
+            }
+
+            // Excel/Svg 파일만 변경되고 P&ID 파일은 변경되지 않은 경우 메인 API 호출 건너뛰기
+            // 신규행의 경우 반드시 P&ID 저장 API를 호출해야 하므로 skipped 처리 안함
+            console.log("건너뛰기 조건 확인:", {
+              itemId: item.id,
+              isNewItem: isNewItem,
+              pidFileChanged: pidFileChanged,
+              excelFileChanged: excelFileChanged,
+              svgFileChanged: svgFileChanged,
+              shouldSkip:
+                (svgFileChanged || excelFileChanged) && !pidFileChanged && !isNewItem,
+            });
+
+            if ((svgFileChanged || excelFileChanged) && !pidFileChanged && !isNewItem) {
+              const changeType =
+                svgFileChanged && excelFileChanged
+                  ? "excel_svg_change"
+                  : svgFileChanged
+                  ? "svg_only_change"
+                  : "excel_only_change";
+              console.log(`항목 ${item.id} 건너뛰기 (${changeType}):`, {
+                itemId: item.id,
+                drawing_id: item.drawing_id,
+              });
+              return { success: true, skipped: true, reason: changeType };
+            }
+
+            // 신규행인 경우 drawing_id가 없어야 하므로 확인
+            if (isNewItem && item.drawing_id) {
+              console.warn(`⚠️ 신규행인데 drawing_id가 이미 있음:`, {
+                itemId: item.id,
+                drawing_id: item.drawing_id,
+              });
+            }
+
+            let response;
+            if (isNewItem) {
+              // 새 데이터 - 생성 API 호출
+              response = await request("/api/process/drawing/create", undefined, {
+                method: "POST",
+                body: formData,
+              });
+            } else {
+              // 기존 데이터 - 수정 API 호출 (FormData로 파일 포함 전송)
+              // FormData에 drawing_id 추가
+              formData.append("drawing_id", item.drawing_id);
+
+              response = await request(
+                `/api/process/drawing/${item.drawing_id}`,
+                undefined,
+                {
+                  method: "PATCH",
+                  body: formData,
+                }
+              );
+            }
+
+            if (!response.success) {
+              console.error(`[저장 실패 ${promiseIndex}] P&ID 매핑 아이템 저장 실패:`, {
+                itemId: item.id,
+                promiseIndex: promiseIndex,
+                status: response.status,
+                message: response.message,
+              });
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            console.log(`[저장 성공 ${promiseIndex}] P&ID 매핑 아이템 저장 성공:`, {
               itemId: item.id,
               promiseIndex: promiseIndex,
-              status: response.status,
-              message: response.message,
+              responseDrawingId:
+                response.response?.data?.drawing_id ||
+                response.response?.drawing_id ||
+                response.drawing_id,
+              responseKeys: Object.keys(response.response || {}),
             });
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+            return response;
           }
-
-          console.log(`[저장 성공 ${promiseIndex}] P&ID 매핑 아이템 저장 성공:`, {
-            itemId: item.id,
-            promiseIndex: promiseIndex,
-            responseDrawingId: response.response?.data?.drawing_id || response.response?.drawing_id || response.drawing_id,
-            responseKeys: Object.keys(response.response || {}),
-          });
-
-          return response;
-        });
+        );
 
         const results = await Promise.all(pidMappingPromises);
-        const successfulSaves = results.filter((r) => r && r.success && !('skipped' in r && r.skipped));
-        const skippedSaves = results.filter((r) => r && 'skipped' in r && r.skipped);
+        const successfulSaves = results.filter(
+          (r) => r && r.success && !("skipped" in r && r.skipped)
+        );
+        const skippedSaves = results.filter((r) => r && "skipped" in r && r.skipped);
 
         // 성공한 저장이나 건너뛴 저장(Excel/Svg만 변경)이 있는 경우 그리드 갱신
-        const totalProcessedSaves =
-          successfulSaves.length + skippedSaves.length;
+        const totalProcessedSaves = successfulSaves.length + skippedSaves.length;
 
         if (totalProcessedSaves > 0) {
           // API 응답에서 drawing_id, excel_drawing_id, svg_drawing_id 업데이트
           // results 배열은 orderedValidMappings 순서대로 반환되므로 orderedValidMappings 사용
           results.forEach((saveResponse, index) => {
             if (index >= orderedValidMappings.length) {
-              console.warn(`결과 인덱스 ${index}가 orderedValidMappings 길이(${orderedValidMappings.length})를 초과함`);
+              console.warn(
+                `결과 인덱스 ${index}가 orderedValidMappings 길이(${orderedValidMappings.length})를 초과함`
+              );
               return;
             }
-            
+
             // orderedValidMappings의 항목을 사용 (실제 저장된 순서와 일치)
             const validMapping = orderedValidMappings[index];
             if (!validMapping || !saveResponse) {
@@ -9998,33 +9683,39 @@ const confirmMappingPid = async (silent: boolean = false) => {
 
             // 그리드 항목 찾기: 여러 방법으로 시도하여 정확한 매칭 보장
             // 우선순위: 1) ID 매칭, 2) 파일 객체(이름+크기) + 파일명 매칭, 3) 파일명만 매칭
-            
+
             // API 응답 정보 추출 (여러 경로 시도)
-            const response = 'response' in saveResponse ? saveResponse.response : null;
-            const responseDrawingId = response?.data?.drawing_id || response?.data?.id || response?.drawing_id || response?.id;
-            const responseFileName = 
+            const response = "response" in saveResponse ? saveResponse.response : null;
+            const responseDrawingId =
+              response?.data?.drawing_id ||
+              response?.data?.id ||
+              response?.drawing_id ||
+              response?.id;
+            const responseFileName =
               response?.data?.file_name ||
               response?.data?.current_file?.file_name ||
               response?.file_name ||
               response?.current_file?.file_name;
-            
+
             // 원본 파일 객체 추출
             const mappingFile = validMapping.pidFile || (validMapping as any)._file;
             const originalFileName = validMapping.pidFileName;
-            
+
             console.log("🔍 P&ID 항목 매칭 시작:", {
               validMappingId: validMapping.id,
               originalFileName: originalFileName,
               responseFileName: responseFileName,
               responseDrawingId: responseDrawingId,
-              mappingFile: mappingFile ? { name: mappingFile.name, size: mappingFile.size } : null,
+              mappingFile: mappingFile
+                ? { name: mappingFile.name, size: mappingFile.size }
+                : null,
             });
-            
+
             // 1단계: ID로 찾기
             let itemIndex = mappingPidList.value.findIndex(
               (item) => item.id === validMapping.id
             );
-            
+
             if (itemIndex !== -1) {
               console.log("✅ ID로 항목 찾음:", {
                 itemIndex: itemIndex,
@@ -10040,16 +9731,20 @@ const confirmMappingPid = async (silent: boolean = false) => {
                 fileSize: mappingFile.size,
                 searchFileName: responseFileName || originalFileName,
               });
-              
+
               itemIndex = mappingPidList.value.findIndex((item) => {
                 const itemFile = (item as any).pidFile || (item as any)._file;
-                
+
                 // 파일 객체가 있는 경우: 이름과 크기가 모두 일치해야 함
-                if (itemFile && itemFile.name === mappingFile.name && itemFile.size === mappingFile.size) {
+                if (
+                  itemFile &&
+                  itemFile.name === mappingFile.name &&
+                  itemFile.size === mappingFile.size
+                ) {
                   // 파일명도 확인 (응답 파일명이 있으면 그것으로, 없으면 원본 파일명으로)
                   const itemFileName = item.pidFileName;
                   const expectedFileName = responseFileName || originalFileName;
-                  
+
                   if (itemFileName === expectedFileName) {
                     // drawing_id가 없는 항목만 매칭 (이미 매핑된 항목은 제외)
                     if (!item.drawing_id) {
@@ -10073,9 +9768,9 @@ const confirmMappingPid = async (silent: boolean = false) => {
               console.log("🔍 파일명으로 항목 찾기 시작:", {
                 searchFileName: responseFileName || originalFileName,
               });
-              
+
               const searchFileName = responseFileName || originalFileName;
-              
+
               itemIndex = mappingPidList.value.findIndex((item) => {
                 // 파일명이 일치하고 drawing_id가 없는 항목 찾기 (신규 항목)
                 if (item.pidFileName === searchFileName && !item.drawing_id) {
@@ -10083,11 +9778,14 @@ const confirmMappingPid = async (silent: boolean = false) => {
                   const itemFile = (item as any).pidFile || (item as any)._file;
                   if (mappingFile && itemFile) {
                     // 파일명은 일치하지만 파일 객체가 다른 경우는 제외
-                    if (itemFile.name !== mappingFile.name || itemFile.size !== mappingFile.size) {
+                    if (
+                      itemFile.name !== mappingFile.name ||
+                      itemFile.size !== mappingFile.size
+                    ) {
                       return false;
                     }
                   }
-                  
+
                   console.log("✅ 파일명으로 항목 찾음:", {
                     itemIndex: mappingPidList.value.indexOf(item),
                     itemId: item.id,
@@ -10100,28 +9798,38 @@ const confirmMappingPid = async (silent: boolean = false) => {
             }
 
             if (itemIndex === -1) {
-              console.error("❌ P&ID API 응답 처리 시 그리드에서 해당 항목을 찾을 수 없습니다:", {
-                validMappingId: validMapping.id,
-                originalFileName: originalFileName,
-                responseFileName: responseFileName,
-                responseDrawingId: responseDrawingId,
-                mappingFile: mappingFile ? { name: mappingFile.name, size: mappingFile.size } : null,
-                현재그리드항목수: mappingPidList.value.length,
-                현재그리드항목들: mappingPidList.value.map((item: any, idx: number) => ({
-                  index: idx,
-                  id: item.id,
-                  pidFileName: item.pidFileName,
-                  drawing_id: item.drawing_id,
-                  hasFile: !!(item.pidFile || item._file),
-                  fileInfo: (item.pidFile || item._file) ? {
-                    name: (item.pidFile || item._file).name,
-                    size: (item.pidFile || item._file).size,
-                  } : null,
-                })),
-              });
+              console.error(
+                "❌ P&ID API 응답 처리 시 그리드에서 해당 항목을 찾을 수 없습니다:",
+                {
+                  validMappingId: validMapping.id,
+                  originalFileName: originalFileName,
+                  responseFileName: responseFileName,
+                  responseDrawingId: responseDrawingId,
+                  mappingFile: mappingFile
+                    ? { name: mappingFile.name, size: mappingFile.size }
+                    : null,
+                  현재그리드항목수: mappingPidList.value.length,
+                  현재그리드항목들: mappingPidList.value.map(
+                    (item: any, idx: number) => ({
+                      index: idx,
+                      id: item.id,
+                      pidFileName: item.pidFileName,
+                      drawing_id: item.drawing_id,
+                      hasFile: !!(item.pidFile || item._file),
+                      fileInfo:
+                        item.pidFile || item._file
+                          ? {
+                              name: (item.pidFile || item._file).name,
+                              size: (item.pidFile || item._file).size,
+                            }
+                          : null,
+                    })
+                  ),
+                }
+              );
               return;
             }
-            
+
             console.log("✅ 최종 매칭된 항목:", {
               itemIndex: itemIndex,
               itemId: mappingPidList.value[itemIndex].id,
@@ -10131,7 +9839,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
             });
 
             // skipped된 항목 처리 (Excel/Svg만 변경된 경우)
-            if ('skipped' in saveResponse && saveResponse.skipped) {
+            if ("skipped" in saveResponse && saveResponse.skipped) {
               return;
             }
 
@@ -10144,20 +9852,18 @@ const confirmMappingPid = async (silent: boolean = false) => {
                 response?.data?.id ||
                 response?.drawing_id ||
                 response?.id;
-              
+
               const excelDrawingId =
-                response?.data?.excel_drawing_id ||
-                response?.excel_drawing_id;
-              
+                response?.data?.excel_drawing_id || response?.excel_drawing_id;
+
               const svgDrawingId =
-                response?.data?.svg_drawing_id ||
-                response?.svg_drawing_id;
+                response?.data?.svg_drawing_id || response?.svg_drawing_id;
 
               // drawing_id 업데이트 (신규행의 경우 필수)
               if (drawingId) {
                 const oldDrawingId = mappingPidList.value[itemIndex].drawing_id;
                 mappingPidList.value[itemIndex].drawing_id = drawingId;
-                
+
                 console.log("✅ drawing_id 매핑 완료:", {
                   itemIndex: itemIndex,
                   itemId: mappingPidList.value[itemIndex].id,
@@ -10165,23 +9871,33 @@ const confirmMappingPid = async (silent: boolean = false) => {
                   oldDrawingId: oldDrawingId,
                   newDrawingId: drawingId,
                 });
-                
+
                 // parent_drawing_id는 항상 공정카드 그리드에서 선택된 행의 drawing_id 사용
                 // 저장 후 응답의 drawing_id를 parent_drawing_id로 사용하지 않고,
                 // 항상 공정카드의 drawing_id를 유지해야 함
-                const correctParentDrawingId = currentPfdItemForMapping.value?.drawing_id || parentDrawingId;
-                if (!mappingPidList.value[itemIndex].parent_drawing_id || 
-                    mappingPidList.value[itemIndex].parent_drawing_id.startsWith('temp_') ||
-                    mappingPidList.value[itemIndex].parent_drawing_id !== correctParentDrawingId) {
-                  const oldParentDrawingId = mappingPidList.value[itemIndex].parent_drawing_id;
-                  mappingPidList.value[itemIndex].parent_drawing_id = correctParentDrawingId;
-                  console.log("✅ parent_drawing_id 업데이트 (공정카드 drawing_id로 설정):", {
-                    oldParentDrawingId: oldParentDrawingId,
-                    newParentDrawingId: correctParentDrawingId,
-                    responseDrawingId: drawingId,
-                    source: "공정카드 그리드 선택 행",
-                    note: "응답의 drawing_id는 parent_drawing_id로 사용하지 않음",
-                  });
+                const correctParentDrawingId =
+                  currentPfdItemForMapping.value?.drawing_id || parentDrawingId;
+                if (
+                  !mappingPidList.value[itemIndex].parent_drawing_id ||
+                  mappingPidList.value[itemIndex].parent_drawing_id.startsWith("temp_") ||
+                  mappingPidList.value[itemIndex].parent_drawing_id !==
+                    correctParentDrawingId
+                ) {
+                  const oldParentDrawingId =
+                    mappingPidList.value[itemIndex].parent_drawing_id;
+                  mappingPidList.value[
+                    itemIndex
+                  ].parent_drawing_id = correctParentDrawingId;
+                  console.log(
+                    "✅ parent_drawing_id 업데이트 (공정카드 drawing_id로 설정):",
+                    {
+                      oldParentDrawingId: oldParentDrawingId,
+                      newParentDrawingId: correctParentDrawingId,
+                      responseDrawingId: drawingId,
+                      source: "공정카드 그리드 선택 행",
+                      note: "응답의 drawing_id는 parent_drawing_id로 사용하지 않음",
+                    }
+                  );
                 }
               } else {
                 console.warn("⚠️ P&ID 저장 API 응답에 drawing_id가 없습니다:", {
@@ -10195,20 +9911,27 @@ const confirmMappingPid = async (silent: boolean = false) => {
 
               // Excel/SVG 파일은 별도 API로 업로드되므로 메인 API 응답에 없을 수 있음
               // 이미 그리드에 업데이트된 값이 있는지 확인하고, 없을 때만 메인 응답 값 사용
-              const currentExcelDrawingId = mappingPidList.value[itemIndex].excel_drawing_id;
+              const currentExcelDrawingId =
+                mappingPidList.value[itemIndex].excel_drawing_id;
               const currentSvgDrawingId = mappingPidList.value[itemIndex].svg_drawing_id;
-              
+
               // excel_drawing_id 업데이트 (메인 응답에 있거나, 현재 그리드에 temp ID가 있는 경우)
               if (excelDrawingId) {
                 mappingPidList.value[itemIndex].excel_drawing_id = excelDrawingId;
-              } else if (currentExcelDrawingId && !currentExcelDrawingId.startsWith('temp_')) {
+              } else if (
+                currentExcelDrawingId &&
+                !currentExcelDrawingId.startsWith("temp_")
+              ) {
                 // 현재 그리드에 이미 실제 ID가 있으면 유지 (별도 업로드에서 반영됨)
               }
 
               // svg_drawing_id 업데이트
               if (svgDrawingId) {
                 mappingPidList.value[itemIndex].svg_drawing_id = svgDrawingId;
-              } else if (currentSvgDrawingId && !currentSvgDrawingId.startsWith('temp_')) {
+              } else if (
+                currentSvgDrawingId &&
+                !currentSvgDrawingId.startsWith("temp_")
+              ) {
                 // 현재 그리드에 이미 실제 ID가 있으면 유지 (별도 업로드에서 반영됨)
               }
 
@@ -10239,7 +9962,7 @@ const confirmMappingPid = async (silent: boolean = false) => {
             const excelFileName = item.excelFileName || item.excel_file_name || "";
             const svgFileName = item.svgFileName || item.svg_file_name || "";
             const pidFileName = item.pidFileName || item.pid_file_name || "";
-            
+
             return {
               id: item.id || "",
               drawing_id: item.drawing_id || "",
@@ -10252,12 +9975,12 @@ const confirmMappingPid = async (silent: boolean = false) => {
               // 파일명만 저장하여 변경 감지에 사용
             };
           };
-          
+
           const normalizedList = mappingPidList.value.map(normalizeItemForInitial);
           initialMappingPidList.value = JSON.parse(JSON.stringify(normalizedList));
-          
+
           // 현재 그리드 데이터도 정규화하여 비교 가능하도록 유지
-          // (파일 객체는 유지하되, 정규화된 필드명도 함께 저장)
+          // 저장 후에는 파일 객체를 제거하여 다음 변경 감지가 제대로 작동하도록 함
           mappingPidList.value.forEach((item: any, index: number) => {
             const normalized = normalizedList[index];
             if (normalized) {
@@ -10269,9 +9992,16 @@ const confirmMappingPid = async (silent: boolean = false) => {
               item.svg_file_name = normalized.svgFileName;
               item.pidFileName = normalized.pidFileName;
               item.pid_file_name = normalized.pidFileName;
+
+              // 저장 후 파일 객체 제거 (다음 변경 감지를 위해)
+              // 파일 객체가 남아있으면 계속 변경으로 감지됨
+              delete (item as any).excelFile;
+              delete (item as any).pidFile;
+              delete (item as any)._file;
+              delete (item as any).svgFile;
             }
           });
-          
+
           // Vue 반응성을 위해 배열 재할당
           mappingPidList.value = [...mappingPidList.value];
 
@@ -10309,58 +10039,54 @@ const confirmMappingPid = async (silent: boolean = false) => {
 };
 const loadMappingPidList = async (pfdItem: any) => {
   try {
-
     // drawing_id가 없으면 parent_drawing_id 사용
     const drawingId = pfdItem?.drawing_id || pfdItem?.parent_drawing_id;
     if (!drawingId) {
-      console.error(
-        "drawing_id와 parent_drawing_id가 모두 없습니다. pfdItem:",
-        pfdItem
-      );
+      console.error("drawing_id와 parent_drawing_id가 모두 없습니다. pfdItem:", pfdItem);
       mappingPidList.value = [];
       return;
     }
-
 
     // P&ID 도면 검색 API 호출
     // 새로운 PFD를 선택한 경우: 해당 PFD의 drawing_id만 사용
     // 저장 후 새로고침 시: 현재 그리드의 모든 parent_drawing_id와 drawing_id를 수집
     // (새로 추가한 행이 다른 행의 drawing_id를 parent_drawing_id로 사용할 수 있음)
     const currentGridParentDrawingIds = new Set<string>();
-    
+
     // currentPfdItemForMapping과 비교하여 같은 PFD인지 확인
-    const isSamePfd = currentPfdItemForMapping.value && 
-                     (currentPfdItemForMapping.value.drawing_id === pfdItem.drawing_id ||
-                      currentPfdItemForMapping.value.id === pfdItem.id);
-    
+    const isSamePfd =
+      currentPfdItemForMapping.value &&
+      (currentPfdItemForMapping.value.drawing_id === pfdItem.drawing_id ||
+        currentPfdItemForMapping.value.id === pfdItem.id);
+
     // 같은 PFD이고 현재 그리드에 데이터가 있는 경우에만 그리드의 drawing_id 수집
     // (저장 후 새로고침 시 모든 데이터를 가져오기 위해)
     if (isSamePfd && mappingPidList.value.length > 0) {
       mappingPidList.value.forEach((item: any) => {
         // parent_drawing_id 수집 (임시 ID 제외)
-        if (item.parent_drawing_id && !item.parent_drawing_id.startsWith('temp_')) {
+        if (item.parent_drawing_id && !item.parent_drawing_id.startsWith("temp_")) {
           currentGridParentDrawingIds.add(item.parent_drawing_id);
         }
         // drawing_id도 수집 (임시 ID 제외) - 다른 행이 이 drawing_id를 parent_drawing_id로 사용할 수 있음
-        if (item.drawing_id && !item.drawing_id.startsWith('temp_')) {
+        if (item.drawing_id && !item.drawing_id.startsWith("temp_")) {
           currentGridParentDrawingIds.add(item.drawing_id);
         }
       });
     }
-    
+
     // 전달받은 pfdItem의 drawing_id도 추가 (항상 포함)
     if (drawingId) {
       currentGridParentDrawingIds.add(drawingId);
     }
-    
+
     // parent_drawing_id가 없으면 drawing_id만 사용
     if (currentGridParentDrawingIds.size === 0 && drawingId) {
       currentGridParentDrawingIds.add(drawingId);
     }
-    
+
     // 여러 parent_drawing_id가 있는 경우, 각각에 대해 API 호출하여 모든 child_drawings 수집
     const allApiResponses: any[] = [];
-    
+
     for (const parentDrawingId of currentGridParentDrawingIds) {
       const requestBody = {
         search_field: "drawing_id",
@@ -10369,25 +10095,21 @@ const loadMappingPidList = async (pfdItem: any) => {
         order_direction: "asc",
       };
 
-      const response = await request(
-        "/api/process/drawing_child/search",
-        undefined,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-      
+      const response = await request("/api/process/drawing_child/search", undefined, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
       if (response.success) {
         allApiResponses.push(response);
       } else {
         console.warn("P&ID 도면 검색 API 오류:", parentDrawingId);
       }
     }
-    
+
     // 모든 API 응답을 병합
     const allPidDrawingsData: any[] = [];
     allApiResponses.forEach((response) => {
@@ -10396,10 +10118,10 @@ const loadMappingPidList = async (pfdItem: any) => {
         allPidDrawingsData.push(...pidDrawingsData);
       }
     });
-    
+
     // 기존 로직과 호환성을 위해 pidDrawingsData 변수에 할당
     const pidDrawingsData = allPidDrawingsData;
-    
+
     if (allPidDrawingsData.length === 0 && currentGridParentDrawingIds.size > 0) {
       console.warn("P&ID 데이터를 가져오지 못했습니다");
     }
@@ -10409,52 +10131,62 @@ const loadMappingPidList = async (pfdItem: any) => {
       const allChildDrawings: any[] = [];
 
       pidDrawingsData.forEach((parentItem: any, parentIndex: number) => {
-        if (
-          parentItem.child_drawings &&
-          Array.isArray(parentItem.child_drawings)
-        ) {
-          parentItem.child_drawings.forEach(
-            (childDrawing: any, childIndex: number) => {
-              allChildDrawings.push({
-                parentItem: parentItem,
-                childDrawing: childDrawing,
-                parentIndex: parentIndex,
-                childIndex: childIndex,
-              });
-            }
-          );
+        if (parentItem.child_drawings && Array.isArray(parentItem.child_drawings)) {
+          parentItem.child_drawings.forEach((childDrawing: any, childIndex: number) => {
+            allChildDrawings.push({
+              parentItem: parentItem,
+              childDrawing: childDrawing,
+              parentIndex: parentIndex,
+              childIndex: childIndex,
+            });
+          });
         }
       });
-      
+
       // 여러 행이 추가된 경우 모든 데이터가 수집되었는지 확인
       if (allChildDrawings.length === 0) {
-        console.warn("⚠️ child_drawings가 하나도 수집되지 않았습니다. API 응답 확인 필요:", {
-          pidDrawingsDataLength: pidDrawingsData.length,
-          pidDrawingsData: pidDrawingsData.map((item: any, idx: number) => ({
-            index: idx,
-            drawing_id: item.drawing_id,
-            child_drawings_length: Array.isArray(item.child_drawings) ? item.child_drawings.length : 0,
-            child_drawings: item.child_drawings,
-          })),
-        });
+        console.warn(
+          "⚠️ child_drawings가 하나도 수집되지 않았습니다. API 응답 확인 필요:",
+          {
+            pidDrawingsDataLength: pidDrawingsData.length,
+            pidDrawingsData: pidDrawingsData.map((item: any, idx: number) => ({
+              index: idx,
+              drawing_id: item.drawing_id,
+              child_drawings_length: Array.isArray(item.child_drawings)
+                ? item.child_drawings.length
+                : 0,
+              child_drawings: item.child_drawings,
+            })),
+          }
+        );
       } else {
         console.log("✅ child_drawings 수집 성공:", {
           수집된_항목_수: allChildDrawings.length,
-          drawing_ids: allChildDrawings.map((item) => item.childDrawing?.drawing_id || item.childDrawing?.id || item.childDrawing?.file_id),
+          drawing_ids: allChildDrawings.map(
+            (item) =>
+              item.childDrawing?.drawing_id ||
+              item.childDrawing?.id ||
+              item.childDrawing?.file_id
+          ),
         });
       }
-      
+
       // 여러 행이 추가된 경우 모든 데이터가 수집되었는지 확인
       if (allChildDrawings.length === 0) {
-        console.warn("⚠️ child_drawings가 하나도 수집되지 않았습니다. API 응답 확인 필요:", {
-          pidDrawingsDataLength: pidDrawingsData.length,
-          pidDrawingsData: pidDrawingsData.map((item: any, idx: number) => ({
-            index: idx,
-            drawing_id: item.drawing_id,
-            child_drawings_length: Array.isArray(item.child_drawings) ? item.child_drawings.length : 0,
-            child_drawings: item.child_drawings,
-          })),
-        });
+        console.warn(
+          "⚠️ child_drawings가 하나도 수집되지 않았습니다. API 응답 확인 필요:",
+          {
+            pidDrawingsDataLength: pidDrawingsData.length,
+            pidDrawingsData: pidDrawingsData.map((item: any, idx: number) => ({
+              index: idx,
+              drawing_id: item.drawing_id,
+              child_drawings_length: Array.isArray(item.child_drawings)
+                ? item.child_drawings.length
+                : 0,
+              child_drawings: item.child_drawings,
+            })),
+          }
+        );
       }
 
       if (allChildDrawings.length > 0) {
@@ -10471,9 +10203,7 @@ const loadMappingPidList = async (pfdItem: any) => {
 
           // 매핑 Excel 파일명 추출 - detail 객체에서 가져오기
           const excelFileName =
-            childDrawing.detail?.excel_file_name ||
-            childDrawing.excel_file_name ||
-            "";
+            childDrawing.detail?.excel_file_name || childDrawing.excel_file_name || "";
 
           // Excel drawing_id 추출 - detail 객체에서 가져오기
           const excelDrawingId =
@@ -10483,15 +10213,11 @@ const loadMappingPidList = async (pfdItem: any) => {
 
           // SVG 도면 파일명 추출 - detail 객체에서 가져오기
           const svgFileName =
-            childDrawing.detail?.svg_file_name ||
-            childDrawing.svg_file_name ||
-            "";
+            childDrawing.detail?.svg_file_name || childDrawing.svg_file_name || "";
 
           // SVG drawing_id 추출 - detail 객체에서 가져오기
           const svgDrawingId =
-            childDrawing.detail?.svg_drawing_id ||
-            childDrawing.svg_drawing_id ||
-            null;
+            childDrawing.detail?.svg_drawing_id || childDrawing.svg_drawing_id || null;
 
           // drawing_id 설정 (파일명 추출 전에 먼저 설정)
           const drawingId =
@@ -10519,19 +10245,21 @@ const loadMappingPidList = async (pfdItem: any) => {
             childDrawing_excel_file_name: childDrawing.excel_file_name,
             전체_childDrawing_객체: childDrawing,
           });
-          
+
           // drawing_id가 없는 경우 경고
           if (!drawingId) {
             console.warn(`⚠️ P&ID 아이템 ${index + 1}에 drawing_id가 없습니다:`, {
               childDrawing_keys: Object.keys(childDrawing),
-              childDrawing_detail_keys: childDrawing.detail ? Object.keys(childDrawing.detail) : null,
+              childDrawing_detail_keys: childDrawing.detail
+                ? Object.keys(childDrawing.detail)
+                : null,
             });
           }
 
           // id 생성: drawing_id가 있으면 drawing_id 기반으로, 없으면 타임스탬프 기반으로 생성
           // drawing_id 기반 ID를 사용하면 저장 후 그리드 새로고침 시 매핑이 정확해짐
-          const uniqueId = drawingId 
-            ? `mapping_${drawingId.replace(/-/g, '_')}` 
+          const uniqueId = drawingId
+            ? `mapping_${drawingId.replace(/-/g, "_")}`
             : `mapping_${Date.now()}_${index}`;
 
           return {
@@ -10548,9 +10276,7 @@ const loadMappingPidList = async (pfdItem: any) => {
             current_file_drawing_id:
               childDrawing.detail?.current_file?.drawing_id ||
               childDrawing.current_file?.drawing_id,
-            file_id:
-              childDrawing.detail?.current_file?.file_id ||
-              childDrawing.file_id,
+            file_id: childDrawing.detail?.current_file?.file_id || childDrawing.file_id,
             excel_file_name: excelFileName, // 매핑 Excel 파일명
             svg_file_name: svgFileName, // Svg 도면 파일명
             file_uri:
@@ -10593,32 +10319,48 @@ const loadMappingPidList = async (pfdItem: any) => {
         // pidItems가 생성되었으므로 바로 사용 (역순으로 변경된 배열 사용)
         // 저장 후 그리드 새로고침 시 drawing_id 매핑 확인
         console.log("=== 그리드 새로고침 시 drawing_id 매핑 확인 ===");
-        console.log("로드된 pidItems:", reversedPidItems.map((item: any) => ({
-          id: item.id,
-          drawing_id: item.drawing_id,
-          parent_drawing_id: item.parent_drawing_id,
-          excel_drawing_id: item.excel_drawing_id,
-          svg_drawing_id: item.svg_drawing_id,
-        })));
-        
+        console.log(
+          "로드된 pidItems:",
+          reversedPidItems.map((item: any) => ({
+            id: item.id,
+            drawing_id: item.drawing_id,
+            parent_drawing_id: item.parent_drawing_id,
+            excel_drawing_id: item.excel_drawing_id,
+            svg_drawing_id: item.svg_drawing_id,
+          }))
+        );
+
         // 현재 그리드에 있는 항목들과 drawing_id로 매핑 확인
         const currentGridItems = mappingPidList.value.filter(
-          (item: any) => item.drawing_id && !item.drawing_id.startsWith('temp_')
+          (item: any) => item.drawing_id && !item.drawing_id.startsWith("temp_")
         );
-        console.log("현재 그리드 항목 (drawing_id 기준):", currentGridItems.map((item: any) => ({
-          id: item.id,
-          drawing_id: item.drawing_id,
-          parent_drawing_id: item.parent_drawing_id,
-        })));
-        
+        console.log(
+          "현재 그리드 항목 (drawing_id 기준):",
+          currentGridItems.map((item: any) => ({
+            id: item.id,
+            drawing_id: item.drawing_id,
+            parent_drawing_id: item.parent_drawing_id,
+          }))
+        );
+
         // drawing_id 기준으로 매핑 확인
-        const drawingIdMap = new Map(reversedPidItems.map((item: any) => [item.drawing_id, item]));
-        const matchedItems = currentGridItems.filter((item: any) => 
+        const drawingIdMap = new Map(
+          reversedPidItems.map((item: any) => [item.drawing_id, item])
+        );
+        const matchedItems = currentGridItems.filter((item: any) =>
           drawingIdMap.has(item.drawing_id)
         );
-        console.log("drawing_id 매핑된 항목 수:", matchedItems.length, "/", currentGridItems.length);
-        
-        if (matchedItems.length < currentGridItems.length && currentGridItems.length > 0) {
+        console.log(
+          "drawing_id 매핑된 항목 수:",
+          matchedItems.length,
+          "/",
+          currentGridItems.length
+        );
+
+        if (
+          matchedItems.length < currentGridItems.length &&
+          currentGridItems.length > 0
+        ) {
           console.warn("⚠️ 일부 항목의 drawing_id 매핑이 실패했습니다:", {
             매핑성공: matchedItems.length,
             전체항목: currentGridItems.length,
@@ -10628,27 +10370,38 @@ const loadMappingPidList = async (pfdItem: any) => {
                 id: item.id,
                 drawing_id: item.drawing_id,
               })),
-            서버에서_로드된_drawing_ids: reversedPidItems.map((item: any) => item.drawing_id),
+            서버에서_로드된_drawing_ids: reversedPidItems.map(
+              (item: any) => item.drawing_id
+            ),
             현재_그리드_drawing_ids: currentGridItems.map((item: any) => item.drawing_id),
           });
         }
-        
+
         // 그리드 업데이트 전 최종 확인
         console.log("=== 그리드 업데이트 전 최종 확인 ===");
         console.log("로드될 항목 수:", reversedPidItems.length);
-        console.log("로드될 항목들의 drawing_id:", reversedPidItems.map((item: any) => item.drawing_id));
+        console.log(
+          "로드될 항목들의 drawing_id:",
+          reversedPidItems.map((item: any) => item.drawing_id)
+        );
         console.log("현재 그리드 항목 수:", mappingPidList.value.length);
-        console.log("현재 그리드 항목들의 drawing_id:", mappingPidList.value.map((item: any) => item.drawing_id));
-        
+        console.log(
+          "현재 그리드 항목들의 drawing_id:",
+          mappingPidList.value.map((item: any) => item.drawing_id)
+        );
+
         // 서버에서 가져온 데이터로 그리드 업데이트 (모든 항목 유지)
         if (reversedPidItems.length === 0 && currentGridItems.length > 0) {
-          console.warn("⚠️ 서버에서 항목을 가져오지 못했지만 현재 그리드에 항목이 있습니다. 현재 그리드 유지:", {
-            현재그리드항목수: currentGridItems.length,
-          });
+          console.warn(
+            "⚠️ 서버에서 항목을 가져오지 못했지만 현재 그리드에 항목이 있습니다. 현재 그리드 유지:",
+            {
+              현재그리드항목수: currentGridItems.length,
+            }
+          );
           // 서버에서 데이터를 가져오지 못한 경우 현재 그리드 유지 (새로고침 건너뛰기)
           return;
         }
-        
+
         mappingPidList.value = reversedPidItems;
         // 초기값 저장 (깊은 복사)
         initialMappingPidList.value = JSON.parse(JSON.stringify(reversedPidItems));
@@ -10665,7 +10418,6 @@ const loadMappingPidList = async (pfdItem: any) => {
             svg_drawing_id: item.svg_drawing_id,
           }))
         );
-
       } else {
         // child_drawings가 없는 경우 빈 배열로 설정
         // P&ID 그리드 재조회 시 P&ID Components 그리드 내용 초기화
@@ -10720,7 +10472,7 @@ const selectPidFile = (item: any) => {
   } else {
     currentPidItemForMapping.value = item;
   }
-  
+
   // 선택된 P&ID 항목 설정
   (selectedMappingPidItems.value as any) = currentItem || item;
 
@@ -10728,7 +10480,6 @@ const selectPidFile = (item: any) => {
   if (pidFileInput.value) {
     pidFileInput.value.value = "";
   }
-
 
   pidFileInput.value?.click();
 };
@@ -10744,10 +10495,10 @@ const selectExcelFile = (item: any) => {
   const currentItem = mappingPidList.value.find(
     (i) => i.id === item.id || i.drawing_id === item.drawing_id
   );
-  
+
   // 선택된 P&ID 항목 설정 (handleExcelFileSelected에서 사용)
   (selectedMappingPidItems.value as any) = currentItem || item;
-  
+
   // currentPfdItemForMapping은 공정카드 항목이므로 변경하지 않음
 
   // 파일 input 초기화 (연속 클릭 가능하도록)
@@ -10762,7 +10513,6 @@ const handlePidFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
-
 
     // *.dwg 파일만 허용
     if (!file.name.toLowerCase().endsWith(".dwg")) {
@@ -10780,9 +10530,7 @@ const handlePidFileSelected = (event: Event) => {
     }
 
     if (!targetItem) {
-      console.error(
-        "❌ P&ID 파일 선택 시 현재 선택된 항목을 찾을 수 없습니다."
-      );
+      console.error("❌ P&ID 파일 선택 시 현재 선택된 항목을 찾을 수 없습니다.");
       alert("파일을 선택할 항목이 없습니다.");
       target.value = "";
       return;
@@ -10799,18 +10547,14 @@ const handlePidFileSelected = (event: Event) => {
     targetItem.pidFile = file; // 실제 File 객체 저장
 
     // mappingPidList에서 해당 항목을 찾아서 업데이트
-    const itemIndex = mappingPidList.value.findIndex(
-      (item) => item.id === targetItem.id
-    );
+    const itemIndex = mappingPidList.value.findIndex((item) => item.id === targetItem.id);
     if (itemIndex !== -1) {
       mappingPidList.value[itemIndex].pidFileName = file.name;
       mappingPidList.value[itemIndex].pidFile = file;
 
       // 반응성을 위해 Vue의 반응형 시스템에 알림
       mappingPidList.value = [...mappingPidList.value];
-
     } else {
-
       // mappingPidList에서 찾을 수 없는 경우, 전체 리스트에서 해당 drawing_id로 찾기
       const alternativeIndex = mappingPidList.value.findIndex(
         (item) => item.drawing_id === targetItem.drawing_id
@@ -10822,7 +10566,6 @@ const handlePidFileSelected = (event: Event) => {
 
         // 반응성을 위해 Vue의 반응형 시스템에 알림
         mappingPidList.value = [...mappingPidList.value];
-
       } else {
         // 마지막 시도: parent_drawing_id로 찾기
         const parentIndex = mappingPidList.value.findIndex(
@@ -10846,17 +10589,15 @@ const handlePidFileSelected = (event: Event) => {
 const handleExcelFileSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   // Excel 파일 선택은 P&ID 항목에 대한 것이므로 currentPidItemForMapping 또는 selectedMappingPidItems 사용
-  const targetPidItem = (selectedMappingPidItems.value as any) || currentPidItemForMapping.value;
-  
+  const targetPidItem =
+    (selectedMappingPidItems.value as any) || currentPidItemForMapping.value;
+
   if (target.files && target.files[0] && targetPidItem) {
     const file = target.files[0];
 
-
     // Excel 파일 확장자 검증
     const allowedExtensions = [".xlsx", ".xls"];
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf("."));
     if (!allowedExtensions.includes(fileExtension)) {
       alert("Excel 파일은 *.xlsx 또는 *.xls 형식만 선택 가능합니다.");
       target.value = ""; // 파일 선택 초기화
@@ -10873,74 +10614,129 @@ const handleExcelFileSelected = (event: Event) => {
       (item) => item.id === targetPidItem.id
     );
     if (itemIndex !== -1) {
+      const existingExcelFileName =
+        mappingPidList.value[itemIndex].excel_file_name ||
+        mappingPidList.value[itemIndex].excelFileName ||
+        "";
+      const isSameFileName = existingExcelFileName && file.name === existingExcelFileName;
+
       mappingPidList.value[itemIndex].excelFileName = file.name;
       mappingPidList.value[itemIndex].excel_file_name = file.name; // API 응답 필드와 동기화
-      mappingPidList.value[itemIndex].excelFile = file;
+      mappingPidList.value[itemIndex].excelFile = file; // 실제 File 객체 저장 (파일명이 동일해도 다시 선택된 것으로 간주)
+
       // 기존 excel_drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
+      // 또는 파일명이 동일한 경우에도 다시 업로드되도록 temp_로 변경
       const existingExcelDrawingId = mappingPidList.value[itemIndex].excel_drawing_id;
-      if (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) {
-        // 기존 Excel 파일을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
-        mappingPidList.value[itemIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+      if (
+        (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) ||
+        isSameFileName
+      ) {
+        // 기존 Excel 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+        mappingPidList.value[
+          itemIndex
+        ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
       } else if (!existingExcelDrawingId) {
         // 새로운 Excel 파일 선택
-        mappingPidList.value[itemIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+        mappingPidList.value[
+          itemIndex
+        ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
       }
 
       // initialMappingPidList도 업데이트하여 변경 감지 로직이 제대로 작동하도록 함
       const initialItemIndex = initialMappingPidList.value.findIndex(
-        (item) => item.id === mappingPidList.value[itemIndex].id
+        (item) =>
+          item.id === mappingPidList.value[itemIndex].id ||
+          (item.drawing_id &&
+            item.drawing_id === mappingPidList.value[itemIndex].drawing_id)
       );
       if (initialItemIndex !== -1) {
         // initialMappingPidList의 excelFile을 null로 설정하여 변경으로 감지되도록 함
+        // 파일명은 유지하되 excelFile 객체만 null로 설정 (파일이 새로 선택된 것으로 감지)
         (initialMappingPidList.value[initialItemIndex] as any).excelFile = null;
+      } else {
+        // initialItem을 찾지 못한 경우, drawing_id로 다시 시도
+        const initialItemByDrawingId = initialMappingPidList.value.find(
+          (item) =>
+            item.drawing_id &&
+            item.drawing_id === mappingPidList.value[itemIndex].drawing_id
+        );
+        if (initialItemByDrawingId) {
+          (initialItemByDrawingId as any).excelFile = null;
+        }
       }
 
       // 반응성을 위해 Vue의 반응형 시스템에 알림
       mappingPidList.value = [...mappingPidList.value];
     } else {
-
       // mappingPidList에서 찾을 수 없는 경우, 전체 리스트에서 해당 drawing_id로 찾기
       const alternativeIndex = mappingPidList.value.findIndex(
         (item) => item.drawing_id === currentPfdItemForMapping.value.drawing_id
       );
 
       if (alternativeIndex !== -1) {
+        const existingExcelFileName =
+          mappingPidList.value[alternativeIndex].excel_file_name ||
+          mappingPidList.value[alternativeIndex].excelFileName ||
+          "";
+        const isSameFileName =
+          existingExcelFileName && file.name === existingExcelFileName;
+
         mappingPidList.value[alternativeIndex].excelFileName = file.name;
         mappingPidList.value[alternativeIndex].excel_file_name = file.name;
-        mappingPidList.value[alternativeIndex].excelFile = file;
+        mappingPidList.value[alternativeIndex].excelFile = file; // 실제 File 객체 저장 (파일명이 동일해도 다시 선택된 것으로 간주)
+
         // 기존 excel_drawing_id가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 temp_로 변경
-        const existingExcelDrawingId = mappingPidList.value[alternativeIndex].excel_drawing_id;
-        if (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) {
-          // 기존 Excel 파일을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
-          mappingPidList.value[alternativeIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+        // 또는 파일명이 동일한 경우에도 다시 업로드되도록 temp_로 변경
+        const existingExcelDrawingId =
+          mappingPidList.value[alternativeIndex].excel_drawing_id;
+        if (
+          (existingExcelDrawingId && !existingExcelDrawingId.startsWith("temp_")) ||
+          isSameFileName
+        ) {
+          // 기존 Excel 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - temp_ ID로 변경하여 변경으로 감지되도록 함
+          mappingPidList.value[
+            alternativeIndex
+          ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
         } else if (!existingExcelDrawingId) {
           // 새로운 Excel 파일 선택
-          mappingPidList.value[alternativeIndex].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
+          mappingPidList.value[
+            alternativeIndex
+          ].excel_drawing_id = `temp_excel_drawing_${Date.now()}`;
         }
 
         // initialMappingPidList도 업데이트하여 변경 감지 로직이 제대로 작동하도록 함
         const initialItemIndex = initialMappingPidList.value.findIndex(
-          (item) => item.drawing_id === mappingPidList.value[alternativeIndex].drawing_id
+          (item) =>
+            item.id === mappingPidList.value[alternativeIndex].id ||
+            (item.drawing_id &&
+              item.drawing_id === mappingPidList.value[alternativeIndex].drawing_id)
         );
         if (initialItemIndex !== -1) {
           // initialMappingPidList의 excelFile을 null로 설정하여 변경으로 감지되도록 함
+          // 파일명은 유지하되 excelFile 객체만 null로 설정 (파일이 새로 선택된 것으로 감지)
           (initialMappingPidList.value[initialItemIndex] as any).excelFile = null;
+        } else {
+          // initialItem을 찾지 못한 경우, drawing_id로 다시 시도
+          const initialItemByDrawingId = initialMappingPidList.value.find(
+            (item) =>
+              item.drawing_id &&
+              item.drawing_id === mappingPidList.value[alternativeIndex].drawing_id
+          );
+          if (initialItemByDrawingId) {
+            (initialItemByDrawingId as any).excelFile = null;
+          }
         }
 
         // 반응성을 위해 Vue의 반응형 시스템에 알림
         mappingPidList.value = [...mappingPidList.value];
 
-        console.log(
-          "✅ Excel 파일이 mappingPidList에 대체 방법으로 업데이트됨:",
-          {
-            index: alternativeIndex,
-            fileName: file.name,
-            drawingId: mappingPidList.value[alternativeIndex].drawing_id,
-            hasFileObject: !!(mappingPidList.value[alternativeIndex] as any)
-              .excelFile,
-            excel_drawing_id: mappingPidList.value[alternativeIndex].excel_drawing_id,
-          }
-        );
+        console.log("✅ Excel 파일이 mappingPidList에 대체 방법으로 업데이트됨:", {
+          index: alternativeIndex,
+          fileName: file.name,
+          drawingId: mappingPidList.value[alternativeIndex].drawing_id,
+          hasFileObject: !!(mappingPidList.value[alternativeIndex] as any).excelFile,
+          excel_drawing_id: mappingPidList.value[alternativeIndex].excel_drawing_id,
+        });
       } else {
         console.error(
           "❌ mappingPidList에서 drawing_id로도 해당 항목을 찾을 수 없음:",
@@ -10948,7 +10744,6 @@ const handleExcelFileSelected = (event: Event) => {
         );
       }
     }
-
   }
 };
 
@@ -10970,7 +10765,6 @@ const handleMappingPidRowClick = (item: any, index: number) => {
 };
 
 const handleMappingPidSelectionChange = async () => {
-
   // P&ID 목록 row가 선택되면 P&ID 컴포넌트 버튼 클릭 이벤트 호출
   if (selectedMappingPidItems.value) {
     const selectedItem = selectedMappingPidItems.value;
@@ -11078,14 +10872,9 @@ onMounted(async () => {
 
       // 초기 공정구분이 있으면 중분류 옵션 로드
       if (props.initialProcessType) {
-        console.log(
-          "초기 공정구분으로 중분류 옵션 로드:",
-          props.initialProcessType
-        );
+        console.log("초기 공정구분으로 중분류 옵션 로드:", props.initialProcessType);
         try {
-          await processStore.loadSubCategoryCodesSilent(
-            props.initialProcessType
-          );
+          await processStore.loadSubCategoryCodesSilent(props.initialProcessType);
         } catch (error) {
           console.error("초기 공정구분으로 중분류 옵션 로드 실패:", error);
         }
@@ -11093,14 +10882,9 @@ onMounted(async () => {
 
       // 초기 공정 중분류가 있으면 공정명 옵션 로드
       if (props.initialSubCategory && props.initialProcessType) {
-        console.log(
-          "초기 공정 중분류로 공정명 옵션 로드:",
-          props.initialSubCategory
-        );
+        console.log("초기 공정 중분류로 공정명 옵션 로드:", props.initialSubCategory);
         try {
-          await processStore.loadProcessNameCodesSilent(
-            props.initialSubCategory
-          );
+          await processStore.loadProcessNameCodesSilent(props.initialSubCategory);
         } catch (error) {
           console.error("초기 공정 중분류로 공정명 옵션 로드 실패:", error);
         }
@@ -11156,10 +10940,7 @@ onMounted(async () => {
       console.log("props.processId:", props.processId);
       console.log("props.processCode:", props.processCode);
       console.log("props.isRegisterMode:", props.isRegisterMode);
-      console.log(
-        "searchProcessById 호출 전 - props.processId:",
-        props.processId
-      );
+      console.log("searchProcessById 호출 전 - props.processId:", props.processId);
       await processStore.searchProcessById(props.processId);
       console.log("searchProcessById 호출 완료");
       console.log("공정 상세 정보 로드 완료:", processStore.processDetail);
@@ -11193,24 +10974,14 @@ onMounted(async () => {
 
       // 공정 타입, 중분류, 공정명 옵션들 로드
       if (processStore.processDetail.processType) {
-        console.log(
-          "공정 타입 옵션 로드:",
-          processStore.processDetail.processType
-        );
+        console.log("공정 타입 옵션 로드:", processStore.processDetail.processType);
         // 중분류 옵션 로드
-        await processStore.loadSubCategoryCodes(
-          processStore.processDetail.processType
-        );
+        await processStore.loadSubCategoryCodes(processStore.processDetail.processType);
 
         if (processStore.processDetail.subCategory) {
-          console.log(
-            "중분류 옵션 로드:",
-            processStore.processDetail.subCategory
-          );
+          console.log("중분류 옵션 로드:", processStore.processDetail.subCategory);
           // 공정명 옵션 로드
-          await processStore.loadProcessNameCodes(
-            processStore.processDetail.subCategory
-          );
+          await processStore.loadProcessNameCodes(processStore.processDetail.subCategory);
 
           // 공정명 옵션들이 완전히 로드될 때까지 대기
           await nextTick();
@@ -11225,23 +10996,20 @@ onMounted(async () => {
 
             // 1. 정확한 값 비교
             matchedOption = processStore.searchProcessNameOptions.find(
-              (option) =>
-                option.value === processStore.processDetail.processName
+              (option) => option.value === processStore.processDetail.processName
             );
 
             if (!matchedOption) {
               // 2. 문자열 변환 후 비교
               matchedOption = processStore.searchProcessNameOptions.find(
                 (option) =>
-                  String(option.value) ===
-                  String(processStore.processDetail.processName)
+                  String(option.value) === String(processStore.processDetail.processName)
               );
 
               if (!matchedOption) {
                 // 3. 라벨로 비교
                 matchedOption = processStore.searchProcessNameOptions.find(
-                  (option) =>
-                    option.label === processStore.processDetail.processName
+                  (option) => option.label === processStore.processDetail.processName
                 );
 
                 if (matchedOption) {
@@ -11257,8 +11025,7 @@ onMounted(async () => {
                 // 4. process_code로 비교 (더 정확한 매칭)
                 if (processStore.processDetail.processCode) {
                   matchedOption = processStore.searchProcessNameOptions.find(
-                    (option) =>
-                      option.value === processStore.processDetail.processCode
+                    (option) => option.value === processStore.processDetail.processCode
                   );
                   if (matchedOption) {
                     console.log("process_code로 매칭된 옵션:", matchedOption);
@@ -11301,41 +11068,37 @@ onMounted(async () => {
             역순개수: reversedResponseData.length,
           });
 
-          const formulaItems = reversedResponseData.map(
-            (item: any, index: number) => {
-              console.log(`계산식 아이템 ${index} 원본 데이터:`, item);
+          const formulaItems = reversedResponseData.map((item: any, index: number) => {
+            console.log(`계산식 아이템 ${index} 원본 데이터:`, item);
 
-              const formulaItem = {
-                id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-                no: index + 1,
-                registeredFormula: item.formula_name || item.name || "",
-                formula_code: item.formula_code || item.code || "",
-                registrationDate:
-                  item.created_at ||
-                  item.registration_date ||
-                  formatDate(new Date()),
-                infoOverview: item.formula_scope || item.scope || "",
-                remarks: item.output_type || item.type || "",
-                formula_id: item.formula_id || item.id || null,
-                file_name: item.file_name || null, // file_name 추가
-                process_dependencies: item.process_dependencies || null, // process_dependencies 추가
-                _file: undefined,
-                isSaved: true, // 기존 데이터는 저장된 상태
-                _originalData: item, // 원본 데이터 보존
-              };
+            const formulaItem = {
+              id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
+              no: index + 1,
+              registeredFormula: item.formula_name || item.name || "",
+              formula_code: item.formula_code || item.code || "",
+              registrationDate:
+                item.created_at || item.registration_date || formatDate(new Date()),
+              infoOverview: item.formula_scope || item.scope || "",
+              remarks: item.output_type || item.type || "",
+              formula_id: item.formula_id || item.id || null,
+              file_name: item.file_name || null, // file_name 추가
+              process_dependencies: item.process_dependencies || null, // process_dependencies 추가
+              _file: undefined,
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item, // 원본 데이터 보존
+            };
 
-              console.log("계산식 아이템 생성 (response):", {
-                원본_item_id: item.id,
-                원본_formula_id: item.formula_id,
-                생성된_id: formulaItem.id,
-                생성된_formula_id: formulaItem.formula_id,
-                formula_name: item.formula_name,
-                전체_생성된_아이템: formulaItem,
-              });
+            console.log("계산식 아이템 생성 (response):", {
+              원본_item_id: item.id,
+              원본_formula_id: item.formula_id,
+              생성된_id: formulaItem.id,
+              생성된_formula_id: formulaItem.formula_id,
+              formula_name: item.formula_name,
+              전체_생성된_아이템: formulaItem,
+            });
 
-              return formulaItem;
-            }
-          );
+            return formulaItem;
+          });
 
           processStore.setFormulaList(formulaItems);
           const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
@@ -11347,48 +11110,40 @@ onMounted(async () => {
           "data" in formulaResult &&
           Array.isArray(formulaResult.data)
         ) {
-          const formulaItems = formulaResult.data.map(
-            (item: any, index: number) => {
-              const formulaItem = {
-                id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-                no: index + 1,
-                registeredFormula: item.formula_name || item.name || "",
-                formula_code: item.formula_code || item.code || "",
-                registrationDate:
-                  item.created_at ||
-                  item.registration_date ||
-                  formatDate(new Date()),
-                infoOverview: item.formula_scope || item.scope || "",
-                remarks: item.output_type || item.type || "",
-                formula_id: item.formula_id || item.id || null,
-                file_name: item.file_name || null, // file_name 추가
-                process_dependencies: item.process_dependencies || null, // process_dependencies 추가
-                _file: undefined,
-                isSaved: true, // 기존 데이터는 저장된 상태
-                _originalData: item, // 원본 데이터 보존
-              };
+          const formulaItems = formulaResult.data.map((item: any, index: number) => {
+            const formulaItem = {
+              id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
+              no: index + 1,
+              registeredFormula: item.formula_name || item.name || "",
+              formula_code: item.formula_code || item.code || "",
+              registrationDate:
+                item.created_at || item.registration_date || formatDate(new Date()),
+              infoOverview: item.formula_scope || item.scope || "",
+              remarks: item.output_type || item.type || "",
+              formula_id: item.formula_id || item.id || null,
+              file_name: item.file_name || null, // file_name 추가
+              process_dependencies: item.process_dependencies || null, // process_dependencies 추가
+              _file: undefined,
+              isSaved: true, // 기존 데이터는 저장된 상태
+              _originalData: item, // 원본 데이터 보존
+            };
 
-              console.log("계산식 아이템 생성 (data):", {
-                원본_item_id: item.id,
-                원본_formula_id: item.formula_id,
-                생성된_id: formulaItem.id,
-                생성된_formula_id: formulaItem.formula_id,
-                formula_name: item.formula_name,
-              });
+            console.log("계산식 아이템 생성 (data):", {
+              원본_item_id: item.id,
+              원본_formula_id: item.formula_id,
+              생성된_id: formulaItem.id,
+              생성된_formula_id: formulaItem.formula_id,
+              formula_name: item.formula_name,
+            });
 
-              return formulaItem;
-            }
-          );
+            return formulaItem;
+          });
 
           processStore.setFormulaList(formulaItems);
           const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
           processStore.setInitialFormulaList(initialFormulaData);
 
-          console.log(
-            "계산식 데이터 로드 완료 (data 필드):",
-            formulaItems.length,
-            "개"
-          );
+          console.log("계산식 데이터 로드 완료 (data 필드):", formulaItems.length, "개");
         } else {
           console.log("계산식 데이터가 없습니다.");
           processStore.setFormulaList([]);
@@ -11404,12 +11159,14 @@ onMounted(async () => {
       try {
         console.log("=== onMounted - 공정카드 그리드 초기 로드 시작 ===");
         console.log("processId:", processId);
-        
+
         const pfdDrawingsData = await searchPfdDrawingAPI(processId);
 
         console.log("onMounted - 공정카드 그리드 API 응답:", {
           데이터타입: Array.isArray(pfdDrawingsData) ? "배열" : typeof pfdDrawingsData,
-          데이터길이: Array.isArray(pfdDrawingsData) ? pfdDrawingsData.length : "배열이 아님",
+          데이터길이: Array.isArray(pfdDrawingsData)
+            ? pfdDrawingsData.length
+            : "배열이 아님",
         });
 
         if (pfdDrawingsData && Array.isArray(pfdDrawingsData)) {
@@ -11418,8 +11175,7 @@ onMounted(async () => {
           });
 
           const pfdItems = pfdDrawingsData.map((item: any, index: number) => {
-            const drawingId =
-              item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
+            const drawingId = item.drawing_id || item.id || `pfd_drawing_${index + 1}`;
 
             // 등록일자: 기존 registrationDate가 있으면 사용, 없으면 API 응답의 created_at 사용
             const registrationDate =
@@ -11431,8 +11187,7 @@ onMounted(async () => {
             const pfdItem = {
               id: `pfd_${index + 1}`,
               no: index + 1,
-              pfdFileName:
-                item.current_file?.file_name || item.pfdFileName || "",
+              pfdFileName: item.current_file?.file_name || item.pfdFileName || "",
               registrationDate: registrationDate,
               mappingPidList: "",
               remarks: item.remarks || "",
@@ -11459,7 +11214,9 @@ onMounted(async () => {
           });
           console.log("=== onMounted - 공정카드 그리드 초기 로드 완료 ===");
         } else {
-          console.log("onMounted - 공정카드 그리드 조회 결과: 데이터가 없거나 배열이 아님");
+          console.log(
+            "onMounted - 공정카드 그리드 조회 결과: 데이터가 없거나 배열이 아님"
+          );
           processStore.setPfdList([]);
           processStore.setInitialPfdList([]);
           console.log("onMounted - 공정카드 그리드 초기화 완료 (빈 배열)");
@@ -11482,12 +11239,7 @@ watch(
   () => props.processCode,
   async (newProcessCode, oldProcessCode) => {
     if (newProcessCode && newProcessCode !== oldProcessCode) {
-      console.log(
-        "processCode 변경 감지:",
-        oldProcessCode,
-        "->",
-        newProcessCode
-      );
+      console.log("processCode 변경 감지:", oldProcessCode, "->", newProcessCode);
       try {
         // 새로운 공정 정보 로드
         await processStore.searchProcessById(newProcessCode);
@@ -11496,10 +11248,7 @@ watch(
 
         if (processStore.processDetail.unit_system_code) {
           selectedUnit.value = processStore.processDetail.unit_system_code;
-          console.log(
-            "단위 시스템 코드 매핑 완료 (watch):",
-            selectedUnit.value
-          );
+          console.log("단위 시스템 코드 매핑 완료 (watch):", selectedUnit.value);
         }
 
         // 공정 타입 옵션들 먼저 로드
@@ -11508,9 +11257,7 @@ watch(
         // 공정 타입, 중분류, 공정명 옵션들 로드
         if (processStore.processDetail.processType) {
           // 중분류 옵션 로드
-          await processStore.loadSubCategoryCodes(
-            processStore.processDetail.processType
-          );
+          await processStore.loadSubCategoryCodes(processStore.processDetail.processType);
 
           if (processStore.processDetail.subCategory) {
             // 공정명 옵션 로드
@@ -11531,8 +11278,7 @@ watch(
 
               // 1. 정확한 값 비교
               matchedOption = processStore.searchProcessNameOptions.find(
-                (option) =>
-                  option.value === processStore.processDetail.processName
+                (option) => option.value === processStore.processDetail.processName
               );
 
               if (!matchedOption) {
@@ -11546,8 +11292,7 @@ watch(
                 if (!matchedOption) {
                   // 3. 라벨로 비교
                   matchedOption = processStore.searchProcessNameOptions.find(
-                    (option) =>
-                      option.label === processStore.processDetail.processName
+                    (option) => option.label === processStore.processDetail.processName
                   );
 
                   if (matchedOption) {
@@ -11581,84 +11326,72 @@ watch(
             // API 응답의 역순으로 출력하기 위해 배열을 역순으로 변경
             const reversedResponseData = [...formulaResult.response].reverse();
 
-            const formulaItems = reversedResponseData.map(
-              (item: any, index: number) => {
-                const formulaItem = {
-                  id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-                  no: index + 1,
-                  registeredFormula: item.formula_name || item.name || "",
-                  formula_code: item.formula_code || item.code || "",
-                  registrationDate:
-                    item.created_at ||
-                    item.registration_date ||
-                    formatDate(new Date()),
-                  infoOverview: item.formula_scope || item.scope || "",
-                  remarks: item.output_type || item.type || "",
-                  formula_id: item.formula_id || item.id || null,
-                  file_name: item.file_name || null, // file_name 추가
-                  _file: undefined,
-                  isSaved: true, // 기존 데이터는 저장된 상태
-                  _originalData: item, // 원본 데이터 보존
-                };
+            const formulaItems = reversedResponseData.map((item: any, index: number) => {
+              const formulaItem = {
+                id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
+                no: index + 1,
+                registeredFormula: item.formula_name || item.name || "",
+                formula_code: item.formula_code || item.code || "",
+                registrationDate:
+                  item.created_at || item.registration_date || formatDate(new Date()),
+                infoOverview: item.formula_scope || item.scope || "",
+                remarks: item.output_type || item.type || "",
+                formula_id: item.formula_id || item.id || null,
+                file_name: item.file_name || null, // file_name 추가
+                _file: undefined,
+                isSaved: true, // 기존 데이터는 저장된 상태
+                _originalData: item, // 원본 데이터 보존
+              };
 
-                console.log("계산식 아이템 생성 (watch, response):", {
-                  원본_item_id: item.id,
-                  원본_formula_id: item.formula_id,
-                  생성된_id: formulaItem.id,
-                  생성된_formula_id: formulaItem.formula_id,
-                  formula_name: item.formula_name,
-                });
+              console.log("계산식 아이템 생성 (watch, response):", {
+                원본_item_id: item.id,
+                원본_formula_id: item.formula_id,
+                생성된_id: formulaItem.id,
+                생성된_formula_id: formulaItem.formula_id,
+                formula_name: item.formula_name,
+              });
 
-                return formulaItem;
-              }
-            );
+              return formulaItem;
+            });
 
             processStore.setFormulaList(formulaItems);
             const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
             processStore.setInitialFormulaList(initialFormulaData);
 
-            console.log(
-              "계산식 데이터 로드 완료 (watch):",
-              formulaItems.length,
-              "개"
-            );
+            console.log("계산식 데이터 로드 완료 (watch):", formulaItems.length, "개");
           } else if (
             formulaResult &&
             "data" in formulaResult &&
             Array.isArray(formulaResult.data)
           ) {
-            const formulaItems = formulaResult.data.map(
-              (item: any, index: number) => {
-                const formulaItem = {
-                  id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
-                  no: index + 1,
-                  registeredFormula: item.formula_name || item.name || "",
-                  formula_code: item.formula_code || item.code || "",
-                  registrationDate:
-                    item.created_at ||
-                    item.registration_date ||
-                    formatDate(new Date()),
-                  infoOverview: item.formula_scope || item.scope || "",
-                  remarks: item.output_type || item.type || "",
-                  formula_id: item.formula_id || item.id || null,
-                  file_name: item.file_name || null, // file_name 추가
-                  process_dependencies: item.process_dependencies || null, // process_dependencies 추가
-                  _file: undefined,
-                  isSaved: true, // 기존 데이터는 저장된 상태
-                  _originalData: item, // 원본 데이터 보존
-                };
+            const formulaItems = formulaResult.data.map((item: any, index: number) => {
+              const formulaItem = {
+                id: `existing_formula_${item.id || index}`, // 기존 데이터는 existing_ 접두사 사용
+                no: index + 1,
+                registeredFormula: item.formula_name || item.name || "",
+                formula_code: item.formula_code || item.code || "",
+                registrationDate:
+                  item.created_at || item.registration_date || formatDate(new Date()),
+                infoOverview: item.formula_scope || item.scope || "",
+                remarks: item.output_type || item.type || "",
+                formula_id: item.formula_id || item.id || null,
+                file_name: item.file_name || null, // file_name 추가
+                process_dependencies: item.process_dependencies || null, // process_dependencies 추가
+                _file: undefined,
+                isSaved: true, // 기존 데이터는 저장된 상태
+                _originalData: item, // 원본 데이터 보존
+              };
 
-                console.log("계산식 아이템 생성 (watch, data):", {
-                  원본_item_id: item.id,
-                  원본_formula_id: item.formula_id,
-                  생성된_id: formulaItem.id,
-                  생성된_formula_id: formulaItem.formula_id,
-                  formula_name: item.formula_name,
-                });
+              console.log("계산식 아이템 생성 (watch, data):", {
+                원본_item_id: item.id,
+                원본_formula_id: item.formula_id,
+                생성된_id: formulaItem.id,
+                생성된_formula_id: formulaItem.formula_id,
+                formula_name: item.formula_name,
+              });
 
-                return formulaItem;
-              }
-            );
+              return formulaItem;
+            });
 
             processStore.setFormulaList(formulaItems);
             const initialFormulaData = JSON.parse(JSON.stringify(formulaItems));
@@ -11681,9 +11414,7 @@ watch(
         }
 
         // 계산식 초기값 저장
-        const initialFormulaData = JSON.parse(
-          JSON.stringify(processStore.formulaList)
-        );
+        const initialFormulaData = JSON.parse(JSON.stringify(processStore.formulaList));
         processStore.setInitialFormulaList(initialFormulaData);
       } catch (error) {
         console.error("새로운 공정 정보 로드 실패:", error);
@@ -11718,8 +11449,7 @@ watch(
         // 2. 문자열 변환 후 비교
         matchedOption = newOptions.find(
           (option) =>
-            String(option.value) ===
-            String(processStore.processDetail.processName)
+            String(option.value) === String(processStore.processDetail.processName)
         );
 
         if (!matchedOption) {
@@ -11729,10 +11459,7 @@ watch(
           );
 
           if (matchedOption) {
-            console.log(
-              "공정명 옵션 watch: 라벨로 매칭된 옵션:",
-              matchedOption
-            );
+            console.log("공정명 옵션 watch: 라벨로 매칭된 옵션:", matchedOption);
             // 라벨이 일치하면 value로 업데이트
             processStore.setProcessDetail({
               processName: matchedOption.value,
@@ -11747,10 +11474,7 @@ watch(
           (option) => option.value === processStore.processDetail.processCode
         );
         if (matchedOption) {
-          console.log(
-            "공정명 옵션 watch: process_code로 매칭된 옵션:",
-            matchedOption
-          );
+          console.log("공정명 옵션 watch: process_code로 매칭된 옵션:", matchedOption);
         }
       }
 
@@ -11841,7 +11565,7 @@ watch(
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 12px auto;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -11893,7 +11617,6 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
-
 }
 
 .grid-title {
@@ -12378,7 +12101,7 @@ watch(
   display: flex;
   align-items: center;
   gap: 12px;
-  
+
   .file-input-group {
     display: flex;
     flex: 1;
@@ -12422,8 +12145,8 @@ watch(
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background-color: rgba(62, 67, 94, .6);
-    transition: background-color .2s ease-in-out, opacity .2s ease-in-out;;
+    background-color: rgba(62, 67, 94, 0.6);
+    transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
     z-index: 10;
     opacity: 0;
     pointer-events: none;

@@ -331,6 +331,38 @@ export const useAsset3DStore = defineStore("asset3d", () => {
   };
 
   // 코드 트리 조회 함수
+  // 트리 노드를 Asset3DTreeNode 형식으로 변환하는 헬퍼 함수
+  const convertTreeNode = (node: Record<string, unknown>): Asset3DTreeNode | null => {
+    const codeKey = node.code_key;
+    const codeValue = node.code_value || node.code_value_en;
+    
+    if (!codeKey || !codeValue) {
+      return null;
+    }
+
+    const treeNode: Asset3DTreeNode = {
+      code_key: String(codeKey),
+      code_value: String(codeValue),
+      code_level: typeof node.code_level === "number" ? node.code_level : undefined,
+      code_order: typeof node.code_order === "number" ? node.code_order : undefined,
+      children: [],
+    };
+
+    // children이 있으면 재귀적으로 변환
+    if (Array.isArray(node.children) && node.children.length > 0) {
+      treeNode.children = node.children
+        .map((child: unknown) => {
+          if (child && typeof child === "object") {
+            return convertTreeNode(child as Record<string, unknown>);
+          }
+          return null;
+        })
+        .filter((node): node is Asset3DTreeNode => node !== null);
+    }
+
+    return treeNode;
+  };
+
   const buildTreeFromCodeGroups = (rawData: unknown): Asset3DTreeNode[] => {
     if (!rawData || typeof rawData !== "object") {
       console.warn("[asset3DStore] codeTree raw 데이터가 객체가 아닙니다:", rawData);
@@ -340,7 +372,9 @@ export const useAsset3DStore = defineStore("asset3d", () => {
     const unwrapped =
       (rawData as { data?: Record<string, unknown> })?.data || rawData;
 
+    // 새로운 API 응답 형식: data.tree 배열 형태
     const responseData = unwrapped as {
+      tree?: Array<Record<string, unknown>>;
       code_groups?: Record<
         string,
         {
@@ -351,9 +385,46 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       >;
     };
 
+    // tree 배열이 있으면 직접 변환
+    if (Array.isArray(responseData.tree) && responseData.tree.length > 0) {
+      console.log("[asset3DStore] codeTree tree 배열 형식으로 파싱:", {
+        treeLength: responseData.tree.length,
+      });
+      
+      const roots = responseData.tree
+        .map((node) => convertTreeNode(node))
+        .filter((node): node is Asset3DTreeNode => node !== null);
+
+      const sortTreeNodes = (nodes: Asset3DTreeNode[]) => {
+        nodes.sort((a, b) => {
+          const orderA = a.code_order ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.code_order ?? Number.MAX_SAFE_INTEGER;
+          if (orderA === orderB) {
+            return a.code_value.localeCompare(b.code_value, "ko");
+          }
+          return orderA - orderB;
+        });
+        nodes.forEach((node) => {
+          if (node.children && node.children.length) {
+            sortTreeNodes(node.children);
+          }
+        });
+      };
+
+      sortTreeNodes(roots);
+
+      console.log("[asset3DStore] buildTreeFromCodeGroups 결과 (tree 형식):", {
+        rootCount: roots.length,
+        sample: roots.slice(0, 5),
+      });
+
+      return roots;
+    }
+
+    // 기존 code_groups 형식 처리
     const codeGroups = responseData.code_groups;
     if (!codeGroups) {
-      console.warn("[asset3DStore] codeTree 응답에 code_groups가 없습니다:", rawData);
+      console.warn("[asset3DStore] codeTree 응답에 code_groups 또는 tree가 없습니다:", rawData);
       return [];
     }
 
@@ -513,10 +584,15 @@ export const useAsset3DStore = defineStore("asset3d", () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code_group: codeGroup }),
+        body: JSON.stringify({ 
+          code_group: "PIPE_S",
+          parent_key: "P_VALV"
+        }),
       });
 
-      const treeData = buildTreeFromCodeGroups(response?.response);
+      // API 응답 구조: response.response.data.tree 또는 response.response.tree
+      const responseData = response?.response;
+      const treeData = buildTreeFromCodeGroups(responseData);
       console.log("[asset3DStore] codeTree 응답:", response);
       console.log("[asset3DStore] codeTree 응답 요약:", {
         codeGroup,

@@ -1821,7 +1821,28 @@ export const useProcessStore = defineStore("process", () => {
 
     // 경로 제외 파일명만 저장
     const fileName = file.name.split("/").pop() || file.name;
-    setProcessDetail({ processSymbol: fileName });
+    
+    // 기존 파일명 확인
+    const existingFileName = processDetail.value.processSymbol || "";
+    const isSameFileName = existingFileName && fileName === existingFileName;
+    
+    // 기존 symbolId가 있고 temp_로 시작하지 않으면 변경으로 감지하기 위해 null로 변경
+    // 또는 파일명이 동일한 경우에도 다시 업로드되도록 null로 변경
+    const existingSymbolId = processDetail.value.symbolId;
+    if (
+      (existingSymbolId && 
+       existingSymbolId !== "00000000-0000-0000-0000-000000000000" &&
+       !existingSymbolId.startsWith("temp_")) ||
+      isSameFileName
+    ) {
+      // 기존 공정심볼 파일을 다시 선택한 경우 또는 동일한 파일명을 다시 선택한 경우 - symbolId를 null로 변경하여 변경으로 감지되도록 함
+      setProcessDetail({ 
+        processSymbol: fileName,
+        symbolId: null,
+      });
+    } else {
+      setProcessDetail({ processSymbol: fileName });
+    }
 
     return true;
   };

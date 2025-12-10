@@ -1055,6 +1055,16 @@ const pfdFileInput = ref<HTMLInputElement | null>(null);
 const pidModalFileInput = ref<HTMLInputElement | null>(null);
 const capacityCalculationFileInput = ref<HTMLInputElement | null>(null);
 
+// 메인 정보 초기값 저장 (변경사항 체크용)
+const initialMainInfo = ref<{
+  processType: string | null;
+  subCategory: string | null;
+  processName: string | null;
+  processCode: string | null; // processName 대신 processCode 사용 (코드 값이므로 비교가 정확함)
+  unit_system_code: string | null;
+  description: string;
+} | null>(null);
+
 // P&ID 매핑 관련 상태
 const currentPfdItemForMapping = ref<any>(null);
 const currentPidItemForMapping = ref<any>(null); // P&ID 파일 선택용 참조 변수
@@ -4023,7 +4033,7 @@ const handlePidComponentSave = async () => {
 
     // 변경사항이 없는 경우 메시지 표시 후 종료
     if (!hasDeletions && !hasDataChanges) {
-      alert("변경사항이 없습니다.");
+      alert(t("common.noChanges"));
       return;
     }
 
@@ -6460,7 +6470,7 @@ const handlePfdSave = async () => {
       alert(t("processDetail.pfdSaved"));
     } else {
       console.log("저장할 변경사항이 없습니다.");
-      alert("변경사항이 없습니다.");
+      alert(t("common.noChanges"));
     }
   } catch (error: any) {
     console.error("공정카드 저장 실패:", error);
@@ -7275,11 +7285,7 @@ const handleFormulaSave = async (silent: boolean = false) => {
         console.log("변경사항 없음 메시지:", noChangesMessage);
         // setTimeout을 사용하여 alert를 다음 이벤트 루프에서 실행
         setTimeout(() => {
-          if (noChangesMessage && noChangesMessage.trim()) {
-            alert(noChangesMessage);
-          } else {
-            alert("변경사항이 없습니다.");
-          }
+          alert(t("common.noChanges"));
         }, 0);
       } else {
         console.log("silent 모드이므로 메시지 표시하지 않음");
@@ -7784,7 +7790,11 @@ const handleMainSave = async () => {
       }
 
       // 기본 정보만 저장 처리
-      await saveBasicProcessInfo(processId);
+      const saved = await saveBasicProcessInfo(processId);
+      if (!saved) {
+        // 변경사항이 없어서 저장하지 않음
+        return;
+      }
     }
 
     console.log("기본 정보 저장 완료");
@@ -7973,7 +7983,7 @@ const createNewProcess = async () => {
   }
 };
 // 기본 정보만 저장하는 함수
-const saveBasicProcessInfo = async (processId: string) => {
+const saveBasicProcessInfo = async (processId: string): Promise<boolean> => {
   try {
     console.log("기본 정보 저장 처리 시작");
 
@@ -7981,19 +7991,20 @@ const saveBasicProcessInfo = async (processId: string) => {
 
     // 공정심볼 파일 변경 감지
     const symbolFile = processStore.selectedFiles["processSymbol"];
-    const hasProcessSymbolChanged = symbolFile !== undefined && symbolFile !== null;
-
-    // 심볼 파일 삭제 여부 확인
     const originalSymbolId = processStore.processDetail.originalSymbolId;
     const currentSymbolId = processStore.processDetail.symbolId;
     const currentProcessSymbol = processStore.processDetail.processSymbol;
 
-    // 기존에 심볼 파일이 있었고, 새로운 파일이 선택되지 않았으며, 현재 심볼이 비어있는 경우 삭제로 판단
-    const isSymbolDeleted =
-      originalSymbolId &&
-      originalSymbolId !== "00000000-0000-0000-0000-000000000000" &&
-      !hasProcessSymbolChanged &&
-      (!currentProcessSymbol || currentProcessSymbol.trim() === "");
+    // 공정심볼 파일이 실제로 변경되었는지 확인
+    // 1. 새로운 파일이 선택된 경우 (selectedFiles에 파일이 있고, originalSymbolId와 다른 경우)
+    // 2. 기존 심볼이 삭제된 경우 (originalSymbolId가 있었는데 현재 심볼이 없는 경우)
+    const hasNewSymbolFile = symbolFile !== undefined && symbolFile !== null;
+    const hadOriginalSymbol = originalSymbolId && originalSymbolId !== "00000000-0000-0000-0000-000000000000";
+    const hasCurrentSymbol = currentSymbolId && currentSymbolId !== "00000000-0000-0000-0000-000000000000";
+    
+    // 새로운 파일이 선택되었거나, 기존 심볼이 삭제된 경우에만 변경으로 감지
+    const hasProcessSymbolChanged = hasNewSymbolFile && (!hadOriginalSymbol || originalSymbolId !== currentSymbolId);
+    const isSymbolDeleted = hadOriginalSymbol && !hasNewSymbolFile && !hasCurrentSymbol && (!currentProcessSymbol || currentProcessSymbol.trim() === "");
 
     if (hasProcessSymbolChanged) {
       hasAnyChanges = true;
@@ -8014,25 +8025,60 @@ const saveBasicProcessInfo = async (processId: string) => {
 
     // 기본 정보 변경사항 감지 (단위, 공정구분, 공정 중분류, 공정명 등)
     const currentProcessDetail = processStore.processDetail;
-    if (currentProcessDetail) {
-      // 기본 정보가 입력되어 있으면 변경사항이 있다고 간주
+    if (currentProcessDetail && initialMainInfo.value) {
+      // 초기값과 현재값 비교
+      const hasProcessTypeChanged = 
+        currentProcessDetail.processType !== initialMainInfo.value.processType;
+      const hasSubCategoryChanged = 
+        currentProcessDetail.subCategory !== initialMainInfo.value.subCategory;
+      // processName은 라벨 값일 수 있으므로 processCode로 비교
+      const hasProcessNameChanged = 
+        (currentProcessDetail.processCode || currentProcessDetail.processName) !== 
+        (initialMainInfo.value.processCode || initialMainInfo.value.processName);
+      const hasUnitChanged = 
+        currentProcessDetail.unit_system_code !== initialMainInfo.value.unit_system_code;
+      const hasDescriptionChanged = 
+        (currentProcessDetail.description || "") !== (initialMainInfo.value.description || "");
+      
       if (
-        currentProcessDetail.processNm ||
-        currentProcessDetail.processType ||
-        currentProcessDetail.subCategory ||
-        currentProcessDetail.unit ||
-        currentProcessDetail.processName
+        hasProcessTypeChanged ||
+        hasSubCategoryChanged ||
+        hasProcessNameChanged ||
+        hasUnitChanged ||
+        hasDescriptionChanged
       ) {
         hasAnyChanges = true;
-        console.log("기본 정보 변경사항 감지됨");
+        console.log("기본 정보 변경사항 감지됨:", {
+          processType: hasProcessTypeChanged,
+          subCategory: hasSubCategoryChanged,
+          processName: hasProcessNameChanged,
+          unit: hasUnitChanged,
+          description: hasDescriptionChanged,
+        });
+      } else {
+        console.log("기본 정보 변경사항 없음");
+      }
+    } else if (!initialMainInfo.value) {
+      // 초기값이 없는 경우 (등록 모드이거나 초기 로드 전) - 기존 로직 유지
+      if (
+        currentProcessDetail?.processNm ||
+        currentProcessDetail?.processType ||
+        currentProcessDetail?.subCategory ||
+        currentProcessDetail?.unit ||
+        currentProcessDetail?.processName
+      ) {
+        hasAnyChanges = true;
+        console.log("기본 정보 변경사항 감지됨 (초기값 없음)");
       }
     }
 
     // 변경사항이 있는지 확인
     if (!hasAnyChanges) {
       console.log("저장할 변경사항이 없습니다.");
-      alert(t("processDetail.noContentToSave"));
-      return;
+      setTimeout(() => {
+        alert(t("common.noChanges"));
+      }, 0);
+      return false; // 변경사항 없음
     }
 
     // 공정명 정보 로깅
@@ -8101,7 +8147,21 @@ const saveBasicProcessInfo = async (processId: string) => {
           processStore.clearProcessSymbolPreview();
         }
 
+        // 저장 성공 후 초기값 업데이트 (다음 저장 시 변경사항 체크를 위해)
+        if (initialMainInfo.value) {
+          initialMainInfo.value = {
+            processType: processStore.processDetail.processType,
+            subCategory: processStore.processDetail.subCategory,
+            processName: processStore.processDetail.processName,
+            processCode: processStore.processDetail.processCode, // 코드 값으로 비교
+            unit_system_code: processStore.processDetail.unit_system_code,
+            description: processStore.processDetail.description || "",
+          };
+          console.log("메인 정보 초기값 업데이트 완료 (저장 후):", initialMainInfo.value);
+        }
+
         alert(t("processDetail.basicInfoSaved"));
+        return true; // 저장 성공
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
         throw updateError;
@@ -8158,11 +8218,25 @@ const saveBasicProcessInfo = async (processId: string) => {
           });
         }
 
-        alert(t("processDetail.basicInfoSaved"));
+        // 저장 성공 후 초기값 업데이트 (다음 저장 시 변경사항 체크를 위해)
+        if (initialMainInfo.value) {
+          initialMainInfo.value = {
+            processType: processStore.processDetail.processType,
+            subCategory: processStore.processDetail.subCategory,
+            processName: processStore.processDetail.processName,
+            processCode: processStore.processDetail.processCode, // 코드 값으로 비교
+            unit_system_code: processStore.processDetail.unit_system_code,
+            description: processStore.processDetail.description || "",
+          };
+          console.log("메인 정보 초기값 업데이트 완료 (저장 후):", initialMainInfo.value);
+        }
 
         // 기본 정보 저장 후 공정카드 데이터 로드
         await refreshPfdData();
         console.log("공정카드 데이터 로드 완료");
+
+        alert(t("processDetail.basicInfoSaved"));
+        return true; // 저장 성공
       } catch (updateError: any) {
         console.error("기본 정보 업데이트 실패:", updateError);
         throw updateError;
@@ -8172,6 +8246,8 @@ const saveBasicProcessInfo = async (processId: string) => {
     console.error("기본 정보 저장 실패:", error);
     throw error;
   }
+  
+  return false; // 기본적으로 false 반환 (이 코드는 실행되지 않아야 함)
 };
 
 // 메인 업데이트 함수
@@ -8806,7 +8882,7 @@ const handleUpdate = async (silent: boolean = false) => {
     } else {
       // silent가 true이면 메시지 표시하지 않음 (삭제 등의 경우)
       if (!silent) {
-        alert("변경사항이 없습니다.");
+        alert(t("common.noChanges"));
       }
     }
   } catch (error: any) {
@@ -11091,12 +11167,30 @@ onMounted(async () => {
       console.log("props.processId:", props.processId);
       console.log("props.processCode:", props.processCode);
       console.log("props.isRegisterMode:", props.isRegisterMode);
+      
+      // 팝업이 열릴 때 selectedFiles 초기화 (이전 파일 선택 상태 제거)
+      processStore.setSelectedFiles({});
+      console.log("selectedFiles 초기화 완료");
+      
       console.log("searchProcessById 호출 전 - props.processId:", props.processId);
       await processStore.searchProcessById(props.processId);
       console.log("searchProcessById 호출 완료");
       console.log("공정 상세 정보 로드 완료:", processStore.processDetail);
       console.log("공정 타입:", processStore.processDetail.processType);
       console.log("공정 중분류:", processStore.processDetail.subCategory);
+      
+      // 메인 정보 초기값 저장 (변경사항 체크용)
+      // processName은 라벨 값일 수 있으므로 processCode를 사용하여 비교
+      initialMainInfo.value = {
+        processType: processStore.processDetail.processType,
+        subCategory: processStore.processDetail.subCategory,
+        processName: processStore.processDetail.processName,
+        processCode: processStore.processDetail.processCode, // 코드 값으로 비교
+        unit_system_code: processStore.processDetail.unit_system_code,
+        description: processStore.processDetail.description || "",
+      };
+      console.log("메인 정보 초기값 저장 완료:", initialMainInfo.value);
+      
       // 공정 상세 정보 로드 완료
 
       // 공정심볼 파일명 표시 확인

@@ -683,9 +683,11 @@
         :selectable="false"
         :max-height="pidComponentTableMaxHeight"
         :sticky-header="pidComponentTableMaxHeight !== 'auto'"
+        @row-click="handlePidComponentRowClick"
       >
         <template #cell-no="{ item, index }">
-          <span>{{ item.no || index + 1 }}</span>
+          <span v-if="!item._isChild">{{ item.no || index + 1 }}</span>
+          <span v-else style="color: #999;">-</span>
         </template>
         <template #cell-pid_id="{ item }">
           <span class="pid-component-text">
@@ -693,27 +695,43 @@
           </span>
         </template>
         <template #cell-category="{ item }">
-          <span class="pid-component-text">
-            {{ item.category || "-" }}
+          <span 
+            class="pid-component-text"
+            :class="{ 'child-row': item._isChild }"
+          >
+            {{ item._isChild ? "" : (item.category || "-") }}
           </span>
         </template>
         <template #cell-smallCategory="{ item }">
-          <span class="pid-component-text">
-            {{ item.smallCategory || "-" }}
+          <span 
+            class="pid-component-text"
+            :class="{ 'child-row': item._isChild }"
+          >
+            {{ item._isChild ? "" : (item.smallCategory || "-") }}
           </span>
         </template>
         <template #cell-middleCategory="{ item }">
-          <span class="pid-component-text">
-            {{ item.middleCategory || "-" }}
+          <span 
+            class="pid-component-text"
+            :class="{ 'child-row': item._isChild }"
+          >
+            {{ item._isChild ? "" : (item.middleCategory || "-") }}
           </span>
         </template>
         <template #cell-equipmentType="{ item }">
-          <span class="pid-component-text">
+          <span 
+            class="pid-component-text"
+            :class="{ 'child-row': item._isChild }"
+            :style="{ paddingLeft: item._isChild ? '20px' : '0' }"
+          >
             {{ item.equipmentType || "-" }}
           </span>
         </template>
         <template #cell-total_quantity="{ item }">
-          <span class="pid-component-text">
+          <span 
+            class="pid-component-text"
+            :class="{ 'child-row': item._isChild }"
+          >
             {{ item.total_quantity ?? "-" }}
           </span>
         </template>
@@ -3146,6 +3164,95 @@ const loadPidComponentDataInternal = async (
   }
 };
 
+// P&ID Components 그리드 행 클릭 핸들러
+const handlePidComponentRowClick = (item: any, index: number) => {
+  console.log("P&ID Components 행 클릭:", item, index);
+  
+  // component_info.components 배열 확인
+  if (!item.component_info || !item.component_info.components || !Array.isArray(item.component_info.components)) {
+    console.log("component_info.components가 없거나 배열이 아닙니다.");
+    return;
+  }
+
+  const components = item.component_info.components;
+  console.log("하위 components:", components);
+
+  if (components.length === 0) {
+    console.log("하위 components가 없습니다.");
+    return;
+  }
+
+  // 이미 하위 트리가 열려있는지 확인
+  const currentIndex = pidComponentList.value.findIndex((row) => row.id === item.id);
+  if (currentIndex === -1) {
+    console.log("클릭한 행을 찾을 수 없습니다.");
+    return;
+  }
+
+  // 다음 행이 하위 트리인지 확인
+  const nextRow = pidComponentList.value[currentIndex + 1];
+  if (nextRow && nextRow._isChild && nextRow._parentId === item.id) {
+    // 이미 하위 트리가 열려있으면 닫기
+    console.log("하위 트리 닫기");
+    let removeCount = 0;
+    for (let i = currentIndex + 1; i < pidComponentList.value.length; i++) {
+      if (pidComponentList.value[i]._isChild && pidComponentList.value[i]._parentId === item.id) {
+        removeCount++;
+      } else {
+        break;
+      }
+    }
+    pidComponentList.value.splice(currentIndex + 1, removeCount);
+    // 순번 재정렬
+    updatePidComponentRowNumbers();
+    return;
+  }
+
+  // 하위 트리 데이터 생성
+  const childRows = components.map((component: any, childIndex: number) => {
+    return {
+      id: `child_${item.id}_${childIndex}_${Date.now()}`,
+      _isChild: true,
+      _parentId: item.id,
+      no: 0, // 순번은 재정렬 시 설정
+      // 하위 트리는 빈 값으로 설정
+      category: "",
+      smallCategory: "",
+      middleCategory: "",
+      equipmentType: component.component_type || "-", // component_type 출력
+      total_quantity: component.total_quantity ?? "-", // total_quantity 출력
+      input_poc: "",
+      spare_quantity: 0,
+      _isLoadedFromServer: false,
+      _middleCategoryOptions: [],
+      _smallCategoryOptions: [],
+      _equipmentTypeOptions: [],
+    };
+  });
+
+  // 클릭한 행 바로 아래에 하위 트리 데이터 삽입
+  pidComponentList.value.splice(currentIndex + 1, 0, ...childRows);
+  
+  // 순번 재정렬
+  updatePidComponentRowNumbers();
+  
+  console.log("하위 트리 데이터 삽입 완료:", childRows.length, "개");
+};
+
+// P&ID Components 그리드 순번 재정렬 함수
+const updatePidComponentRowNumbers = () => {
+  let rowNumber = 1;
+  pidComponentList.value.forEach((row) => {
+    if (row._isChild) {
+      // 하위 트리는 순번을 표시하지 않음
+      row.no = 0;
+    } else {
+      row.no = rowNumber;
+      rowNumber++;
+    }
+  });
+};
+
 // P&ID 컴포넌트 구분 변경 핸들러
 const handlePidComponentCategoryChange = async (item: any) => {
   console.log("P&ID 컴포넌트 구분 변경:", item.category, "- 행 ID:", item.id);
@@ -3629,30 +3736,8 @@ const hasMappingPidChanges = () => {
 };
 
 const hasPidComponentChanges = () => {
-  // 빈 배열 체크
-  const initial = initialPidComponentList.value || [];
-  const current = pidComponentList.value || [];
-
-  if (initial.length === 0 && current.length === 0) {
-    return false;
-  }
-
-  // 데이터 정규화 함수
-  const normalize = (list: any[]) =>
-    list.map((item) => ({
-      pid_id: item.pid_id ?? null,
-      category: item.category ?? null,
-      middleCategory: item.middleCategory ?? null,
-      smallCategory: item.smallCategory ?? null,
-      equipmentType: item.equipmentType ?? null,
-      spare_quantity: Number(item.spare_quantity ?? 0),
-      // input_poc와 total_quantity는 읽기 전용이므로 변경사항 확인에서 제외
-    }));
-
-  const normalizedInitial = normalize(initial);
-  const normalizedCurrent = normalize(current);
-
-  return JSON.stringify(normalizedInitial) !== JSON.stringify(normalizedCurrent);
+  // P&ID Components 그리드 수정은 변경사항 체크에서 제외
+  return false;
 };
 
 // 컴포넌트 섹션 닫기
@@ -12009,6 +12094,12 @@ watch(
   background-color: #6c757d;
   border-color: #6c757d;
   color: #ffffff !important;
+}
+
+/* P&ID Components 하위 트리 행 스타일 */
+.pid-component-section .pid-component-text.child-row {
+  color: #666;
+  font-style: italic;
 }
 
 /* 계산식 이름과 다운로드 버튼 컨테이너 */

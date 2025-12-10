@@ -3939,12 +3939,26 @@ const hasPresetChanges = (): boolean => {
     initialUniqueKeys.add(row.uniqueKey);
   });
 
-  // 항목 추가/삭제 체크 (순서 변경은 체크하지 않음)
+  // 항목 추가/삭제 체크
   const itemsChanged = currentRowsOrder.length !== initial.tableRowsOrder.length ||
     currentRowsOrder.some((current) => !initialUniqueKeys.has(current.uniqueKey)) ||
     initial.tableRowsOrder.some((initial) => !currentRowsOrder.find((current) => current.uniqueKey === initial.uniqueKey));
 
-  return basicFieldsChanged || itemsChanged;
+  // 순서 변경 체크: detail_id를 기준으로 순서 비교
+  let orderChanged = false;
+  if (currentRowsOrder.length === initial.tableRowsOrder.length && !itemsChanged) {
+    // 항목 수가 같고 추가/삭제가 없는 경우에만 순서 변경 체크
+    for (let i = 0; i < currentRowsOrder.length; i++) {
+      const currentDetailId = currentRowsOrder[i].detail_id;
+      const initialDetailId = initial.tableRowsOrder[i].detail_id;
+      if (currentDetailId !== initialDetailId) {
+        orderChanged = true;
+        break;
+      }
+    }
+  }
+
+  return basicFieldsChanged || itemsChanged || orderChanged;
 };
 
 // 부모 컴포넌트에서 접근할 수 있도록 expose

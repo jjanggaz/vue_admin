@@ -131,9 +131,22 @@
         :selection-mode="'multiple'"
         :show-select-all="isSelectionGridEnabled"
         :selected-items="selectedRows"
+        :draggable="isSelectionGridEnabled"
+        :draggable-cell-key="'no'"
         @selection-change="handleSelectionChange"
+        @drop="handleDragDrop"
         row-key="id"
       >
+        <template #cell-no="{ item, index }">
+          <div
+            class="drag-handle"
+            :draggable="isSelectionGridEnabled"
+            @dragstart.stop="handleNoCellDragStart($event, item, index)"
+            style="cursor: move; user-select: none;"
+          >
+            {{ item.no || index + 1 }}
+          </div>
+        </template>
         <template #cell-pipeCategory="{ item }">
           <span class="table-text">{{ item.pipeCategory || "-" }}</span>
         </template>
@@ -275,7 +288,7 @@
           <button type="button" class="btn-reset" :disabled="!isSelectionGridEnabled" @click="handleResetSelectionFilter">
             {{ t("asset3D.resetFilter") }}
           </button>
-          <button type="button" class="btn-add-selection" :disabled="!isSelectionGridEnabled" @click="handleAddSelection">
+          <button type="button" class="btn-add-selection" :disabled="!isSelectionGridEnabled || isAddingSelection" @click.stop="handleAddSelection">
             {{ t("asset3D.addSelectedItems") }}
           </button>
         </div>
@@ -414,6 +427,7 @@
                   class="tree-node-row"
                   :class="{
                     'is-selected': manualValveSelectedCode === node.code_key,
+                    'is-parent': node.children && node.children.length > 0,
                     warning: node.children && node.children.length > 0,
                   }"
                   @click.stop="handleTreeSelect(activeManualValveRow, node)"
@@ -484,6 +498,7 @@
                   class="tree-node-row"
                   :class="{
                     'is-selected': filterSelectedCode === node.code_key,
+                    'is-parent': node.children && node.children.length > 0,
                     warning: node.children && node.children.length > 0,
                   }"
                   @click.stop="handleFilterTreeSelect(node)"
@@ -657,6 +672,7 @@ const materialListLoading = ref(false);
 const materialListError = ref<string | null>(null);
 const materialListItems = ref<MaterialListItem[]>([]);
 const selectedMaterialItems = ref<MaterialListItem[]>([]);
+const isAddingSelection = ref(false); // 선택 항목 추가 중복 실행 방지 플래그
 const materialCurrentPage = ref(1);
 const materialTotalPages = ref(1);
 const materialTotalItems = ref(0);
@@ -1040,8 +1056,10 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
         const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
 
-        return {
-          sequence_order: row.no,
+        // 순번(no)을 sequence_order로 전달
+        const sequenceOrder = row.no;
+        
+        const requestData: Record<string, unknown> = {
           preset_category: originalPipeCategoryCode || "",
           // 피팅방식 컬럼은 세부구분 label로 전달받아 그리드에 표시된 값(fittingType)을 그대로 저장
           preset_subcategory: row.fittingType || originalSubCategoryCode || row.subCategory || "",
@@ -1051,7 +1069,10 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
           equipment_code: equipmentCode,
           equipment_id: equipmentId,
           remarks: "",
+          sequence_order: sequenceOrder, // 순번(no)을 sequence_order로 전달
         };
+        
+        return requestData;
       });
 
       const addResponses = await Promise.all(
@@ -1124,8 +1145,58 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
     console.log("삭제된 항목 수:", deletedDetailIds.length);
     console.log("========================================");
 
-    // 추가된 항목이 없고 삭제된 항목도 없으면 저장할 것이 없음
-    if (addedRows.length === 0 && deletedDetailIds.length === 0) {
+    // 기존 항목의 변경 감지 (필드 변경 또는 sequence_order 변경)
+    const updatedRows: Array<{ row: TableRow; detailId: string }> = [];
+    
+    if (initialPresetData.value && initialPresetData.value.tableRowsData) {
+      const initialRowsMap = new Map<string, TableRow>();
+      initialPresetData.value.tableRowsData.forEach((initialRow) => {
+        const detailId = (initialRow as Record<string, unknown>).detail_id as string | null;
+        if (detailId) {
+          initialRowsMap.set(detailId, initialRow);
+        }
+      });
+
+      tableRows.value.forEach((row) => {
+        const detailId = (row as Record<string, unknown>).detail_id as string | null;
+        if (detailId && initialRowsMap.has(detailId)) {
+          const initialRow = initialRowsMap.get(detailId);
+          if (!initialRow) return;
+          
+          // 필드 변경 감지
+          const hasFieldChanged = 
+            String(initialRow.diameter || "").trim() !== String(row.diameter || "").trim() ||
+            String(initialRow.diameterAfter || "").trim() !== String(row.diameterAfter || "").trim() ||
+            String(initialRow.fittingType || "").trim() !== String(row.fittingType || "").trim() ||
+            String(initialRow.code || "").trim() !== String(row.code || "").trim() ||
+            String((initialRow as Record<string, unknown>).equipment_id || "").trim() !== String((row as Record<string, unknown>).equipment_id || "").trim();
+          
+          // 순번 변경 감지: 초기 sequence_order와 현재 화면 순번(no) 비교
+          const initialSequenceOrder = (initialRow as Record<string, unknown>).sequence_order as number | null | undefined;
+          const initialSeq = initialSequenceOrder !== null && initialSequenceOrder !== undefined ? initialSequenceOrder : null;
+          const currentNo = row.no; // 화면 순번 (일련번호)
+          const hasSequenceOrderChanged = initialSeq !== currentNo;
+          
+          // 필드 변경 또는 순번 변경이 있는 경우
+          if (hasFieldChanged || hasSequenceOrderChanged) {
+            updatedRows.push({
+              row,
+              detailId,
+            });
+          }
+        }
+      });
+    }
+
+    console.log("========================================");
+    console.log("[Asset3DPreset] 변경된 항목:", updatedRows.length, "개");
+    updatedRows.forEach((item, index) => {
+      console.log(`[변경 ${index + 1}] detail_id: ${item.detailId}`);
+    });
+    console.log("========================================");
+
+    // 추가된 항목이 없고 삭제된 항목도 없고 sequence_order 변경도 없으면 저장할 것이 없음
+    if (addedRows.length === 0 && deletedDetailIds.length === 0 && updatedRows.length === 0) {
       if (!silent) {
         alert(t("asset3D.error.noChangedItems"));
       }
@@ -1134,7 +1205,60 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
 
     const responses: any[] = [];
 
-    // 1. 삭제된 항목 처리 (DELETE API 호출)
+    // 1. 변경된 항목 처리 (PATCH API 호출) - 먼저 처리하여 중복 방지
+    if (updatedRows.length > 0) {
+      console.log("========================================");
+      console.log("[Asset3DPreset] 변경할 항목:", updatedRows.length, "개");
+      console.log("========================================");
+
+      const updateResponses = await Promise.all(
+        updatedRows.map(async (item, index) => {
+          try {
+            const row = item.row;
+            const equipmentId = (row as Record<string, unknown>).equipment_id || null;
+            const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
+            const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
+            const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
+            const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
+            const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+            // 순번(no)을 sequence_order로 전달
+            const currentSequenceOrder = row.no;
+
+            const requestData: Record<string, unknown> = {
+              preset_category: originalPipeCategoryCode || "",
+              preset_subcategory: row.fittingType || originalSubCategoryCode || row.subCategory || "",
+              diameter_before: diameterBefore || "",
+              diameter_after: diameterAfter || "",
+              length: "",
+              equipment_code: equipmentCode,
+              equipment_id: equipmentId,
+              remarks: "",
+              sequence_order: currentSequenceOrder, // 순번(no)을 sequence_order로 전달
+            };
+
+            const response = await request(
+              `/api/asset3D/preset/${currentPresetId.value}/detail/${item.detailId}`,
+              undefined,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
+            console.log(`[변경 ${index + 1}] 응답:`, response);
+            return response;
+          } catch (error) {
+            console.error(`[변경 ${index + 1}] 실패:`, error);
+            throw error;
+          }
+        })
+      );
+      responses.push(...updateResponses);
+    }
+
+    // 2. 삭제된 항목 처리 (DELETE API 호출)
     if (deletedDetailIds.length > 0) {
       console.log("========================================");
       console.log("[Asset3DPreset] 삭제할 항목:", deletedDetailIds);
@@ -1169,13 +1293,32 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         })
       );
       responses.push(...deleteResponses);
+      
+      // 삭제 성공 후 그리드 새로고침 (sequence_order 중복 방지)
+      const failedDeletes = deleteResponses.filter((res) => !res || !res.success);
+      if (failedDeletes.length === 0 && props.isEditMode === true && currentPresetId.value) {
+        await reloadPresetDetailData(currentPresetId.value);
+      }
     }
 
-    // 2. 추가된 항목 처리 (POST API 호출)
+    // 3. 추가된 항목 처리 (POST API 호출) - sequence_order 변경 후 처리
     if (addedRows.length > 0) {
       console.log("========================================");
       console.log("[Asset3DPreset] 추가할 항목:", addedRows.length, "개");
       console.log("========================================");
+
+      // 기존 항목들의 sequence_order를 확인하여 중복 방지
+      // 현재 그리드에서 detail_id가 있는 항목들의 sequence_order 확인
+      const existingSequenceOrders = new Set<number>();
+      tableRows.value.forEach((row) => {
+        const detailId = (row as Record<string, unknown>).detail_id as string | null;
+        if (detailId) {
+          const seqOrder = row.no;
+          if (seqOrder > 0) {
+            existingSequenceOrders.add(seqOrder);
+          }
+        }
+      });
 
       const addRequests = addedRows.map((row) => {
         // 원본 데이터에서 equipment_id와 equipment_code 가져오기
@@ -1190,8 +1333,15 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
         const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
 
-        return {
-          sequence_order: row.no,
+        // 순번(no)을 sequence_order로 전달
+        // 단, 기존 항목과 중복되는 경우 서버에서 자동 할당하도록 제외
+        let sequenceOrder = row.no;
+        if (existingSequenceOrders.has(sequenceOrder)) {
+          // 중복되는 경우 sequence_order를 전송하지 않아 서버에서 자동 할당
+          sequenceOrder = 0; // 0으로 설정하여 나중에 제외
+        }
+        
+        const requestData: Record<string, unknown> = {
           preset_category: originalPipeCategoryCode || "",
           // 피팅방식 컬럼은 세부구분 label로 전달받아 그리드에 표시된 값(fittingType)을 그대로 저장
           preset_subcategory: row.fittingType || originalSubCategoryCode || row.subCategory || "",
@@ -1202,6 +1352,13 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
           equipment_id: equipmentId,
           remarks: "",
         };
+        
+        // sequence_order가 중복되지 않는 경우에만 전송
+        if (sequenceOrder > 0 && !existingSequenceOrders.has(sequenceOrder)) {
+          requestData.sequence_order = sequenceOrder;
+        }
+        
+        return requestData;
       });
 
       addRequests.forEach((req, index) => {
@@ -1364,9 +1521,12 @@ const reloadPresetDetailData = async (presetId: string) => {
             }
           }
 
+          // sequence_order 저장 (화면 순번과 별개)
+          const sequenceOrder = (detailItem as Record<string, unknown>).sequence_order as number | null | undefined;
+          
           const newRow: TableRow = {
             id: nextRowId++,
-            no: detailItem.sequence_order || 0, // API 응답의 sequence_order 그대로 사용
+            no: 0, // 임시값, 정렬 후 updateRowNumbers()에서 일련번호로 설정됨
             pipeCategory: pipeCategoryLabel,
             subCategory: subCategoryLabel,
             fittingType: subCategoryLabel, // 세부구분을 피팅방식에도 표시
@@ -1386,6 +1546,10 @@ const reloadPresetDetailData = async (presetId: string) => {
             _originalPipeCategoryCode: pipeCategoryCode,
             _originalSubCategoryCode: subCategoryCode,
             ...detailItem,
+            // detail_id가 없으면 null로 히든 변수로 추가
+            detail_id: detailItem.detail_id || null,
+            // sequence_order 저장
+            sequence_order: sequenceOrder ?? null,
           };
 
           tableRows.value.push(newRow);
@@ -1396,12 +1560,16 @@ const reloadPresetDetailData = async (presetId: string) => {
           }
         }
 
-        // sequence_order 기준으로 정렬 (API 응답 순서 유지)
+        // sequence_order 기준으로 정렬
         tableRows.value.sort((a, b) => {
-          const orderA = (a as any).sequence_order || a.no || 0;
-          const orderB = (b as any).sequence_order || b.no || 0;
-          return orderA - orderB;
+          const orderA = (a as Record<string, unknown>).sequence_order as number | null | undefined;
+          const orderB = (b as Record<string, unknown>).sequence_order as number | null | undefined;
+          const numA = orderA !== null && orderA !== undefined ? orderA : 0;
+          const numB = orderB !== null && orderB !== undefined ? orderB : 0;
+          return numA - numB;
         });
+        // 정렬 후 화면 순번(no)을 일련번호로 업데이트
+        updateRowNumbers();
 
         console.log("[Asset3DPresetTab] 선택 항목 그리드 데이터 로드 완료:", tableRows.value.length, "개 항목");
         console.log("[Asset3DPresetTab] 초기 로드된 detail_id:", Array.from(initialLoadedDetailIds.value));
@@ -1421,9 +1589,61 @@ const reloadPresetDetailData = async (presetId: string) => {
 
 // 번호 재정렬 함수
 const updateRowNumbers = () => {
+  // 화면 순번(no)은 sequence_order와 관계없이 일련번호로 표시
   tableRows.value.forEach((row, index) => {
     row.no = index + 1;
   });
+};
+
+// 순번 셀 드래그 시작
+const handleNoCellDragStart = (event: DragEvent, item: TableRow, index: number) => {
+  if (!isSelectionGridEnabled.value) return;
+  
+  // DataTable의 드래그 이벤트를 트리거하기 위해 전역 상태에 저장
+  (window as any).__draggedRowIndex = index;
+  (window as any).__draggedRowItem = item;
+  
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/html", String(index));
+    
+    // 드래그 이미지 커스터마이징: 행 전체를 보이도록
+    const rowElement = (event.target as HTMLElement).closest('tr') as HTMLElement;
+    if (rowElement) {
+      const dragImage = rowElement.cloneNode(true) as HTMLElement;
+      dragImage.style.position = 'absolute';
+      dragImage.style.top = '-9999px';
+      dragImage.style.width = `${rowElement.offsetWidth}px`;
+      dragImage.style.opacity = '0.8';
+      dragImage.style.backgroundColor = '#e3f1fa';
+      dragImage.style.border = '2px solid #2196F3';
+      document.body.appendChild(dragImage);
+      event.dataTransfer.setDragImage(dragImage, 0, 0);
+      setTimeout(() => {
+        if (document.body.contains(dragImage)) {
+          document.body.removeChild(dragImage);
+        }
+      }, 0);
+    }
+  }
+};
+
+// 드래그 앤 드롭 처리
+const handleDragDrop = (
+  _draggedItem: TableRow,
+  draggedIndex: number,
+  _targetItem: TableRow,
+  targetIndex: number
+) => {
+  if (draggedIndex === targetIndex) return;
+
+  // 로컬 배열에서 순서 변경
+  const rows = [...tableRows.value];
+  const [movedRow] = rows.splice(draggedIndex, 1);
+  rows.splice(targetIndex, 0, movedRow);
+
+  tableRows.value = rows;
+  updateRowNumbers();
 };
 
 // 선택 변경 핸들러
@@ -2106,12 +2326,30 @@ const expandFilterPath = (codeKey: string, exclusive = false) => {
 
 // 선택 항목 추가 (자재 리스트에서 선택한 항목을 선택 항목 그리드에 순차 추가)
 const handleAddSelection = () => {
+  // 중복 실행 방지
+  if (isAddingSelection.value) {
+    console.log("[Asset3DPresetTab] 선택 항목 추가 중복 실행 방지");
+    return;
+  }
+
   if (selectedMaterialItems.value.length === 0) {
     alert(t("asset3D.error.selectItemsFromMaterialList"));
     return;
   }
 
-  // 세부구분 값 검증 (수동 밸브인 경우 제외)
+  // 실행 시작
+  isAddingSelection.value = true;
+
+  // materialListData에 실제로 존재하는 항목만 필터링 (try 블록 밖에서 정의)
+  const materialListDataIds = new Set(materialListData.value.map(item => item.id));
+  const validSelectedItems = selectedMaterialItems.value.filter(item => materialListDataIds.has(item.id));
+  
+  console.log("[Asset3DPresetTab] 유효한 선택 항목 수:", validSelectedItems.length, "전체 선택 항목 수:", selectedMaterialItems.value.length);
+  console.log("[Asset3DPresetTab] 선택된 항목 ID:", selectedMaterialItems.value.map(item => item.id));
+  console.log("[Asset3DPresetTab] materialListData ID:", Array.from(materialListDataIds));
+
+  try {
+    // 세부구분 값 검증 (수동 밸브인 경우 제외)
   if (selectionFilter.value.pipeCategory === "P_VALV") {
     // 수동 밸브인 경우: 세부구분 필수 선택 제외
     // 검증 없이 진행
@@ -2119,11 +2357,13 @@ const handleAddSelection = () => {
     // 다른 구분인 경우: 셀렉트에서 선택한 세부구분 필요
     if (!selectionFilter.value.fittingType) {
       alert(t("asset3D.error.selectSubCategory"));
+      isAddingSelection.value = false; // 에러 발생 시 플래그 해제
       return;
     }
   } else {
     // 구분이 선택되지 않은 경우
     alert(t("asset3D.error.selectCategory"));
+    isAddingSelection.value = false; // 에러 발생 시 플래그 해제
     return;
   }
 
@@ -2137,10 +2377,11 @@ const handleAddSelection = () => {
     maxNo = Math.max(...noValues);
   }
 
-  console.log("[Asset3DPresetTab] 기존 최대 순번:", maxNo, "기존 행 개수:", tableRows.value.length, "신규 행 개수:", selectedMaterialItems.value.length);
+  console.log("[Asset3DPresetTab] 기존 최대 순번:", maxNo, "기존 행 개수:", tableRows.value.length, "신규 행 개수:", validSelectedItems.length);
 
   // 선택된 자재 리스트 항목들을 선택 항목 그리드에 순차 추가 (중복 허용)
-  selectedMaterialItems.value.forEach((materialItem, index) => {
+  // validSelectedItems는 이미 필터링된 항목
+  validSelectedItems.forEach((materialItem, index) => {
     // 원본 데이터에서 equipment_id와 equipment_code 가져오기
     const equipmentId = (materialItem as Record<string, unknown>).equipment_id || null;
     const equipmentCode = (materialItem as Record<string, unknown>).equipment_code || materialItem.code || "";
@@ -2167,9 +2408,9 @@ const handleAddSelection = () => {
       }
     }
 
-    // materialItemWithoutNo에서 pipeType 제거 (배관유형 항목 제외)
+    // materialItemWithoutNo에서 pipeType과 sequence_order 제거 (배관유형 항목 및 sequence_order 제외)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pipeType: _pipeType, ...materialItemWithoutNoAndPipeType } = materialItemWithoutNo;
+    const { pipeType: _pipeType, sequence_order: _sequenceOrder, ...materialItemWithoutNoAndPipeType } = materialItemWithoutNo;
 
     // model_file_info에서 file_name과 download_url 추출
     let modelFileName = "";
@@ -2245,6 +2486,17 @@ const handleAddSelection = () => {
   
   // 자재 리스트 선택 초기화
   selectedMaterialItems.value = [];
+  
+  console.log("[Asset3DPresetTab] 선택 항목 추가 완료. 추가된 행 수:", validSelectedItems.length);
+  
+  // 실행 완료
+  isAddingSelection.value = false;
+  } catch (error) {
+    // 에러 발생 시에도 플래그 해제
+    console.error("[Asset3DPresetTab] 선택 항목 추가 중 오류:", error);
+    isAddingSelection.value = false;
+    throw error;
+  }
 };
 
 // 선택 항목 삭제
@@ -2527,7 +2779,17 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
 
 // 자재 리스트 선택 변경 핸들러
 const handleMaterialSelectionChange = (items: MaterialListItem[]) => {
-  selectedMaterialItems.value = items;
+  // materialListData에 실제로 존재하는 항목만 필터링
+  // materialListData는 computed로 매번 새로운 객체를 생성하므로,
+  // id를 기준으로 실제 데이터와 매칭
+  const materialListDataIds = new Set(materialListData.value.map(item => item.id));
+  selectedMaterialItems.value = items.filter(item => materialListDataIds.has(item.id));
+  
+  console.log("[Asset3DPresetTab] 선택 변경:", {
+    "받은 항목 수": items.length,
+    "필터링 후 항목 수": selectedMaterialItems.value.length,
+    "materialListData 항목 수": materialListData.value.length,
+  });
 };
 
 // 자재 리스트 페이지 변경 핸들러
@@ -3570,12 +3832,38 @@ interface InitialPresetData {
   masterDiameterValue: number;
   tableRowsCount: number;
   hasThumbnailFile: boolean;
+  tableRowsOrder: Array<{ uniqueKey: string; detail_id: string | null; sequence_order: number | null }>;
+  tableRowsData: TableRow[]; // 전체 행 데이터 저장 (변경 감지용)
 }
 
 const initialPresetData = ref<InitialPresetData | null>(null);
 
 // 초기값 저장 함수
 const saveInitialPresetData = () => {
+  // tableRows의 순서 정보 저장 (detail_id만 저장, sequence_order는 서버 값 유지)
+  // 순번은 화면상 일련번호로만 표시되며, sequence_order와 별개
+  const tableRowsOrder = tableRows.value.map((row, index) => {
+    const detailId = (row as Record<string, unknown>).detail_id as string | null;
+    const equipmentId = (row as Record<string, unknown>).equipment_id as string | null;
+    // sequence_order는 서버에서 받은 값 그대로 유지 (화면상 순번과 별개)
+    const sequenceOrder = (row as Record<string, unknown>).sequence_order as number | null;
+    
+    // 고유 식별자: detail_id가 있으면 detail_id, 없으면 equipment_id 사용
+    // equipment_id도 없으면 임시 ID 생성 (등록 모드에서 새로 추가된 항목)
+    const uniqueKey = detailId || equipmentId || `temp_${index}_${Date.now()}`;
+    
+    return {
+      uniqueKey,
+      detail_id: detailId,
+      sequence_order: sequenceOrder ?? null,
+    };
+  });
+
+  // 전체 행 데이터를 깊은 복사로 저장 (변경 감지용)
+  const tableRowsData = tableRows.value.map((row) => {
+    return JSON.parse(JSON.stringify(row));
+  });
+
   initialPresetData.value = {
     selectedUnit: selectedUnit.value,
     selectedMachine: selectedMachine.value,
@@ -3585,6 +3873,8 @@ const saveInitialPresetData = () => {
     masterDiameterValue: masterDiameterValue.value,
     tableRowsCount: tableRows.value.length,
     hasThumbnailFile: !!thumbnailFile.value,
+    tableRowsOrder,
+    tableRowsData,
   };
 };
 
@@ -3615,7 +3905,8 @@ const hasPresetChanges = (): boolean => {
 
   const initial = initialPresetData.value;
 
-  return (
+  // 기본 필드 변경 체크
+  const basicFieldsChanged =
     current.selectedUnit !== initial.selectedUnit ||
     current.selectedMachine !== initial.selectedMachine ||
     current.presetName !== initial.presetName ||
@@ -3623,8 +3914,37 @@ const hasPresetChanges = (): boolean => {
     current.thumbnailDownloadUrl !== initial.thumbnailDownloadUrl ||
     Math.abs(current.masterDiameterValue - initial.masterDiameterValue) > 0.001 ||
     current.tableRowsCount !== initial.tableRowsCount ||
-    current.hasThumbnailFile !== initial.hasThumbnailFile
-  );
+    current.hasThumbnailFile !== initial.hasThumbnailFile;
+
+  // sequence_order 변경 체크
+  const currentRowsOrder = tableRows.value.map((row, index) => {
+    const detailId = (row as Record<string, unknown>).detail_id as string | null;
+    const equipmentId = (row as Record<string, unknown>).equipment_id as string | null;
+    const sequenceOrder = (row as Record<string, unknown>).sequence_order as number | null | undefined;
+    
+    // 고유 식별자: detail_id가 있으면 detail_id, 없으면 equipment_id 사용
+    // equipment_id도 없으면 임시 ID 생성 (등록 모드에서 새로 추가된 항목)
+    const uniqueKey = detailId || equipmentId || `temp_${index}_${Date.now()}`;
+    
+    return {
+      uniqueKey,
+      detail_id: detailId,
+      sequence_order: sequenceOrder !== null && sequenceOrder !== undefined ? sequenceOrder : null,
+    };
+  });
+
+  // 초기값을 uniqueKey를 키로 하는 Set으로 변환
+  const initialUniqueKeys = new Set<string>();
+  initial.tableRowsOrder.forEach((row) => {
+    initialUniqueKeys.add(row.uniqueKey);
+  });
+
+  // 항목 추가/삭제 체크 (순서 변경은 체크하지 않음)
+  const itemsChanged = currentRowsOrder.length !== initial.tableRowsOrder.length ||
+    currentRowsOrder.some((current) => !initialUniqueKeys.has(current.uniqueKey)) ||
+    initial.tableRowsOrder.some((initial) => !currentRowsOrder.find((current) => current.uniqueKey === initial.uniqueKey));
+
+  return basicFieldsChanged || itemsChanged;
 };
 
 // 부모 컴포넌트에서 접근할 수 있도록 expose
@@ -3865,6 +4185,20 @@ label {
   :deep(.data-table td.checkbox-cell) {
     white-space: nowrap;
     overflow: visible;
+    padding: 0 !important;
+  }
+
+  // move 컬럼 (상하 버튼)
+  :deep(.data-table thead th:nth-child(2)),
+  :deep(.data-table tbody td:nth-child(2)) {
+    padding: 0 !important;
+  }
+
+  // no 컬럼 (순번)
+  :deep(.data-table thead th:nth-child(3)),
+  :deep(.data-table tbody td:nth-child(3)) {
+    padding: 0 !important;
+    text-align: center;
   }
 }
 
@@ -4024,6 +4358,22 @@ label {
 
     &:hover {
       background: #ffedd5;
+    }
+  }
+
+  &.is-parent {
+    background: #e0f2fe;
+    color: #000000;
+    
+    &:hover {
+      background: #b3e5fc;
+      color: #000000;
+    }
+    
+    &.is-selected {
+      background: #81d4fa;
+      color: #000000;
+      font-weight: 600;
     }
   }
 

@@ -76,8 +76,13 @@
           <tr
             v-for="(item, index) in sortedData"
             :key="getRowKey(item, index)"
-            :class="['data-row', { selected: isSelected(item) }]"
+            :class="['data-row', { selected: isSelected(item), 'drag-over': dragOverIndex === index, 'dragging': isDragging && (draggedIndex === index || (window as any).__draggedRowIndex === index) }]"
+            :draggable="false"
             @click="handleRowClick(item, index)"
+            @dragover="handleDragOver($event, index)"
+            @dragleave="handleDragLeave($event, index)"
+            @drop="handleDrop($event, item, index)"
+            @dragend="handleDragEnd"
           >
             <td v-if="selectable" class="checkbox-cell" @click.stop>
               <input
@@ -142,6 +147,8 @@ interface Props {
   selectHeaderText?: string; // 선택 컬럼 헤더 텍스트
   maxHeight?: string; // 테이블 최대 높이 (스크롤 적용)
   stickyHeader?: boolean; // 헤더 고정 여부
+  draggable?: boolean; // 드래그 앤 드롭 활성화 여부
+  draggableCellKey?: string; // 드래그 가능한 셀의 컬럼 키 (지정하지 않으면 전체 행 드래그)
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -154,12 +161,19 @@ const props = withDefaults(defineProps<Props>(), {
   selectHeaderText: "",
   maxHeight: "auto",
   stickyHeader: false,
+  draggable: false,
+  draggableCellKey: undefined,
 });
 
 const emit = defineEmits<{
   "sort-change": [{ key: string | null; direction: "asc" | "desc" | null }];
   "row-click": [item: any, index: number];
   "selection-change": [selectedItems: any[]];
+  "drag-start": [item: any, index: number];
+  "drag-over": [index: number];
+  "drag-leave": [index: number];
+  "drop": [draggedItem: any, draggedIndex: number, targetItem: any, targetIndex: number];
+  "drag-end": [];
 }>();
 
 // 선택 상태 관리
@@ -321,6 +335,133 @@ const handleSort = (column: TableColumn) => {
 const resetSort = () => {
   sortConfig.value.key = null;
   sortConfig.value.direction = null;
+};
+
+// 드래그 앤 드롭 상태 관리
+const dragOverIndex = ref<number | null>(null);
+const draggedItem = ref<any | null>(null);
+const draggedIndex = ref<number | null>(null);
+const isDragging = ref<boolean>(false);
+
+// 드래그 시작
+const handleDragStart = (event: DragEvent, item: any, index: number) => {
+  if (!props.draggable) return;
+  draggedItem.value = item;
+  draggedIndex.value = index;
+  isDragging.value = true;
+  
+  // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
+  const globalIndex = (window as any).__draggedRowIndex;
+  const globalItem = (window as any).__draggedRowItem;
+  if (globalIndex !== undefined && globalItem) {
+    draggedItem.value = globalItem;
+    draggedIndex.value = globalIndex;
+  }
+  
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/html", String(draggedIndex.value));
+    
+    // 드래그 이미지 커스터마이징: 행 전체를 보이도록
+    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLElement;
+    if (rowElement) {
+      const dragImage = rowElement.cloneNode(true) as HTMLElement;
+      dragImage.style.position = 'absolute';
+      dragImage.style.top = '-9999px';
+      dragImage.style.width = `${rowElement.offsetWidth}px`;
+      dragImage.style.opacity = '0.8';
+      document.body.appendChild(dragImage);
+      event.dataTransfer.setDragImage(dragImage, 0, 0);
+      setTimeout(() => document.body.removeChild(dragImage), 0);
+    }
+  }
+  emit("drag-start", draggedItem.value, draggedIndex.value);
+};
+
+// 드래그 오버
+const handleDragOver = (event: DragEvent, index: number) => {
+  if (!props.draggable) return;
+  
+  // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
+  const globalIndex = (window as any).__draggedRowIndex;
+  const globalItem = (window as any).__draggedRowItem;
+  const currentDraggedIndex = draggedIndex.value !== null ? draggedIndex.value : globalIndex;
+  
+  if (currentDraggedIndex === null || currentDraggedIndex === index) return;
+  
+  // 전역 상태가 있으면 내부 상태도 업데이트
+  if (globalIndex !== undefined && globalItem && draggedIndex.value === null) {
+    draggedItem.value = globalItem;
+    draggedIndex.value = globalIndex;
+  }
+  
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+  dragOverIndex.value = index;
+  emit("drag-over", index);
+};
+
+// 드래그 리브
+const handleDragLeave = (event: DragEvent, index: number) => {
+  if (!props.draggable) return;
+  // 관련된 요소로 이동하는 경우는 무시
+  const relatedTarget = event.relatedTarget as HTMLElement;
+  if (relatedTarget && event.currentTarget?.contains(relatedTarget)) {
+    return;
+  }
+  dragOverIndex.value = null;
+  emit("drag-leave", index);
+};
+
+// 드롭
+const handleDrop = (event: DragEvent, targetItem: any, targetIndex: number) => {
+  if (!props.draggable) return;
+  
+  // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
+  const globalIndex = (window as any).__draggedRowIndex;
+  const globalItem = (window as any).__draggedRowItem;
+  
+  let finalDraggedIndex = draggedIndex.value;
+  let finalDraggedItem = draggedItem.value;
+  
+  if (globalIndex !== undefined && globalItem) {
+    finalDraggedIndex = globalIndex;
+    finalDraggedItem = globalItem;
+    // 전역 상태를 내부 상태로 동기화
+    draggedItem.value = globalItem;
+    draggedIndex.value = globalIndex;
+    // 전역 상태 정리
+    (window as any).__draggedRowIndex = undefined;
+    (window as any).__draggedRowItem = undefined;
+  }
+  
+  if (finalDraggedIndex === null) return;
+  
+  event.preventDefault();
+  event.stopPropagation();
+  
+  if (finalDraggedItem && finalDraggedIndex !== targetIndex) {
+    emit("drop", finalDraggedItem, finalDraggedIndex, targetItem, targetIndex);
+  }
+  
+  dragOverIndex.value = null;
+  draggedItem.value = null;
+  draggedIndex.value = null;
+};
+
+// 드래그 종료
+const handleDragEnd = () => {
+  if (!props.draggable) return;
+  isDragging.value = false;
+  dragOverIndex.value = null;
+  draggedItem.value = null;
+  draggedIndex.value = null;
+  // 전역 상태도 정리
+  (window as any).__draggedRowIndex = undefined;
+  (window as any).__draggedRowItem = undefined;
+  emit("drag-end");
 };
 
 // 컴포넌트 외부에서 접근할 수 있도록 노출
@@ -559,6 +700,12 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
       &:hover {
         background-color: #e3f1fa;
+      }
+      
+      &.dragging {
+        opacity: 0.5;
+        background-color: #e3f1fa;
+        border: 2px dashed #2196F3;
       }
     }
 

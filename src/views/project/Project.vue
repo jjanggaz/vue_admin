@@ -190,7 +190,7 @@ const tableColumns: TableColumn[] = [
     key: "created_at",
     title: t("columns.project.createdAt"),
     width: "120px",
-    sortable: false,
+    sortable: true,
     dateFormat: "YYYY-MM-DD",
   },
   {
@@ -203,7 +203,7 @@ const tableColumns: TableColumn[] = [
     key: "project_status",
     title: t("columns.project.status"),
     width: "100px",
-    sortable: false,
+    sortable: true,
   },
   {
     key: "detail",
@@ -223,10 +223,72 @@ const paginatedProjectList = computed(() => {
   const pageSize = projectStore.pageSize;
   const startIndex = (currentPage.value - 1) * pageSize;
 
-  return projectStore.paginatedProjectList.map((item, index) => ({
-    ...item,
-    no: startIndex + index + 1,
-  }));
+  return projectStore.paginatedProjectList.map((item, index) => {
+    // 원본 API 데이터 찾기
+    const originalItem = projectStore.originalApiData?.find(
+      (apiItem: any) => apiItem.project_id === item.id
+    ) as any;
+
+    // influent_types에서 flow_type_name 추출하여 콤마로 합치기
+    const inflowTypes = Array.isArray(originalItem?.influent_types)
+      ? originalItem.influent_types
+      : [];
+    const inflowNames = inflowTypes
+      .map((type: any) => type?.flow_type_name)
+      .filter((name: any) => name && typeof name === "string" && name.trim())
+      .join(", ");
+    const inflow = inflowNames || (item as any).inflow || "";
+
+    // flow_rate 총합 계산 및 개별 값 추출 (null일 경우 0으로 처리)
+    const flowRates = inflowTypes.map((type: any) => {
+      const rate = type?.flow_rate;
+      if (rate === null || rate === undefined) {
+        return 0;
+      }
+      const numRate = Number(rate);
+      return !isNaN(numRate) ? numRate : 0;
+    });
+
+    let siteCapacity = "";
+    if (flowRates.length > 0) {
+      const totalFlowRate = flowRates.reduce(
+        (sum: number, rate: number) => sum + rate,
+        0
+      );
+      // flow_rate_unit은 influent_types의 첫 번째 항목에서 가져오거나, project에서 가져옴
+      const flowRateUnit =
+        inflowTypes[0]?.flow_rate_unit || originalItem?.flow_rate_unit || "";
+      const flowRateList = flowRates.join(", ");
+
+      // 단일 값일 경우 괄호 없이 표시, 여러 값일 경우 괄호로 표시
+      if (flowRates.length === 1) {
+        siteCapacity = `${totalFlowRate}${
+          flowRateUnit ? ` ${flowRateUnit}` : ""
+        }`;
+      } else {
+        siteCapacity = `${totalFlowRate}${
+          flowRateList
+            ? ` (${flowRateList})${flowRateUnit ? ` ${flowRateUnit}` : ""}`
+            : ""
+        }`;
+      }
+    }
+
+    // solution_summary 추출
+    const solution =
+      originalItem?.solution_summary &&
+      typeof originalItem.solution_summary === "string"
+        ? originalItem.solution_summary.trim()
+        : (item as any).solution || "";
+
+    return {
+      ...item,
+      no: startIndex + index + 1,
+      inflow: inflow,
+      site_capacity: siteCapacity,
+      solution: solution,
+    };
+  });
 });
 
 // 승인대기 건수 (서버에서 반환된 approvalCount 사용)
@@ -374,6 +436,7 @@ const handleDelete = async () => {
 
   let successCount = 0;
   let failCount = 0;
+  let errorMessage: string | undefined;
 
   for (const target of targets) {
     try {
@@ -386,10 +449,18 @@ const handleDelete = async () => {
         successCount += 1;
       } else {
         failCount += 1;
+        // 서버에서 반환된 에러 메시지가 있으면 저장
+        if (result?.message && !errorMessage) {
+          errorMessage = result.message;
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("프로젝트 삭제 실패:", error);
       failCount += 1;
+      // 첫 번째 에러 메시지만 저장
+      if (!errorMessage) {
+        errorMessage = error?.message;
+      }
     }
   }
 
@@ -411,7 +482,12 @@ const handleDelete = async () => {
       order_direction: projectStore.sortOrder,
     });
   } else {
-    alert(t("messages.error.deleteFailed"));
+    // 모두 실패한 경우 서버 메시지 사용
+    const finalErrorMessage = translateMessage(
+      errorMessage,
+      "messages.error.deleteFailed"
+    );
+    alert(finalErrorMessage);
   }
 
   selectedItems.value = [];

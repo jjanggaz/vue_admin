@@ -122,10 +122,7 @@
       <!-- Main Data Table & Actions -->
       <div class="table-section">
         <div class="action-buttons">
-          <button
-            class="btn btn-register"
-            @click="handleSingleRegist"
-          >
+          <button class="btn btn-register" @click="handleSingleRegist">
             {{ t("common.register") }}
           </button>
           <button
@@ -708,7 +705,7 @@ const tableColumns: TableColumn[] = [
     key: "is_active",
     title: t("columns.code.usageStatus"),
     width: "100px",
-    sortable: true,
+    sortable: false,
     formatter: (value: boolean) =>
       value ? t("common.used") : t("common.unused"),
   },
@@ -716,7 +713,7 @@ const tableColumns: TableColumn[] = [
     key: "is_leaf",
     title: t("columns.code.isLeaf"),
     width: "100px",
-    sortable: true,
+    sortable: false,
     formatter: (value: boolean) =>
       value ? t("common.yesShort") : t("common.noShort"),
   },
@@ -724,7 +721,7 @@ const tableColumns: TableColumn[] = [
     key: "is_admin_only",
     title: t("columns.code.isAdminOnly"),
     width: "100px",
-    sortable: true,
+    sortable: false,
     formatter: (value: boolean | undefined | null) =>
       value === true ? t("common.yesShort") : t("common.noShort"),
   },
@@ -732,7 +729,7 @@ const tableColumns: TableColumn[] = [
     key: "description",
     title: t("columns.code.codeDescription"),
     width: "150px",
-    sortable: true,
+    sortable: false,
   },
 ];
 
@@ -849,9 +846,15 @@ const loadData = async () => {
   queryParams.page = currentPage.value;
   queryParams.page_size = pageSize.value;
 
-  // 정렬 설정
-  queryParams.order_by = "code_order";
-  queryParams.order_direction = "asc";
+  // 정렬 설정 (헤더 클릭 시 정렬 정보 사용)
+  if (sortColumn.value && sortOrder.value) {
+    queryParams.order_by = sortColumn.value;
+    queryParams.order_direction = sortOrder.value;
+  } else {
+    // 기본 정렬
+    queryParams.order_by = "code_order";
+    queryParams.order_direction = "asc";
+  }
 
   console.log("queryParams :", queryParams);
 
@@ -895,12 +898,16 @@ const handlePageChange = async (page: number) => {
 };
 
 // 정렬 변경 핸들러
-const handleSortChange = (sortInfo: {
+const handleSortChange = async (sortInfo: {
   key: string | null;
   direction: "asc" | "desc" | null;
 }) => {
   sortColumn.value = sortInfo.key ?? null;
   sortOrder.value = sortInfo.direction ?? null;
+
+  // 정렬 변경 시 첫 페이지로 이동하고 데이터 다시 로드
+  currentPage.value = 1;
+  await loadData();
 };
 
 // 행 클릭 핸들러
@@ -1319,7 +1326,10 @@ const handleEdit = () => {
 }
 
 .column-regist {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr) minmax(200px, 2fr));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr) minmax(200px, 2fr)
+  );
 
   dt {
     .required {

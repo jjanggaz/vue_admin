@@ -41,7 +41,7 @@
             </option>
           </select>
         </div>
-        <div class="filter-item" style="margin-right: 10px;">
+        <div class="filter-item" style="margin-right: 10px">
           <label for="structureTypeDetail">{{
             t("columns.machine.structureTypeDetail")
           }}</label>
@@ -105,6 +105,7 @@
       :select-header-text="t('common.selectColumn')"
       :row-key="'structure_id'"
       @selection-change="handleSelectionChange"
+      @sort-change="handleSortChange"
     >
       <!-- 순번 슬롯 -->
       <template #cell-no="{ index }">
@@ -306,7 +307,7 @@ const tableColumns: TableColumn[] = [
     key: "structure_type",
     title: t("columns.machine.structureType"),
     width: "140px",
-    sortable: false,
+    sortable: true,
   },
   {
     key: "unit_system_code",
@@ -356,6 +357,8 @@ const selectedStructureType = ref("");
 const selectedStructureTypeDetail = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
+const sortColumn = ref<string | null>(null);
+const sortOrder = ref<"asc" | "desc" | null>(null);
 const newStructure = ref<RegistForm>({
   name: "",
   code: "",
@@ -387,6 +390,22 @@ const handlePageChange = async (page: number) => {
 // 검색 처리 (Machine.vue 패턴 적용)
 const handleSearch = async () => {
   selectedItems.value = []; // 체크된 row 초기화
+  currentPage.value = 1;
+  // 검색 시 정렬 초기화
+  sortColumn.value = null;
+  sortOrder.value = null;
+  await loadData();
+};
+
+// 정렬 변경 핸들러
+const handleSortChange = async (sortInfo: {
+  key: string | null;
+  direction: "asc" | "desc" | null;
+}) => {
+  sortColumn.value = sortInfo.key ?? null;
+  sortOrder.value = sortInfo.direction ?? null;
+
+  // 정렬 변경 시 첫 페이지로 이동하고 데이터 다시 로드
   currentPage.value = 1;
   await loadData();
 };
@@ -566,7 +585,7 @@ const loadData = async () => {
     selectedItems.value = [];
 
     // API 호출로 구조물 검색 리스트 조회
-    await structureStore.fetchSearchList({
+    const searchParams: Record<string, unknown> = {
       search_field: "",
       search_value: "",
       page: currentPage.value,
@@ -574,7 +593,15 @@ const loadData = async () => {
       root_structure_type: selectedStructureType.value,
       structure_type: selectedStructureTypeDetail.value,
       unit: selectedUnit.value,
-    });
+    };
+
+    // 정렬 설정 (헤더 클릭 시 정렬 정보 사용)
+    if (sortColumn.value && sortOrder.value) {
+      searchParams.order_by = sortColumn.value;
+      searchParams.order_direction = sortOrder.value;
+    }
+
+    await structureStore.fetchSearchList(searchParams);
 
     // API 응답 데이터를 structureList에 설정
     if ((structureStore.searchResults as any)?.items) {

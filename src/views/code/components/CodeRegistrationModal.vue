@@ -367,6 +367,52 @@ const parseExcelFile = (file: File) => {
       // 헤더 행 제거하고 데이터만 추출
       const dataRows = jsonData.slice(1) as any[][];
 
+      // 필수 필드 검증 (code_key, code_value, code_value_en, code_order)
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        // 빈 행은 건너뛰기
+        if (
+          !row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== ""
+          )
+        ) {
+          continue;
+        }
+
+        const codeKey = row[0];
+        const codeValue = row[1];
+        const codeValueEn = row[2];
+        const codeOrder = row[3];
+
+        // 필수 필드 중 하나라도 비어있으면 오류
+        if (
+          !codeKey ||
+          codeKey === undefined ||
+          codeKey === null ||
+          String(codeKey).trim() === "" ||
+          !codeValue ||
+          codeValue === undefined ||
+          codeValue === null ||
+          String(codeValue).trim() === "" ||
+          !codeValueEn ||
+          codeValueEn === undefined ||
+          codeValueEn === null ||
+          String(codeValueEn).trim() === "" ||
+          !codeOrder ||
+          codeOrder === undefined ||
+          codeOrder === null ||
+          String(codeOrder).trim() === ""
+        ) {
+          const rowNumber = i + 2; // 헤더 행(1) + 인덱스(0부터 시작) + 1
+          alert(
+            t("excel.requiredFieldMissing", {
+              row: rowNumber,
+            })
+          );
+          return;
+        }
+      }
+
       // code_order 숫자 검증
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
@@ -434,6 +480,42 @@ const parseExcelFile = (file: File) => {
             return;
           }
           seenCodeKeys.set(keyStr, i);
+        }
+      }
+
+      // code_order 중복 검증
+      const seenCodeOrders = new Map<string, number>();
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        // 빈 행은 건너뛰기
+        if (
+          !row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== ""
+          )
+        ) {
+          continue;
+        }
+
+        const codeOrderValue = row[3];
+        if (
+          codeOrderValue !== undefined &&
+          codeOrderValue !== null &&
+          String(codeOrderValue).trim() !== ""
+        ) {
+          const orderStr = String(codeOrderValue).trim();
+          if (seenCodeOrders.has(orderStr)) {
+            const firstRow = (seenCodeOrders.get(orderStr) ?? 0) + 2; // 헤더 포함 행 번호
+            const currentRow = i + 2;
+            alert(
+              t("excel.codeOrderDuplicate", {
+                codeOrder: orderStr,
+                firstRow,
+                currentRow,
+              })
+            );
+            return;
+          }
+          seenCodeOrders.set(orderStr, i);
         }
       }
 

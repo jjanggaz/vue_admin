@@ -44,6 +44,26 @@
           >
             <div class="th-content">
               <span class="th-text">{{ column.title }}</span>
+              <span v-if="column.sortable" class="sort-icon">
+                <img
+                  v-if="sortConfig.key !== column.key"
+                  src="../../assets/icons/ico_sort-default.svg"
+                  alt="정렬 가능"
+                  class="sort-icon-img"
+                />
+                <img
+                  v-else-if="sortConfig.direction === 'asc'"
+                  src="../../assets/icons/ico_sort-asc.svg"
+                  alt="오름차순"
+                  class="sort-icon-img"
+                />
+                <img
+                  v-else-if="sortConfig.direction === 'desc'"
+                  src="../../assets/icons/ico_sort-desc.svg"
+                  alt="내림차순"
+                  class="sort-icon-img"
+                />
+              </span>
             </div>
           </th>
         </tr>
@@ -644,39 +664,31 @@ const formatCellValue = (item: any, column: TableColumn) => {
       .th-content {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 6px;
 
         .th-text {
-          flex: 1;
+          flex-shrink: 0;
         }
 
         .sort-icon {
           display: flex;
-          flex-direction: column;
-          margin-left: $spacing-xs;
-          opacity: 0.3;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          opacity: 0.5;
           transition: $transition-base;
 
-          .sort-arrow {
-            font-size: 8px;
-            line-height: 1;
-            color: $text-light;
-            transition: $transition-base;
-
-            &.sort-up {
-              margin-bottom: 1px;
-            }
-
-            &.active {
-              color: $primary-color;
-              opacity: 1;
-            }
+          .sort-icon-img {
+            width: 12px;
+            height: 14px;
+            display: block;
           }
         }
       }
 
       &.sortable:hover .sort-icon {
-        opacity: 0.7;
+        opacity: 0.8;
       }
 
       &.sorted .sort-icon {
@@ -778,8 +790,9 @@ const formatCellValue = (item: any, column: TableColumn) => {
     }
 
     thead th .th-content .sort-icon {
-      .sort-arrow {
-        font-size: 6px;
+      .sort-icon-img {
+        width: 10px;
+        height: 12px;
       }
     }
   }

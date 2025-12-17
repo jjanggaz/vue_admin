@@ -528,12 +528,12 @@ interface AttachedFiles {
 const tableColumns: TableColumn[] = [
   { key: "process_id", title: "Process ID", sortable: false, hidden: true }, // process_id (숨김)
   { key: "symbol_id", title: "Symbol ID", sortable: false, hidden: true }, // symbol_id (숨김)
-  { key: "process_type_nm", title: t("process.processType"), sortable: true }, // 공정구분
-  { key: "sub_category_nm", title: t("process.subCategory"), sortable: true }, // 공정 중분류
+  { key: "process_type_nm", title: t("process.processType"), sortable: false }, // 공정구분
+  { key: "sub_category_nm", title: t("process.subCategory"), sortable: false }, // 공정 중분류
   {
     key: "process_name",
     title: t("process.processName"),
-    sortable: true,
+    sortable: false,
     formatter: (value, row) => {
       // level3_code_key와 process_code가 같으면 공정명을 표시하지 않음
       if (row.level3_code_key === row.process_code) {
@@ -545,7 +545,7 @@ const tableColumns: TableColumn[] = [
   {
     key: "symbol_download",
     title: t("process.processSymbol"),
-    sortable: true,
+    sortable: false,
     formatter: (value) => value || "-",
   }, // 공정심볼 (SVG 미리보기)
   {

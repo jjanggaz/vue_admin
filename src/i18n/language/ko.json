@@ -1260,6 +1260,7 @@
     "category": "3D ASSET 카테고리",
     "categoryInterior": "인테리어",
     "categoryStructure": "구조물",
+    "categoryEtc": "기타",
     "modelName": "3D 모델명",
     "modelNamePlaceholder": "모델명 입력",
     "modelUpload": "3D모델 업로드",
@@ -1884,6 +1885,8 @@
   },
   "excel": {
     "codeOrderNotNumeric": "{row}번째 행의 순서는 숫자만 입력 가능합니다.\n수정후 다시 시도해주세요.",
-    "codeKeyDuplicate": "{codeKey} 값이 {firstRow}번째 행과 {currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.\n수정후 다시 시도해주세요."
+    "codeKeyDuplicate": "{codeKey} 값이 {firstRow}번째 행과 {currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.\n수정후 다시 시도해주세요.",
+    "codeOrderDuplicate": "순서 {codeOrder} 값이 {firstRow}번째 행과 {currentRow}번째 행에서 중복되었으므로 등록 할 수 없습니다.\n수정후 다시 시도해주세요.",
+    "requiredFieldMissing": "{row}번째 행의 필수 항목(코드, 코드명(한글), 코드명(영문), 순서) 중 하나 이상이 비어있습니다.\n수정후 다시 시도해주세요."
   }
 }

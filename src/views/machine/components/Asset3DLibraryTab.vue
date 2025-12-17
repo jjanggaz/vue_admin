@@ -21,6 +21,7 @@
           <option value="">{{ t("common.select") }}</option>
           <option value="INTERIOR">{{ t("asset3D.categoryInterior") }}</option>
           <option value="STRUCTURE">{{ t("asset3D.categoryStructure") }}</option>
+          <option value="ETC">{{ t("asset3D.categoryEtc") }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -101,11 +102,6 @@
             </button>
           </div>
           <div v-if="thumbnailPreviewUrl" class="thumbnail-preview-wrapper">
-            <img
-              :src="thumbnailPreviewUrl"
-              :alt="t('asset3D.thumbnailPreview')"
-              class="thumbnail-preview"
-            />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="btn download-btn"
@@ -114,6 +110,11 @@
             >
               <span class="ico-download"></span>
             </button>
+            <img
+              :src="thumbnailPreviewUrl"
+              :alt="t('asset3D.thumbnailPreview')"
+              class="thumbnail-preview"
+            />
             <button
               v-if="thumbnailPreviewUrl && (thumbnailDownloadUrl || thumbnailFile)"
               class="thumbnail-close-btn"
@@ -453,90 +454,6 @@ const validateFileName = (fileName: string): boolean => {
   return true;
 };
 
-// 파일 업로드 요청 함수
-const fileUploadRequest = async (
-  path: string,
-  formData: FormData
-): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const url = getFileApiUrl(path);
-
-    // 요청 완료 처리
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response);
-        } catch {
-          resolve({ success: true });
-        }
-      } else {
-        let errorMessage = `HTTP ${xhr.status}: ${xhr.statusText}`;
-        try {
-          const errorResponse = JSON.parse(xhr.responseText);
-          if (errorResponse.error || errorResponse.message) {
-            errorMessage = errorResponse.error || errorResponse.message;
-          }
-        } catch {
-          if (xhr.responseText) {
-            errorMessage = `${errorMessage} - ${xhr.responseText}`;
-          }
-        }
-        reject(new Error(`${t("asset3D.error.fileUploadFailed")}: ${errorMessage}`));
-      }
-    };
-
-    // 네트워크 오류 처리
-    xhr.onerror = () => {
-      reject(new Error(`${t("asset3D.error.networkConnectionFailed")} (${url})`));
-    };
-
-    // 타임아웃 처리
-    xhr.ontimeout = () => {
-      reject(new Error(t("asset3D.error.apiCallTimeout")));
-    };
-
-    // 요청 설정 및 전송
-    xhr.open("POST", url);
-    xhr.timeout = 30000; // 30초 타임아웃
-    xhr.send(formData);
-  });
-};
-
-// 3D 모델 파일 업로드 함수
-const uploadModelFile = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_folder", "model");
-
-    console.log("3D 모델 파일 업로드 시작...");
-    const response = await fileUploadRequest("/api/upload", formData);
-
-    console.log("3D 모델 파일 업로드 응답:", response);
-
-    if (response && (response.file_id || response.id)) {
-      const fileId = response.file_id || response.id;
-      console.log("3D 모델 파일 업로드 성공, file_id:", fileId);
-      return String(fileId);
-    } else if (response && response.message) {
-      const fileId = response.file_id || response.id || response.data?.file_id || null;
-      if (fileId) {
-        return String(fileId);
-      }
-      console.warn("3D 모델 파일 업로드 응답에 file_id가 없습니다:", response);
-      return null;
-    } else {
-      console.error("3D 모델 파일 업로드 실패: 응답이 올바르지 않습니다.", response);
-      return null;
-    }
-  } catch (error) {
-    console.error("3D 모델 파일 업로드 실패:", error);
-    throw error;
-  }
-};
-
 // 3D 모델 다운로드 핸들러
 const handleModelDownload = async () => {
   // 로컬 파일이 있는 경우 (새로 선택한 파일)
@@ -712,6 +629,8 @@ const handleDeleteThumbnail = async () => {
       const libraryId = editItemAny.library_id || editItemAny.id || "";
       if (libraryId) {
         await reloadLibraryMasterData(libraryId);
+        // 썸네일 삭제 후 초기 데이터 갱신하여 변경사항 체크에서 제외
+        saveInitialLibraryData();
       }
     }
 
@@ -800,38 +719,6 @@ const reloadLibraryMasterData = async (libraryId: string) => {
   }
 };
 
-// 썸네일 파일 업로드 함수
-const uploadThumbnailFile = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_folder", "thumbnail");
-
-    console.log("썸네일 파일 업로드 시작...");
-    const response = await fileUploadRequest("/api/upload", formData);
-
-    console.log("썸네일 파일 업로드 응답:", response);
-
-    if (response && (response.file_id || response.id)) {
-      const fileId = response.file_id || response.id;
-      console.log("썸네일 파일 업로드 성공, file_id:", fileId);
-      return String(fileId);
-    } else if (response && response.message) {
-      const fileId = response.file_id || response.id || response.data?.file_id || null;
-      if (fileId) {
-        return String(fileId);
-      }
-      console.warn("썸네일 파일 업로드 응답에 file_id가 없습니다:", response);
-      return null;
-    } else {
-      console.error("썸네일 파일 업로드 실패: 응답이 올바르지 않습니다.", response);
-      return null;
-    }
-  } catch (error) {
-    console.error("썸네일 파일 업로드 실패:", error);
-    throw error;
-  }
-};
 
 // 버튼 클릭 핸들러 (디버깅용)
 const handleButtonClick = (e: Event) => {

@@ -556,7 +556,6 @@ import Pagination from "@/components/common/Pagination.vue";
 import { useAsset3DStore } from "@/stores/asset3DStore";
 import { usePipeStore } from "@/stores/pipeStore";
 import { request } from "@/utils/request";
-import { getFileApiUrl } from "@/utils/config";
 
 // Props 정의
 interface Props {
@@ -598,6 +597,7 @@ const thumbnailFileName = ref("");
 const thumbnailFileInput = ref<HTMLInputElement | null>(null);
 const thumbnailPreviewUrl = ref<string>("");
 const thumbnailDownloadUrl = ref<string>("");
+const thumbnailDeleted = ref<boolean>(false); // 썸네일 삭제 상태 추적
 
 // 테이블 데이터 (자재 리스트와 동일한 구조)
 interface TableRow {
@@ -629,17 +629,6 @@ interface CodeKeyValue {
   code_value: string;
 }
 
-// 선택 항목 인터페이스
-interface SelectionItem {
-  id: number;
-  pipeCategory: string;
-  fittingType: string;
-  diameter: string;
-  diameterAfter: string;
-  pipeType: string;
-  code: string;
-  cellName: string;
-}
 
 // 선택 항목 필터
 const selectionFilter = ref({
@@ -663,9 +652,6 @@ const filterTreeDropdownAnchor = ref<HTMLElement | null>(null);
 const filterSelectedCode = ref("");
 const filterExpandedKeys = ref<Set<string>>(new Set());
 
-// 선택된 항목 목록
-const selectedSelectionItems = ref<SelectionItem[]>([]);
-let nextSelectionId = 1;
 
 // 자재 리스트 관련 상태
 const materialListLoading = ref(false);
@@ -778,17 +764,6 @@ const manualValveExpandedKeys = ref<Set<string>>(new Set());
 const treeDropdownAnchor = ref<HTMLElement | null>(null);
 const treeDropdownPortalRef = ref<HTMLElement | null>(null);
 const treeDropdownPosition = ref({ bottom: 0, left: 0, width: 0 });
-
-const getTreeDropdownAnchorElement = (event?: MouseEvent) => {
-  const target = event?.currentTarget as HTMLElement | null;
-  if (!target) {
-    return treeDropdownAnchor.value;
-  }
-
-  const container = target.closest(".tree-select-wrapper");
-  const display = container?.querySelector<HTMLElement>(".tree-select-display");
-  return display || target;
-};
 
 const updateTreeDropdownPosition = (target?: HTMLElement | null) => {
   const anchor = target || treeDropdownAnchor.value;
@@ -922,6 +897,8 @@ const handleThumbnailFileChange = (e: Event) => {
 
     thumbnailFileName.value = file.name;
     thumbnailFile.value = file;
+    // 새 썸네일 파일이 선택되면 삭제 상태 리셋
+    thumbnailDeleted.value = false;
 
     // 이미지 미리보기 생성
     const reader = new FileReader();
@@ -937,48 +914,33 @@ const handleThumbnailFileChange = (e: Event) => {
   }
 };
 
-// 파일명 validation 함수
-const validateFileName = (fileName: string): boolean => {
-  // 확장자 제거
-  const lastDotIndex = fileName.lastIndexOf(".");
-  const nameWithoutExt =
-    lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
-
-  // 파일명이 비어있으면 안 됨
-  if (!nameWithoutExt || nameWithoutExt.trim() === "") {
-    return false;
+// 직경값에서 숫자와 단위를 분리하는 함수
+const parseDiameter = (diameterStr: string): { value: number; unit: string } => {
+  if (!diameterStr || typeof diameterStr !== "string") {
+    return { value: 0, unit: "" };
   }
-
-  // 100자 이내 체크
-  if (nameWithoutExt.length > 100) {
-    return false;
+  
+  const trimmed = diameterStr.trim();
+  if (!trimmed) {
+    return { value: 0, unit: "" };
   }
-
-  // 영문, 숫자, 특수 기호 "_-()"만 허용
-  const fileNameRegex = /^[a-zA-Z0-9_\-().]+$/;
-  if (!fileNameRegex.test(nameWithoutExt)) {
-    return false;
+  
+  // 숫자 부분 추출 (소수점 포함)
+  const numberMatch = trimmed.match(/^[\d.]+/);
+  if (!numberMatch) {
+    return { value: 0, unit: "" };
   }
-
-  return true;
-};
-
-// 행 추가 핸들러
-const handleAddRow = () => {
-  tableRows.value.push({
-    id: nextRowId++,
-    no: tableRows.value.length + 1,
-    pipeCategory: "",
-    subCategory: "",
-    fittingType: "",
-    diameter: "",
-    diameterAfter: "",
-    pipeType: "",
-    code: "",
-    cellName: "",
-  });
-  // 번호 재정렬
-  updateRowNumbers();
+  
+  const value = parseFloat(numberMatch[0]);
+  if (isNaN(value)) {
+    return { value: 0, unit: "" };
+  }
+  
+  // 단위 부분 추출 (숫자 이후의 문자열) - 실제 입력값에서 분리
+  const unitMatch = trimmed.substring(numberMatch[0].length).trim();
+  const unit = unitMatch || "mm"; // 실제 입력값에서 추출한 단위 사용, 없으면 기본값 "mm"
+  
+  return { value, unit };
 };
 
 // 선택 항목 그리드의 첫 번째 row 직경값을 마스터에 업데이트하는 함수 (팝업 닫을 때만 호출)
@@ -1053,8 +1015,9 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
         const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
         const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
-        const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
-        const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+        // 자재 리스트에서 전달받은 직경 값을 그대로 저장
+        const diameterBefore = String(row.diameter || "").trim();
+        const diameterAfter = String(row.diameterAfter || "").trim();
 
         // 순번(no)을 sequence_order로 전달
         const sequenceOrder = row.no;
@@ -1219,8 +1182,9 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
             const equipmentCode = (row as Record<string, unknown>).equipment_code || row.code || "";
             const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
             const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
-            const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
-            const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+            // 자재 리스트에서 전달받은 직경 값을 그대로 저장
+            const diameterBefore = String(row.diameter || "").trim();
+            const diameterAfter = String(row.diameterAfter || "").trim();
             // 순번(no)을 sequence_order로 전달
             const currentSequenceOrder = row.no;
 
@@ -1329,9 +1293,9 @@ const handleSaveSelectedItems = async (silent: boolean = false) => {
         const originalPipeCategoryCode = (row as Record<string, unknown>)._originalPipeCategoryCode as string || "";
         const originalSubCategoryCode = (row as Record<string, unknown>)._originalSubCategoryCode as string || "";
         
-        // 직경에서 숫자만 추출 (예: "1000 mm" -> "1000", 빈 값은 빈 문자열)
-        const diameterBefore = String(row.diameter || "").replace(/\s*mm\s*/gi, "").trim();
-        const diameterAfter = String(row.diameterAfter || "").replace(/\s*mm\s*/gi, "").trim();
+        // 자재 리스트에서 전달받은 직경 값을 그대로 저장
+        const diameterBefore = String(row.diameter || "").trim();
+        const diameterAfter = String(row.diameterAfter || "").trim();
 
         // 순번(no)을 sequence_order로 전달
         // 단, 기존 항목과 중복되는 경우 서버에서 자동 할당하도록 제외
@@ -1823,88 +1787,6 @@ const ensureManualValveTree = async (forceReload = false) => {
   }
 };
 
-// 유형 변경 핸들러
-const handleTypeChange = async (item: TableRow) => {
-  console.log("[Asset3DPreset] 유형 변경 감지:", {
-    rowId: item.id,
-    previousType: item.type,
-  });
-  item.subType = "";
-  item.subTypeLabel = "";
-  item.subTypeOptions = [];
-  openTreeDropdownRowId.value = null;
-
-  if (!item.type) {
-    return;
-  }
-
-  if (item.pipeCategory === "P_VALV") {
-    console.log("[Asset3DPreset] 수동 밸브 트리 조회 시도");
-    await ensureManualValveTree();
-    return;
-  }
-
-  try {
-    await asset3DStore.fetchThirdDepth(String(item.pipeCategory || ""), 3);
-    const depthItems =
-      (asset3DStore.thirdDepth as CodeKeyValue[] | undefined) || [];
-    console.log("[Asset3DPreset] 세부유형 API 응답:", {
-      type: item.pipeCategory,
-      count: depthItems.length,
-      itemsPreview: depthItems.slice(0, 5),
-    });
-    if (depthItems.length > 0) {
-      item.subTypeOptions = depthItems.map((code) => ({
-        value: code.code_key,
-        label: code.code_value,
-      }));
-    }
-  } catch (error) {
-    console.error("세부유형 조회 실패:", error);
-    item.subTypeOptions = [];
-  }
-
-  if (openTreeDropdownRowId.value === item.id) {
-    closeManualValveDropdown();
-  }
-};
-
-// 세부구분 변경 핸들러 (사용되지 않음)
-const handleStandardSubTypeChange = (_item: TableRow) => {
-  // 새로운 구조에서는 사용되지 않음
-  // subCategory는 자재 리스트에서 가져온 값 사용
-};
-
-// 트리 드롭다운 토글 (사용되지 않음 - 주석 처리)
-const toggleTreeDropdown = async (item: TableRow, event?: MouseEvent) => {
-  if (item.pipeCategory !== "P_VALV") {
-    closeManualValveDropdown();
-    return;
-  }
-
-  const isOpen = openTreeDropdownRowId.value === item.id;
-  if (isOpen) {
-    closeManualValveDropdown();
-    return;
-  }
-
-  await ensureManualValveTree();
-  if (manualValveTreeError.value) {
-    return;
-  }
-
-  activeManualValveRow.value = item;
-  openTreeDropdownRowId.value = item.id;
-  manualValveSelectedCode.value = String(item.subCategory || "");
-  // 트리 열릴 때: 기존 선택값이 있으면 해당 경로만 펼치고, 없으면 모두 닫음
-  expandManualValvePath(manualValveSelectedCode.value, true);
-  const anchor = getTreeDropdownAnchorElement(event) || null;
-  if (anchor) {
-    treeDropdownAnchor.value = anchor;
-  }
-  updateTreeDropdownPosition(anchor);
-};
-
 const handleTreeSelect = (
   item: TableRow | null,
   selectedNode: ManualValveTreeNode | ManualValveTreeNodeWithDepth
@@ -2030,12 +1912,6 @@ const handleViewportChange = () => {
   }
 };
 
-// 세부유형 조회 핸들러
-const handleSubTypeSearch = (item: TableRow) => {
-  // 세부유형 조회 로직
-  console.log("세부유형 조회:", item);
-  // TODO: 세부유형 조회 API 호출 또는 모달 열기
-};
 
 // 선택 항목 필터 검색
 const handleSelectionSearch = () => {
@@ -2499,12 +2375,6 @@ const handleAddSelection = () => {
   }
 };
 
-// 선택 항목 삭제
-const handleDeleteSelectionItem = (id: number) => {
-  selectedSelectionItems.value = selectedSelectionItems.value.filter(
-    (item) => item.id !== id
-  );
-};
 
 // 자재 리스트 조회 (카탈로그 API 호출)
 const fetchMaterialList = async (page = 1, parentType?: string) => {
@@ -2928,16 +2798,6 @@ const handleDebugSearch = async () => {
   }
 };
 
-// 자재 리스트 항목 삭제 핸들러
-const handleDeleteMaterialItem = (id: string | number) => {
-  materialListItems.value = materialListItems.value.filter(
-    (item) => item.id !== id
-  );
-  // 선택 목록에서도 제거
-  selectedMaterialItems.value = selectedMaterialItems.value.filter(
-    (item) => item.id !== id
-  );
-};
 
 // 수정 모드일 때 editItem에서 preset_id 추출
 watch(
@@ -3106,6 +2966,9 @@ watch(
             // 데이터 로드 완료 후 초기값 저장
             await nextTick();
             saveInitialPresetData();
+            
+            // 프리셋 로드 시 썸네일 삭제 상태 초기화
+            thumbnailDeleted.value = false;
           } else {
             console.warn("[Asset3DPresetTab] 응답 데이터가 없습니다.");
           }
@@ -3118,6 +2981,7 @@ watch(
     } else if (!props.isEditMode) {
       // 등록 모드로 전환 시 초기화
       currentPresetId.value = null;
+      thumbnailDeleted.value = false;
       
       // 등록 모드에서는 빈 상태로 초기값 저장
       await nextTick();
@@ -3132,102 +2996,6 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleViewportChange, true);
   window.removeEventListener("resize", handleViewportChange);
 });
-
-// 파일 업로드 요청 함수 (fileUploadStore.ts의 fileUploadRequest 패턴 사용)
-const fileUploadRequest = async (
-  path: string,
-  formData: FormData
-): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const url = getFileApiUrl(path);
-
-    // 요청 완료 처리
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          resolve(response);
-        } catch {
-          resolve({ success: true });
-        }
-      } else {
-        let errorMessage = `HTTP ${xhr.status}: ${xhr.statusText}`;
-        try {
-          const errorResponse = JSON.parse(xhr.responseText);
-          if (errorResponse.error || errorResponse.message) {
-            errorMessage = errorResponse.error || errorResponse.message;
-          }
-        } catch {
-          if (xhr.responseText) {
-            errorMessage = `${errorMessage} - ${xhr.responseText}`;
-          }
-        }
-        reject(new Error(`파일 업로드 실패: ${errorMessage}`));
-      }
-    };
-
-    // 네트워크 오류 처리
-    xhr.onerror = () => {
-      reject(new Error(`네트워크 연결에 실패했습니다. (${url})`));
-    };
-
-    // 타임아웃 처리
-    xhr.ontimeout = () => {
-      reject(new Error("API Call Fail: Timeout"));
-    };
-
-    // 요청 설정 및 전송
-    xhr.open("POST", url);
-    xhr.timeout = 30000; // 30초 타임아웃
-    xhr.send(formData);
-  });
-};
-
-// 썸네일 파일 업로드 함수 (등록 모드용)
-const uploadThumbnailFile = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_folder", "thumbnail");
-
-    console.log("========================================");
-    console.log("[Asset3DPreset] 썸네일 파일 업로드 시작 (등록 모드)");
-    console.log("========================================");
-    console.log("파일명:", file.name);
-    console.log("파일 크기:", file.size);
-    console.log("파일 타입:", file.type);
-    console.log("========================================");
-
-    // fileUploadRequest 함수 사용 (파일 서버 URL 사용)
-    const response = await fileUploadRequest("/api/upload", formData);
-
-    console.log("썸네일 업로드 응답:", response);
-
-    // fileUploadRequest는 직접 JSON 응답을 반환하므로 response 구조 확인 필요
-    if (response && (response.file_id || response.id)) {
-      const fileId = response.file_id || response.id;
-      console.log("썸네일 업로드 성공, file_id:", fileId);
-      return String(fileId);
-    } else if (response && response.message) {
-      // 성공 메시지만 있는 경우 응답에서 file_id 추출 시도
-      console.log("썸네일 업로드 응답 메시지:", response.message);
-      // 응답 구조에 따라 file_id가 다른 필드에 있을 수 있음
-      const fileId = response.file_id || response.id || response.data?.file_id || null;
-      if (fileId) {
-        return String(fileId);
-      }
-      console.warn("썸네일 업로드 응답에 file_id가 없습니다:", response);
-      return null;
-    } else {
-      console.error("썸네일 업로드 실패: 응답이 올바르지 않습니다.", response);
-      return null;
-    }
-  } catch (error) {
-    console.error("썸네일 업로드 실패:", error);
-    throw error;
-  }
-};
 
 // 프리셋 썸네일 업로드 함수 (수정 모드용)
 const uploadPresetThumbnail = async (file: File, presetId: string): Promise<string | null> => {
@@ -3406,10 +3174,15 @@ const handleDeleteThumbnail = async () => {
     if (thumbnailFileInput.value) {
       thumbnailFileInput.value.value = "";
     }
+    
+    // 썸네일 삭제 상태 표시
+    thumbnailDeleted.value = true;
 
     // 저장 후 preset master 정보 재조회 (수정 모드인 경우)
     if (props.isEditMode && currentPresetId.value) {
       await reloadPresetMasterData(currentPresetId.value);
+      // 썸네일 삭제 후 초기 데이터 갱신하여 변경사항 체크에서 제외
+      saveInitialPresetData();
     }
 
     alert(t("asset3D.success.thumbnailDeleted"));
@@ -3490,6 +3263,14 @@ const reloadPresetMasterData = async (presetId: string) => {
         } else {
           thumbnailPreviewUrl.value = "";
         }
+        
+        // 썸네일이 서버에 없는 경우 삭제 상태로 표시
+        if (!item.thumbnail_id && !thumbnailFile) {
+          thumbnailDeleted.value = true;
+        } else if (item.thumbnail_id) {
+          // 썸네일이 서버에 있으면 삭제 상태 리셋
+          thumbnailDeleted.value = false;
+        }
       }
     }
   } catch (error) {
@@ -3569,11 +3350,18 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
         }
         
         console.log("프리셋 썸네일 업로드 완료, thumbnail_id:", thumbnailId);
+        // 새 썸네일이 업로드되면 삭제 상태 리셋
+        thumbnailDeleted.value = false;
       } else {
-        // 썸네일 파일이 선택되지 않은 경우 기존 썸네일 ID 유지
-        if (isEditMode) {
-        const editItemAny = props.editItem as any;
-        thumbnailId = editItemAny.thumbnail_id || null;
+        // 썸네일 파일이 선택되지 않은 경우
+        if (thumbnailDeleted.value) {
+          // 썸네일이 삭제된 경우 thumbnail_id를 null로 설정
+          thumbnailId = null;
+          console.log("썸네일이 삭제되어 thumbnail_id를 null로 설정");
+        } else if (isEditMode) {
+          // 수정 모드에서 썸네일이 삭제되지 않은 경우 기존 썸네일 ID 유지
+          const editItemAny = props.editItem as any;
+          thumbnailId = editItemAny.thumbnail_id || null;
         } else if (isAlreadySaved) {
           // 등록 모드에서 이미 저장된 데이터인 경우, 기존 썸네일 ID는 서버에서 가져와야 함
           // 현재는 null로 유지 (서버에서 기존 썸네일이 유지됨)
@@ -3582,20 +3370,24 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
         console.log("기존 thumbnail_id 유지:", thumbnailId);
       }
       console.log("========================================");
+      console.log("최종 thumbnailId:", thumbnailId);
+      console.log("thumbnailDeleted.value:", thumbnailDeleted.value);
+      console.log("========================================");
     } else {
       console.log("썸네일 파일이 없습니다. 업로드 건너뜀.");
+      console.log("thumbnailId:", thumbnailId);
     }
 
     // tableRows에서 첫 번째 행의 데이터 추출 (있는 경우)
     const firstRow = tableRows.value.length > 0 ? tableRows.value[0] : null;
     
-    // 직경 값 추출 (숫자만)
+    // 직경 값 추출 (숫자와 단위 분리)
     let diameterValue = 0;
+    let diameterUnit = "mm"; // 기본값
     if (firstRow && firstRow.diameter) {
-      const diameterNum = parseFloat(firstRow.diameter.replace(/[^0-9.]/g, ""));
-      if (!isNaN(diameterNum)) {
-        diameterValue = diameterNum;
-      }
+      const parsed = parseDiameter(firstRow.diameter);
+      diameterValue = parsed.value;
+      diameterUnit = parsed.unit;
     }
     
     // 마스터의 diameter_value 업데이트
@@ -3611,14 +3403,27 @@ const handleThumbnailRegister = async (skipAlert: boolean = false) => {
       preset_name_en: presetName.value.trim(), // 영문명이 없으면 한글명 사용
       unit_system_code: selectedUnit.value,
       diameter_value: diameterValue,
-      diameter_unit: "mm",
+      diameter_unit: diameterUnit,
       note: firstRow ? (firstRow.code || "") : "",
       metadata: {},
       is_active: true,
     };
 
-    // 썸네일 ID 추가 (있는 경우)
-    if (thumbnailId) {
+    // 썸네일 ID 추가
+    // 수정 모드이거나 이미 저장된 데이터인 경우, thumbnailId가 null이어도 명시적으로 전달
+    // (썸네일 삭제 시 null로 설정하여 서버에 반영)
+    if (isEditMode || isAlreadySaved) {
+      presetData.thumbnail_id = thumbnailId;
+      console.log("========================================");
+      console.log("[Asset3DPreset] 썸네일 ID 설정");
+      console.log("========================================");
+      console.log("isEditMode:", isEditMode);
+      console.log("isAlreadySaved:", isAlreadySaved);
+      console.log("thumbnailId:", thumbnailId);
+      console.log("presetData.thumbnail_id:", presetData.thumbnail_id);
+      console.log("========================================");
+    } else if (thumbnailId) {
+      // 등록 모드에서 처음 저장하는 경우, thumbnailId가 있을 때만 추가
       presetData.thumbnail_id = thumbnailId;
     }
 
@@ -3832,6 +3637,8 @@ interface InitialPresetData {
   masterDiameterValue: number;
   tableRowsCount: number;
   hasThumbnailFile: boolean;
+  thumbnailFileSize: number | null; // 파일 크기 (변경 감지용)
+  thumbnailFileLastModified: number | null; // 파일 수정 시간 (변경 감지용)
   tableRowsOrder: Array<{ uniqueKey: string; detail_id: string | null; sequence_order: number | null }>;
   tableRowsData: TableRow[]; // 전체 행 데이터 저장 (변경 감지용)
 }
@@ -3873,6 +3680,8 @@ const saveInitialPresetData = () => {
     masterDiameterValue: masterDiameterValue.value,
     tableRowsCount: tableRows.value.length,
     hasThumbnailFile: !!thumbnailFile.value,
+    thumbnailFileSize: thumbnailFile.value ? thumbnailFile.value.size : null,
+    thumbnailFileLastModified: thumbnailFile.value ? thumbnailFile.value.lastModified : null,
     tableRowsOrder,
     tableRowsData,
   };
@@ -3901,20 +3710,28 @@ const hasPresetChanges = (): boolean => {
     masterDiameterValue: masterDiameterValue.value,
     tableRowsCount: tableRows.value.length,
     hasThumbnailFile: !!thumbnailFile.value,
+    thumbnailFileSize: thumbnailFile.value ? thumbnailFile.value.size : null,
+    thumbnailFileLastModified: thumbnailFile.value ? thumbnailFile.value.lastModified : null,
   };
 
   const initial = initialPresetData.value;
+
+  // 썸네일 파일 변경 체크 (파일명, 파일 존재 여부, 파일 크기, 수정 시간 모두 확인)
+  const thumbnailChanged = 
+    current.thumbnailFileName !== initial.thumbnailFileName ||
+    current.hasThumbnailFile !== initial.hasThumbnailFile ||
+    current.thumbnailFileSize !== initial.thumbnailFileSize ||
+    current.thumbnailFileLastModified !== initial.thumbnailFileLastModified ||
+    current.thumbnailDownloadUrl !== initial.thumbnailDownloadUrl;
 
   // 기본 필드 변경 체크
   const basicFieldsChanged =
     current.selectedUnit !== initial.selectedUnit ||
     current.selectedMachine !== initial.selectedMachine ||
     current.presetName !== initial.presetName ||
-    current.thumbnailFileName !== initial.thumbnailFileName ||
-    current.thumbnailDownloadUrl !== initial.thumbnailDownloadUrl ||
+    thumbnailChanged ||
     Math.abs(current.masterDiameterValue - initial.masterDiameterValue) > 0.001 ||
-    current.tableRowsCount !== initial.tableRowsCount ||
-    current.hasThumbnailFile !== initial.hasThumbnailFile;
+    current.tableRowsCount !== initial.tableRowsCount;
 
   // sequence_order 변경 체크
   const currentRowsOrder = tableRows.value.map((row, index) => {

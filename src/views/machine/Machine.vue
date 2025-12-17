@@ -410,10 +410,7 @@
         <div class="machine-list-header">
           <h2>{{ t("common.machineList") }}</h2>
           <div class="action-buttons">
-            <button
-              class="btn btn-register"
-              @click="openRegistModal"
-            >
+            <button class="btn btn-register" @click="openRegistModal">
               {{ t("common.register") }}
             </button>
             <button
@@ -2143,10 +2140,14 @@ const handleMachineCategoryChange = async () => {
         (row: any) => row.code_key === selectedMachineCategory.value
       );
       if (selected?.code_group) {
-        const res = await machineStore.fetchDepthDetail(selected.code_group, 3);
-        const codes = (res as any)?.response?.data?.codes ?? [];
-        if (Array.isArray(codes)) {
-          const sorted = (codes as any[]).slice().sort((a: any, b: any) => {
+        const res = await machineStore.fetchDepthDetail(
+          selected.code_group,
+          3,
+          selectedMachineCategory.value
+        );
+        const children = (res as any)?.response?.data?.children ?? [];
+        if (Array.isArray(children)) {
+          const sorted = (children as any[]).slice().sort((a: any, b: any) => {
             const ak = (a?.code_key ?? "") as string;
             const bk = (b?.code_key ?? "") as string;
             return ak.localeCompare(bk);

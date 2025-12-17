@@ -70,7 +70,7 @@ const codeBasedRoutes = {
   WEB05: processRoute,
   WEB06: machineRoute,
   WEB07: costRoute,
-  WEB08: modelRoute,
+  //WEB08: modelRoute,
   WEB09: userRoute,
   WEB10: vendorsRoute,
 };
@@ -187,7 +187,9 @@ router.beforeEach(async (to, _from, next) => {
 
   // ✅ 이미 로그인된 사용자가 로그인 페이지 접근 시 → 코드관리 페이지로
   if (to.path === "/login" && isLoggedIn) {
-    console.log("이미 로그인된 사용자가 로그인 페이지 접근 → 코드관리 페이지로 >> ");
+    console.log(
+      "이미 로그인된 사용자가 로그인 페이지 접근 → 코드관리 페이지로 >> "
+    );
     return next("/code");
   }
 

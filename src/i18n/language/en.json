@@ -1264,6 +1264,7 @@
     "category": "3D ASSET Category",
     "categoryInterior": "Interior",
     "categoryStructure": "Structure",
+    "categoryEtc": "Other",
     "modelName": "3D Model Name",
     "modelNamePlaceholder": "Enter model name",
     "modelUpload": "3D Model Upload",
@@ -1887,6 +1888,8 @@
   },
   "excel": {
     "codeOrderNotNumeric": "Order must be numeric at row {row}.\nPlease modify and try again.",
-    "codeKeyDuplicate": "Value {codeKey} is duplicated at rows {firstRow} and {currentRow}. Registration is not allowed.\nPlease modify and try again."
+    "codeKeyDuplicate": "Value {codeKey} is duplicated at rows {firstRow} and {currentRow}. Registration is not allowed.\nPlease modify and try again.",
+    "codeOrderDuplicate": "Order {codeOrder} is duplicated at rows {firstRow} and {currentRow}. Registration is not allowed.\nPlease modify and try again.",
+    "requiredFieldMissing": "One or more required fields (Code, Code Name (Korean), Code Name (English), Order) are missing at row {row}.\nPlease modify and try again."
   }
 }

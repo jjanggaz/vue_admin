@@ -1413,9 +1413,16 @@ const openDetailPanel = async (item: Asset3DItem) => {
           const unitName = unitSystem ? unitSystem.system_name : libraryItem.unit_system_code || "";
 
           // 카테고리 이름 변환
-          const categoryName = libraryItem.category === "INTERIOR" ? "인테리어" : 
-                              libraryItem.category === "STRUCTURE" ? "구조물" : 
-                              libraryItem.category || "";
+          let categoryName = "";
+          if (libraryItem.category === "INTERIOR") {
+            categoryName = t("asset3D.categoryInterior");
+          } else if (libraryItem.category === "STRUCTURE") {
+            categoryName = t("asset3D.categoryStructure");
+          } else if (libraryItem.category === "ETC") {
+            categoryName = t("asset3D.categoryEtc");
+          } else {
+            categoryName = libraryItem.category || "";
+          }
 
           // 3D 모델 파일 정보
           const dtdxFile = libraryItem.dtdx_file as Record<string, unknown> | undefined;

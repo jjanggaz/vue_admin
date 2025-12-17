@@ -321,20 +321,29 @@ export const useMachineStore = defineStore("machine", () => {
   };
 
   // 상세 깊이 코드 조회 (/api/machine/depth/detail)
-  const fetchDepthDetail = async (codeGroup: string, codeLevel: number = 4) => {
+  const fetchDepthDetail = async (
+    codeGroup: string,
+    codeLevel: number = 4,
+    parentKey?: string
+  ) => {
     loading.value = true;
     error.value = null;
 
     try {
+      const body: Record<string, unknown> = {
+        code_group: codeGroup,
+        code_level: codeLevel,
+      };
+      if (parentKey) {
+        body.parent_key = parentKey;
+      }
+
       const response = await request("/api/machine/depth/detail", undefined, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          code_group: codeGroup,
-          code_level: codeLevel,
-        }),
+        body: JSON.stringify(body),
       });
 
       return response;

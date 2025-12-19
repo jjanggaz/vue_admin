@@ -296,54 +296,68 @@ interface RegistForm {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("columns.machine.no"), width: "60px", sortable: false },
+  {
+    key: "no",
+    title: t("columns.machine.no"),
+    width: "60px",
+    sortable: false,
+    align: "center",
+  },
   {
     key: "root_structure_type",
     title: t("common.structureMajorCategory"),
     width: "140px",
     sortable: false,
+    align: "center",
   },
   {
     key: "structure_type",
     title: t("columns.machine.structureType"),
     width: "140px",
     sortable: true,
+    align: "center",
   },
   {
     key: "unit_system_code",
     title: t("common.unit"),
     width: "100px",
     sortable: false,
+    align: "center",
   },
   {
     key: "formula_file_name",
     title: t("columns.machine.formula"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "dtdx_model_file_name",
     title: t("columns.machine.model3d"),
     width: "160px",
     sortable: false,
+    align: "center",
   },
   {
     key: "rvt_model_file_name",
     title: t("columns.machine.revitModel"),
     width: "140px",
     sortable: false,
+    align: "center",
   },
   {
     key: "created_at",
     title: t("common.creationDate"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "description",
     title: t("columns.machine.remarks"),
     width: "140px",
     sortable: false,
+    align: "center",
   },
 ];
 

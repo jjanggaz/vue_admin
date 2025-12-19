@@ -609,6 +609,7 @@ const tableColumns: TableColumn[] = [
     title: t("columns.electrical.majorCategory"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "middle_category",
@@ -761,9 +762,31 @@ const parseHierarchy = (fullHierarchy?: string) => {
   const levels = fullHierarchy.split("|").map((level) => level.trim());
 
   const parseLevel = (levelStr: string) => {
-    // "(레벨N) 코드 / 한국어명 / 영어명" 형식에서 한국어명 추출
-    const match = levelStr.match(/\(레벨\d+\)\s+[^/]+\s+\/\s+([^/]+)\s*\/?/);
-    return match ? match[1].trim() : null;
+    // "(레벨N) 코드 / 한국어명 / 영어명" 형식에서 코드, 한국어명, 영어명 추출
+    // 예: (레벨3) E_CAB01 / 0.6/1kV 난연 전력 케이블(F-CV) / 0.6/1kV 난연 전력 케이블(F-CV)
+    // 형식: (레벨N) 제거 후 " / " (공백 + 슬래시 + 공백)로 구분
+    // 코드는 첫 번째 " / " 전까지, 한국어명은 첫 번째 " / "와 두 번째 " / " 사이, 영어명은 두 번째 " / " 이후
+    
+    // "(레벨N) " 제거
+    const withoutLevelPrefix = levelStr.replace(/^\(레벨\d+\)\s+/, "");
+    
+    // " / "로 분리 (한국어명 안에 "/"가 있을 수 있으므로 마지막 " / "를 기준으로 분리)
+    const lastSeparatorIndex = withoutLevelPrefix.lastIndexOf(" / ");
+    if (lastSeparatorIndex === -1) {
+      // " / "가 없으면 전체를 코드로 간주
+      return withoutLevelPrefix.trim();
+    }
+    
+    // 코드 부분: 첫 번째 " / " 전까지
+    const firstSeparatorIndex = withoutLevelPrefix.indexOf(" / ");
+    if (firstSeparatorIndex === -1 || firstSeparatorIndex === lastSeparatorIndex) {
+      // " / "가 하나만 있거나 없으면
+      return withoutLevelPrefix.substring(0, lastSeparatorIndex).trim();
+    }
+    
+    // 한국어명: 첫 번째 " / "와 두 번째 " / " 사이
+    const koreanName = withoutLevelPrefix.substring(firstSeparatorIndex + 3, lastSeparatorIndex).trim();
+    return koreanName;
   };
 
   return {

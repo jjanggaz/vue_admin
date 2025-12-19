@@ -21,9 +21,7 @@
             </template>
             <template v-else>
               <!-- <span class="select-header-text">선택</span> -->
-               <input
-                type="checkbox"
-                />
+              <input type="checkbox" />
             </template>
           </th>
           <th
@@ -40,7 +38,10 @@
                 sortConfig.direction === 'desc',
             }"
             @click="handleSort(column)"
-            :style="column.width ? { width: column.width } : {}"
+            :style="{
+              ...(column.width ? { width: column.width } : {}),
+              ...(column.align ? { textAlign: column.align } : {}),
+            }"
           >
             <div class="th-content">
               <span class="th-text">{{ column.title }}</span>
@@ -116,7 +117,10 @@
               :key="column.key"
               v-show="!column.hidden"
               :class="column.className"
-              :style="column.width ? { width: column.width } : {}"
+              :style="{
+                ...(column.width ? { width: column.width } : {}),
+                ...(column.align ? { textAlign: column.align } : {}),
+              }"
             >
               <slot
                 :name="`cell-${column.key}`"
@@ -147,6 +151,7 @@ export interface TableColumn {
   dateFormat?: string; // 날짜 포맷 (예: 'YYYY-MM-DD', 'YYYY-MM-DD HH:mm')
   width?: string;
   hidden?: boolean;
+  align?: "left" | "center" | "right";
 }
 
 interface SortConfig {
@@ -192,7 +197,12 @@ const emit = defineEmits<{
   "drag-start": [item: any, index: number];
   "drag-over": [index: number];
   "drag-leave": [index: number];
-  "drop": [draggedItem: any, draggedIndex: number, targetItem: any, targetIndex: number];
+  drop: [
+    draggedItem: any,
+    draggedIndex: number,
+    targetItem: any,
+    targetIndex: number
+  ];
   "drag-end": [];
 }>();
 
@@ -369,7 +379,7 @@ const handleDragStart = (event: DragEvent, item: any, index: number) => {
   draggedItem.value = item;
   draggedIndex.value = index;
   isDragging.value = true;
-  
+
   // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
   const globalIndex = (window as any).__draggedRowIndex;
   const globalItem = (window as any).__draggedRowItem;
@@ -377,19 +387,21 @@ const handleDragStart = (event: DragEvent, item: any, index: number) => {
     draggedItem.value = globalItem;
     draggedIndex.value = globalIndex;
   }
-  
+
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/html", String(draggedIndex.value));
-    
+
     // 드래그 이미지 커스터마이징: 행 전체를 보이도록
-    const rowElement = (event.currentTarget as HTMLElement).closest('tr') as HTMLElement;
+    const rowElement = (event.currentTarget as HTMLElement).closest(
+      "tr"
+    ) as HTMLElement;
     if (rowElement) {
       const dragImage = rowElement.cloneNode(true) as HTMLElement;
-      dragImage.style.position = 'absolute';
-      dragImage.style.top = '-9999px';
+      dragImage.style.position = "absolute";
+      dragImage.style.top = "-9999px";
       dragImage.style.width = `${rowElement.offsetWidth}px`;
-      dragImage.style.opacity = '0.8';
+      dragImage.style.opacity = "0.8";
       document.body.appendChild(dragImage);
       event.dataTransfer.setDragImage(dragImage, 0, 0);
       setTimeout(() => document.body.removeChild(dragImage), 0);
@@ -401,20 +413,21 @@ const handleDragStart = (event: DragEvent, item: any, index: number) => {
 // 드래그 오버
 const handleDragOver = (event: DragEvent, index: number) => {
   if (!props.draggable) return;
-  
+
   // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
   const globalIndex = (window as any).__draggedRowIndex;
   const globalItem = (window as any).__draggedRowItem;
-  const currentDraggedIndex = draggedIndex.value !== null ? draggedIndex.value : globalIndex;
-  
+  const currentDraggedIndex =
+    draggedIndex.value !== null ? draggedIndex.value : globalIndex;
+
   if (currentDraggedIndex === null || currentDraggedIndex === index) return;
-  
+
   // 전역 상태가 있으면 내부 상태도 업데이트
   if (globalIndex !== undefined && globalItem && draggedIndex.value === null) {
     draggedItem.value = globalItem;
     draggedIndex.value = globalIndex;
   }
-  
+
   event.preventDefault();
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = "move";
@@ -438,14 +451,14 @@ const handleDragLeave = (event: DragEvent, index: number) => {
 // 드롭
 const handleDrop = (event: DragEvent, targetItem: any, targetIndex: number) => {
   if (!props.draggable) return;
-  
+
   // 전역 상태에서 드래그 정보 확인 (순번 셀에서 시작한 경우)
   const globalIndex = (window as any).__draggedRowIndex;
   const globalItem = (window as any).__draggedRowItem;
-  
+
   let finalDraggedIndex = draggedIndex.value;
   let finalDraggedItem = draggedItem.value;
-  
+
   if (globalIndex !== undefined && globalItem) {
     finalDraggedIndex = globalIndex;
     finalDraggedItem = globalItem;
@@ -456,16 +469,16 @@ const handleDrop = (event: DragEvent, targetItem: any, targetIndex: number) => {
     (window as any).__draggedRowIndex = undefined;
     (window as any).__draggedRowItem = undefined;
   }
-  
+
   if (finalDraggedIndex === null) return;
-  
+
   event.preventDefault();
   event.stopPropagation();
-  
+
   if (finalDraggedItem && finalDraggedIndex !== targetIndex) {
     emit("drop", finalDraggedItem, finalDraggedIndex, targetItem, targetIndex);
   }
-  
+
   dragOverIndex.value = null;
   draggedItem.value = null;
   draggedIndex.value = null;
@@ -575,8 +588,8 @@ const formatCellValue = (item: any, column: TableColumn) => {
     }
   }
   &::-webkit-scrollbar-button:start:decrement {
-    display:block;
-    height:50px;
+    display: block;
+    height: 50px;
     width: 0;
     background-color: transparent;
   }
@@ -597,7 +610,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
   th {
     padding: 0 20px;
   }
-  
+
   td {
     padding: 6px 20px;
   }
@@ -713,11 +726,11 @@ const formatCellValue = (item: any, column: TableColumn) => {
       &:hover {
         background-color: #e3f1fa;
       }
-      
+
       &.dragging {
         opacity: 0.5;
         background-color: #e3f1fa;
-        border: 2px dashed #2196F3;
+        border: 2px dashed #2196f3;
       }
     }
 
@@ -812,7 +825,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
         font-size: 12px;
       }
     }
-  
+
     tbody {
       td {
         font-size: 12px;

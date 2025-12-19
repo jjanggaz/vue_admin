@@ -787,54 +787,68 @@ interface MachineItem {
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
-  { key: "no", title: t("columns.machine.no"), width: "30px", sortable: false },
+  {
+    key: "no",
+    title: t("columns.machine.no"),
+    width: "30px",
+    sortable: false,
+    align: "center",
+  },
   {
     key: "equipment_type_name",
     title: t("columns.machine.type"),
     width: "150px",
     sortable: false,
+    align: "center",
   },
   {
     key: "formula_file_name",
     title: t("columns.machine.formula"),
     width: "150px",
     sortable: false,
+    align: "center",
   },
   {
     key: "formula_scope",
     title: t("columns.machine.formulaScope"),
     width: "100px",
     sortable: false,
+    align: "center",
   },
   {
     key: "equipment_code",
     title: t("columns.machine.code"),
     width: "150px",
     sortable: false,
+    align: "center",
   },
   {
     key: "vendor_name",
     title: t("columns.machine.company"),
     width: "150px",
     sortable: false,
+    align: "center",
   },
   {
     key: "model_number",
     title: t("columns.machine.model"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "unit_price",
     title: t("columns.machine.unitPrice"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "details",
     title: t("columns.machine.details"),
     width: "80px",
     sortable: false,
+    align: "center",
   },
 ];
 
@@ -845,30 +859,35 @@ const priceHistoryColumns: TableColumn[] = [
     title: t("common.unitPrice"),
     width: "50px",
     sortable: false,
+    align: "center",
   },
   {
     key: "price_date",
     title: t("common.unitPriceDate"),
     width: "50px",
     sortable: false,
+    align: "center",
   },
   {
     key: "price_type",
     title: t("common.priceType"),
     width: "50px",
     sortable: false,
+    align: "center",
   },
   {
     key: "price_unit_code",
     title: t("common.unit"),
     width: "50px",
     sortable: false,
+    align: "center",
   },
   {
     key: "price_reference",
     title: t("common.provider"),
     width: "100px",
     sortable: false,
+    align: "center",
   },
 ];
 

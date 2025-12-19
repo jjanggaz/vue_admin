@@ -1486,9 +1486,15 @@ const reloadPresetDetailData = async (presetId: string) => {
           }
 
           // sequence_order 저장 (화면 순번과 별개)
-          const sequenceOrder = (detailItem as Record<string, unknown>).sequence_order as number | null | undefined;
-          
+          const sequenceOrder = (detailItem as Record<string, unknown>).sequence_order as
+            | number
+            | null
+            | undefined;
+
           const newRow: TableRow = {
+            // 서버에서 내려온 원본 상세 데이터를 먼저 펼친 뒤,
+            // 아래에서 id / no / 표시용 필드들을 덮어써서 사용한다.
+            ...detailItem,
             id: nextRowId++,
             no: 0, // 임시값, 정렬 후 updateRowNumbers()에서 일련번호로 설정됨
             pipeCategory: pipeCategoryLabel,
@@ -1509,10 +1515,9 @@ const reloadPresetDetailData = async (presetId: string) => {
             // 원본 코드 값 저장
             _originalPipeCategoryCode: pipeCategoryCode,
             _originalSubCategoryCode: subCategoryCode,
-            ...detailItem,
             // detail_id가 없으면 null로 히든 변수로 추가
             detail_id: detailItem.detail_id || null,
-            // sequence_order 저장
+            // sequence_order 저장 (null 허용)
             sequence_order: sequenceOrder ?? null,
           };
 
@@ -2286,7 +2291,11 @@ const handleAddSelection = () => {
 
     // materialItemWithoutNo에서 pipeType과 sequence_order 제거 (배관유형 항목 및 sequence_order 제외)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pipeType: _pipeType, sequence_order: _sequenceOrder, ...materialItemWithoutNoAndPipeType } = materialItemWithoutNo;
+    const {
+      pipeType: _pipeType,
+      sequence_order: _sequenceOrder,
+      ...materialItemWithoutNoAndPipeType
+    } = materialItemWithoutNo;
 
     // model_file_info에서 file_name과 download_url 추출
     let modelFileName = "";
@@ -2329,12 +2338,17 @@ const handleAddSelection = () => {
     }
 
     const newRow: TableRow = {
+      // 자재 리스트에서 넘어온 원본 데이터를 먼저 펼친 뒤,
+      // 아래에서 id / 표시용 컬럼들을 덮어써서 사용한다.
+      ...materialItemWithoutNoAndPipeType,
       id: nextRowId++,
       pipeCategory: String(materialItem.pipeCategory || ""),
       subCategory: String(materialItem.subCategory || ""),
       diameter: String(materialItem.diameter || ""),
       diameterAfter: String(materialItem.diameterAfter || ""),
-      pipeType: String((materialItem as Record<string, unknown>).equipment_type_name || ""),
+      pipeType: String(
+        (materialItem as Record<string, unknown>).equipment_type_name || ""
+      ),
       code: String(materialItem.code || ""),
       model_file_name: modelFileName || "-",
       model_download_url: modelDownloadUrl || "",
@@ -2346,10 +2360,10 @@ const handleAddSelection = () => {
       equipment_code: equipmentCode,
       // 원본 코드 값 저장 (한글 라벨이 아닌 코드 값)
       _originalPipeCategoryCode: selectionFilter.value.pipeCategory || "",
-      _originalSubCategoryCode: selectionFilter.value.pipeCategory === "P_VALV" 
-        ? filterSelectedCode.value 
-        : selectionFilter.value.fittingType || "",
-      ...materialItemWithoutNoAndPipeType,
+      _originalSubCategoryCode:
+        selectionFilter.value.pipeCategory === "P_VALV"
+          ? filterSelectedCode.value
+          : selectionFilter.value.fittingType || "",
       // 피팅방식은 조회 조건의 세부구분 label 명칭을 사용 (마지막에 설정하여 덮어쓰기 방지)
       fittingType: fittingTypeLabel,
       // no 필드는 마지막에 설정하여 덮어쓰기 방지

@@ -494,6 +494,7 @@ const tableColumns: TableColumn[] = [
     title: t("columns.asset3D.model3dType"),
     width: "120px",
     sortable: false,
+    align: "center",
   },
   {
     key: "connected_machine",

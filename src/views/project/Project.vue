@@ -28,7 +28,7 @@
           </span>
         </div>
       </div>
-      <button class="btn btn-delete" @click="handleDelete">
+      <button v-if="!isAuthSuper" class="btn btn-delete" @click="handleDelete">
         {{ t("common.delete") }}
       </button>
     </div>
@@ -294,6 +294,12 @@ const paginatedProjectList = computed(() => {
 // 승인대기 건수 (서버에서 반환된 approvalCount 사용)
 const approvalPendingCount = computed(() => {
   return projectStore.approvalCount || 0;
+});
+
+// localStorage의 authSuper 값 확인
+const isAuthSuper = computed(() => {
+  const authSuper = localStorage.getItem("authSuper");
+  return authSuper === "true";
 });
 
 const goToApprovalPending = () => {

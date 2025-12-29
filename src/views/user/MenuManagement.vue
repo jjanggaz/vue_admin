@@ -35,42 +35,45 @@
     </div>
 
     <!-- Menu List Table -->
-    <AccordionTable
-      :columns="tableColumns"
-      :data="menuStore.menus"
-      :loading="menuStore.loading"
-      expand-column="menu_name"
-      children-key="children"
-      row-key="menu_id"
-      :expanded-items="expandedMenus"
-      @row-click="handleRowClick"
-      @child-row-click="handleChildRowClick"
-      @expand="handleExpand"
-    >
-      <template #cell-menu_name="{ item }">
-        <span class="menu-name">{{ item.menu_name }}</span>
-      </template>
+    <div class="table-wrapper">
+      <AccordionTable
+        :columns="tableColumns"
+        :data="menuStore.menus"
+        :loading="menuStore.loading"
+        expand-column="menu_name"
+        children-key="children"
+        row-key="menu_id"
+        :expanded-items="expandedMenus"
+        :maxHeight="'100%'"
+        @row-click="handleRowClick"
+        @child-row-click="handleChildRowClick"
+        @expand="handleExpand"
+      >
+        <template #cell-menu_name="{ item }">
+          <span class="menu-name">{{ item.menu_name }}</span>
+        </template>
 
-      <template #cell-menu_type="{ item }">
-        {{ item.menu_type }}
-      </template>
+        <template #cell-menu_type="{ item }">
+          {{ item.menu_type }}
+        </template>
 
-      <template #cell-menu_order="{ item }">
-        {{ item.menu_order }}
-      </template>
+        <template #cell-menu_order="{ item }">
+          {{ item.menu_order }}
+        </template>
 
-      <template #cell-is_active="{ item }">
-        <span :class="['usage-status', item.is_active ? 'used' : 'unused']">
-          {{ item.is_active ? t("common.used") : t("common.unused") }}
-        </span>
-      </template>
+        <template #cell-is_active="{ item }">
+          <span :class="['usage-status', item.is_active ? 'used' : 'unused']">
+            {{ item.is_active ? t("common.used") : t("common.unused") }}
+          </span>
+        </template>
 
-      <template #cell-edit="{ item }">
-        <button class="btn btn-edit sm" @click.stop="editMenu(item)">
-          {{ t("common.edit") }}
-        </button>
-      </template>
-    </AccordionTable>
+        <template #cell-edit="{ item }">
+          <button class="btn btn-edit sm" @click.stop="editMenu(item)">
+            {{ t("common.edit") }}
+          </button>
+        </template>
+      </AccordionTable>
+    </div>
 
     <!-- Edit Menu Modal -->
     <div v-if="isEditModalOpen" class="modal-overlay">
@@ -298,7 +301,15 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.menu-management {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  padding-bottom: 40px;
+}
+
 .header-section {
+  flex-shrink: 0;
   margin-bottom: 10px;
 
   .page-title {
@@ -306,6 +317,34 @@ onMounted(() => {
     font-weight: 600;
     color: #000000;
     margin-bottom: 20px;
+  }
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #e7e6ed;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #d7d5e4;
+    }
+  }
+  &::-webkit-scrollbar-button:start:decrement {
+    display: block;
+    height: 50px;
+    width: 0;
+    background-color: transparent;
   }
 }
 

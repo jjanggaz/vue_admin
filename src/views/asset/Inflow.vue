@@ -267,39 +267,78 @@
         <div class="modal-body">
           <!-- 첫 번째 줄: 유입종류명 국문, 유입종류명 영문, 비고 -->
           <dl class="column-regist">
-            <div class="column-item">
-              <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
-              <dd>
-                <select
-                  v-model="selectedInputType"
-                  @change="onInputTypeChange"
-                  class="form-input"
-                  required
-                >
-                  <option value="">선택</option>
-                  <option
-                    v-for="code in inflowStore.commonCodes"
-                    :key="code.code_id"
-                    :value="code.code_key"
+            <!-- wai_lang이 en이면 영문 필드를 먼저 표시 -->
+            <template v-if="isEnglish">
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
+                <dd>
+                  <select
+                    v-model="selectedInputType"
+                    @change="onInputTypeChange"
+                    class="form-input"
+                    required
                   >
-                    {{ code.code_value }}
-                  </option>
-                </select>
-              </dd>
-            </div>
-            <div class="column-item">
-              <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
-              <dd>
-                <input
-                  type="text"
-                  v-model="newInflowTypeNameEn"
-                  :placeholder="t('placeholder.inflowTypeName')"
-                  class="form-input"
-                  readonly
-                  disabled
-                />
-              </dd>
-            </div>
+                    <option value="">{{ t("common.select") }}</option>
+                    <option
+                      v-for="code in inflowStore.commonCodes"
+                      :key="code.code_id"
+                      :value="code.code_key"
+                    >
+                      {{ code.code_value_en || code.code_value }}
+                    </option>
+                  </select>
+                </dd>
+              </div>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
+                <dd>
+                  <input
+                    type="text"
+                    v-model="newInflowTypeName"
+                    :placeholder="t('placeholder.inflowTypeName')"
+                    class="form-input"
+                    readonly
+                    disabled
+                  />
+                </dd>
+              </div>
+            </template>
+            <!-- wai_lang이 en이 아니면 기존 순서대로 -->
+            <template v-else>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
+                <dd>
+                  <select
+                    v-model="selectedInputType"
+                    @change="onInputTypeChange"
+                    class="form-input"
+                    required
+                  >
+                    <option value="">{{ t("common.select") }}</option>
+                    <option
+                      v-for="code in inflowStore.commonCodes"
+                      :key="code.code_id"
+                      :value="code.code_key"
+                    >
+                      {{ code.code_value }}
+                    </option>
+                  </select>
+                </dd>
+              </div>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
+                <dd>
+                  <input
+                    type="text"
+                    v-model="newInflowTypeNameEn"
+                    :placeholder="t('placeholder.inflowTypeName')"
+                    class="form-input"
+                    readonly
+                    disabled
+                  />
+                </dd>
+              </div>
+            </template>
             <div class="column-item">
               <dt>{{ t("common.etc") }}</dt>
               <dd>
@@ -534,40 +573,80 @@
         <div class="modal-body">
           <!-- 첫 번째 줄: 유입종류명 국문, 유입종류명 영문, 비고 -->
           <dl class="column-regist">
-            <div class="column-item">
-              <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
-              <dd>
-                <select
-                  v-model="selectedInputType"
-                  @change="onInputTypeChange"
-                  class="form-input"
-                  required
-                  disabled
-                >
-                  <option value="">선택</option>
-                  <option
-                    v-for="code in inflowStore.commonCodes"
-                    :key="code.code_id"
-                    :value="code.code_key"
+            <!-- wai_lang이 en이면 영문 필드를 먼저 표시 -->
+            <template v-if="isEnglish">
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
+                <dd>
+                  <select
+                    v-model="selectedInputType"
+                    @change="onInputTypeChange"
+                    class="form-input"
+                    required
+                    disabled
                   >
-                    {{ code.code_value }}
-                  </option>
-                </select>
-              </dd>
-            </div>
-            <div class="column-item">
-              <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
-              <dd>
-                <input
-                  type="text"
-                  v-model="newInflowTypeNameEn"
-                  :placeholder="t('placeholder.inflowTypeName')"
-                  class="form-input"
-                  readonly
-                  disabled
-                />
-              </dd>
-            </div>
+                    <option value="">선택</option>
+                    <option
+                      v-for="code in inflowStore.commonCodes"
+                      :key="code.code_id"
+                      :value="code.code_key"
+                    >
+                      {{ code.code_value_en || code.code_value }}
+                    </option>
+                  </select>
+                </dd>
+              </div>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
+                <dd>
+                  <input
+                    type="text"
+                    v-model="newInflowTypeName"
+                    :placeholder="t('placeholder.inflowTypeName')"
+                    class="form-input"
+                    readonly
+                    disabled
+                  />
+                </dd>
+              </div>
+            </template>
+            <!-- wai_lang이 en이 아니면 기존 순서대로 -->
+            <template v-else>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameKo") }}</dt>
+                <dd>
+                  <select
+                    v-model="selectedInputType"
+                    @change="onInputTypeChange"
+                    class="form-input"
+                    required
+                    disabled
+                  >
+                    <option value="">선택</option>
+                    <option
+                      v-for="code in inflowStore.commonCodes"
+                      :key="code.code_id"
+                      :value="code.code_key"
+                    >
+                      {{ code.code_value }}
+                    </option>
+                  </select>
+                </dd>
+              </div>
+              <div class="column-item">
+                <dt class="essential">{{ t("inflow.typeNameEn") }}</dt>
+                <dd>
+                  <input
+                    type="text"
+                    v-model="newInflowTypeNameEn"
+                    :placeholder="t('placeholder.inflowTypeName')"
+                    class="form-input"
+                    readonly
+                    disabled
+                  />
+                </dd>
+              </div>
+            </template>
             <div class="column-item">
               <dt>{{ t("common.etc") }}</dt>
               <dd>
@@ -833,6 +912,9 @@ const inflowStore = useInflowStore();
 
 // 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
 const translateMessage = useTranslateMessage();
+
+// wai_lang이 en인지 확인
+const isEnglish = computed(() => localStorage.getItem("wai_lang") === "en");
 const newInflowTypeName = ref("");
 const newInflowTypeNameEn = ref("");
 const selectedInputType = ref(""); // 선택된 유입종류 코드
@@ -1856,6 +1938,7 @@ const openUpdateModal = async () => {
       );
       if (matchedCode) {
         selectedInputType.value = matchedCode.code_key;
+        newInflowTypeName.value = matchedCode.code_value || "";
         newInflowTypeNameEn.value = matchedCode.code_value_en || "";
       }
     }
@@ -2417,6 +2500,25 @@ onBeforeUnmount(() => {
   padding: 40px 24px;
   min-width: 0; // 전체 컨테이너가 축소될 수 있도록 허용
 
+  // 반응형 처리: 작은 화면에서는 스크롤 추가
+  @media (max-width: 1024px) {
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
+
   .page-content {
     min-width: 0; // 페이지 컨텐츠가 축소될 수 있도록 허용
   }
@@ -2569,7 +2671,7 @@ dl.column-regist {
   .color-input {
     width: 100px;
     padding: 0;
-    
+
     &::-webkit-color-swatch-wrapper {
       padding: 0;
       border: none;
@@ -2591,7 +2693,7 @@ dl.column-regist {
 
 // 탭 스크롤 관련 스타일
 .action-bar {
-  gap: 40px;
+  gap: 10px 40px;
 }
 
 .tab-action-bar {
@@ -2644,11 +2746,19 @@ dl.column-regist {
   }
   &::before {
     left: 20px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0)
+    );
   }
   &::after {
     right: 20px;
-    background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    background: linear-gradient(
+      to left,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0)
+    );
   }
 
   .tab {

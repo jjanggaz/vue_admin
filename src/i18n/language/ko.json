@@ -300,6 +300,7 @@
       "material": "재질",
       "model3dType": "3D 모델구분",
       "connectedMachine": "연결기계",
+      "category": "3D ASSET 카테고리",
       "title": "명칭",
       "diameter": "직경",
       "unit": "단위",
@@ -412,7 +413,8 @@
       "code": "배관코드",
       "majorCategory": "대분류",
       "middleCategory": "중분류",
-      "pipeType": "배관유형"
+      "pipeType": "배관유형",
+      "bodyMaterial": "몸체 재질"
     },
     "measurement": {
       "no": "순번",
@@ -562,6 +564,7 @@
     "asset3DList": "3D Asset 리스트",
     "pipeList": "배관 리스트",
     "electricalList": "전기자재 리스트",
+    "measurementList": "계측기 리스트",
     "structureList": "구조물 리스트",
     "structure3DRegisterList": "3D 구조물 등록 리스트",
     "structure3DFormulaVersionManagement": "3D 구조물 계산식 관리",
@@ -769,6 +772,21 @@
         "details": "상세정보",
         "unitPrice": "단가",
         "code": "전기코드"
+      },
+      "asset3D": {
+        "no": "순번",
+        "model3dType": "3D 모델구분",
+        "connectedMachine": "연결기계",
+        "category": "카테고리",
+        "title": "명칭",
+        "diameter": "직경",
+        "unit": "단위",
+        "createdAt": "등록일자",
+        "details": "상세정보",
+        "type": "3D Asset유형",
+        "code": "3D Asset코드",
+        "company": "업체명",
+        "model": "모델명"
       }
     }
   },
@@ -950,6 +968,9 @@
     "processSymbolPreview": "공정심볼 미리보기",
     "selectExcelFileAfterSavePid": "매핑 Excel 파일을 선택하려면 먼저 P&ID 파일을 저장해주세요.",
     "deleteSelectedPidConfirm": "선택된 P&ID 항목을 삭제하시겠습니까?",
+    "savePidFirst": "P&ID 파일을 먼저 저장해주세요",
+    "selectMappingExcelFile": "매핑 Excel 파일 선택",
+    "selectSvgDrawingFile": "Svg 도면 파일 선택",
     "processCard": "공정카드",
     "tabs": {
       "P&ID": "P&ID",
@@ -987,6 +1008,7 @@
     "structureSearch": "구조물유형, 구조물명 검색",
     "selectItem": "항목을 선택해주세요",
     "selectFile": "파일을 선택해주세요",
+    "selectPlease": "선택하세요",
     "loginUsername": "사용자명을 입력하세요",
     "loginPassword": "비밀번호를 입력하세요",
     "userId": "사용자 ID를 입력하세요",
@@ -1056,7 +1078,9 @@
   },
   "datatable": {
     "loading": "데이터를 불러오는 중...",
-    "noData": "등록된 데이터가 없습니다"
+    "noData": "등록된 데이터가 없습니다",
+    "attach": "첨부",
+    "attachCancel": "첨부취소"
   },
   "project": {
     "tabs": {
@@ -1257,6 +1281,10 @@
       "unit": "단가",
       "invoice": "견적가"
     },
+    "preset": "프리셋",
+    "library": "3D 라이브러리",
+    "libraryRegister": "3D 라이브러리 등록",
+    "presetRegister": "3D 프리셋 등록",
     "category": "3D ASSET 카테고리",
     "categoryInterior": "인테리어",
     "categoryStructure": "구조물",
@@ -1274,8 +1302,13 @@
     "machineBlower": "송풍기",
     "presetName": "프리셋 명",
     "presetNamePlaceholder": "프리셋 명을 입력해주세요.",
-    "thumbnailUpload": "썸네일 업로드",
+    "thumbnailUpload": "썸네일",
     "selectedItems": "선택 항목",
+    "model3D": "3D",
+    "revit": "Revit",
+    "totalUnitCount": "총 대수 구성",
+    "presetRepresentativeDiameter": "프리셋의 대표 직경 값",
+    "diameterUnit": "직경 단위",
     "deleteRow": "-행 삭제",
     "diameterInput": "직경 입력",
     "diameterPlaceholder": "직경 (숫자만 입력)",
@@ -1283,6 +1316,7 @@
     "keywordPlaceholder": "원본 전체 텍스트 검색 (예: 엘보 & 150A)",
     "resetFilter": "필터 초기화",
     "addSelectedItems": "선택 항목 추가",
+    "noModel": "모델없음",
     "materialList": "자재 리스트",
     "searching": "검색 중...",
     "subCategory": "세부구분",
@@ -1721,6 +1755,7 @@
       "menuUpdateFail": "메뉴 수정에 실패했습니다.",
       "codesArrayEmpty": "코드 배열이 비어있습니다.",
       "codesMultiCreatePartialFail": "일부 코드 등록을 실패하였습니다.",
+      "unprocessedKeysMessage": "코드값 중복으로 일부 코드 등록에 실패하였습니다.\n중복된 코드 값들은 {keys} 입니다.",
       "invalidSearchCondition": "검색 조건이 올바르지 않습니다. 검색 조건을 확인해주세요.",
       "allItemsDeleteFailed": "모든 항목 삭제에 실패했습니다.",
       "svgContentNotFound": "SVG 내용을 찾을 수 없습니다.",

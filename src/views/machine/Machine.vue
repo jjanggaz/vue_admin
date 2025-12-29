@@ -424,20 +424,22 @@
         </div>
 
         <!-- 데이터 테이블 -->
-        <DataTable
-          :columns="tableColumns"
-          :data="paginatedMachineList"
-          :loading="loading"
-          :selectable="true"
-          :selected-items="selectedItems"
-          selection-mode="multiple"
-          :show-select-all="true"
-          :select-header-text="t('common.selectColumn')"
-          row-key="equipment_id"
-          :stickyHeader="true"
-          @selection-change="handleSelectionChange"
-          @row-click="handleRowClick"
-        >
+        <div class="table-wrapper">
+          <DataTable
+            :columns="tableColumns"
+            :data="paginatedMachineList"
+            :loading="loading"
+            :selectable="true"
+            :selected-items="selectedItems"
+            selection-mode="multiple"
+            :show-select-all="true"
+            :select-header-text="t('common.selectColumn')"
+            row-key="equipment_id"
+            :stickyHeader="true"
+            :maxHeight="'100%'"
+            @selection-change="handleSelectionChange"
+            @row-click="handleRowClick"
+          >
           <!-- 순번 슬롯 -->
           <template #cell-no="{ index }">
             {{ (currentPage - 1) * pageSize + index + 1 }}
@@ -499,6 +501,7 @@
             </button>
           </template>
         </DataTable>
+        </div>
 
         <!-- 페이징 -->
         <div class="pagination-container">
@@ -744,6 +747,7 @@ interface MachineItem {
   equipment_name: string;
   equipment_type: string;
   equipment_type_name?: string;
+  equipment_type_name_en?: string;
   manufacturer: string;
   model_number: string;
   // API 응답의 전체 데이터를 포함
@@ -1000,9 +1004,15 @@ const specVerticalData = computed(() => {
   const isEnglish = locale.value === "en";
 
   // 1. 고정 필드
+  // localStorage의 wai_lang 값에 따라 equipment_type_name 결정
+  const waiLang = localStorage.getItem("wai_lang");
+  const equipmentTypeNameDisplay =
+    waiLang === "en" && item.equipment_type_name_en
+      ? item.equipment_type_name_en
+      : item.equipment_type_name || "-";
   data.push({
     columnName: t("columns.machine.type"),
-    value: item.equipment_type_name || "-",
+    value: equipmentTypeNameDisplay,
   });
   data.push({
     columnName: t("columns.machine.code"),
@@ -2121,8 +2131,21 @@ const loadData = async () => {
 
     // API 응답 데이터를 machineList에 설정
     if (machineStore.searchResults?.items) {
-      machineList.value = machineStore.searchResults
-        .items as unknown as MachineItem[];
+      const waiLang = localStorage.getItem("wai_lang");
+      machineList.value = (machineStore.searchResults.items as any[]).map(
+        (item: any) => {
+          // localStorage의 wai_lang 값에 따라 equipment_type_name 결정
+          const equipmentTypeNameDisplay =
+            waiLang === "en" && item.equipment_type_name_en
+              ? item.equipment_type_name_en
+              : item.equipment_type_name || "-";
+
+          return {
+            ...item,
+            equipment_type_name: equipmentTypeNameDisplay,
+          } as MachineItem;
+        }
+      );
     } else {
       machineList.value = [];
     }
@@ -2473,32 +2496,43 @@ onMounted(async () => {
   padding: 0 24px;
   height: 100vh;
   overflow: hidden;
-  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 }
 .machine-page:has(.page-layout.detail-open) {
   padding-right: 4px;
 }
 
-.page-layout {
-  display: grid;
-  height: calc(100vh - #{$spacing-lg * 2});
-  width: 100%;
-  overflow: hidden;
-  gap: 10px;
-  grid-template-columns: 1fr; // 기본: 전체 너비
-  transition: grid-template-columns 0.3s ease;
-
-  &.detail-open {
-    grid-template-columns: 2fr 1fr; // 상세보기 열림: 2/3 + 1/3
-  }
-}
-
 .main-content {
-  overflow-y: auto;
-  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-sizing: border-box;
   min-width: 0;
-  padding-top: 40px;
+  padding: 40px 0 50px;
+}
+
+.search-filter-bar {
+  flex-shrink: 0;
+}
+
+.detail-search-panel {
+  flex-shrink: 0;
+}
+
+.machine-list-header {
+  flex-shrink: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
 }
 
 .price-history-section {

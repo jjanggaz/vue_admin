@@ -134,6 +134,10 @@ const handleTabClick = (tab: TabItem) => {
       justify-content: center;
       font-weight: $font-weight-bold;
     }
+
+    @media (max-width: $breakpoint-md) {
+      min-width: 80px;
+    }
   }
 }
 
@@ -144,7 +148,7 @@ const handleTabClick = (tab: TabItem) => {
       padding: $spacing-sm $spacing-md;
 
       .tab-text {
-        font-size: 12px;
+        font-size: 16px;
       }
     }
   }

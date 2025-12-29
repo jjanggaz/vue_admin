@@ -94,74 +94,77 @@
     </div>
 
     <!-- 데이터 테이블 -->
-    <DataTable
-      :columns="tableColumns"
-      :data="paginatedStructureList"
-      :loading="loading"
-      :selectable="true"
-      :selected-items="selectedItems"
-      selection-mode="multiple"
-      :show-select-all="true"
-      :select-header-text="t('common.selectColumn')"
-      :row-key="'structure_id'"
-      @selection-change="handleSelectionChange"
-      @sort-change="handleSortChange"
-    >
-      <!-- 순번 슬롯 -->
-      <template #cell-no="{ index }">
-        {{ (currentPage - 1) * pageSize + index + 1 }}
-      </template>
+    <div class="table-wrapper">
+      <DataTable
+        :columns="tableColumns"
+        :data="paginatedStructureList"
+        :loading="loading"
+        :selectable="true"
+        :selected-items="selectedItems"
+        selection-mode="multiple"
+        :show-select-all="true"
+        :select-header-text="t('common.selectColumn')"
+        :row-key="'structure_id'"
+        :maxHeight="'100%'"
+        @selection-change="handleSelectionChange"
+        @sort-change="handleSortChange"
+      >
+        <!-- 순번 슬롯 -->
+        <template #cell-no="{ index }">
+          {{ (currentPage - 1) * pageSize + index + 1 }}
+        </template>
 
-      <!-- 계산식 파일 다운로드 슬롯 -->
-      <template #cell-formula_file_name="{ item }">
-        <span
-          v-if="item.formula?.download_url"
-          class="download-link"
-          @click="
-            downloadFile(item.formula.download_url, item.formula_file_name)
-          "
-        >
-          {{ item.formula_file_name }}
-        </span>
-        <span v-else>{{ item.formula_file_name }}</span>
-      </template>
+        <!-- 계산식 파일 다운로드 슬롯 -->
+        <template #cell-formula_file_name="{ item }">
+          <span
+            v-if="item.formula?.download_url"
+            class="download-link"
+            @click="
+              downloadFile(item.formula.download_url, item.formula_file_name)
+            "
+          >
+            {{ item.formula_file_name }}
+          </span>
+          <span v-else>{{ item.formula_file_name }}</span>
+        </template>
 
-      <!-- 3D 모델 파일 다운로드 슬롯 -->
-      <template #cell-dtdx_model_file_name="{ item }">
-        <span
-          v-if="item.dtdx_model?.download_url"
-          class="download-link"
-          @click="
-            downloadFile(
-              item.dtdx_model.download_url,
-              item.dtdx_model_file_name
-            )
-          "
-        >
-          {{ item.dtdx_model_file_name }}
-        </span>
-        <span v-else>{{ item.dtdx_model_file_name }}</span>
-      </template>
+        <!-- 3D 모델 파일 다운로드 슬롯 -->
+        <template #cell-dtdx_model_file_name="{ item }">
+          <span
+            v-if="item.dtdx_model?.download_url"
+            class="download-link"
+            @click="
+              downloadFile(
+                item.dtdx_model.download_url,
+                item.dtdx_model_file_name
+              )
+            "
+          >
+            {{ item.dtdx_model_file_name }}
+          </span>
+          <span v-else>{{ item.dtdx_model_file_name }}</span>
+        </template>
 
-      <!-- REVIT 모델 파일 다운로드 슬롯 -->
-      <template #cell-rvt_model_file_name="{ item }">
-        <span
-          v-if="item.rvt_model?.download_url"
-          class="download-link"
-          @click="
-            downloadFile(item.rvt_model.download_url, item.rvt_model_file_name)
-          "
-        >
-          {{ item.rvt_model_file_name }}
-        </span>
-        <span v-else>{{ item.rvt_model_file_name }}</span>
-      </template>
+        <!-- REVIT 모델 파일 다운로드 슬롯 -->
+        <template #cell-rvt_model_file_name="{ item }">
+          <span
+            v-if="item.rvt_model?.download_url"
+            class="download-link"
+            @click="
+              downloadFile(item.rvt_model.download_url, item.rvt_model_file_name)
+            "
+          >
+            {{ item.rvt_model_file_name }}
+          </span>
+          <span v-else>{{ item.rvt_model_file_name }}</span>
+        </template>
 
-      <!-- 생성일자 포맷팅 슬롯 -->
-      <template #cell-created_at="{ value }">
-        {{ formatDate(value) }}
-      </template>
-    </DataTable>
+        <!-- 생성일자 포맷팅 슬롯 -->
+        <template #cell-created_at="{ value }">
+          {{ formatDate(value) }}
+        </template>
+      </DataTable>
+    </div>
 
     <!-- 페이징 -->
     <div class="pagination-container">
@@ -620,48 +623,58 @@ const loadData = async () => {
     // API 응답 데이터를 structureList에 설정
     if ((structureStore.searchResults as any)?.items) {
       const apiData = (structureStore.searchResults as any).items;
-      structureList.value = apiData.map((item: any) => ({
-        structure_id: item.structure_id,
-        structure_name: item.structure_name,
-        root_structure_type: item.root_structure_type_info?.code_value || "-",
-        structure_type: item.structure_type,
-        unit_system_code: item.unit_system_code,
-        formula_file_name: item.formula?.original_filename || "-",
-        dtdx_model_file_name: item.dtdx_model?.original_filename || "-",
-        rvt_model_file_name: item.rvt_model?.original_filename || "-",
-        thumbnail_file_name: item.thumbnail?.original_filename || "-",
-        created_at: item.created_at,
-        description: item.description || "-",
-        // 원본 데이터도 유지 (필요시 사용)
-        formula: item.formula
-          ? {
-              ...item.formula,
-              file_uri: item.formula.file_uri,
-              formula_id: item.formula.formula_id,
-            }
-          : undefined,
-        dtdx_model: item.dtdx_model
-          ? {
-              ...item.dtdx_model,
-              file_uri: item.dtdx_model.file_uri,
-              model_file_id: item.dtdx_model.model_file_id,
-            }
-          : undefined,
-        rvt_model: item.rvt_model
-          ? {
-              ...item.rvt_model,
-              file_uri: item.rvt_model.file_uri,
-              model_file_id: item.rvt_model.model_file_id,
-            }
-          : undefined,
-        thumbnail: item.thumbnail
-          ? {
-              ...item.thumbnail,
-              file_uri: item.thumbnail.symbol_uri,
-              symbol_id: item.thumbnail.symbol_id,
-            }
-          : undefined,
-      }));
+      structureList.value = apiData.map((item: any) => {
+        // localStorage의 wai_lang 값에 따라 표시할 값 결정
+        const waiLang = localStorage.getItem("wai_lang");
+        const rootStructureTypeDisplay =
+          waiLang === "en" && item.root_structure_type_info?.code_value_en
+            ? item.root_structure_type_info.code_value_en
+            : item.root_structure_type_info?.code_value || "-";
+
+        return {
+          structure_id: item.structure_id,
+          structure_name: item.structure_name,
+          root_structure_type: rootStructureTypeDisplay,
+          root_structure_type_info: item.root_structure_type_info,
+          structure_type: item.structure_type,
+          unit_system_code: item.unit_system_code,
+          formula_file_name: item.formula?.original_filename || "-",
+          dtdx_model_file_name: item.dtdx_model?.original_filename || "-",
+          rvt_model_file_name: item.rvt_model?.original_filename || "-",
+          thumbnail_file_name: item.thumbnail?.original_filename || "-",
+          created_at: item.created_at,
+          description: item.description || "-",
+          // 원본 데이터도 유지 (필요시 사용)
+          formula: item.formula
+            ? {
+                ...item.formula,
+                file_uri: item.formula.file_uri,
+                formula_id: item.formula.formula_id,
+              }
+            : undefined,
+          dtdx_model: item.dtdx_model
+            ? {
+                ...item.dtdx_model,
+                file_uri: item.dtdx_model.file_uri,
+                model_file_id: item.dtdx_model.model_file_id,
+              }
+            : undefined,
+          rvt_model: item.rvt_model
+            ? {
+                ...item.rvt_model,
+                file_uri: item.rvt_model.file_uri,
+                model_file_id: item.rvt_model.model_file_id,
+              }
+            : undefined,
+          thumbnail: item.thumbnail
+            ? {
+                ...item.thumbnail,
+                file_uri: item.thumbnail.symbol_uri,
+                symbol_id: item.thumbnail.symbol_id,
+              }
+            : undefined,
+        };
+      });
     } else {
       structureList.value = [];
     }
@@ -697,7 +710,34 @@ $mobile: 768px;
 $tablet: 1024px;
 
 .structure-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
   padding: 40px 24px;
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
+}
+
+.search-filter-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.structure-list-header {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 
 // 다운로드 링크 스타일

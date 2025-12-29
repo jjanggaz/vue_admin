@@ -19,8 +19,7 @@
               :key="group.key"
               :value="group.key"
             >
-              {{ group.value }} [{{ group.key }}]
-              <!-- {{ group.value }} [{{ group.key }}] -->
+              {{ getDisplayValue(group) }} [{{ group.key }}]
             </option>
           </select>
         </div>
@@ -49,8 +48,7 @@
               :key="category.key"
               :value="category.key"
             >
-              {{ category.value }} [{{ category.key }}]
-              <!-- {{ category.value }} [{{ category.key }}] -->
+              {{ getDisplayValue(category) }} [{{ category.key }}]
             </option>
           </select>
         </div>
@@ -79,8 +77,7 @@
               :key="category.key"
               :value="category.key"
             >
-              {{ category.value }} [{{ category.key }}]
-              <!-- {{ category.value }} [{{ category.key }}] -->
+              {{ getDisplayValue(category) }} [{{ category.key }}]
             </option>
           </select>
         </div>
@@ -106,8 +103,7 @@
               :key="category.key"
               :value="category.key"
             >
-              {{ category.value }} [{{ category.key }}]
-              <!-- {{ category.value }} [{{ category.key }}] -->
+              {{ getDisplayValue(category) }} [{{ category.key }}]
             </option>
           </select>
         </div>
@@ -159,6 +155,7 @@
             row-key="code_id"
             :select-header-text="t('common.selectColumn')"
             :selected-items="selectedItems"
+            :maxHeight="'100%'"
             @selection-change="handleSelectionChange"
             @sort-change="handleSortChange"
             @row-click="handleRowClick"
@@ -469,6 +466,15 @@ const { t } = useI18n();
 
 // 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
 const translateMessage = useTranslateMessage();
+
+// localStorage의 wai_lang 값에 따라 표시할 값 반환
+const getDisplayValue = (item: { value: string; code_value_en?: string }) => {
+  const waiLang = localStorage.getItem("wai_lang");
+  if (waiLang === "en" && item.code_value_en) {
+    return item.code_value_en;
+  }
+  return item.value;
+};
 
 // Store 사용
 const codeStore = useCodeStore();
@@ -954,13 +960,33 @@ const handleModalSave = async (data: CodeCreateRequest[]) => {
     await refreshAllSelectBoxes();
   } catch (error: unknown) {
     console.error("코드 저장 실패:", error);
-    const errorMessage = translateMessage(
-      error && typeof error === "object" && "message" in error
-        ? (error as { message: string }).message
-        : undefined,
-      "messages.error.saveFailed"
-    );
-    alert(errorMessage);
+
+    // error 객체에서 message와 failedCodeKeys 확인
+    const errorObj = error && typeof error === "object" ? (error as any) : null;
+
+    // failedCodeKeys가 있는 경우와 없는 경우에 따라 다른 메시지 사용
+    let alertMessage: string;
+    if (
+      errorObj?.failedCodeKeys &&
+      Array.isArray(errorObj.failedCodeKeys) &&
+      errorObj.failedCodeKeys.length > 0
+    ) {
+      // failedCodeKeys가 있는 경우: 중복된 코드 값들 포함한 메시지
+      const failedKeys = errorObj.failedCodeKeys
+        .map((key: string) => `${key}`)
+        .join(", ");
+      alertMessage = t("messages.error.unprocessedKeysMessage", {
+        keys: failedKeys,
+      });
+    } else {
+      // failedCodeKeys가 없는 경우: 기본 에러 메시지
+      alertMessage = translateMessage(
+        errorObj?.message,
+        "messages.error.codesMultiCreatePartialFail"
+      );
+    }
+
+    alert(alertMessage);
   }
 };
 
@@ -1288,6 +1314,9 @@ const handleEdit = () => {
 
 <style scoped lang="scss">
 .code-management {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
   padding: 40px 24px;
 
   @media (max-width: 768px) {
@@ -1296,6 +1325,7 @@ const handleEdit = () => {
 }
 
 .search-section {
+  flex-shrink: 0;
   margin-bottom: 20px;
 
   .search-filters {
@@ -1321,8 +1351,33 @@ const handleEdit = () => {
   }
 }
 
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.table-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-buttons {
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+
 .table-wrapper {
   flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 
 .column-regist {

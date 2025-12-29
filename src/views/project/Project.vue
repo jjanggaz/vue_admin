@@ -33,24 +33,27 @@
       </button>
     </div>
     <!-- 데이터 테이블 -->
-    <DataTable
-      ref="dataTableRef"
-      :columns="tableColumns"
-      :data="paginatedProjectList"
-      :loading="false"
-      :selectable="true"
-      selectionMode="multiple"
-      :showSelectAll="true"
-      :selected-items="selectedItems"
-      @selection-change="handleSelectionChange"
-      @sort-change="handleSortChange"
-    >
-      <template #cell-detail="{ item }">
-        <button class="btn-view" @click.stop="viewDetail(item)">
-          {{ t("common.view") }}
-        </button>
-      </template>
-    </DataTable>
+    <div class="table-wrapper">
+      <DataTable
+        ref="dataTableRef"
+        :columns="tableColumns"
+        :data="paginatedProjectList"
+        :loading="false"
+        :selectable="true"
+        selectionMode="multiple"
+        :showSelectAll="true"
+        :selected-items="selectedItems"
+        :maxHeight="'100%'"
+        @selection-change="handleSelectionChange"
+        @sort-change="handleSortChange"
+      >
+        <template #cell-detail="{ item }">
+          <button class="btn-view" @click.stop="viewDetail(item)">
+            {{ t("common.view") }}
+          </button>
+        </template>
+      </DataTable>
+    </div>
     <!-- 페이징 -->
     <div class="pagination-container">
       <div class="total-count">
@@ -583,11 +586,29 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .project-management {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
   padding: 40px 24px;
 
-  @media (max-width: 1024px) {
-    padding: 40px 0;
+  @media (max-width: 768px) {
+    padding: 20px 0;
   }
+}
+
+.action-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 
 // 모달이 제대로 표시되도록 하는 스타일

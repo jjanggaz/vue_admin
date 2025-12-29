@@ -1,5 +1,9 @@
 <template>
-  <div class="accordion-table-container">
+  <div
+    class="accordion-table-container"
+    :class="{ 'with-scroll': maxHeight !== 'auto' }"
+    :style="maxHeight !== 'auto' ? { maxHeight } : {}"
+  >
     <table class="accordion-table">
       <thead>
         <tr>
@@ -199,6 +203,7 @@ interface Props {
   selectionMode?: "multiple" | "single" | "none"; // 선택 모드: 다중선택, 단일선택, 선택불가
   showSelectAll?: boolean; // 전체선택 체크박스 표시 여부
   selectHeaderText?: string; // 선택 컬럼 헤더 텍스트
+  maxHeight?: string; // 테이블 최대 높이 (스크롤 적용)
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -211,6 +216,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectionMode: "multiple",
   showSelectAll: true,
   selectHeaderText: "",
+  maxHeight: "auto",
 });
 
 const emit = defineEmits<{
@@ -413,13 +419,39 @@ const toggleSelectRow = (item: any) => {
 .accordion-table-container {
   background: white;
   border-top: 2px solid #000000;
-  border-bottom: 1px solid #000000;
   overflow: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &.with-scroll {
+    overflow-y: auto;
+  }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #e7e6ed;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #d7d5e4;
+    }
+  }
+  &::-webkit-scrollbar-button:start:decrement {
+    display: block;
+    height: 50px;
+    width: 0;
+    background-color: transparent;
+  }
 }
 
 .accordion-table {
+  position: relative;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 
   .checkbox-cell {
     width: 40px;
@@ -454,8 +486,18 @@ const toggleSelectRow = (item: any) => {
     }
   }
 
-  thead {
+  // maxHeight가 'auto'일 때 헤더 고정
+  &:not(.with-scroll) thead {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
     background-color: #ffffff;
+    z-index: 1;
+  }
+
+  thead {
+    position: relative;
 
     th {
       border-bottom: 0.6px solid #000000;

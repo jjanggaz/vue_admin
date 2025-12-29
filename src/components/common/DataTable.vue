@@ -567,9 +567,8 @@ const formatCellValue = (item: any, column: TableColumn) => {
 <style scoped lang="scss">
 .data-table-container {
   overflow: hidden;
-  border-top: 2px solid #000000;
-  border-bottom: 1px solid #000000;
   overflow-x: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
   &.with-scroll {
@@ -653,10 +652,7 @@ const formatCellValue = (item: any, column: TableColumn) => {
   }
 
   thead {
-    border-bottom: 0.6px solid #000000;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    position: relative;
 
     th {
       text-align: center;
@@ -712,7 +708,30 @@ const formatCellValue = (item: any, column: TableColumn) => {
 
   // stickyHeader가 false일 때 헤더 고정 해제
   &:not(.with-scroll) thead {
-    position: static;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2px;
+      background-color: #000;
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background-color: #000;
+    }
   }
 
   tbody {

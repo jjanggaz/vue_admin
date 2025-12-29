@@ -28,14 +28,17 @@
         </div>
       </div>
     </div>
-    <DataTable
-      ref="dataTableRef"
-      :columns="tableColumns"
-      :data="paginatedProjectList"
-      :loading="false"
-      :selectable="false"
-      @sort-change="handleSortChange"
-    />
+    <div class="table-wrapper">
+      <DataTable
+        ref="dataTableRef"
+        :columns="tableColumns"
+        :data="paginatedProjectList"
+        :loading="false"
+        :selectable="false"
+        :maxHeight="'100%'"
+        @sort-change="handleSortChange"
+      />
+    </div>
 
     <div class="pagination-container">
       <div class="total-count">
@@ -342,10 +345,26 @@ onMounted(async () => {
 .project-management {
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 60px);
   padding: 40px 24px;
 
   @media (max-width: 1050px) {
     padding: 40px 0;
   }
+}
+
+.action-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 </style>

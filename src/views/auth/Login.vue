@@ -206,7 +206,19 @@ const handleLogin = async () => {
     input {
       width: 100%;
       height: 50px;
-      font-weight: 500;
+      line-height: 50px;
+      border: 1px solid #888888;
+      border-radius: 5px;
+      color: #202020;
+      font-size: 16px;
+
+      &:focus {
+        border: 1px solid #279bd8;
+      }
+
+      &::placeholder {
+        color: #888888;
+      }
     }
   }
   .form-options {
@@ -219,8 +231,8 @@ const handleLogin = async () => {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 15px;
       color: #888888;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
 
@@ -273,12 +285,9 @@ const handleLogin = async () => {
   justify-content: flex-end;
 
   .lang-select {
-    position: relative;
-    appearance: none;
     width: 80px;
     height: 26px;
     padding: 0 10px;
-    border-radius: 4px;
     border: 1px solid #707489;
     font-size: 12px;
     font-weight: 400;

@@ -35,7 +35,7 @@
                   :key="category.code_id"
                   :value="category.code_key"
                 >
-                  {{ category.code_value }}
+                  {{ locale === "en" && category.code_value_en ? category.code_value_en : category.code_value }}
                 </option>
               </select>
             </div>
@@ -77,21 +77,23 @@
         </div>
 
         <!-- 데이터 테이블 -->
-        <DataTable
-          :columns="tableColumns"
-          :data="paginatedMachineList"
-          :loading="loading"
-          :selectable="true"
-          :selected-items="selectedItems"
-          :selection-mode="'multiple'"
-          :show-select-all="true"
-          :select-header-text="t('common.selectColumn')"
-          row-key="equipment_id"
-          :stickyHeader="true"
-          @selection-change="handleSelectionChange"
-          @row-click="handleRowClick"
-          @sort-change="handleSortChange"
-        >
+        <div class="table-wrapper">
+          <DataTable
+            :columns="tableColumns"
+            :data="paginatedMachineList"
+            :loading="loading"
+            :selectable="true"
+            :selected-items="selectedItems"
+            :selection-mode="'multiple'"
+            :show-select-all="true"
+            :select-header-text="t('common.selectColumn')"
+            row-key="equipment_id"
+            :stickyHeader="true"
+            :maxHeight="'100%'"
+            @selection-change="handleSelectionChange"
+            @row-click="handleRowClick"
+            @sort-change="handleSortChange"
+          >
           <!-- 순번 슬롯 -->
           <template #cell-no="{ index }">
             {{ (currentPage - 1) * pageSize + index + 1 }}
@@ -152,7 +154,7 @@
 
           <!-- 배관유형 슬롯 -->
           <template #cell-electrical_type="{ item }">
-            {{ getElectricalType(item) }}
+            {{ locale === "en" && item.equipment_type_name_en ? item.equipment_type_name_en : getElectricalType(item) }}
           </template>
 
           <!-- 배관코드 슬롯 (줄바꿈 지원) -->
@@ -171,7 +173,15 @@
 
           <!-- 업체명 슬롯 -->
           <template #cell-vendor_name="{ item }">
-            {{ item.vendor_info?.vendor_name || "-" }}
+            {{
+              (() => {
+                if (locale === "en" && item.vendor_info) {
+                  const vendorInfo: any = item.vendor_info;
+                  return vendorInfo.vendor_name_en || vendorInfo.vendor_name || "-";
+                }
+                return item.vendor_info?.vendor_name || "-";
+              })()
+            }}
           </template>
 
           <!-- 상세정보 액션 슬롯 -->
@@ -181,6 +191,7 @@
             </button>
           </template>
         </DataTable>
+        </div>
 
         <!-- 페이징 -->
         <div class="pagination-container">
@@ -372,7 +383,7 @@
                     :key="electrical.code_id"
                     :value="electrical.code_key"
                   >
-                    {{ electrical.code_value }}
+                    {{ locale === "en" && electrical.code_value_en ? electrical.code_value_en : electrical.code_value }}
                   </option>
                 </select>
               </div>
@@ -562,6 +573,7 @@ interface MachineItem {
   equipment_name: string;
   equipment_type: string;
   equipment_type_name?: string;
+  equipment_type_name_en?: string;
   manufacturer: string;
   model_number: string;
   // API 응답의 전체 데이터를 포함
@@ -683,7 +695,7 @@ const priceHistoryColumns: TableColumn[] = [
   },
   {
     key: "price_reference",
-    title: "단가 출처",
+    title: t("common.provider"),
     width: "100px",
     sortable: false,
   },
@@ -799,8 +811,29 @@ const parseHierarchy = (fullHierarchy?: string) => {
 // hierarchy_info에서 값을 가져오는 헬퍼 함수들
 const getMajorCategory = (item: MachineItem): string => {
   const hierarchyInfo = item.hierarchy_info as
-    | { full_hierarchy?: string }
+    | {
+        hierarchy_levels?: Array<{
+          code_level: number;
+          code_value?: string;
+          code_value_en?: string;
+        }>;
+        full_hierarchy?: string;
+      }
     | undefined;
+  
+  // hierarchy_levels 배열에서 레벨2 (Major Category) 찾기
+  if (hierarchyInfo?.hierarchy_levels) {
+    const level2 = hierarchyInfo.hierarchy_levels.find(
+      (level) => level.code_level === 2
+    );
+    if (level2) {
+      return locale.value === "en" && level2.code_value_en
+        ? level2.code_value_en
+        : level2.code_value || "-";
+    }
+  }
+  
+  // fallback: full_hierarchy 파싱
   if (hierarchyInfo?.full_hierarchy) {
     const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
     if (parsed.majorCategory) return parsed.majorCategory;
@@ -811,11 +844,30 @@ const getMajorCategory = (item: MachineItem): string => {
 const getMiddleCategory = (item: MachineItem): string => {
   const hierarchyInfo = item.hierarchy_info as
     | {
+        hierarchy_levels?: Array<{
+          code_level: number;
+          code_value?: string;
+          code_value_en?: string;
+        }>;
         full_hierarchy?: string;
         middle_category_name?: string;
         middle_category?: string;
       }
     | undefined;
+  
+  // hierarchy_levels 배열에서 레벨3 (Middle Category) 찾기
+  if (hierarchyInfo?.hierarchy_levels) {
+    const level3 = hierarchyInfo.hierarchy_levels.find(
+      (level) => level.code_level === 3
+    );
+    if (level3) {
+      return locale.value === "en" && level3.code_value_en
+        ? level3.code_value_en
+        : level3.code_value || "-";
+    }
+  }
+  
+  // fallback: full_hierarchy 파싱
   if (hierarchyInfo?.full_hierarchy) {
     const parsed = parseHierarchy(hierarchyInfo.full_hierarchy);
     if (parsed.middleCategory) return parsed.middleCategory;
@@ -929,9 +981,9 @@ const specVerticalData = computed(() => {
   data.push({
     columnName: t("columns.electrical.model"),
     value: isDetailEditMode.value
-      ? item.model_number || ""
+      ? editData.value.modelNumber || "-"
       : item.model_number || "-",
-    editable: false,
+    editable: true,
     fieldType: "input",
   });
 
@@ -2231,9 +2283,7 @@ const loadData = async (preserveSelection: boolean = false) => {
       searchParams.order_direction = orderDirection.value;
     }
 
-    console.log("검색 파라미터:", searchParams);
-
-    // API 호출로 배관 검색 리스트 조회
+    // API 호출로 전기자재 검색 리스트 조회
     await electricalStore.fetchSearchList(searchParams);
 
     // API 응답 데이터를 machineList에 설정
@@ -2287,32 +2337,39 @@ onMounted(async () => {
   padding: 0 24px;
   height: 100vh;
   overflow: hidden;
-  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 }
 .electrical-page:has(.page-layout.detail-open) {
   padding-right: 4px;
 }
 
-.page-layout {
-  display: grid;
-  height: calc(100vh - #{$spacing-lg * 2});
-  width: 100%;
-  overflow: hidden;
-  gap: 10px;
-  grid-template-columns: 1fr; // 기본: 전체 너비
-  transition: grid-template-columns 0.3s ease;
-
-  &.detail-open {
-    grid-template-columns: 2fr 1fr; // 상세보기 열림: 2/3 + 1/3
-  }
-}
-
 .main-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-sizing: border-box;
   min-width: 0;
-  padding-top: 40px;
+  padding: 40px 0 50px;
+}
+
+.search-filter-bar {
+  flex-shrink: 0;
+}
+
+.electrical-list-header {
+  flex-shrink: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
 }
 
 .price-history-section {

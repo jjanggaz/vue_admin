@@ -57,32 +57,35 @@
         </button>
       </div>
     </div>
-    <DataTable
-      ref="dataTableRef"
-      :columns="tableColumns"
-      :data="paginatedUserList"
-      :loading="userStore.loading"
-      :selectable="true"
-      :selected-items="selectedItems"
-      :selection-mode="'single'"
-      :show-select-all="false"
-      :select-header-text="t('common.selectColumn')"
-      row-key="user_id"
-      :stickyHeader="true"
-      @selection-change="handleSelectionChange"
-      @sort-change="handleSortChange"
-      @row-click="handleRowClick"
-    >
-      <template #cell-is_active="{ value }">
-        <span :class="value ? 'status-active' : 'status-inactive'">
-          {{
-            value
-              ? t("common.userStatus.active")
-              : t("common.userStatus.inactive")
-          }}
-        </span>
-      </template>
-    </DataTable>
+    <div class="table-wrapper">
+      <DataTable
+        ref="dataTableRef"
+        :columns="tableColumns"
+        :data="paginatedUserList"
+        :loading="userStore.loading"
+        :selectable="true"
+        :selected-items="selectedItems"
+        :selection-mode="'single'"
+        :show-select-all="false"
+        :select-header-text="t('common.selectColumn')"
+        row-key="user_id"
+        :stickyHeader="true"
+        :maxHeight="'100%'"
+        @selection-change="handleSelectionChange"
+        @sort-change="handleSortChange"
+        @row-click="handleRowClick"
+      >
+        <template #cell-is_active="{ value }">
+          <span :class="value ? 'status-active' : 'status-inactive'">
+            {{
+              value
+                ? t("common.userStatus.active")
+                : t("common.userStatus.inactive")
+            }}
+          </span>
+        </template>
+      </DataTable>
+    </div>
     <!-- Pagination -->
     <div class="pagination-container">
       <div class="total-count">
@@ -892,8 +895,26 @@ const handleEdit = () => {
 </script>
 
 <style scoped lang="scss">
-.user-management {
-  padding: $spacing-lg;
+.account-management {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  padding-bottom: 40px;
+}
+
+.action-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 
 // 활성 상태 스타일

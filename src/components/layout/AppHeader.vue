@@ -241,7 +241,11 @@ const currentPageTitle = computed<string>(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 $spacing-xxl;
-  gap: 56px;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
 }
 
 .page-title-section {
@@ -253,15 +257,16 @@ const currentPageTitle = computed<string>(() => {
     white-space: nowrap;
 
     @media (max-width: 768px) {
-      font-size: 18px;
+      font-size: 20px;
     }
   }
 }
 
 .navigation-section {
-  flex: 1;
   display: flex;
   align-items: center;
+  flex: 1;
+  overflow-x: auto;
 
   :deep(.tab-navigation) {
     border-bottom: none;

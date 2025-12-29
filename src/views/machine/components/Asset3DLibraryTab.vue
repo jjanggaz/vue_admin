@@ -4,7 +4,7 @@
     <div class="filter-bar">
       <div class="form-group">
         <label class="required">{{ t("common.unit") }}</label>
-        <select v-model="selectedUnit" class="form-select">
+        <select v-model="selectedUnit" class="form-select" :disabled="props.isEditMode">
           <option value="">{{ t("common.select") }}</option>
           <option
             v-for="unit in asset3DStore.unitSystems"
@@ -17,7 +17,7 @@
       </div>
       <div class="form-group">
         <label class="required">{{ t("asset3D.category") }}</label>
-        <select v-model="selectedCategory" class="form-select">
+        <select v-model="selectedCategory" class="form-select" :disabled="props.isEditMode">
           <option value="">{{ t("common.select") }}</option>
           <option value="INTERIOR">{{ t("asset3D.categoryInterior") }}</option>
           <option value="STRUCTURE">{{ t("asset3D.categoryStructure") }}</option>
@@ -31,6 +31,7 @@
           v-model="modelName"
           class="form-input"
           :placeholder="t('asset3D.modelNamePlaceholder')"
+          :readonly="props.isEditMode"
         />
       </div>
       <div class="form-group">
@@ -1565,6 +1566,15 @@ label {
 
   .form-input {
     flex: 1;
+  }
+}
+
+.form-input:read-only {
+  background-color: #f5f5f5;
+  cursor: default;
+
+  &.file-name-input {
+    background-color: #ffffff;
   }
 }
 

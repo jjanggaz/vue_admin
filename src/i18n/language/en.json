@@ -298,6 +298,7 @@
       "material": "Material",
       "model3dType": "3D Model Type",
       "connectedMachine": "Connected Machine",
+      "category": "3D Asset Category",
       "title": "Title",
       "diameter": "Diameter",
       "unit": "Unit",
@@ -410,7 +411,8 @@
       "code": "Pipe Code",
       "majorCategory": "Major Category",
       "middleCategory": "Middle Category",
-      "pipeType": "Pipe Type"
+      "pipeType": "Pipe Type",
+      "bodyMaterial": "Body Material"
     },
     "measurement": {
       "no": "No",
@@ -560,6 +562,7 @@
     "asset3DList": "3D Asset List",
     "pipeList": "Pipe List",
     "electricalList": "Electrical Materials List",
+    "measurementList": "Measurement List",
     "structureList": "Structure List",
     "structure3DRegisterList": "3D Structure Registration List",
     "structure3DFormulaVersionManagement": "3D Structure Formula Management",
@@ -717,9 +720,10 @@
     "measurementSearch": "Keyword search (code/model/manufacturer/type)",
     "structureSearch": "Search by structure type, structure name",
     "selectItem": "Please select an item",
+    "selectFile": "Please select a file",
+    "selectPlease": "Please Select",
     "loginUsername": "Username",
     "loginPassword": "Password",
-    "selectFile": "Please select a file",
     "userId": "Enter user ID",
     "userPassword": "Enter password",
     "userPasswordChange": "Enter new password",
@@ -850,6 +854,21 @@
         "details": "Details",
         "unitPrice": "Unit Price",
         "code": "Electrical Code"
+      },
+      "asset3D": {
+        "no": "No.",
+        "model3dType": "3D Model Type",
+        "connectedMachine": "Connected Machine",
+        "category": "Category",
+        "title": "Title",
+        "diameter": "Diameter",
+        "unit": "Unit",
+        "createdAt": "Registration Date",
+        "details": "Details",
+        "type": "3D Asset Type",
+        "code": "3D Asset Code",
+        "company": "Company",
+        "model": "Model"
       }
     }
   },
@@ -1031,6 +1050,9 @@
     "processSymbolPreview": "Process Symbol Preview",
     "selectExcelFileAfterSavePid": "Please save the P&ID file first to select the mapping Excel file.",
     "deleteSelectedPidConfirm": "Are you sure you want to delete the selected P&ID item?",
+    "savePidFirst": "Please save the P&ID file first",
+    "selectMappingExcelFile": "Select Mapping Excel File",
+    "selectSvgDrawingFile": "Select SVG Drawing File",
     "processCard": "Process Card",
     "tabs": {
       "P&ID": "P&ID",
@@ -1058,7 +1080,9 @@
   },
   "datatable": {
     "loading": "Loading data...",
-    "noData": "No registered data"
+    "noData": "No registered data",
+    "attach": "Attach",
+    "attachCancel": "Cancel Attach"
   },
   "project": {
     "tabs": {
@@ -1261,10 +1285,14 @@
       "invoice": "Invoice Price"
     },
     "materialType": "Material Type",
+    "preset": "Preset",
+    "library": "3D Library",
+    "libraryRegister": "3D Library Registration",
+    "presetRegister": "3D Preset Registration",
     "category": "3D ASSET Category",
     "categoryInterior": "Interior",
     "categoryStructure": "Structure",
-    "categoryEtc": "Other",
+    "categoryEtc": "Etcetera",
     "modelName": "3D Model Name",
     "modelNamePlaceholder": "Enter model name",
     "modelUpload": "3D Model Upload",
@@ -1278,8 +1306,13 @@
     "machineBlower": "Blower",
     "presetName": "Preset Name",
     "presetNamePlaceholder": "Enter preset name",
-    "thumbnailUpload": "Thumbnail Upload",
+    "thumbnailUpload": "Thumbnail",
     "selectedItems": "Selected Items",
+    "model3D": "3D",
+    "revit": "Revit",
+    "totalUnitCount": "Total Unit Count",
+    "presetRepresentativeDiameter": "Preset Representative Diameter Value",
+    "diameterUnit": "Diameter Unit",
     "deleteRow": "Delete Row",
     "diameterInput": "Diameter Input",
     "diameterPlaceholder": "Diameter (numbers only)",
@@ -1287,6 +1320,7 @@
     "keywordPlaceholder": "Search full text (e.g., Elbow & 150A)",
     "resetFilter": "Reset Filter",
     "addSelectedItems": "Add Selected Items",
+    "noModel": "No Model",
     "materialList": "Material List",
     "searching": "Searching...",
     "subCategory": "Sub Category",
@@ -1385,6 +1419,7 @@
     "diameter_mm": "Diameter",
     "dia_phi_mm": "Phi Diameter",
     "other": "Other",
+    "materialType": "Pipe Major Category",
     "fittingType": "Fitting Type",
     "fittingTypeCode": "Fitting Type (Code)",
     "unitPriceSource": "Unit Price Source",
@@ -1724,6 +1759,7 @@
       "menuUpdateFail": "Failed to update menu.",
       "codesArrayEmpty": "Codes array is empty.",
       "codesMultiCreatePartialFail": "Some code registration failed.",
+      "unprocessedKeysMessage": "Some code registration failed due to duplicate code values.\nDuplicate code values are: {keys}.",
       "invalidSearchCondition": "Invalid search condition. Please check the search condition.",
       "allItemsDeleteFailed": "Failed to delete all items.",
       "svgContentNotFound": "SVG content not found.",

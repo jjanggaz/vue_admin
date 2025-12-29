@@ -4,7 +4,7 @@
     <div class="filter-bar">
         <div class="form-group">
           <label class="required">{{ t("common.unit") }}</label>
-          <select v-model="selectedUnit" class="form-select">
+          <select v-model="selectedUnit" class="form-select" :disabled="props.isEditMode">
             <option value="">{{ t("common.select") }}</option>
             <option
               v-for="unit in asset3DStore.unitSystems"
@@ -17,7 +17,7 @@
         </div>
         <div class="form-group">
           <label class="required">{{ t("asset3D.connectedMachine") }}</label>
-          <select v-model="selectedMachine" class="form-select">
+          <select v-model="selectedMachine" class="form-select" :disabled="props.isEditMode">
             <option value="">{{ t("common.select") }}</option>
           <option value="M_PUMP">{{ t("asset3D.machinePump") }}</option>
           <option value="M_AEBL">{{ t("asset3D.machineBlower") }}</option>
@@ -30,6 +30,7 @@
             v-model="presetName"
             class="form-input"
             :placeholder="t('asset3D.presetNamePlaceholder')"
+            :readonly="props.isEditMode"
           />
         </div>
         <div class="form-group">
@@ -163,7 +164,9 @@
           <span class="table-text">{{ item.diameterAfter || "-" }}</span>
         </template>
         <template #cell-pipeType="{ item }">
-          <span class="table-text">{{ item.equipment_type_name || "-" }}</span>
+          <span class="table-text">
+            {{ locale === "en" && item.equipment_type_name_en ? item.equipment_type_name_en : (item.equipment_type_name || "-") }}
+          </span>
         </template>
         <template #cell-code="{ item }">
           <span class="table-text">{{ item.code || "-" }}</span>
@@ -177,7 +180,7 @@
           >
             {{ item.model_file_name }}
           </a>
-          <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : "모델없음" }}</span>
+          <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : t("asset3D.noModel") }}</span>
         </template>
         <template #cell-cellName="{ item }">
           <a
@@ -366,6 +369,20 @@
               }}
             </template>
             
+            <!-- Equipment Type Name 슬롯 -->
+            <template #cell-equipment_type_name="{ item }">
+              <span class="table-text">
+                {{ locale === "en" && item.equipment_type_name_en ? item.equipment_type_name_en : (item.equipment_type_name || "-") }}
+              </span>
+            </template>
+            
+            <!-- Vendor Name 슬롯 -->
+            <template #cell-vendor_name="{ item }">
+              <span class="table-text">
+                {{ locale === "en" && item.vendor_name_en ? item.vendor_name_en : (item.vendor_name || "-") }}
+              </span>
+            </template>
+            
             <!-- 3D 모델명 슬롯 -->
             <template #cell-model_file_name="{ item }">
               <a
@@ -440,7 +457,9 @@
                   >
                     {{ isParentExpanded(node.code_key) ? "▾" : "▸" }}
                   </button>
-                  <span class="node-text">{{ node.code_value }}</span>
+                  <span class="node-text">
+                    {{ locale === "en" && node.code_value_en ? node.code_value_en : node.code_value }}
+                  </span>
                 </div>
               </div>
               <div
@@ -466,7 +485,9 @@
                   >
                     {{ isParentExpanded(child.code_key) ? "▾" : "▸" }}
                   </button>
-                  <span class="node-text">{{ child.code_value }}</span>
+                  <span class="node-text">
+                    {{ locale === "en" && child.code_value_en ? child.code_value_en : child.code_value }}
+                  </span>
                 </div>
               </div>
         </template>
@@ -511,7 +532,9 @@
                   >
                     {{ isFilterParentExpanded(node.code_key) ? "▾" : "▸" }}
                   </button>
-                  <span class="node-text">{{ node.code_value }}</span>
+                  <span class="node-text">
+                    {{ locale === "en" && node.code_value_en ? node.code_value_en : node.code_value }}
+                  </span>
                 </div>
               </div>
               <div
@@ -537,7 +560,9 @@
                   >
                     {{ isFilterParentExpanded(child.code_key) ? "▾" : "▸" }}
                   </button>
-                  <span class="node-text">{{ child.code_value }}</span>
+                  <span class="node-text">
+                    {{ locale === "en" && child.code_value_en ? child.code_value_en : child.code_value }}
+                  </span>
                 </div>
               </div>
         </template>
@@ -568,7 +593,7 @@ const props = withDefaults(defineProps<Props>(), {
   editItem: null,
 });
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const asset3DStore = useAsset3DStore();
 const pipeStore = usePipeStore();
 
@@ -617,6 +642,7 @@ interface TableRow {
 interface ManualValveTreeNode {
   code_key: string;
   code_value: string;
+  code_value_en?: string;
   code_level?: number;
   code_order?: number;
   children?: ManualValveTreeNode[];
@@ -1503,6 +1529,8 @@ const reloadPresetDetailData = async (presetId: string) => {
             diameter: String(detailItem.diameter_before || ""),
             diameterAfter: String(detailItem.diameter_after || ""),
             pipeType: String(detailItem.equipment_type_name || ""),
+            equipment_type_name: String(detailItem.equipment_type_name || ""),
+            equipment_type_name_en: String((detailItem as Record<string, unknown>).equipment_type_name_en || ""),
             code: String(detailItem.equipment_code || ""),
             model_file_name: modelFileName || "-",
             model_download_url: modelDownloadUrl || "",
@@ -1693,6 +1721,11 @@ const normalizeTreeNodes = (nodes: unknown[]): ManualValveTreeNode[] => {
         rawNode["label"] ??
         rawNode["name"] ??
         rawNode["value"];
+      const rawLabelEn =
+        rawNode["code_value_en"] ??
+        rawNode["codeValueEn"] ??
+        rawNode["label_en"] ??
+        rawNode["name_en"];
 
       const codeKey =
         typeof rawKey === "string"
@@ -1706,6 +1739,12 @@ const normalizeTreeNodes = (nodes: unknown[]): ManualValveTreeNode[] => {
           : rawLabel !== undefined && rawLabel !== null
           ? String(rawLabel)
           : "";
+      const codeValueEn =
+        typeof rawLabelEn === "string"
+          ? rawLabelEn
+          : rawLabelEn !== undefined && rawLabelEn !== null
+          ? String(rawLabelEn)
+          : undefined;
 
       if (!codeKey || !codeValue) {
         return null;
@@ -1726,6 +1765,10 @@ const normalizeTreeNodes = (nodes: unknown[]): ManualValveTreeNode[] => {
         code_key: codeKey,
         code_value: codeValue,
       };
+      
+      if (codeValueEn) {
+        normalizedNode.code_value_en = codeValueEn;
+      }
 
       if (codeLevel !== undefined) {
         normalizedNode.code_level = codeLevel;
@@ -1770,11 +1813,26 @@ const ensureManualValveTree = async (forceReload = false) => {
 
   try {
     const response = await asset3DStore.fetchAsset3DCodeTree("P_VALV", forceReload);
+    
+    // Sub Category 셀렉트 항목 조회 API 결과 콘솔 출력
+    console.log("========================================");
+    console.log("[Asset3DPreset] Manual Valve 선택 시 Sub Category 조회 API 결과");
+    console.log("========================================");
+    console.log("API 응답 (response):", response);
+    console.log("API 응답 타입:", typeof response);
+    if (Array.isArray(response)) {
+      console.log("응답 배열 길이:", response.length);
+      console.log("응답 배열 데이터:", response);
+    }
+    
     const normalizedTree = normalizeTreeNodes(response || []);
-    console.log("[Asset3DPreset] 수동 밸브 트리 응답:", {
-      length: normalizedTree.length,
-      sample: normalizedTree.slice(0, 5),
-    });
+    console.log("정규화된 트리 (normalizedTree):", normalizedTree);
+    console.log("정규화된 트리 길이:", normalizedTree.length);
+    if (normalizedTree.length > 0) {
+      console.log("정규화된 트리 샘플 (처음 5개):", normalizedTree.slice(0, 5));
+    }
+    console.log("========================================");
+    
     manualValveTree.value = normalizedTree;
     manualValveTreeInitialized.value = normalizedTree.length > 0;
   } catch (error: unknown) {
@@ -1816,7 +1874,7 @@ const handleTreeSelect = (
   }
 
   item.subType = selectedNode.code_key;
-  item.subTypeLabel = selectedNode.code_value;
+  item.subTypeLabel = locale.value === "en" && selectedNode.code_value_en ? selectedNode.code_value_en : selectedNode.code_value;
   manualValveSelectedCode.value = selectedNode.code_key;
   expandManualValvePath(selectedNode.code_key);
   closeManualValveDropdown();
@@ -2156,7 +2214,7 @@ const handleFilterTreeSelect = (node: ManualValveTreeNode) => {
   }
   
   selectionFilter.value.fittingType = node.code_key;
-  filterSubTypeLabel.value = node.code_value;
+  filterSubTypeLabel.value = locale.value === "en" && node.code_value_en ? node.code_value_en : node.code_value;
   filterSelectedCode.value = node.code_key;
   expandFilterPath(node.code_key);
   closeFilterTreeDropdown();
@@ -2575,11 +2633,17 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           }
         }
         
-        // vendor_info에서 vendor_name 추출
+        // vendor_info에서 vendor_name 및 vendor_name_en 추출
         let vendorName = "";
+        let vendorNameEn = "";
         const vendorInfo = item.vendor_info as Record<string, unknown> | undefined;
-        if (vendorInfo && vendorInfo.vendor_name) {
-          vendorName = String(vendorInfo.vendor_name);
+        if (vendorInfo) {
+          if (vendorInfo.vendor_name) {
+            vendorName = String(vendorInfo.vendor_name);
+          }
+          if (vendorInfo.vendor_name_en) {
+            vendorNameEn = String(vendorInfo.vendor_name_en);
+          }
         }
         
         // output_values에서 unit_price_KRW 추출
@@ -2627,7 +2691,9 @@ const fetchMaterialList = async (page = 1, parentType?: string) => {
           diameterAfter: diameterAfterValue || String(item.diameter_after || ""),
           pipeType: String(item.equipment_type || ""),
           equipment_type_name: String(item.equipment_type_name || ""),
+          equipment_type_name_en: String(item.equipment_type_name_en || ""),
           vendor_name: vendorName,
+          vendor_name_en: vendorNameEn,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
           thumbnail_download_url: thumbnailDownloadUrl || "",
@@ -2770,11 +2836,17 @@ const handleDebugSearch = async () => {
           }
         }
         
-        // vendor_info에서 vendor_name 추출
+        // vendor_info에서 vendor_name 및 vendor_name_en 추출
         let vendorName = "";
+        let vendorNameEn = "";
         const vendorInfo = item.vendor_info as Record<string, unknown> | undefined;
-        if (vendorInfo && vendorInfo.vendor_name) {
-          vendorName = String(vendorInfo.vendor_name);
+        if (vendorInfo) {
+          if (vendorInfo.vendor_name) {
+            vendorName = String(vendorInfo.vendor_name);
+          }
+          if (vendorInfo.vendor_name_en) {
+            vendorNameEn = String(vendorInfo.vendor_name_en);
+          }
         }
         
         return {
@@ -2785,7 +2857,9 @@ const handleDebugSearch = async () => {
           diameterAfter: diameterAfterValue || String(item.diameter_after || ""),
           pipeType: String(item.equipment_type || ""),
           equipment_type_name: String(item.equipment_type_name || ""),
+          equipment_type_name_en: String(item.equipment_type_name_en || ""),
           vendor_name: vendorName,
+          vendor_name_en: vendorNameEn,
           code: String(item.equipment_code || ""),
           cellName: thumbnailFileName || String(item.cell_name || ""),
           thumbnail_download_url: thumbnailDownloadUrl || "",
@@ -3887,6 +3961,15 @@ label {
   .form-input {
     flex: 1;
     min-width: 0;
+  }
+}
+
+.form-input:read-only {
+  background-color: #f5f5f5;
+  cursor: default;
+
+  &.file-name-input {
+    background-color: #ffffff;
   }
 }
 

@@ -55,6 +55,7 @@ import AppHeader from './AppHeader.vue'
   padding-top: 70px;
   background-color: #ffffff;
   min-height: calc(100vh - 70px); // Header height
+  overflow: hidden;
 }
 
 @media (max-width: $breakpoint-lg) {

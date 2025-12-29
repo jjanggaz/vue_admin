@@ -949,20 +949,6 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.page-layout {
-  display: grid;
-  height: calc(100vh - #{$spacing-lg * 2});
-  width: 100%;
-  overflow: hidden;
-  gap: 8px;
-  grid-template-columns: 1fr;
-  transition: grid-template-columns 0.3s ease;
-
-  &.detail-open {
-    grid-template-columns: 2fr 1fr;
-  }
-}
-
 .main-content {
   overflow-y: auto;
   overflow-x: hidden;

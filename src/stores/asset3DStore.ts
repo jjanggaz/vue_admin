@@ -5,6 +5,7 @@ import { request } from "@/utils/request";
 interface Asset3DTreeNode {
   code_key: string;
   code_value: string;
+  code_value_en?: string;
   code_level?: number;
   code_order?: number;
   children?: Asset3DTreeNode[];
@@ -161,6 +162,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
   const convertTreeNode = (node: Record<string, unknown>): Asset3DTreeNode | null => {
     const codeKey = node.code_key;
     const codeValue = node.code_value || node.code_value_en;
+    const codeValueEn = node.code_value_en;
     
     if (!codeKey || !codeValue) {
       return null;
@@ -173,6 +175,10 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       code_order: typeof node.code_order === "number" ? node.code_order : undefined,
       children: [],
     };
+
+    if (codeValueEn && typeof codeValueEn === "string") {
+      treeNode.code_value_en = codeValueEn;
+    }
 
     // children이 있으면 재귀적으로 변환
     if (Array.isArray(node.children) && node.children.length > 0) {
@@ -271,6 +277,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       level3Items.forEach((item) => {
         const codeKeyRaw = item?.code_key;
         const codeValueRaw = item?.code_value ?? item?.code_value_en;
+        const codeValueEnRaw = item?.code_value_en;
         const codeKey =
           typeof codeKeyRaw === "string"
             ? codeKeyRaw
@@ -283,6 +290,12 @@ export const useAsset3DStore = defineStore("asset3d", () => {
             : codeValueRaw != null
             ? String(codeValueRaw)
             : "";
+        const codeValueEn =
+          typeof codeValueEnRaw === "string"
+            ? codeValueEnRaw
+            : codeValueEnRaw != null
+            ? String(codeValueEnRaw)
+            : undefined;
 
         if (!codeKey || !codeValue) {
           return;
@@ -302,6 +315,10 @@ export const useAsset3DStore = defineStore("asset3d", () => {
           children: [],
         };
 
+        if (codeValueEn) {
+          node.code_value_en = codeValueEn;
+        }
+
         level3Map[codeKey] = node;
         roots.push(node);
       });
@@ -309,6 +326,7 @@ export const useAsset3DStore = defineStore("asset3d", () => {
       level4Items.forEach((item) => {
         const codeKeyRaw = item?.code_key;
         const codeValueRaw = item?.code_value ?? item?.code_value_en;
+        const codeValueEnRaw = item?.code_value_en;
         const parentKeyRaw = item?.parent_key;
 
         const codeKey =
@@ -323,6 +341,12 @@ export const useAsset3DStore = defineStore("asset3d", () => {
             : codeValueRaw != null
             ? String(codeValueRaw)
             : "";
+        const codeValueEn =
+          typeof codeValueEnRaw === "string"
+            ? codeValueEnRaw
+            : codeValueEnRaw != null
+            ? String(codeValueEnRaw)
+            : undefined;
         const parentKey =
           typeof parentKeyRaw === "string"
             ? parentKeyRaw
@@ -346,6 +370,10 @@ export const useAsset3DStore = defineStore("asset3d", () => {
               ? ((item as Record<string, number>).code_order as number)
               : undefined,
         };
+
+        if (codeValueEn) {
+          childNode.code_value_en = codeValueEn;
+        }
 
         if (parentKey && level3Map[parentKey]) {
           const parentNode = level3Map[parentKey];

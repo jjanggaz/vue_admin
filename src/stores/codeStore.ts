@@ -19,6 +19,7 @@ export interface CodeItem {
 export interface CodeGroup {
   key: string;
   value: string;
+  code_value_en?: string;
 }
 
 export interface CodeListResponse {
@@ -162,6 +163,7 @@ export const useCodeStore = () => {
           acc.push({
             key: item.code_key,
             value: item.code_value,
+            code_value_en: item.code_value_en,
           });
         }
         return acc;

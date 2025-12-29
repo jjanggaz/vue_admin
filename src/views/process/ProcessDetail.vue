@@ -46,9 +46,7 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{
-                processStore.processDetail.level2_code_value || "-"
-              }}</span>
+              <span class="form-text-display">{{ processTypeDisplay }}</span>
             </template>
           </div>
 
@@ -73,9 +71,7 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{
-                processStore.processDetail.level3_code_value || "-"
-              }}</span>
+              <span class="form-text-display">{{ subCategoryDisplay }}</span>
             </template>
           </div>
 
@@ -100,9 +96,7 @@
               </select>
             </template>
             <template v-else>
-              <span class="form-text-display">{{
-                processStore.processDetail.level4_code_value || "-"
-              }}</span>
+              <span class="form-text-display">{{ processNameDisplay }}</span>
             </template>
           </div>
 
@@ -298,7 +292,7 @@
               <h4>Components 목록</h4>
             </div>
             <div class="tab-actions">
-              <button @click="closeComponentsGrid" class="btn btn-secondary">닫기</button>
+              <button @click="closeComponentsGrid" class="btn btn-secondary">{{ t("common.close") }}</button>
             </div>
           </div>
 
@@ -347,7 +341,7 @@
               >
                 {{ t("common.delete") }}
               </button>
-              <button @click="handlePfdSave" class="btn btn-save sm">저장</button>
+              <button @click="handlePfdSave" class="btn btn-save sm">{{ t("common.save") }}</button>
             </div>
           </div>
 
@@ -476,18 +470,18 @@
             <h4>P&ID</h4>
           </div>
           <div class="tab-actions">
-            <button class="btn btn-add sm" @click="addMappingPidRow">추가</button>
+            <button class="btn btn-add sm" @click="addMappingPidRow">{{ t("common.add") }}</button>
             <button
               class="btn btn-delete sm"
               @click="deleteSelectedMappingPidItems"
               :disabled="!selectedMappingPidItems"
             >
-              삭제
+              {{ t("common.delete") }}
             </button>
             <button @click="() => confirmMappingPid()" class="btn btn-save sm">
-              저장
+              {{ t("common.save") }}
             </button>
-            <button @click="closePidListInMain" class="btn btn-secondary">닫기</button>
+            <button @click="closePidListInMain" class="btn btn-secondary">{{ t("common.close") }}</button>
           </div>
         </div>
 
@@ -514,7 +508,7 @@
           <template #cell-pidFile="{ item }">
             <div class="file-selection-group">
               <button class="btn btn btn-file sm" @click="selectPidFile(item)">
-                파일선택
+                {{ t("common.selectFile") }}
               </button>
               <span v-if="item.pidFileName" class="selected-file">
                 {{ item.pidFileName }}
@@ -540,11 +534,11 @@
                 "
                 :title="
                   !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
-                    ? 'P&ID 파일을 먼저 저장해주세요'
-                    : '매핑 Excel 파일 선택'
+                    ? t('processDetail.savePidFirst')
+                    : t('processDetail.selectMappingExcelFile')
                 "
               >
-                파일선택
+                {{ t("common.selectFile") }}
               </button>
               <span
                 v-if="item.excelFileName || item.excel_file_name"
@@ -588,11 +582,11 @@
                 "
                 :title="
                   !item.drawing_id || item.drawing_id.startsWith('temp_pid_drawing_')
-                    ? 'P&ID 파일을 먼저 저장해주세요'
-                    : 'Svg 도면 파일 선택'
+                    ? t('processDetail.savePidFirst')
+                    : t('processDetail.selectSvgDrawingFile')
                 "
               >
-                파일선택
+                {{ t("common.selectFile") }}
               </button>
               <span v-if="item.svgFileName || item.svg_file_name" class="selected-file">
                 {{ item.svg_file_name || item.svgFileName }}
@@ -632,9 +626,9 @@
                 !isPidRowSaved(item)
               "
               @click="openPidComponentModal(item)"
-              :title="!isPidRowSaved(item) ? 'P&ID를 먼저 저장해주세요' : 'P&ID 컴포넌트'"
+              :title="!isPidRowSaved(item) ? t('processDetail.savePidFirst') : t('processDetail.pidComponent')"
             >
-              P&ID 컴포넌트
+              {{ t("processDetail.pidComponent") }}
             </button>
           </template>
         </DataTable>
@@ -672,7 +666,7 @@
         </div>
         <div class="tab-actions">
           <button @click="closePidComponentSection" class="btn btn-secondary">
-            닫기
+            {{ t("common.close") }}
           </button>
         </div>
       </div>
@@ -699,7 +693,7 @@
             class="pid-component-text"
             :class="{ 'child-row': item._isChild }"
           >
-            {{ item._isChild ? "" : (item.category || "-") }}
+            {{ item._isChild ? "" : (locale === "en" && item.level1_english_name ? item.level1_english_name : item.level1_korean_name) || "-" }}
           </span>
         </template>
         <template #cell-smallCategory="{ item }">
@@ -707,7 +701,7 @@
             class="pid-component-text"
             :class="{ 'child-row': item._isChild }"
           >
-            {{ item._isChild ? "" : (item.smallCategory || "-") }}
+            {{ item._isChild ? "" : (locale === "en" && item.level2_english_name ? item.level2_english_name : item.level2_korean_name) || "-" }}
           </span>
         </template>
         <template #cell-middleCategory="{ item }">
@@ -715,7 +709,7 @@
             class="pid-component-text"
             :class="{ 'child-row': item._isChild }"
           >
-            {{ item._isChild ? "" : (item.middleCategory || "-") }}
+            {{ item._isChild ? "" : (locale === "en" && item.level3_english_name ? item.level3_english_name : item.level3_korean_name) || "-" }}
           </span>
         </template>
         <template #cell-equipmentType="{ item }">
@@ -724,7 +718,7 @@
             :class="{ 'child-row': item._isChild }"
             :style="{ paddingLeft: item._isChild ? '20px' : '0' }"
           >
-            {{ item.equipmentType || "-" }}
+            {{ item._isChild ? (item.equipmentType || "-") : (locale === "en" && item.level4_english_name ? item.level4_english_name : item.level4_korean_name) || "-" }}
           </span>
         </template>
         <template #cell-total_quantity="{ item }">
@@ -782,7 +776,7 @@
                 processStore.processDetail.ccs_file_name ||
                 ''
               "
-              placeholder="파일을 선택해주세요"
+              :placeholder="t('common.selectFile')"
               readonly
             />
             <button
@@ -803,7 +797,7 @@
               @click="handleCapacityCalculationRegister"
               :disabled="!processStore.capacityCalculationFile || !hasFormulaData"
             >
-              등록
+              {{ t("common.register") }}
             </button>
             <button
               type="button"
@@ -815,7 +809,7 @@
                 !hasFormulaData
               "
             >
-              삭제
+              {{ t("common.delete") }}
             </button>
           </div>
         </div>
@@ -1025,13 +1019,35 @@ const emit = defineEmits<{
 
 // Composables
 const route = useRoute();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
 const translateMessage = useTranslateMessage();
 
 const processStore = useProcessStore();
 const pipeStore = usePipeStore();
+
+// 언어별 필드 값 계산
+const processTypeDisplay = computed(() => {
+  if (locale.value === "en" && processStore.processDetail.level2_code_value_en) {
+    return processStore.processDetail.level2_code_value_en;
+  }
+  return processStore.processDetail.level2_code_value || "-";
+});
+
+const subCategoryDisplay = computed(() => {
+  if (locale.value === "en" && processStore.processDetail.level3_code_value_en) {
+    return processStore.processDetail.level3_code_value_en;
+  }
+  return processStore.processDetail.level3_code_value || "-";
+});
+
+const processNameDisplay = computed(() => {
+  if (locale.value === "en" && processStore.processDetail.level4_code_value_en) {
+    return processStore.processDetail.level4_code_value_en;
+  }
+  return processStore.processDetail.level4_code_value || "-";
+});
 
 // 공정 등록/수정 화면에서는 'INP_OUTP' (유입/유출) 항목 제외
 const filteredProcessTypeOptions = computed(() => {
@@ -2622,7 +2638,7 @@ const openPidComponentModal = async (item: any) => {
 
   // P&ID row가 저장된 상태인지 확인
   if (!isPidRowSaved(item)) {
-    alert("P&ID 컴포넌트를 보려면 먼저 P&ID를 저장해주세요.");
+    alert(t("processDetail.savePidFirst"));
     return;
   }
 
@@ -2690,12 +2706,16 @@ const parseComponentHierarchy = (hierarchyString: string) => {
   const result = {
     level1_code_key: "",
     level1_korean_name: "",
+    level1_english_name: "",
     level2_code_key: "",
     level2_korean_name: "",
+    level2_english_name: "",
     level3_code_key: "",
     level3_korean_name: "",
+    level3_english_name: "",
     level4_code_key: "",
     level4_korean_name: "",
+    level4_english_name: "",
   };
 
   if (!hierarchyString) {
@@ -2708,31 +2728,38 @@ const parseComponentHierarchy = (hierarchyString: string) => {
     const levels = hierarchyString.split(" | ");
     console.log("분리된 레벨들:", levels);
 
-    levels.forEach((level, index) => {
-      console.log(`레벨 ${index + 1} 처리:`, level);
+    levels.forEach((level) => {
+      console.log(`레벨 처리:`, level);
 
-      // 각 레벨에서 코드키와 한국어 설명 추출: "(레벨X) CODE_KEY / 한국어설명 / 영어설명" 형태
-      const match = level.match(/\(레벨\d+\)\s*([A-Z_0-9]+)\s*\/\s*([^/]+)\s*\/\s*(.+)$/);
-      if (match && match[1] && match[2]) {
-        const codeKey = match[1];
-        const koreanName = match[2].trim();
-        console.log(`레벨 ${index + 1} 추출:`, { codeKey, koreanName });
+      // 각 레벨에서 레벨 번호, 코드키, 한국어, 영어 설명 추출: "(레벨X) CODE_KEY / 한국어설명 / 영어설명" 형태
+      const match = level.match(/\(레벨(\d+)\)\s*([A-Z_0-9]+)\s*\/\s*([^/]+)\s*\/\s*(.+)$/);
+      if (match && match[1] && match[2] && match[3] && match[4]) {
+        const levelNumber = parseInt(match[1], 10);
+        const codeKey = match[2];
+        const koreanName = match[3].trim();
+        const englishName = match[4].trim();
+        console.log(`레벨 ${levelNumber} 추출:`, { codeKey, koreanName, englishName });
 
-        if (index === 0) {
+        if (levelNumber === 1) {
           result.level1_code_key = codeKey;
           result.level1_korean_name = koreanName;
-        } else if (index === 1) {
+          result.level1_english_name = englishName;
+        } else if (levelNumber === 2) {
           result.level2_code_key = codeKey;
           result.level2_korean_name = koreanName;
-        } else if (index === 2) {
+          result.level2_english_name = englishName;
+        } else if (levelNumber === 3) {
           result.level3_code_key = codeKey;
           result.level3_korean_name = koreanName;
-        } else if (index === 3) {
+          result.level3_english_name = englishName;
+        } else if (levelNumber === 4) {
+          // 레벨4는 여러 개일 수 있으므로 마지막 것만 유지 (최하위 레벨)
           result.level4_code_key = codeKey;
           result.level4_korean_name = koreanName;
+          result.level4_english_name = englishName;
         }
       } else {
-        console.log(`레벨 ${index + 1} 파싱 실패:`, level);
+        console.log(`레벨 파싱 실패:`, level);
       }
     });
 
@@ -2750,21 +2777,6 @@ const generateSelectOptionsFromLoadedData = async () => {
 
   try {
     // 로드된 컴포넌트들에서 고유한 값들 추출
-    const uniqueLevel1Codes = [
-      ...new Set(
-        pidComponentList.value.map((item) => item.level1_code_key).filter(Boolean)
-      ),
-    ];
-    const uniqueLevel2Codes = [
-      ...new Set(
-        pidComponentList.value.map((item) => item.level2_code_key).filter(Boolean)
-      ),
-    ];
-    const uniqueLevel3Codes = [
-      ...new Set(
-        pidComponentList.value.map((item) => item.level3_code_key).filter(Boolean)
-      ),
-    ];
     const uniqueEquipmentTypes = [
       ...new Set(
         pidComponentList.value.map((item) => item.component_type).filter(Boolean)
@@ -2772,164 +2784,8 @@ const generateSelectOptionsFromLoadedData = async () => {
     ];
 
     console.log("추출된 고유 코드들:", {
-      level1Codes: uniqueLevel1Codes,
-      level2Codes: uniqueLevel2Codes,
-      level3Codes: uniqueLevel3Codes,
       equipmentTypes: uniqueEquipmentTypes,
     });
-
-    // 중분류 옵션 생성 (level2_code_key 기반)
-    if (uniqueLevel2Codes.length > 0) {
-      console.log("중분류 옵션 생성 시작...");
-
-      // 실제 중분류 옵션을 API에서 가져오는 대신, 로드된 데이터 기반으로 생성
-      const middleOptions = await Promise.all(
-        uniqueLevel2Codes.map(async (code) => {
-          // 해당 코드의 상위 레벨 찾기
-          const parentCode = pidComponentList.value.find(
-            (item) => item.level2_code_key === code
-          )?.level1_code_key;
-
-          if (parentCode) {
-            try {
-              const requestData = {
-                search_field: "parent_key",
-                search_value: parentCode,
-                order_by: "code_order",
-                order_direction: "asc",
-              };
-
-              const response = await request("/api/process/code/search", undefined, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestData),
-              });
-
-              if (
-                response.success &&
-                response.response &&
-                Array.isArray(response.response)
-              ) {
-                return response.response
-                  .filter((item) => item.code_key === code)
-                  .map((item: any) => ({
-                    value: item.code_key,
-                    label: item.code_value,
-                  }));
-              }
-            } catch (error) {
-              console.error(`중분류 ${code} API 호출 실패:`, error);
-            }
-          }
-
-          // API 호출 실패 시 기본값 반환
-          return [
-            {
-              value: code,
-              label: code,
-            },
-          ];
-        })
-      );
-
-      // 중복 제거 및 평탄화
-      const flatMiddleOptions = middleOptions
-        .flat()
-        .filter(
-          (option, index, self) =>
-            self.findIndex((o) => o.value === option.value) === index
-        );
-
-      middleCategoryOptions.value = [
-        { value: "", label: t("processDetail.selectPlease") },
-        ...flatMiddleOptions,
-      ];
-
-      console.log("중분류 옵션 생성 완료:", middleCategoryOptions.value);
-
-      // 생성된 옵션을 각 행에 할당
-      pidComponentList.value.forEach((item) => {
-        item._middleCategoryOptions = middleCategoryOptions.value;
-      });
-    }
-
-    // 소분류 옵션 생성 (level3_code_key 기반)
-    if (uniqueLevel3Codes.length > 0) {
-      console.log("소분류 옵션 생성 시작...");
-
-      const smallOptions = await Promise.all(
-        uniqueLevel3Codes.map(async (code) => {
-          // 해당 코드의 상위 레벨 찾기
-          const parentCode = pidComponentList.value.find(
-            (item) => item.level3_code_key === code
-          )?.level2_code_key;
-
-          if (parentCode) {
-            try {
-              const requestData = {
-                search_field: "parent_key",
-                search_value: parentCode,
-                order_by: "code_order",
-                order_direction: "asc",
-              };
-
-              const response = await request("/api/process/code/search", undefined, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestData),
-              });
-
-              if (
-                response.success &&
-                response.response &&
-                Array.isArray(response.response)
-              ) {
-                return response.response
-                  .filter((item) => item.code_key === code)
-                  .map((item: any) => ({
-                    value: item.code_key,
-                    label: item.code_value,
-                  }));
-              }
-            } catch (error) {
-              console.error(`소분류 ${code} API 호출 실패:`, error);
-            }
-          }
-
-          // API 호출 실패 시 기본값 반환
-          return [
-            {
-              value: code,
-              label: code,
-            },
-          ];
-        })
-      );
-
-      // 중복 제거 및 평탄화
-      const flatSmallOptions = smallOptions
-        .flat()
-        .filter(
-          (option, index, self) =>
-            self.findIndex((o) => o.value === option.value) === index
-        );
-
-      smallCategoryOptions.value = [
-        { value: "", label: t("processDetail.selectPlease") },
-        ...flatSmallOptions,
-      ];
-
-      console.log("소분류 옵션 생성 완료:", smallCategoryOptions.value);
-
-      // 생성된 옵션을 각 행에 할당
-      pidComponentList.value.forEach((item) => {
-        item._smallCategoryOptions = smallCategoryOptions.value;
-      });
-    }
 
     // 장비유형 옵션 생성 (component_type 기반)
     if (uniqueEquipmentTypes.length > 0) {
@@ -3094,17 +2950,29 @@ const loadPidComponentDataInternal = async (
             // 파싱된 hierarchy 데이터 추가
             level1_code_key: hierarchyData.level1_code_key,
             level1_korean_name: hierarchyData.level1_korean_name,
+            level1_english_name: hierarchyData.level1_english_name,
             level2_code_key: hierarchyData.level2_code_key,
             level2_korean_name: hierarchyData.level2_korean_name,
+            level2_english_name: hierarchyData.level2_english_name,
             level3_code_key: hierarchyData.level3_code_key,
             level3_korean_name: hierarchyData.level3_korean_name,
+            level3_english_name: hierarchyData.level3_english_name,
             level4_code_key: hierarchyData.level4_code_key,
             level4_korean_name: hierarchyData.level4_korean_name,
-            // P&ID Components 그리드 텍스트 박스용 매핑 (한국어 이름 사용)
-            category: hierarchyData.level1_korean_name || "", // 구분: 기계
-            smallCategory: hierarchyData.level2_korean_name || "", // 대분류: 펌프
-            middleCategory: hierarchyData.level3_korean_name || "", // 중분류: 수중모터펌프
-            equipmentType: hierarchyData.level4_korean_name || "", // 유형: 수중오수모터펌프(자동탈착식)
+            level4_english_name: hierarchyData.level4_english_name,
+            // P&ID Components 그리드 텍스트 박스용 매핑 (locale에 따라 한/영 선택)
+            category: locale.value === "en" && hierarchyData.level1_english_name 
+              ? hierarchyData.level1_english_name 
+              : hierarchyData.level1_korean_name || "", // Division: 기계 / Equipment
+            smallCategory: locale.value === "en" && hierarchyData.level2_english_name 
+              ? hierarchyData.level2_english_name 
+              : hierarchyData.level2_korean_name || "", // Major Category: 펌프 / Pump
+            middleCategory: locale.value === "en" && hierarchyData.level3_english_name 
+              ? hierarchyData.level3_english_name 
+              : hierarchyData.level3_korean_name || "", // Middle Category: 수중모터펌프 / SUBMERSIBLE PUMP
+            equipmentType: locale.value === "en" && hierarchyData.level4_english_name 
+              ? hierarchyData.level4_english_name 
+              : hierarchyData.level4_korean_name || "", // Type: 수중오수모터펌프(자동탈착식) / 수중오수모터펌프(자동탈착식)
             // POC IN 항목을 input_poc로 매핑
             input_poc: Number(item.input_poc) || 0, // API 응답의 input_poc 값
             // 총수량 항목을 total_quantity로 매핑 (API 응답에 standard_quantity가 있을 경우 대비)
@@ -8949,7 +8817,7 @@ const closePidListInMain = (skipConfirm: boolean = false) => {
 
   if (!skipConfirm && pidHasChanges) {
     console.log("변경사항 확인 팝업 표시");
-    if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+    if (!confirm(t("process.hasChangesConfirm"))) {
       console.log("사용자가 취소함");
       return;
     }

@@ -43,7 +43,7 @@
                   "
                   class="edit-field-select"
                 >
-                  <option value="">선택하세요</option>
+                  <option value="">{{ $t("placeholder.selectPlease") }}</option>
                   <option
                     v-for="option in item.options"
                     :key="option.value"
@@ -62,7 +62,9 @@
                     type="text"
                     :value="item.value"
                     class="edit-field-input"
-                    :placeholder="item.value ? '' : '파일을 선택하세요'"
+                    :placeholder="
+                      item.value ? '' : $t('placeholder.selectFile')
+                    "
                     readonly
                   />
                   <button
@@ -74,7 +76,11 @@
                         : emit('file-attach', item.columnName)
                     "
                   >
-                    {{ item.value && item.value !== "-" ? "첨부취소" : "첨부" }}
+                    {{
+                      item.value && item.value !== "-"
+                        ? $t("datatable.attachCancel")
+                        : $t("datatable.attach")
+                    }}
                   </button>
                 </div>
 
@@ -256,7 +262,7 @@ const getRowKey = (item: any, index: number) => {
           background-repeat: no-repeat;
           background-position: right 10px center;
           background-size: 12px auto;
-          
+
           &:focus {
             background-image: url(../assets/icons/ico_select-up.svg);
           }
@@ -282,7 +288,7 @@ const getRowKey = (item: any, index: number) => {
             font-weight: 500;
             white-space: nowrap;
             cursor: pointer;
-            transition: background .2s ease-in-out;
+            transition: background 0.2s ease-in-out;
 
             &:hover {
               background: #3c4973;

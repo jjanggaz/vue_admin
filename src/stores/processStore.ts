@@ -8,13 +8,19 @@ export interface ProcessItem {
   process_id: string;
   process_type: string;
   process_type_nm: string;
+  level2_code_value_en?: string;  // 영어 필드 추가
   process_nm: string;
+  process_name?: string;  // 그리드에서 사용할 process_name
+  level4_code_value_en?: string;  // 영어 필드 추가
   sub_category: string;
   sub_category_nm: string;
+  level3_code_value_en?: string;  // 영어 필드 추가
+  level3_code_key?: string;  // 그리드에서 사용할 level3_code_key
   process_code: string;
   process_symbol: string;
   symbol_id?: string | null;  // 심볼 ID 추가
   ccs_file_id?: string | null;  // 용량계산서 파일 ID 추가
+  symbol_download?: string | null;  // 심볼 다운로드 URI
   viewDetail: string | null;
 }
 
@@ -40,8 +46,11 @@ export interface ProcessDetail {
   ccs_file_id?: string | null;  // 용량계산서 파일 ID
   ccs_file_name?: string | null;  // 용량계산서 파일명
   level2_code_value?: string | null;  // 공정구분 텍스트 (상세 모드 표시용)
+  level2_code_value_en?: string | null;  // 공정구분 영어 텍스트 (상세 모드 표시용)
   level3_code_value?: string | null;  // 공정 중분류 텍스트 (상세 모드 표시용)
+  level3_code_value_en?: string | null;  // 공정 중분류 영어 텍스트 (상세 모드 표시용)
   level4_code_value?: string | null;  // 공정명 텍스트 (상세 모드 표시용)
+  level4_code_value_en?: string | null;  // 공정명 영어 텍스트 (상세 모드 표시용)
 }
 
 // ProcessDetail.vue에서 사용하는 추가 인터페이스들
@@ -153,7 +162,7 @@ export interface GlobalProcessData {
 }
 
 export const useProcessStore = defineStore("process", () => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   
   // 기존 상태들
   const processList = ref<ProcessItem[]>([]);
@@ -538,10 +547,13 @@ export const useProcessStore = defineStore("process", () => {
               process_id: processInfo.process_id || processInfo.id || processInfo.process_code || "",
               process_type: processInfo.level2_code_key || "",
               process_type_nm: processInfo.level2_code_value || "",
+              level2_code_value_en: processInfo.level2_code_value_en || "", // 영어 필드 추가
               process_nm: processInfo.process_name || "",
               process_name: processInfo.level4_code_value || "", // 그리드에서 사용할 process_name 추가
+              level4_code_value_en: processInfo.level4_code_value_en || "", // 영어 필드 추가
               sub_category: processInfo.level3_code_key || "",
               sub_category_nm: processInfo.level3_code_value || "",
+              level3_code_value_en: processInfo.level3_code_value_en || "", // 영어 필드 추가
               level3_code_key: processInfo.level3_code_key || "", // 그리드에서 사용할 level3_code_key 추가
               process_code: processInfo.process_code || "",
               process_symbol: processInfo.symbol_uri || "📄",
@@ -771,8 +783,11 @@ export const useProcessStore = defineStore("process", () => {
             ccs_file_id: processData.ccs_file_id || null,  // 용량계산서 파일 ID
             ccs_file_name: processData.ccs_file_name || null,  // 용량계산서 파일명
             level2_code_value: processData.level2_code_value || null,  // 공정구분 텍스트
+            level2_code_value_en: processData.level2_code_value_en || null,  // 공정구분 영어 텍스트
             level3_code_value: processData.level3_code_value || null,  // 공정 중분류 텍스트
+            level3_code_value_en: processData.level3_code_value_en || null,  // 공정 중분류 영어 텍스트
             level4_code_value: processData.level4_code_value || null,  // 공정명 텍스트
+            level4_code_value_en: processData.level4_code_value_en || null,  // 공정명 영어 텍스트
           });
 
 
@@ -831,7 +846,7 @@ export const useProcessStore = defineStore("process", () => {
         if (result.response && Array.isArray(result.response)) {
           const options = result.response.map((item: any) => ({
             value: item.code_key,
-            label: item.code_value,
+            label: locale.value === "en" && item.code_value_en ? item.code_value_en : item.code_value,
           }));
 
           processTypeOptions.value = options;
@@ -873,7 +888,7 @@ export const useProcessStore = defineStore("process", () => {
         if (result.response && Array.isArray(result.response)) {
           searchSubCategoryOptions.value = result.response.map((item: any) => ({
             value: item.code_key,
-            label: item.code_value,
+            label: locale.value === "en" && item.code_value_en ? item.code_value_en : item.code_value,
           }));
         }
       } else {
@@ -911,7 +926,7 @@ export const useProcessStore = defineStore("process", () => {
         if (result.response && Array.isArray(result.response)) {
           const newOptions = result.response.map((item: any) => ({
             value: item.code_key,
-            label: item.code_value,
+            label: locale.value === "en" && item.code_value_en ? item.code_value_en : item.code_value,
           }));
 
           // 배열을 직접 교체하지 않고 기존 배열을 수정
@@ -950,7 +965,7 @@ export const useProcessStore = defineStore("process", () => {
         if (result.response && Array.isArray(result.response)) {
           searchProcessNameOptions.value = result.response.map((item: any) => ({
             value: item.code_key,
-            label: item.code_value,
+            label: locale.value === "en" && item.code_value_en ? item.code_value_en : item.code_value,
           }));
         }
       } else {
@@ -983,14 +998,12 @@ export const useProcessStore = defineStore("process", () => {
         body: JSON.stringify(requestData),
       });
 
-      console.log("API 응답:", result);
-
       if (result.success) {
         // result.response에서 code_key를 키로, code_value를 값으로 하는 공정명 콤보 옵션 생성
         if (result.response && Array.isArray(result.response)) {
           const newOptions = result.response.map((item: any) => ({
             value: item.code_key,
-            label: item.code_value,
+            label: locale.value === "en" && item.code_value_en ? item.code_value_en : item.code_value,
           }));
 
           // 배열을 직접 교체하지 않고 기존 배열을 수정
@@ -1626,7 +1639,7 @@ export const useProcessStore = defineStore("process", () => {
         headers: {
           system_code: import.meta.env.VITE_SYSTEM_CODE,
           user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
+          wai_lang: localStorage.getItem("wai_lang") || "en",
         },
       });
 
@@ -1685,7 +1698,7 @@ export const useProcessStore = defineStore("process", () => {
         headers: {
           system_code: import.meta.env.VITE_SYSTEM_CODE,
           user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
+          wai_lang: localStorage.getItem("wai_lang") || "en",
         },
       });
 
@@ -2059,7 +2072,7 @@ export const useProcessStore = defineStore("process", () => {
         headers: {
           system_code: import.meta.env.VITE_SYSTEM_CODE,
           user_Id: localStorage.getItem("authUserId") || "",
-          wai_lang: localStorage.getItem("wai_lang") || "ko",
+          wai_lang: localStorage.getItem("wai_lang") || "en",
         },
       });
 

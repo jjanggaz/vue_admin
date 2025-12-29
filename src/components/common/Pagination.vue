@@ -171,6 +171,7 @@ const visiblePages = computed(() => {
 }
 
 .pagination-btn {
+  text-align: center;
   min-width: 40px;
   height: 40px;
   padding: $spacing-xs;
@@ -191,6 +192,10 @@ const visiblePages = computed(() => {
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+
+    &:hover {
+      background-color:#ffffff;
+    }
   }
 }
 
@@ -198,5 +203,27 @@ const visiblePages = computed(() => {
   padding: $spacing-xs;
   color: $text-light;
   font-size: $font-size-sm;
+}
+
+@media (max-width: 768px) {
+  .pagination {
+    gap: 6px;
+
+    .btn-prev {
+      margin-right: 10px;
+    }
+    .btn-next {
+      margin-left: 10px;
+    }
+  }
+
+  .pagination-btn {
+    min-width: 30px;
+    height: 30px;
+    line-height: 1;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 14px;
+  }
 }
 </style>

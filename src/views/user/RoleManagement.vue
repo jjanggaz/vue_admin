@@ -57,32 +57,35 @@
     </div>
 
     <!-- Role Table -->
-    <DataTable
-      :columns="tableColumns"
-      :data="roleStore.roles"
-      :loading="roleStore.loading"
-      :selectable="true"
-      :selected-items="selectedItems"
-      :selection-mode="'single'"
-      :show-select-all="false"
-      :select-header-text="t('common.selectColumn')"
-      row-key="role_id"
-      :stickyHeader="true"
-      @selection-change="handleSelectionChange"
-      @sort-change="handleSortChange"
-      @row-click="handleRowClick"
-    >
-      <template #cell-is_active="{ item }">
-        <span :class="['status-badge', item.is_active ? 'active' : 'inactive']">
-          {{ item.is_active ? t("common.active") : t("common.inactive") }}
-        </span>
-      </template>
-      <template #cell-menu_permissions="{ item }">
-        <button class="btn btn-view" @click.stop="viewMenuPermissions(item)">
-          {{ t("common.view") }}
-        </button>
-      </template>
-    </DataTable>
+    <div class="table-wrapper">
+      <DataTable
+        :columns="tableColumns"
+        :data="roleStore.roles"
+        :loading="roleStore.loading"
+        :selectable="true"
+        :selected-items="selectedItems"
+        :selection-mode="'single'"
+        :show-select-all="false"
+        :select-header-text="t('common.selectColumn')"
+        row-key="role_id"
+        :stickyHeader="true"
+        :maxHeight="'100%'"
+        @selection-change="handleSelectionChange"
+        @sort-change="handleSortChange"
+        @row-click="handleRowClick"
+      >
+        <template #cell-is_active="{ item }">
+          <span :class="['status-badge', item.is_active ? 'active' : 'inactive']">
+            {{ item.is_active ? t("common.active") : t("common.inactive") }}
+          </span>
+        </template>
+        <template #cell-menu_permissions="{ item }">
+          <button class="btn btn-view" @click.stop="viewMenuPermissions(item)">
+            {{ t("common.view") }}
+          </button>
+        </template>
+      </DataTable>
+    </div>
 
     <!-- Pagination -->
     <div class="pagination-container">
@@ -780,7 +783,15 @@ const closeMenuPermissionsModal = () => {
 </script>
 
 <style scoped>
+.role-management {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  padding-bottom: 40px;
+}
+
 .title-section {
+  flex-shrink: 0;
   margin-bottom: 20px;
 }
 
@@ -790,8 +801,24 @@ const closeMenuPermissionsModal = () => {
   font-weight: 600;
 }
 
+.action-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
 .search-inputs {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 

@@ -34,8 +34,8 @@
                 class="form-select"
                 @change="handleAsset3DCategoryChange"
               >
-                <option value="PRESET">프리셋</option>
-                <option value="3D_LIBRARY">3D 라이브러리</option>
+                <option value="PRESET">{{ t("asset3D.preset") }}</option>
+                <option value="3D_LIBRARY">{{ t("asset3D.library") }}</option>
               </select>
             </div>
             <div class="filter-item">
@@ -109,7 +109,12 @@
 
           <!-- 연결기계 슬롯 -->
           <template #cell-connected_machine="{ item }">
+            <template v-if="selectedAsset3DCategory === '3D_LIBRARY'">
+              {{ getCategoryName(item.category) }}
+            </template>
+            <template v-else>
             {{ getConnectedMachineName(item.root_equipment_type) }}
+            </template>
           </template>
 
           <!-- 명칭 슬롯 -->
@@ -236,7 +241,7 @@
 
             <!-- 선택 항목 그리드 -->
             <div v-if="presetDetailData.tableRows && presetDetailData.tableRows.length > 0" class="preset-selection-grid">
-              <h3 class="selection-grid-title">선택 항목</h3>
+              <h3 class="selection-grid-title">{{ t("asset3D.selectedItems") }}</h3>
               <DataTable
                 :columns="presetTableColumns"
                 :data="presetDetailData.tableRows"
@@ -271,7 +276,7 @@
                   >
                     {{ item.model_file_name }}
                   </a>
-                  <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : "모델없음" }}</span>
+                  <span v-else>{{ item.model_file_name && item.model_file_name !== '-' ? item.model_file_name : t("asset3D.noModel") }}</span>
                 </template>
                 <template #cell-cellName="{ item }">
                   <a
@@ -422,13 +427,13 @@ const libraryTabRef = ref<any>(null);
 const presetTabRef = ref<any>(null);
 
 // 모달 탭 구성 - 등록 모드만 사용
-const modalTabs = [
-  { key: "machine", label: "3D 라이브러리 등록" },
+const modalTabs = computed(() => [
+  { key: "machine", label: t("asset3D.libraryRegister") },
   {
     key: "formula",
-    label: "3D 프리셋 등록",
+    label: t("asset3D.presetRegister"),
   },
-];
+]);
 const modalActiveTab = ref(0);
 
 interface Asset3DItem {
@@ -487,7 +492,9 @@ interface Asset3DItem {
 }
 
 // 테이블 컬럼 설정
-const tableColumns: TableColumn[] = [
+const tableColumns = computed<TableColumn[]>(() => {
+  const isLibrary = selectedAsset3DCategory.value === "3D_LIBRARY";
+  const columns: TableColumn[] = [
   { key: "no", title: t("columns.asset3D.no"), width: "50px", sortable: false },
   {
     key: "model3d_type",
@@ -498,7 +505,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "connected_machine",
-    title: t("columns.asset3D.connectedMachine"),
+      title: isLibrary ? t("columns.asset3D.category") : t("columns.asset3D.connectedMachine"),
     width: "120px",
     sortable: false,
   },
@@ -508,12 +515,19 @@ const tableColumns: TableColumn[] = [
     width: "150px",
     sortable: false,
   },
-  {
+  ];
+  
+  // 3D 라이브러리가 아닌 경우에만 직경 컬럼 추가
+  if (!isLibrary) {
+    columns.push({
     key: "diameter",
     title: t("columns.asset3D.diameter"),
     width: "100px",
     sortable: false,
-  },
+    });
+  }
+  
+  columns.push(
   {
     key: "unit",
     title: t("columns.asset3D.unit"),
@@ -522,7 +536,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     key: "created_at",
-    title: "등록일자",
+    title: t("columns.asset3D.createdAt"),
     width: "140px",
     sortable: false,
   },
@@ -531,8 +545,11 @@ const tableColumns: TableColumn[] = [
     title: t("columns.asset3D.details"),
     width: "80px",
     sortable: false,
-  },
-];
+    }
+  );
+  
+  return columns;
+});
 
 const asset3dList = ref<Asset3DItem[]>([]);
 const loading = ref(false);
@@ -587,6 +604,7 @@ interface PresetTableRow {
 const presetDetailData = ref<{
   unit: string;
   machine: string;
+  root_equipment_type?: string; // 연결기계 다국어 처리를 위한 원본 값
   presetName: string;
   totalUnitCount?: number | string;
   diameterValue?: number | string;
@@ -708,7 +726,7 @@ const specVerticalData = computed(() => {
 
   // 5. 파일 필드 (3D, 썸네일, Revit, 심볼, 계산식)
   data.push({
-    columnName: "3D",
+    columnName: t("asset3D.model3D"),
     value: (item as any).model_file_info?.original_filename || "-",
     filePath: (item as any).model_file_info?.download_url,
     editable: false,
@@ -722,7 +740,7 @@ const specVerticalData = computed(() => {
     fieldType: "file",
   });
   data.push({
-    columnName: "Revit",
+    columnName: t("asset3D.revit"),
     value: (item as any).rfa_file_info?.original_filename || "-",
     filePath: (item as any).rfa_file_info?.download_url,
     editable: false,
@@ -746,19 +764,19 @@ const libraryVerticalData = computed(() => {
 
   // 1. 기본 정보 필드
   data.push({
-    columnName: "단위",
+    columnName: t("common.unit"),
     value: libraryDetailData.value.unit || "-",
     editable: false,
     fieldType: "input",
   });
   data.push({
-    columnName: "3D ASSET 카테고리",
+    columnName: t("asset3D.category"),
     value: libraryDetailData.value.category || "-",
     editable: false,
     fieldType: "input",
   });
   data.push({
-    columnName: "3D 모델명",
+    columnName: t("asset3D.modelName"),
     value: libraryDetailData.value.modelName || "-",
     editable: false,
     fieldType: "input",
@@ -766,14 +784,14 @@ const libraryVerticalData = computed(() => {
 
   // 2. 파일 필드
   data.push({
-    columnName: "3D모델 업로드",
+    columnName: t("asset3D.modelUpload"),
     value: libraryDetailData.value.modelFileName || "-",
     filePath: libraryDetailData.value.modelDownloadUrl,
     editable: false,
     fieldType: "file",
   });
   data.push({
-    columnName: "3D모델 썸네일",
+    columnName: t("asset3D.thumbnail"),
     value: libraryDetailData.value.thumbnailFileName || "-",
     filePath: libraryDetailData.value.thumbnailDownloadUrl,
     editable: false,
@@ -809,25 +827,27 @@ const presetVerticalData = computed(() => {
 
   // 1. 마스터 정보 필드만 표시
   data.push({
-    columnName: "단위",
+    columnName: t("common.unit"),
     value: presetDetailData.value.unit || "-",
     editable: false,
     fieldType: "input",
   });
   data.push({
-    columnName: "연결기계",
-    value: presetDetailData.value.machine || "-",
+    columnName: t("columns.asset3D.connectedMachine"),
+    value: presetDetailData.value.root_equipment_type 
+      ? getConnectedMachineName(presetDetailData.value.root_equipment_type)
+      : (presetDetailData.value.machine || "-"),
     editable: false,
     fieldType: "input",
   });
   data.push({
-    columnName: "프리셋 명",
+    columnName: t("asset3D.presetName"),
     value: presetDetailData.value.presetName || "-",
     editable: false,
     fieldType: "input",
   });
   data.push({
-    columnName: "총 대수 구성",
+    columnName: t("asset3D.totalUnitCount"),
     value: presetDetailData.value.totalUnitCount !== undefined && presetDetailData.value.totalUnitCount !== null
       ? String(presetDetailData.value.totalUnitCount)
       : "-",
@@ -835,7 +855,7 @@ const presetVerticalData = computed(() => {
     fieldType: "input",
   });
   data.push({
-    columnName: "프리셋의 대표 직경 값",
+    columnName: t("asset3D.presetRepresentativeDiameter"),
     value: presetDetailData.value.diameterValue !== undefined && presetDetailData.value.diameterValue !== null
       ? String(presetDetailData.value.diameterValue)
       : "-",
@@ -843,7 +863,7 @@ const presetVerticalData = computed(() => {
     fieldType: "input",
   });
   data.push({
-    columnName: "직경 단위",
+    columnName: t("asset3D.diameterUnit"),
     value: presetDetailData.value.diameterUnit || "-",
     editable: false,
     fieldType: "input",
@@ -851,7 +871,7 @@ const presetVerticalData = computed(() => {
 
   // 2. 파일 필드
   data.push({
-    columnName: "썸네일 업로드",
+    columnName: t("asset3D.thumbnailUpload"),
     value: presetDetailData.value.thumbnailFileName || "-",
     filePath: presetDetailData.value.thumbnailDownloadUrl,
     editable: false,
@@ -863,15 +883,15 @@ const presetVerticalData = computed(() => {
 
 // 프리셋 선택 항목 그리드 컬럼 정의
 const presetTableColumns: TableColumn[] = [
-  { key: "no", title: "순번", width: "50px", sortable: false },
-  { key: "pipeCategory", title: "배관구분", width: "100px", sortable: false },
-  { key: "fittingType", title: "피팅방식", width: "120px", sortable: false },
-  { key: "diameter", title: "직경", width: "80px", sortable: false },
-  { key: "diameterAfter", title: "직경후", width: "80px", sortable: false },
-  { key: "pipeType", title: "배관유형", width: "150px", sortable: false },
-  { key: "code", title: "코드", width: "auto", sortable: false },
-  { key: "model_file_name", title: "3D 모델명", width: "200px", sortable: false },
-  { key: "cellName", title: "썸네일", width: "100px", sortable: false },
+  { key: "no", title: t("asset3D.columns.no"), width: "50px", sortable: false },
+  { key: "pipeCategory", title: t("asset3D.columns.pipeCategory"), width: "100px", sortable: false },
+  { key: "fittingType", title: t("asset3D.columns.fittingType"), width: "120px", sortable: false },
+  { key: "diameter", title: t("asset3D.columns.diameter"), width: "80px", sortable: false },
+  { key: "diameterAfter", title: t("asset3D.columns.diameterAfter"), width: "80px", sortable: false },
+  { key: "pipeType", title: t("asset3D.columns.pipeType"), width: "150px", sortable: false },
+  { key: "code", title: t("asset3D.columns.code"), width: "auto", sortable: false },
+  { key: "model_file_name", title: t("asset3D.columns.modelFileName"), width: "200px", sortable: false },
+  { key: "cellName", title: t("asset3D.columns.thumbnail"), width: "100px", sortable: false },
 ];
 
 // 검색 필터링은 서버에서 처리하므로 클라이언트 사이드 필터링 제거
@@ -991,7 +1011,7 @@ const closeRegistModal = async () => {
   
   // 변경사항이 있으면 확인 메시지 표시
   if (hasChanges) {
-    if (!confirm("수정사항이 있습니다. 창을 닫으시겠습니까?")) {
+    if (!confirm(t("process.hasChangesConfirm"))) {
       return; // 사용자가 취소하면 함수 종료
     }
   }
@@ -1186,10 +1206,8 @@ const openDetailPanel = async (item: Asset3DItem) => {
           );
           const unitName = unitSystem ? unitSystem.system_name : presetItem.unit_system_code || "";
 
-          // 연결기계 이름 변환
-          const machineName = presetItem.root_equipment_type === "M_PUMP" ? "펌프" : 
-                             presetItem.root_equipment_type === "M_AEBL" ? "송풍기" : 
-                             presetItem.root_equipment_type || "";
+          // 연결기계 이름 변환 (다국어 처리는 presetVerticalData에서 수행)
+          const machineName = presetItem.root_equipment_type || "";
 
           // 썸네일 파일 정보
           const thumbnailFile = presetItem.thumbnail_file as Record<string, unknown> | undefined;
@@ -1349,6 +1367,7 @@ const openDetailPanel = async (item: Asset3DItem) => {
           presetDetailData.value = {
             unit: unitName,
             machine: machineName,
+            root_equipment_type: presetItem.root_equipment_type || undefined, // 다국어 처리를 위한 원본 값 저장
             presetName: String(presetItem.preset_name_ko || presetItem.equipment_name || ""),
             totalUnitCount: presetItem.total_unit_count !== undefined && presetItem.total_unit_count !== null
               ? presetItem.total_unit_count
@@ -1959,24 +1978,41 @@ const getEquipmentTypeName = (type: string | undefined): string => {
 const getModel3dTypeName = (type: string | undefined): string => {
   if (!type) return "-";
   
-  const typeMap: Record<string, string> = {
-    "PRESET": "프리셋",
-    "3D_LIBRARY": "3D 라이브러리",
-  };
+  if (type === "PRESET") {
+    return t("asset3D.preset");
+  } else if (type === "3D_LIBRARY") {
+    return t("asset3D.library");
+  }
   
-  return typeMap[type] || type;
+  return type;
 };
 
 // 연결기계 이름 변환 함수 (root_equipment_type 기준)
 const getConnectedMachineName = (type: string | undefined): string => {
   if (!type) return "-";
   
-  const typeMap: Record<string, string> = {
-    "M_PUMP": "펌프",
-    "M_AEBL": "송풍기",
-  };
+  if (type === "M_PUMP") {
+    return t("asset3D.machinePump");
+  } else if (type === "M_AEBL") {
+    return t("asset3D.machineBlower");
+  }
   
-  return typeMap[type] || type;
+  return type;
+};
+
+// 카테고리 이름 변환 함수
+const getCategoryName = (category: string | undefined): string => {
+  if (!category) return "-";
+  
+  if (category === "INTERIOR") {
+    return t("asset3D.categoryInterior");
+  } else if (category === "STRUCTURE") {
+    return t("asset3D.categoryStructure");
+  } else if (category === "ETC") {
+    return t("asset3D.categoryEtc");
+  }
+  
+  return category;
 };
 
 // 날짜/시간 포맷 함수 (YYYY-MM-DD HH:MI 형태)
@@ -2021,32 +2057,23 @@ onMounted(async () => {
   padding: 0 24px;
   height: 100vh;
   overflow: hidden;
-  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 }
 .asset3d-page:has(.page-layout.detail-open) {
   padding-right: 4px;
 }
 
-.page-layout {
-  display: grid;
-  height: calc(100vh - #{$spacing-lg * 2});
-  width: 100%;
-  overflow: hidden;
-  gap: 10px;
-  grid-template-columns: 1fr; // 기본: 전체 너비
-  transition: grid-template-columns 0.3s ease;
-
-  &.detail-open {
-    grid-template-columns: 2fr 1fr; // 상세보기 열림: 2/3 + 1/3
-  }
-}
-
 .main-content {
-  overflow-y: auto;
-  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   min-width: 0;
-  padding-top: 40px;
+  padding: 40px 0 50px;
+  height: 100%;
+  overflow: hidden;
 }
 
 // 프리셋 선택 항목 그리드 스타일
@@ -2128,6 +2155,7 @@ onMounted(async () => {
 
 .search-filter-bar {
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .link-download {
@@ -2185,5 +2213,10 @@ $tablet: 1024px;
 
 .tab-content {
   margin-top: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
 }
 </style>

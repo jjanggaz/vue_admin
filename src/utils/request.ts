@@ -99,7 +99,7 @@ export const request = async (
               success: false,
               status: retryRes.status,
               message: retryRes.statusText,
-              response: `{"detail":"${retryRes.statusText}"}`,
+              response: `${retryRes.statusText}`,
             };
             throw errorResponse;
           }
@@ -109,9 +109,9 @@ export const request = async (
             status: retryRes.status,
             message:
               errorData.message || errorData.detail || retryRes.statusText,
-            response: `{"detail":"${
+            response: `${
               errorData.message || errorData.detail || retryRes.statusText
-            }"}`,
+            }`,
           };
           throw errorResponse;
         }
@@ -152,7 +152,7 @@ export const request = async (
         success: false,
         status: 401,
         message: "인증이 만료되었습니다. 다시 로그인해주세요.",
-        response: '{"detail":"인증이 만료되었습니다. 다시 로그인해주세요."}',
+        response: "인증이 만료되었습니다. 다시 로그인해주세요.",
       };
       throw errorResponse;
     }
@@ -168,7 +168,7 @@ export const request = async (
           success: false,
           status: res.status,
           message: res.statusText,
-          response: `{"detail":"${res.statusText}"}`,
+          response: `${res.statusText}`,
         };
         throw errorResponse;
       }
@@ -178,14 +178,13 @@ export const request = async (
       console.log(`${res.status} 에러 - errorData.message:`, errorData.message);
       console.log(`${res.status} 에러 - res.statusText:`, res.statusText);
 
-      // 백엔드 응답 구조를 그대로 반환
+      // 백엔드 응답 구조를 그대로 반환 (모든 필드 포함)
       const errorResponse = {
+        ...errorData,
         success: false,
         status: res.status,
         message: errorData.message || errorData.detail || res.statusText,
-        response: `{"detail":"${
-          errorData.message || errorData.detail || res.statusText
-        }"}`,
+        response: `${errorData.message || errorData.detail || res.statusText}`,
       };
       console.log(`${res.status} 에러 - 최종 errorResponse:`, errorResponse);
       // 로딩바 숨김
@@ -219,7 +218,7 @@ export const request = async (
         success: false,
         status: 500,
         message: e.message,
-        response: `{"detail":"${e.message}"}`,
+        response: `${e.message}`,
       };
       throw errorResponse;
     } else {

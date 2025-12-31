@@ -12,5 +12,9 @@
 .user-management-layout {
   height: 100%;
   padding: 40px 24px;
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
 }
 </style>

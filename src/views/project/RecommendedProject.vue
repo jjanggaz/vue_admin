@@ -425,10 +425,26 @@ onMounted(async () => {
 .project-management {
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 60px);
   padding: 40px 24px;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 768px) {
     padding: 40px 0;
   }
+}
+
+.action-bar {
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.pagination-container {
+  flex-shrink: 0;
+  margin-top: 10px;
 }
 </style>

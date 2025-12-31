@@ -196,6 +196,7 @@ const getRowKey = (item: any, index: number) => {
 }
 
 .vertical-data-table {
+  table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
 
@@ -227,16 +228,43 @@ const getRowKey = (item: any, index: number) => {
       }
 
       .column-name {
-        font-weight: $font-weight-md;
+        width: 160px;
+        max-width: 100%;
         background-color: $background-light;
-        width: 120px;
-        max-width: 120px;
-        min-width: 120px;
+        font-weight: $font-weight-md;
+        white-space: nowrap;
       }
 
       .column-value {
-        width: 100%;
-        word-break: break-all;
+        max-width: none;
+        white-space: nowrap;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background-color: #e7e6ed;
+          border-radius: 2px;
+
+          &:hover {
+            background-color: #d7d5e4;
+          }
+        }
+        &::-webkit-scrollbar-button:start:decrement {
+          display: block;
+          height: 0;
+          width: 10px;
+          background-color: transparent;
+        }
+        &::-webkit-scrollbar-button:end:increment {
+          display: block;
+          height: 0;
+          width: 10px;
+          background-color: transparent;
+        }
 
         .edit-field-select,
         .edit-field-input {
@@ -365,6 +393,13 @@ const getRowKey = (item: any, index: number) => {
 }
 
 // 반응형 처리
+@media (max-width: $breakpoint-lg) {
+  .vertical-data-table {
+    td {
+      font-size: 13px;
+    }
+  }
+}
 @media (max-width: $breakpoint-md) {
   .vertical-data-table {
     td {

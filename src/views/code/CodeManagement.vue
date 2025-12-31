@@ -1320,7 +1320,7 @@ const handleEdit = () => {
   padding: 40px 24px;
 
   @media (max-width: 768px) {
-    padding: 20px 0;
+    padding: 40px 0;
   }
 }
 

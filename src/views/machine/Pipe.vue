@@ -157,16 +157,7 @@
 
           <!-- 배관코드 슬롯 (줄바꿈 지원) -->
           <template #cell-equipment_code="{ item }">
-            <span
-              style="
-                word-break: break-word;
-                white-space: normal;
-                line-height: 1.4;
-                display: inline-block;
-                max-width: 100%;
-              "
-              >{{ item.equipment_code || "-" }}</span
-            >
+            <span>{{ item.equipment_code || "-" }}</span>
           </template>
 
           <!-- 업체명 슬롯 -->
@@ -1126,6 +1117,14 @@ const editData = ref<{
   specifications: {},
 });
 
+// 삭제된 파일 추적 (원본 데이터의 파일 ID 저장)
+const deletedFiles = ref<{
+  model_file_id?: string;
+  thumbnail_id?: string;
+  rfa_file_id?: string;
+  symbol_id?: string;
+}>({});
+
 // 원본 데이터 백업 (취소 시 복원용)
 const originalItemData = ref<MachineItem | null>(null);
 
@@ -1403,9 +1402,7 @@ const handleSelectionChange = (selected: MachineItem[]) => {
 
 // 행 클릭 (RoleManagement.vue 패턴 적용)
 const handleRowClick = (row: MachineItem) => {
-  console.log("행 클릭된 데이터:", row); // 디버깅용 로그
   selectedItems.value = [row];
-  console.log("선택된 아이템:", selectedItems.value); // 디버깅용 로그
 };
 
 // 정렬 변경 핸들러
@@ -2051,6 +2048,8 @@ const closeDetailPanel = () => {
 
 const toggleEditMode = () => {
   if (!isDetailEditMode.value && detailItemData.value) {
+    // 삭제 상태 초기화
+    deletedFiles.value = {};
     // 편집 모드로 들어갈 때 현재 데이터로 editData 초기화
     editData.value = {
       equipmentType: detailItemData.value.equipment_type || "",
@@ -2142,6 +2141,9 @@ const cancelEditMode = () => {
   selectedSymbolFile.value = null;
   selectedThumbnailFile.value = null;
 
+  // 삭제 상태 초기화
+  deletedFiles.value = {};
+
   isDetailEditMode.value = false;
 };
 
@@ -2184,8 +2186,6 @@ const saveDetailChanges = async () => {
       updateParams.specifications = editData.value.specifications;
     }
 
-    console.log("업데이트 파라미터:", updateParams);
-
     // 새로 추가된 파일들 확인 (저장된 File 객체 사용)
     if (selected3dFile.value) {
       updateParams.dtd_model_file = selected3dFile.value;
@@ -2200,16 +2200,37 @@ const saveDetailChanges = async () => {
       updateParams.symbol_file = selectedSymbolFile.value;
     }
 
-    console.log("최종 업데이트 파라미터 (파일 포함):", updateParams);
+    // 삭제된 파일 정보 추가
+    if (deletedFiles.value.model_file_id) {
+      updateParams.model_file_info = {
+        model_file_id: deletedFiles.value.model_file_id,
+        model_file_delete_check: true,
+      };
+    }
+    if (deletedFiles.value.thumbnail_id) {
+      updateParams.thumbnail_file_info = {
+        thumbnail_id: deletedFiles.value.thumbnail_id,
+        thumbnail_file_delete_check: true,
+      };
+    }
+    if (deletedFiles.value.rfa_file_id) {
+      updateParams.rfa_file_info = {
+        rfa_file_id: deletedFiles.value.rfa_file_id,
+        rfa_file_delete_check: true,
+      };
+    }
+    if (deletedFiles.value.symbol_id) {
+      updateParams.symbol_file_info = {
+        symbol_id: deletedFiles.value.symbol_id,
+        symbol_file_delete_check: true,
+      };
+    }
 
     // API 호출
     const response = await pipeStore.updatePipe(
       item.equipment_id,
       updateParams
     );
-
-    // API 응답 결과 console 출력
-    console.log("상세정보 저장 API 응답:", response);
 
     if (response?.success) {
       // 저장 성공 후 편집 모드 종료
@@ -2468,7 +2489,6 @@ const handleFileSelect = (type: string, event: Event) => {
         }
         break;
     }
-    console.log(`${type} 파일 선택됨:`, file.name);
   }
 };
 
@@ -2639,7 +2659,6 @@ const selectedThumbnailFile = ref<File | null>(null);
 
 // 그리드에서 파일 첨부 처리
 const handleFileAttach = (fieldName: string) => {
-  console.log(`파일 첨부 요청: ${fieldName}`);
 
   switch (fieldName) {
     case "3D":
@@ -2669,13 +2688,25 @@ const handleFileAttach = (fieldName: string) => {
 
 // 그리드에서 파일 첨부 취소 처리
 const handleFileRemove = (fieldName: string) => {
-  console.log(`파일 첨부 취소 요청: ${fieldName}`);
-
   switch (fieldName) {
     case "3D":
       editData.value.model3dFile = "";
       selected3dFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
+      if (detailItemData.value && originalItemData.value) {
+        // 원본 데이터에서 파일 ID 저장 (여러 경로 확인)
+        const original = originalItemData.value as any;
+        const modelFileId =
+          original.model_file_id ||
+          original.model_file_info?.model_file_id ||
+          original.model_file_info?.file_id;
+        if (modelFileId) {
+          deletedFiles.value.model_file_id = modelFileId;
+        } else {
+          console.warn("3D 파일 ID를 찾을 수 없습니다. 원본 데이터:", {
+            model_file_id: original.model_file_id,
+            model_file_info: original.model_file_info,
+          });
+        }
         // 기존 파일 정보 초기화
         (detailItemData.value as any).model_file_info = null;
       }
@@ -2687,7 +2718,21 @@ const handleFileRemove = (fieldName: string) => {
     case "Revit":
       editData.value.revitFile = "";
       selectedRevitFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
+      if (detailItemData.value && originalItemData.value) {
+        // 원본 데이터에서 파일 ID 저장 (여러 경로 확인)
+        const original = originalItemData.value as any;
+        const rfaFileId =
+          original.rfa_file_id ||
+          original.rfa_file_info?.rfa_file_id ||
+          original.rfa_file_info?.file_id;
+        if (rfaFileId) {
+          deletedFiles.value.rfa_file_id = rfaFileId;
+        } else {
+          console.warn("Revit 파일 ID를 찾을 수 없습니다. 원본 데이터:", {
+            rfa_file_id: original.rfa_file_id,
+            rfa_file_info: original.rfa_file_info,
+          });
+        }
         // 기존 파일 정보 초기화
         (detailItemData.value as any).rfa_file_info = null;
       }
@@ -2698,8 +2743,21 @@ const handleFileRemove = (fieldName: string) => {
       break;
     case t("common.symbol"):
       editData.value.symbolFile = "";
-      selectedSymbolFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
+      if (detailItemData.value && originalItemData.value) {
+        // 원본 데이터에서 파일 ID 저장 (여러 경로 확인)
+        const original = originalItemData.value as any;
+        const symbolId =
+          original.symbol_id ||
+          original.symbol_file_info?.symbol_id ||
+          original.symbol_file_info?.file_id;
+        if (symbolId) {
+          deletedFiles.value.symbol_id = symbolId;
+        } else {
+          console.warn("심볼 파일 ID를 찾을 수 없습니다. 원본 데이터:", {
+            symbol_id: original.symbol_id,
+            symbol_file_info: original.symbol_file_info,
+          });
+        }
         // 기존 파일 정보 초기화
         (detailItemData.value as any).symbol_file_info = null;
       }
@@ -2711,7 +2769,24 @@ const handleFileRemove = (fieldName: string) => {
     case t("common.thumbnail"):
       editData.value.thumbnailFile = "";
       selectedThumbnailFile.value = null; // 저장된 파일 객체 초기화
-      if (detailItemData.value) {
+      // 썸네일 이미지 URL 초기화
+      thumbnailImageUrl.value = "";
+      isThumbnailLoading.value = false;
+      if (detailItemData.value && originalItemData.value) {
+        // 원본 데이터에서 파일 ID 저장 (여러 경로 확인)
+        const original = originalItemData.value as any;
+        const thumbnailId =
+          original.thumbnail_id ||
+          original.thumbnail_file_info?.thumbnail_id ||
+          original.thumbnail_file_info?.file_id;
+        if (thumbnailId) {
+          deletedFiles.value.thumbnail_id = thumbnailId;
+        } else {
+          console.warn("썸네일 파일 ID를 찾을 수 없습니다. 원본 데이터:", {
+            thumbnail_id: original.thumbnail_id,
+            thumbnail_file_info: original.thumbnail_file_info,
+          });
+        }
         // 기존 파일 정보 초기화
         (detailItemData.value as any).thumbnail_file_info = null;
       }
@@ -2727,7 +2802,6 @@ const handleFileRemove = (fieldName: string) => {
 
 // 파일 다운로드 핸들러
 const handleFileDownload = (fieldName: string) => {
-  console.log(`파일 다운로드 요청: ${fieldName}`);
 
   if (!detailItemData.value) return;
 
@@ -2880,47 +2954,6 @@ onMounted(async () => {
 
 .price-history-section {
   margin-top: 24px;
-
-  :deep(.data-table-container) {
-    max-height: 250px;
-    overflow-y: auto;
-    overflow-x: auto;
-    width: 100%;
-  }
-
-  :deep(.data-table) {
-    min-width: 600px;
-    width: 100%;
-  }
-}
-
-// VerticalDataTable 스타일 오버라이드
-
-.detail-section :deep(.vertical-data-table) {
-  font-size: 0.875rem;
-
-  .column-name {
-    background-color: #f8f9fa;
-    color: #333333;
-    font-weight: 500;
-    width: 35%;
-  }
-
-  .column-value {
-    width: 65%;
-    word-break: break-word;
-  }
-}
-
-// 메인 콘텐츠 내 테이블도 제어 (중복 정의 제거)
-:deep(.main-content .data-table) {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-
-  table {
-    min-width: 100%;
-  }
 }
 
 .search-filter-bar {

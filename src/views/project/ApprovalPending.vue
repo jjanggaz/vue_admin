@@ -348,7 +348,7 @@ onMounted(async () => {
   height: calc(100vh - 60px);
   padding: 40px 24px;
 
-  @media (max-width: 1050px) {
+  @media (max-width: 768px) {
     padding: 40px 0;
   }
 }

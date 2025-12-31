@@ -1,7 +1,7 @@
 <template>
-  <div class="tab-navigation">
+  <div ref="tabNavigationRef" class="tab-navigation">
     <router-link
-      v-for="tab in tabs"
+      v-for="(tab, index) in tabs"
       :key="tab.name"
       :to="tab.to"
       class="tab-item"
@@ -9,7 +9,8 @@
         active: isActiveTab(tab),
         disabled: tab.disabled,
       }"
-      @click="handleTabClick(tab)"
+      :ref="el => (tabRefs[index] = el)"
+      @click="handleTabClick(tab, index, $event)"
     >
       <span v-if="tab.icon" class="tab-icon">{{ tab.icon }}</span>
       <span class="tab-text">{{ tab.label }}</span>
@@ -19,48 +20,103 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+  import { useRoute } from "vue-router";
+  import { ref, nextTick, onMounted, onUnmounted, watch } from "vue";
 
-export interface TabItem {
-  name: string;
-  label: string;
-  to: string;
-  icon?: string;
-  badge?: string | number;
-  disabled?: boolean;
-}
+  export interface TabItem {
+    name: string;
+    label: string;
+    to: string;
+    icon?: string;
+    badge?: string | number;
+    disabled?: boolean;
+  }
 
-interface Props {
-  tabs: TabItem[];
-  activeByRoute?: boolean; // 라우트 기반으로 활성 탭 결정
-  activeTab?: string; // 수동으로 활성 탭 지정
-}
+  interface Props {
+    tabs: TabItem[];
+    activeByRoute?: boolean; // 라우트 기반으로 활성 탭 결정
+    activeTab?: string; // 수동으로 활성 탭 지정
+  }
 
-const props = withDefaults(defineProps<Props>(), {
-  activeByRoute: true,
-});
+  const props = withDefaults(defineProps<Props>(), {
+    activeByRoute: true,
+  });
 
-const emit = defineEmits<{
-  "tab-click": [tab: TabItem];
-}>();
+  const emit = defineEmits<{"tab-click": [tab: TabItem];}>();
 
-const route = useRoute();
+  const route = useRoute();
+  const tabRefs = ref<any[]>([]);
+  const tabNavigationRef = ref<HTMLElement | null>(null);
 
-const isActiveTab = (tab: TabItem): boolean => {
-  if (props.activeByRoute) {
-    // 라우트 기반 활성 상태 체크 - 경로 정확히 일치하는지 확인
-    return route.path === tab.to;
-  } else {
-    // 수동 지정된 활성 탭 체크
+  // 마우스 휠로 좌우 스크롤 처리
+  const handleWheelScroll = (e: WheelEvent) => {
+    if (tabNavigationRef.value) {
+      e.preventDefault();
+      tabNavigationRef.value.scrollLeft += e.deltaY;
+    }
+  };
+
+  // 로컬 스토리지 키
+  const STORAGE_KEY = "activeTabIndex";
+
+  const isActiveTab = (tab: TabItem): boolean => {
+    if (props.activeByRoute) return route.path === tab.to;
     return props.activeTab === tab.name;
-  }
-};
+  };
 
-const handleTabClick = (tab: TabItem) => {
-  if (!tab.disabled) {
+  const handleTabClick = async (tab: TabItem, index: number, event: Event) => {
+    if (tab.disabled) {
+      event.preventDefault();
+      return;
+    }
+
     emit("tab-click", tab);
-  }
-};
+
+    // 선택한 탭 인덱스를 저장
+    localStorage.setItem(STORAGE_KEY, index.toString());
+
+    await nextTick();
+
+    const link = tabRefs.value[index];
+    const el = link?.$el as HTMLElement;
+
+    el?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  };
+
+  // 새로고침 시 마지막 스크롤 위치 복원
+  onMounted(async () => {
+    await nextTick();
+
+    const savedIndex = localStorage.getItem(STORAGE_KEY);
+    if (savedIndex !== null) {
+      const index = parseInt(savedIndex, 10);
+      const link = tabRefs.value[index];
+      const el = link?.$el as HTMLElement;
+      el?.scrollIntoView({ behavior: "auto", inline: "start", block: "nearest" });
+    }
+
+    // 휠 이벤트 리스너 등록
+    if (tabNavigationRef.value) {
+      tabNavigationRef.value.addEventListener("wheel", handleWheelScroll, { passive: false });
+    }
+  });
+
+  onUnmounted(() => {
+    if (tabNavigationRef.value) {
+      tabNavigationRef.value.removeEventListener("wheel", handleWheelScroll);
+    }
+  });
+
+  // 라우트 변경 시 마지막 위치 업데이트 (옵션)
+  watch(() => route.path, () => {
+    if (props.activeByRoute) {
+      const activeIndex = props.tabs.findIndex(t => t.to === route.path);
+      
+      if (activeIndex !== -1) {
+        localStorage.setItem(STORAGE_KEY, activeIndex.toString());
+      }
+    }
+  });
 </script>
 
 <style scoped lang="scss">
@@ -68,10 +124,10 @@ const handleTabClick = (tab: TabItem) => {
   display: flex;
   border-bottom: 1px solid $border-color;
   overflow-x: auto;
-  scrollbar-width: none; // Firefox
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
-    // Chrome, Safari
     display: none;
   }
 
@@ -79,9 +135,7 @@ const handleTabClick = (tab: TabItem) => {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: $spacing-xs;
     min-width: 140px;
-    padding: $spacing-md $spacing-lg;
     text-decoration: none;
     color: $text-light;
     border-bottom: 2px solid transparent;
@@ -89,6 +143,7 @@ const handleTabClick = (tab: TabItem) => {
     font-weight: $font-weight-md;
     white-space: nowrap;
     position: relative;
+    scroll-margin-left: 20px;
 
     &:hover:not(.disabled) {
       color: $primary-color;
@@ -136,7 +191,7 @@ const handleTabClick = (tab: TabItem) => {
     }
 
     @media (max-width: $breakpoint-md) {
-      min-width: 80px;
+      min-width: 100px;
     }
   }
 }
@@ -145,8 +200,6 @@ const handleTabClick = (tab: TabItem) => {
 @media (max-width: $breakpoint-md) {
   .tab-navigation {
     .tab-item {
-      padding: $spacing-sm $spacing-md;
-
       .tab-text {
         font-size: 16px;
       }

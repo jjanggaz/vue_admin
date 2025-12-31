@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 
 export const usePipeStore = defineStore("pipe", () => {
   const { t } = useI18n();
-  
+
   // 상태
   const unitSystems = ref<
     Array<{
@@ -86,7 +86,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("공통코드 조회 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.commonCodeRetrieveFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.commonCodeRetrieveFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -115,7 +117,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 검색 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.pipeSearchFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.pipeSearchFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -202,7 +206,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("모델 ZIP 업로드 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.modelZipUploadFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.modelZipUploadFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -237,7 +243,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 삭제 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.pipeDeleteFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.pipeDeleteFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -285,12 +293,46 @@ export const usePipeStore = defineStore("pipe", () => {
       revit_model_file?: File;
       rvt_model_file?: File;
       symbol_file?: File;
+      model_file_info?: {
+        model_file_id: string;
+        model_file_delete_check: boolean;
+      };
+      thumbnail_file_info?: {
+        thumbnail_id: string;
+        thumbnail_file_delete_check: boolean;
+      };
+      rfa_file_info?: {
+        rfa_file_id: string;
+        rfa_file_delete_check: boolean;
+      };
+      symbol_file_info?: {
+        symbol_id: string;
+        symbol_file_delete_check: boolean;
+      };
     }
   ) => {
     loading.value = true;
     error.value = null;
 
     try {
+      console.log("pipeStore.updatePipe 호출됨, params:", params);
+      console.log(
+        "pipeStore.updatePipe - params.model_file_info:",
+        params.model_file_info
+      );
+      console.log(
+        "pipeStore.updatePipe - params.thumbnail_file_info:",
+        params.thumbnail_file_info
+      );
+      console.log(
+        "pipeStore.updatePipe - params.rfa_file_info:",
+        params.rfa_file_info
+      );
+      console.log(
+        "pipeStore.updatePipe - params.symbol_file_info:",
+        params.symbol_file_info
+      );
+
       const formData = new FormData();
 
       // updateParams 객체 생성 (필수 필드 포함)
@@ -305,23 +347,76 @@ export const usePipeStore = defineStore("pipe", () => {
       if (params.is_active !== undefined && params.is_active !== null) {
         updateParams.is_active = params.is_active;
       }
-      if (params.description !== undefined && params.description !== null && params.description !== "") {
+      if (
+        params.description !== undefined &&
+        params.description !== null &&
+        params.description !== ""
+      ) {
         updateParams.description = params.description;
       }
 
       // output_values, search_criteria, specifications 추가 (빈 객체가 아닐 때만)
-      if (params.output_values && Object.keys(params.output_values).length > 0) {
+      if (
+        params.output_values &&
+        Object.keys(params.output_values).length > 0
+      ) {
         updateParams.output_values = params.output_values;
       }
-      if (params.search_criteria && Object.keys(params.search_criteria).length > 0) {
+      if (
+        params.search_criteria &&
+        Object.keys(params.search_criteria).length > 0
+      ) {
         updateParams.search_criteria = params.search_criteria;
       }
-      if (params.specifications && Object.keys(params.specifications).length > 0) {
+      if (
+        params.specifications &&
+        Object.keys(params.specifications).length > 0
+      ) {
         updateParams.specifications = params.specifications;
       }
 
+      // 삭제된 파일 정보 추가
+      if (params.model_file_info) {
+        updateParams.model_file_info = params.model_file_info;
+        console.log(
+          "pipeStore: model_file_info 추가됨",
+          params.model_file_info
+        );
+      }
+      if (params.thumbnail_file_info) {
+        updateParams.thumbnail_file_info = params.thumbnail_file_info;
+        console.log(
+          "pipeStore: thumbnail_file_info 추가됨",
+          params.thumbnail_file_info
+        );
+      }
+      if (params.rfa_file_info) {
+        updateParams.rfa_file_info = params.rfa_file_info;
+        console.log("pipeStore: rfa_file_info 추가됨", params.rfa_file_info);
+      }
+      if (params.symbol_file_info) {
+        updateParams.symbol_file_info = params.symbol_file_info;
+        console.log(
+          "pipeStore: symbol_file_info 추가됨",
+          params.symbol_file_info
+        );
+      }
+
+      console.log("pipeStore: 최종 updateParams", updateParams);
+
       // updateParams를 JSON 문자열로 FormData에 추가
-      formData.append("updateParams", JSON.stringify(updateParams));
+      const updateParamsString = JSON.stringify(updateParams);
+      console.log(
+        "pipeStore: FormData에 추가될 updateParams JSON 문자열:",
+        updateParamsString
+      );
+      formData.append("updateParams", updateParamsString);
+
+      // FormData 내용 확인 (디버깅용)
+      console.log(
+        "pipeStore: FormData에 추가된 updateParams 값:",
+        formData.get("updateParams")
+      );
 
       // 파일들 추가
       if (params.dtd_model_file) {
@@ -353,7 +448,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("배관 수정 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.pipeUpdateFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.pipeUpdateFailed");
       throw err;
     } finally {
       loading.value = false;
@@ -386,7 +483,9 @@ export const usePipeStore = defineStore("pipe", () => {
     } catch (err) {
       console.error("가격 이력 생성 실패:", err);
       error.value =
-        err instanceof Error ? err.message : t("messages.error.priceHistoryCreateFailed");
+        err instanceof Error
+          ? err.message
+          : t("messages.error.priceHistoryCreateFailed");
       throw err;
     } finally {
       loading.value = false;

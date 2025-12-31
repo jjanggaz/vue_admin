@@ -47,17 +47,17 @@
     >
       <!-- 기계명 슬롯 -->
       <template #cell-machineName="{ value }">
-        {{ t("common.costMachine." + mapMachineName(value)) }}
+        {{ t("common.costMachine.equipmentCode" + mapMachineName(value)) }}
       </template>
 
       <!-- 단위 슬롯 -->
       <template #cell-unit="{ value }">
-        {{ t("common.costUnit." + mapUnit(value)) }}
+        {{ t("common.costUnit.priceType" + mapUnit(value)) }}
       </template>
 
       <!-- 상태 슬롯 -->
       <template #cell-status="{ value }">
-        {{ t("common.costStatus." + mapStatus(value)) }}
+        {{ t("common.costStatus.priceValue" + mapStatus(value)) }}
       </template>
 
       <template #cell-actions="{ item }">
@@ -85,8 +85,7 @@
             class="close-btn"
             @click="closeRegistModal"
             aria-label="Close"
-          >
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <dl class="column-regist">
@@ -193,104 +192,158 @@ import Pagination from "@/components/common/Pagination.vue";
 import DataTable, { type TableColumn } from "@/components/common/DataTable.vue";
 import { useI18n } from "vue-i18n";
 import { useTranslateMessage } from "@/utils/translateMessage";
-import { request } from "@/utils/request";
+import {
+  useCostStore,
+  type CostItem,
+  type CostCreateRequest,
+} from "@/stores/costStore";
 
 const { t } = useI18n();
 
 // 백엔드에서 반환되는 메시지가 다국어 키인 경우 번역 처리
 const translateMessage = useTranslateMessage();
 
-interface CostItem {
-  id: string;
-  name: string;
-  machineName: string;
-  targetCost: number;
-  unit: string;
-  targetPeriod: string;
-  description: string;
-  status: string;
-  createdAt: string;
-}
-
-interface RegistForm {
-  name: string;
-  machineName: string;
-  targetCost: number;
-  unit: string;
-  targetPeriod: string;
-  description: string;
-  status: string;
-}
+// Store 사용
+const costStore = useCostStore();
+const {
+  costList,
+  loading,
+  currentPage,
+  pageSize,
+  totalPages,
+  loadCostList,
+  createCost,
+  updateCost,
+  deleteMultipleCosts,
+  setCurrentPage,
+} = costStore;
 
 // 테이블 컬럼 설정
 const tableColumns: TableColumn[] = [
   {
-    key: "id",
-    title: t("columns.cost.id"),
-    width: "60px",
+    key: "historyId",
+    title: t("columns.cost.historyId"),
+    width: "50px",
     sortable: false,
   },
   {
-    key: "name",
-    title: t("columns.cost.name"),
-    width: "150px",
+    key: "equipmentId",
+    title: t("columns.cost.equipmentId"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "machineName",
-    title: t("columns.cost.machineName"),
-    width: "120px",
+    key: "equipmentCode",
+    title: t("columns.cost.equipmentCode"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "targetCost",
-    title: t("columns.cost.targetCost"),
-    width: "120px",
+    key: "priceType",
+    title: t("columns.cost.priceType"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "unit",
-    title: t("columns.cost.unit"),
-    width: "80px",
+    key: "priceUnit_code",
+    title: t("columns.cost.priceUnitCode"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "targetPeriod",
-    title: t("columns.cost.targetPeriod"),
-    width: "150px",
+    key: "priceUnit_symbol",
+    title: t("columns.cost.priceUnitSymbol"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "description",
-    title: t("columns.cost.description"),
-    width: "200px",
+    key: "priceValue",
+    title: t("columns.cost.priceValue"),
+    width: "50px",
     sortable: true,
   },
   {
-    key: "status",
-    title: t("columns.cost.status"),
-    width: "100px",
+    key: "priceDate",
+    title: t("columns.cost.priceDate"),
+    width: "50px",
+    sortable: true,
+  },
+  {
+    key: "priceReference",
+    title: t("columns.cost.priceReference"),
+    width: "50px",
     sortable: true,
   },
   {
     key: "createdAt",
     title: t("columns.cost.createdAt"),
-    width: "120px",
+    width: "50px",
     sortable: true,
   },
-  { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
+
+  // {
+  //   key: "id",
+  //   title: t("columns.cost.id"),
+  //   width: "60px",
+  //   sortable: false,
+  // },
+  // {
+  //   key: "name",
+  //   title: t("columns.cost.name"),
+  //   width: "150px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "machineName",
+  //   title: t("columns.cost.machineName"),
+  //   width: "120px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "targetCost",
+  //   title: t("columns.cost.targetCost"),
+  //   width: "120px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "unit",
+  //   title: t("columns.cost.unit"),
+  //   width: "80px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "targetPeriod",
+  //   title: t("columns.cost.targetPeriod"),
+  //   width: "150px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "description",
+  //   title: t("columns.cost.description"),
+  //   width: "200px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "status",
+  //   title: t("columns.cost.status"),
+  //   width: "100px",
+  //   sortable: true,
+  // },
+  // {
+  //   key: "createdAt",
+  //   title: t("columns.cost.createdAt"),
+  //   width: "120px",
+  //   sortable: true,
+  // },
+  // { key: "actions", title: t("common.edit"), width: "80px", sortable: false },
 ];
 
-const costList = ref<CostItem[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(20);
 const selectedItems = ref<CostItem[]>([]);
 const searchQueryInput = ref("");
 const searchQuery = ref("");
 const isRegistModalOpen = ref(false);
 const isEditMode = ref(false);
-const newCost = ref<RegistForm>({
+const newCost = ref<CostCreateRequest>({
   name: "",
   machineName: "",
   targetCost: 0,
@@ -301,22 +354,32 @@ const newCost = ref<RegistForm>({
 });
 
 const filteredCostList = computed(() => {
-  if (searchQuery.value) {
-    return costList.value.filter((cost) =>
-      Object.values(cost).some(
-        (v) =>
-          v &&
-          v.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    );
+  if (!Array.isArray(costList.value)) {
+    return [];
   }
-  return costList.value;
+  if (!searchQuery.value) {
+    return costList.value;
+  }
+  const query = searchQuery.value.toLowerCase();
+  return costList.value.filter((cost) => {
+    if (!cost || typeof cost !== "object") {
+      return false;
+    }
+    return Object.values(cost).some((v) => {
+      if (v == null) {
+        return false;
+      }
+      try {
+        const str = String(v).toLowerCase();
+        return str.includes(query);
+      } catch {
+        return false;
+      }
+    });
+  });
 });
 
-const totalCountComputed = computed(() => filteredCostList.value.length);
-const totalPagesComputed = computed(
-  () => Math.ceil(totalCountComputed.value / pageSize.value) || 1
-);
+const totalPagesComputed = computed(() => totalPages.value || 1);
 
 const paginatedCostList = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
@@ -326,47 +389,30 @@ const paginatedCostList = computed(() => {
 
 const isFormValid = computed(() => {
   return (
-    newCost.value.name.trim() !== "" && newCost.value.machineName.trim() !== ""
+    newCost.value.name?.trim() !== "" &&
+    newCost.value.machineName?.trim() !== ""
   );
 });
 
 // 데이터 로드
 const loadData = async () => {
-  loading.value = true;
   try {
-    const response = await request("/api/cost-targets");
-    costList.value = response.response?.data || response.response || [];
-  } catch (error: any) {
+    await loadCostList({
+      page: currentPage.value,
+      page_size: pageSize.value,
+      search_value: searchQuery.value || undefined,
+    });
+  } catch (error: unknown) {
     console.error("단가표 데이터 로드 실패:", error);
     // 백엔드 에러 메시지 표시
     const errorMessage = translateMessage(
-      error?.message,
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
       "messages.error.dataLoadFailed"
     );
     alert(errorMessage);
-    // API 실패 시 샘플 데이터 사용
-    loadSampleData();
-  } finally {
-    loading.value = false;
   }
-};
-
-// 샘플 데이터 로드 (API 실패 시 사용)
-const loadSampleData = () => {
-  costList.value = Array.from({ length: 18 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `목표 ${i + 1}`,
-    machineName: ["펌프1", "모터1", "컨베이어1"][i % 3],
-    targetCost: 1000000 + i * 500000,
-    unit: ["원", "달러", "엔"][i % 3],
-    targetPeriod: `2024.${String(Math.floor(i / 3) + 1).padStart(
-      2,
-      "0"
-    )}-2024.${String(Math.floor(i / 3) + 6).padStart(2, "0")}`,
-    description: `목표 ${i + 1}에 대한 설명입니다`,
-    status: ["진행중", "완료", "지연", "취소"][i % 4],
-    createdAt: `2023-01-${(i % 28) + 1}`,
-  }));
 };
 
 const handleSelectionChange = (selected: CostItem[]) => {
@@ -390,14 +436,16 @@ const handleRowClick = (item: CostItem) => {
 };
 
 const handlePageChange = (page: number) => {
-  currentPage.value = page;
+  setCurrentPage(page);
   selectedItems.value = [];
+  loadData();
 };
 
-const handleSearch = () => {
+const handleSearch = async () => {
   selectedItems.value = [];
   searchQuery.value = searchQueryInput.value;
   currentPage.value = 1;
+  await loadData();
 };
 
 const openRegistModal = () => {
@@ -439,47 +487,23 @@ const handleSave = async () => {
       // 수정 로직
       const selectedItem = selectedItems.value[0];
       if (selectedItem) {
-        await request(`/api/cost-targets/${selectedItem.id}`, undefined, {
-          method: "PUT",
-          body: JSON.stringify(newCost.value),
-        });
-
-        // 로컬 데이터 업데이트
-        const index = costList.value.findIndex(
-          (item) => item.id === selectedItem.id
-        );
-        if (index !== -1) {
-          costList.value[index] = {
-            ...costList.value[index],
-            ...newCost.value,
-          };
-        }
+        await updateCost(selectedItem.id, newCost.value);
       }
     } else {
       // 등록 로직
-      const response = await request("/api/cost-targets", undefined, {
-        method: "POST",
-        body: JSON.stringify(newCost.value),
-      });
-
-      // 로컬 데이터에 추가
-      const newItem: CostItem = {
-        id:
-          response.response?.data?.id ||
-          response.response?.id ||
-          Date.now().toString(),
-        ...newCost.value,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      costList.value.unshift(newItem);
+      await createCost(newCost.value);
     }
 
     closeRegistModal();
     selectedItems.value = [];
-  } catch (error: any) {
+    // 데이터 다시 로드
+    await loadData();
+  } catch (error: unknown) {
     console.error("저장 실패:", error);
     const errorMessage = translateMessage(
-      error?.message,
+      error && typeof error === "object" && "message" in error
+        ? (error as { message: string }).message
+        : undefined,
       "messages.error.saveFailed"
     );
     alert(errorMessage);
@@ -499,24 +523,17 @@ const handleDelete = async () => {
   ) {
     try {
       const selectedIds = selectedItems.value.map((item) => item.id);
-
-      // API 호출
-      for (const id of selectedIds) {
-        await request(`/api/cost-targets/${id}`, undefined, {
-          method: "DELETE",
-        });
-      }
-
-      // 로컬 데이터에서 제거
-      costList.value = costList.value.filter(
-        (item) => !selectedIds.includes(item.id)
-      );
+      await deleteMultipleCosts(selectedIds);
       selectedItems.value = [];
       alert(t("messages.success.deleted"));
-    } catch (error: any) {
+      // 데이터 다시 로드
+      await loadData();
+    } catch (error: unknown) {
       console.error("삭제 실패:", error);
       const errorMessage = translateMessage(
-        error?.message,
+        error && typeof error === "object" && "message" in error
+          ? (error as { message: string }).message
+          : undefined,
         "messages.error.deleteFailed"
       );
       alert(errorMessage);
@@ -525,28 +542,31 @@ const handleDelete = async () => {
 };
 
 // 기계명 매핑 (한글 → 영문 키)
-function mapMachineName(val: string) {
+function mapMachineName(val: string | null | undefined) {
+  if (!val) return "pump1"; // 기본값
   if (val === "펌프1" || val === "pump1") return "pump1";
   if (val === "모터1" || val === "motor1") return "motor1";
   if (val === "컨베이어1" || val === "conveyor1") return "conveyor1";
-  return val;
+  return String(val);
 }
 
 // 단위 매핑 (한글 → 영문 키)
-function mapUnit(val: string) {
+function mapUnit(val: string | null | undefined) {
+  if (!val) return "won"; // 기본값
   if (val === "원" || val === "won") return "won";
   if (val === "달러" || val === "dollar") return "dollar";
   if (val === "엔" || val === "yen") return "yen";
-  return val;
+  return String(val);
 }
 
 // 상태 매핑 (한글 → 영문 키)
-function mapStatus(val: string) {
+function mapStatus(val: string | null | undefined) {
+  if (!val) return "inProgress"; // 기본값
   if (val === "진행중" || val === "inProgress") return "inProgress";
   if (val === "완료" || val === "completed") return "completed";
   if (val === "지연" || val === "delayed") return "delayed";
   if (val === "취소" || val === "cancelled") return "cancelled";
-  return val;
+  return String(val);
 }
 
 onMounted(() => {
@@ -585,6 +605,11 @@ onMounted(() => {
 
 .form-item {
   margin-right: 0.5rem;
+}
+
+.btn-search {
+  color: white;
+  width: 50px;
 }
 
 .btns {

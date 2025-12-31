@@ -73,7 +73,7 @@
               </select>
             </div>
           </div>
-          <div class="group-form" style="margin-right: 10px;">
+          <div class="group-form" style="margin-right: 10px">
             <label for="searchProcessName" class="label-title">{{
               t("process.processName")
             }}</label>
@@ -255,7 +255,9 @@
                 </select>
               </div>
               <div class="form-group">
-                <label class="essential">{{ t("process.processSymbolFile") }}</label>
+                <label class="essential">{{
+                  t("process.processSymbolFile")
+                }}</label>
                 <div class="file-input-group">
                   <input
                     type="file"
@@ -426,7 +428,13 @@
     <div v-if="isDetailModalOpen" class="modal-overlay detail-modal-overlay">
       <div class="modal-container detail-modal-container">
         <div class="modal-header">
-          <h3>{{ isRegisterMode ? t("process.registerProcess") : t("process.processDetail") }}</h3>
+          <h3>
+            {{
+              isRegisterMode
+                ? t("process.registerProcess")
+                : t("process.processDetail")
+            }}
+          </h3>
           <button class="close-btn" @click="closeDetailModal"></button>
         </div>
         <div class="modal-body detail-modal-body">
@@ -477,10 +485,12 @@ watch(
       try {
         // Process Type 옵션 재로드
         await processStore.loadProcessTypeCodes();
-        
+
         // Sub Category가 선택되어 있으면 재로드
         if (processStore.searchProcessType) {
-          await processStore.loadSubCategoryCodes(processStore.searchProcessType);
+          await processStore.loadSubCategoryCodes(
+            processStore.searchProcessType
+          );
         }
       } catch (error) {
         console.error("언어 변경 시 옵션 재로드 실패:", error);
@@ -701,41 +711,127 @@ const handleDelete = async () => {
     return;
   }
 
-  const confirmed = confirm(
-    t("process.deleteConfirmMessage")
-  );
+  const confirmed = confirm(t("process.deleteConfirmMessage"));
 
   if (confirmed) {
+    // 선택된 항목들의 process_id 추출 (catch 블록에서도 사용하기 위해 밖으로 이동)
+    const selectedProcessIds = processStore.selectedItems.map(
+      (item) => item.process_id
+    );
+
+    const selectedSymbolIds = processStore.selectedItems
+      .map((item) => item.symbol_id || "")
+      .filter((id) => id !== "");
+
     try {
-      // 선택된 항목들의 process_id 추출
-      const selectedProcessIds = processStore.selectedItems.map(
-        (item) => item.process_id
-      );
-
-      const selectedSymbolIds = processStore.selectedItems
-        .map((item) => item.symbol_id || "")
-        .filter((id) => id !== "");
-
       // processStore를 통한 삭제 처리
-      const { successCount, failCount } = await processStore.deleteProcesses(
-        selectedProcessIds,
-        selectedSymbolIds
-      );
+      const { successCount, failCount, results } =
+        await processStore.deleteProcesses(
+          selectedProcessIds,
+          selectedSymbolIds
+        );
+
+      // API 응답 콘솔 출력
+      console.log("=== 삭제 API 응답 ===");
+      console.log("전체 응답 결과:", results);
+      console.log("성공 건수:", successCount);
+      console.log("실패 건수:", failCount);
+      results?.forEach((result: any, index: number) => {
+        console.log(
+          `항목 ${index + 1} (process_id: ${selectedProcessIds[index]}):`,
+          result
+        );
+      });
 
       if (failCount > 0) {
-        alert(
-          `${successCount}개 항목 삭제 성공, ${failCount}개 항목 삭제 실패`
-        );
+        // 실패한 항목들의 메시지 수집
+        const failMessages: string[] = [];
+        results?.forEach((result: any, index: number) => {
+          if (!result.success) {
+            // API 응답의 상세 메시지 추출 (여러 경로 확인)
+            const errorMessage =
+              result.response?.data?.message ||
+              result.response?.message ||
+              result.data?.message ||
+              result.error?.message ||
+              result.error?.response?.data?.message ||
+              result.error?.response?.message ||
+              result.message ||
+              "삭제 실패";
+            failMessages.push(
+              `항목 ${index + 1} (process_id: ${
+                selectedProcessIds[index]
+              }): ${errorMessage}`
+            );
+          }
+        });
+
+        // 실패 메시지가 있으면 상세 메시지 표시, 없으면 기본 메시지
+        const failMessageText =
+          failMessages.length > 0
+            ? `${successCount}개 항목 삭제 성공\n\n${failCount}개 항목 삭제 실패:\n${failMessages.join(
+                "\n"
+              )}`
+            : `${successCount}개 항목 삭제 성공, ${failCount}개 항목 삭제 실패`;
+
+        alert(failMessageText);
       } else {
         alert(t("messages.success.deleted"));
       }
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);
-      const errorMessage = translateMessage(
-        error?.message,
-        "messages.error.deleteFailed"
-      );
-      alert(errorMessage);
+
+      // 에러가 results를 포함하고 있는 경우 (모든 항목 삭제 실패)
+      if (error?.results) {
+        console.log("=== 삭제 API 응답 (에러 포함) ===");
+        console.log("전체 응답 결과:", error.results);
+
+        // 실패한 항목들의 상세 에러 메시지 수집
+        const failMessages: string[] = [];
+        error.results?.forEach((result: any, index: number) => {
+          console.log(`항목 ${index + 1}:`, result);
+
+          if (!result.success) {
+            // API 응답의 상세 메시지 추출 (여러 경로 확인)
+            const errorMessage =
+              result.response?.data?.message ||
+              result.response?.message ||
+              result.data?.message ||
+              result.error?.message ||
+              result.error?.response?.data?.message ||
+              result.error?.response?.message ||
+              result.message ||
+              "삭제 실패";
+
+            failMessages.push(
+              `항목 ${index + 1} (process_id: ${
+                selectedProcessIds[index]
+              }): ${errorMessage}`
+            );
+          }
+        });
+
+        // 상세 에러 메시지가 있으면 표시
+        if (failMessages.length > 0) {
+          alert(`삭제 실패:\n\n${failMessages.join("\n")}`);
+        } else {
+          // 기본 에러 메시지 추출
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.data?.message ||
+            error?.message ||
+            translateMessage(error?.message, "messages.error.deleteFailed");
+          alert(errorMessage);
+        }
+      } else {
+        // 일반 에러인 경우 상세 메시지 추출
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.data?.message ||
+          error?.message ||
+          translateMessage(error?.message, "messages.error.deleteFailed");
+        alert(errorMessage);
+      }
     }
   }
 };
@@ -767,7 +863,9 @@ const deleteSelectedFileRows = () => {
 
   if (
     confirm(
-      t("process.deleteSelectedItemsConfirm", { count: selectedFileRows.value.length })
+      t("process.deleteSelectedItemsConfirm", {
+        count: selectedFileRows.value.length,
+      })
     )
   ) {
     const selectedIds = selectedFileRows.value.map((row) => row.id);
@@ -980,7 +1078,9 @@ const saveProcessRegistration = async () => {
     // 성공 메시지에 계산식 파일 정보 포함
     let successMessage = t("process.processRegistrationCompleted");
     if (formulaFiles.length > 0) {
-      successMessage += `\n${t("process.formulaFilesRegistered", { count: formulaFiles.length })}`;
+      successMessage += `\n${t("process.formulaFilesRegistered", {
+        count: formulaFiles.length,
+      })}`;
     }
 
     alert(successMessage);
@@ -1365,7 +1465,7 @@ onMounted(async () => {
   flex-direction: column;
   height: calc(100vh - 60px);
   padding: 40px 24px;
-  
+
   @media (max-width: 768px) {
     padding: 40px 0;
   }

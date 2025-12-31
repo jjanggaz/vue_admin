@@ -520,6 +520,22 @@ export const useMachineStore = defineStore("machine", () => {
       thumbnail_file?: File;
       revit_model_file?: File;
       symbol_file?: File;
+      model_file_info?: {
+        model_file_id: string;
+        model_file_delete_check: boolean;
+      };
+      thumbnail_file_info?: {
+        thumbnail_id: string;
+        thumbnail_file_delete_check: boolean;
+      };
+      rfa_file_info?: {
+        rfa_file_id: string;
+        rfa_file_delete_check: boolean;
+      };
+      symbol_file_info?: {
+        symbol_id: string;
+        symbol_file_delete_check: boolean;
+      };
     }
   ) => {
     loading.value = true;
@@ -547,6 +563,19 @@ export const useMachineStore = defineStore("machine", () => {
       }
       if (params.specifications) {
         updateParams.specifications = params.specifications;
+      }
+      // 삭제된 파일 정보 추가
+      if (params.model_file_info) {
+        updateParams.model_file_info = params.model_file_info;
+      }
+      if (params.thumbnail_file_info) {
+        updateParams.thumbnail_file_info = params.thumbnail_file_info;
+      }
+      if (params.rfa_file_info) {
+        updateParams.rfa_file_info = params.rfa_file_info;
+      }
+      if (params.symbol_file_info) {
+        updateParams.symbol_file_info = params.symbol_file_info;
       }
 
       // updateParams를 JSON 문자열로 FormData에 추가

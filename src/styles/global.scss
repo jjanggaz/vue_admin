@@ -149,7 +149,6 @@ body {
 
 .action-bar {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-end;
   gap: 10px 40px;
@@ -404,7 +403,7 @@ body {
 }
 
 // Responsive adjustments for pagination
-@media (max-width: 768px) {
+@media (max-width: 810px) {
   .pagination-container {
     flex-direction: column;
     gap: 10px;
@@ -542,14 +541,14 @@ div[class$="-list-header"] {
     }
   }
   &::-webkit-scrollbar-button:start:decrement {
-    display:block;
-    height:155px;
+    display: block;
+    height: 155px;
     width: 0;
     background-color: transparent;
   }
   &::-webkit-scrollbar-button:end:increment {
-    display:block;
-    height:61px;
+    display: block;
+    height: 61px;
     width: 0;
     background-color: transparent;
   }
@@ -638,10 +637,10 @@ div[class$="-list-header"] {
 
   .detail-panel-body {
     flex: 1;
+    min-height: 0;
     padding: 10px 10px 20px 20px;
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 0;
     -webkit-overflow-scrolling: touch;
 
     &.with-scroll {
@@ -661,7 +660,7 @@ div[class$="-list-header"] {
     }
     &::-webkit-scrollbar-button:end:increment {
       display: block;
-      height: 20px;
+      height: 60px;
       width: 0;
       background-color: transparent;
     }
@@ -844,6 +843,7 @@ div[class$="-list-header"] {
 
 .detail-tables-container {
   width: 100%;
+  padding-bottom: 40px;
   overflow: hidden;
 }
 

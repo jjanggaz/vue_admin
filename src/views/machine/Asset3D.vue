@@ -2078,8 +2078,7 @@ onMounted(async () => {
 
 // 프리셋 선택 항목 그리드 스타일
 .preset-selection-grid {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  padding: 32px 0 40px;
   border-top: 1px solid #e7e6ed;
 
   .selection-grid-title {
@@ -2123,33 +2122,6 @@ onMounted(async () => {
       color: #1557b0;
       text-decoration: underline;
     }
-  }
-}
-
-.detail-section :deep(.vertical-data-table) {
-  font-size: 0.875rem;
-
-  .column-name {
-    background-color: #f8f9fa;
-    color: #333333;
-    font-weight: 500;
-    width: 35%;
-  }
-
-  .column-value {
-    width: 65%;
-    word-break: break-word;
-  }
-}
-
-// 메인 콘텐츠 내 테이블도 제어 (중복 정의 제거)
-:deep(.main-content .data-table) {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-
-  table {
-    min-width: 100%;
   }
 }
 
@@ -2218,5 +2190,11 @@ $tablet: 1024px;
 .table-wrapper {
   flex: 1;
   overflow: auto;
+}
+
+.pagination-container {
+  overflow-y: hidden;
+  margin: 0;
+  padding: 20px 0;
 }
 </style>

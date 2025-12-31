@@ -2464,47 +2464,6 @@ onMounted(async () => {
 
 .price-history-section {
   margin-top: 24px;
-
-  :deep(.data-table-container) {
-    max-height: 250px;
-    overflow-y: auto;
-    overflow-x: auto;
-    width: 100%;
-  }
-
-  :deep(.data-table) {
-    min-width: 600px;
-    width: 100%;
-  }
-}
-
-// VerticalDataTable 스타일 오버라이드
-
-.detail-section :deep(.vertical-data-table) {
-  font-size: 0.875rem;
-
-  .column-name {
-    background-color: #f8f9fa;
-    color: #333333;
-    font-weight: 500;
-    width: 35%;
-  }
-
-  .column-value {
-    width: 65%;
-    word-break: break-word;
-  }
-}
-
-// 메인 콘텐츠 내 테이블도 제어 (중복 정의 제거)
-:deep(.main-content .data-table) {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-
-  table {
-    min-width: 100%;
-  }
 }
 
 .search-filter-bar {
@@ -2514,7 +2473,6 @@ onMounted(async () => {
     min-width: 350px;
   }
 }
-
 
 .form-select {
   appearance: none;

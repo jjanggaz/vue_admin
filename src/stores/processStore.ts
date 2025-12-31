@@ -1060,7 +1060,15 @@ export const useProcessStore = defineStore("process", () => {
           return result;
         } catch (error: any) {
           console.error(`process_id ${processId} 삭제 실패:`, error);
-          return { success: false, message: error.message || "삭제 실패" };
+          // 원본 에러 정보를 모두 포함하여 반환
+          return { 
+            success: false, 
+            message: error.message || "삭제 실패",
+            response: error.response || error,
+            data: error.data || error.response?.data,
+            status: error.status,
+            error: error
+          };
         }
       });
 
@@ -1096,9 +1104,12 @@ export const useProcessStore = defineStore("process", () => {
         // 선택된 항목 초기화
         selectedItems.value = [];
 
-        return { successCount, failCount };
+        return { successCount, failCount, results: deleteResults };
       } else {
-        throw new Error(t("messages.error.allItemsDeleteFailed"));
+        // 모든 항목이 실패한 경우에도 상세 에러 정보를 포함하여 throw
+        const errorWithResults = new Error(t("messages.error.allItemsDeleteFailed"));
+        (errorWithResults as any).results = deleteResults;
+        throw errorWithResults;
       }
     } catch (error: any) {
       console.error("삭제 처리 중 오류:", error);

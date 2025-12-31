@@ -275,9 +275,10 @@ const currentPageTitle = computed<string>(() => {
 
     .tab-item {
       height: 69px;
+      padding-top: 6px;
       border-bottom: 4px solid transparent;
       border-radius: 0;
-      padding: 0 20px;
+      // padding: 0 20px;
       font-size: $font-size-sm;
       color: #555555;
 

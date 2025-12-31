@@ -2497,30 +2497,54 @@ onBeforeUnmount(() => {
 }
 
 .inflow {
-  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
   min-width: 0; // 전체 컨테이너가 축소될 수 있도록 허용
-
-  // 반응형 처리: 작은 화면에서는 스크롤 추가
-  @media (max-width: 1024px) {
-    max-height: calc(100vh - 70px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    
-    &::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: transparent;
-    }
-  }
+  height: calc(100vh - 70px);
+  padding: 40px 20px 40px 24px;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     padding: 40px 0;
   }
 
   .page-content {
-    min-width: 0; // 페이지 컨텐츠가 축소될 수 있도록 허용
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden; 
+    
+    @media (max-width: 1024px) {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+  }
+
+  .tab-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #e7e6ed;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: #d7d5e4;
+      }
+    }
+  }
+
+  .content-wrapper {
+    padding-right: 3px;
   }
 
   // 좌우 배치를 위한 스타일
@@ -2549,7 +2573,6 @@ onBeforeUnmount(() => {
       padding: 20px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       min-width: 0; // flex 아이템이 컨테이너를 벗어나지 않도록
-      overflow: hidden; // 내부 컨텐츠가 넘칠 때 숨김
       max-width: 100%; // 최대 너비 제한
 
       // 반응형 처리
@@ -2694,6 +2717,10 @@ dl.column-regist {
 // 탭 스크롤 관련 스타일
 .action-bar {
   gap: 10px 40px;
+
+  @media (max-width: 650px) {
+    flex-wrap: wrap;
+  }
 }
 
 .tab-action-bar {

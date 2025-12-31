@@ -588,6 +588,7 @@ const toggleSelectRow = (item: any) => {
     }
 
     td {
+      white-space: nowrap;
       padding: 12px 16px;
       font-size: 14px;
       color: #333;
